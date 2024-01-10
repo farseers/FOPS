@@ -115,6 +115,7 @@ var cmdPrefix = collections.NewList(
 
 var cmdResultTips = collections.NewList(
 	"Login Succeeded",
+	"The push refers to repository ",
 	"Determining projects to restore...")
 
 var errorTips = collections.NewList(
@@ -146,9 +147,9 @@ func View(buildId int64) action.IResult {
 
 		if chineseTips.Contains(logPart) {
 			logPart = fmt.Sprintf("<span style=\"color:#cfbbfc\">%s</span>", logPart)
-		} else if cmdResultTips.Contains(logPart) || strings.HasPrefix(logPart, "The push refers to repository ") || regexp.MustCompile(`\w+\.apps/\w+ image updated`).MatchString(logPart) {
+		} else if cmdResultTips.ContainsAny(logPart) || strings.HasPrefix(logPart, "The push refers to repository ") || regexp.MustCompile(`\w+\.apps/\w+ image updated`).MatchString(logPart) {
 			logPart = fmt.Sprintf("<span style=\"color:#fff\">%s</span>", logPart)
-		} else if cmdPrefix.ContainsPrefix(logPart) {
+		} else if cmdPrefix.ContainsAny(logPart) {
 			logPart = fmt.Sprintf("<span style=\"color:#ffe127\">%s</span>", logPart)
 		} else if errorTips.ContainsAny(strings.ToLower(logPart)) {
 			logPart = fmt.Sprintf("<span style=\"color:#ff5b5b\">%s</span>", logPart)

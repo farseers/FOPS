@@ -70,7 +70,6 @@ func (receiver *linkTraceWarp) addEntry(po linkTraceCom.TraceContext) {
 	entryTrace := response.LinkTraceVO{
 		Rgba: response.RgbaList[receiver.rgbaIndex], AppId: po.AppId, AppIp: po.AppIp, AppName: po.AppName, UseTs: float64(po.UseTs.Microseconds()), UseDesc: po.UseTs.String(),
 		StartTs: float64(po.StartTs - receiver.startTs),
-		Caption: "入口 ",
 	}
 	entryTrace.StartRate = entryTrace.StartTs / receiver.TotalUse * 100
 	entryTrace.UseRate = entryTrace.UseTs / receiver.TotalUse * 100
@@ -81,18 +80,18 @@ func (receiver *linkTraceWarp) addEntry(po linkTraceCom.TraceContext) {
 	}
 	switch po.TraceType {
 	case eumTraceType.WebApi:
-		entryTrace.Caption += fmt.Sprintf("【%s】 => %s", po.WebMethod, po.WebPath)
+		entryTrace.Caption = fmt.Sprintf("收到%s请求【%s】 => %s", po.WebRequestIp, po.WebMethod, po.WebPath)
 		entryTrace.Desc = fmt.Sprintf("%s 客户端IP：%s", po.WebContentType, po.WebRequestIp)
 	case eumTraceType.MqConsumer:
-		entryTrace.Caption += fmt.Sprintf("%s %s %s", po.ConsumerServer, po.ConsumerQueueName, po.ConsumerRoutingKey)
+		entryTrace.Caption = fmt.Sprintf("MQ消费 %s %s %s", po.ConsumerServer, po.ConsumerQueueName, po.ConsumerRoutingKey)
 	case eumTraceType.QueueConsumer:
-		entryTrace.Caption += fmt.Sprintf("%s", po.ConsumerQueueName)
+		entryTrace.Caption = fmt.Sprintf("本地Queue消费 %s", po.ConsumerQueueName)
 	case eumTraceType.FSchedule:
-		entryTrace.Caption += fmt.Sprintf("任务组：%s(%s) 任务ID：%v", po.TaskName, po.TaskGroupName, po.TaskId)
+		entryTrace.Caption = fmt.Sprintf("任务调度 任务组：%s 任务ID：%v", po.TaskGroupName, po.TaskId)
 	case eumTraceType.Task:
-		entryTrace.Caption += fmt.Sprintf("%s", po.TaskName)
+		entryTrace.Caption = fmt.Sprintf("本地任务 %s", po.TaskName)
 	case eumTraceType.WatchKey:
-		entryTrace.Caption += fmt.Sprintf("%s", po.WatchKey)
+		entryTrace.Caption = fmt.Sprintf("监控KEY %s", po.WatchKey)
 	}
 	receiver.lst.Add(entryTrace)
 	receiver.addDetail(po)

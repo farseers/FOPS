@@ -99,7 +99,7 @@ func (receiver *linkTraceRepository) ToTaskList(traceId, appName, appIp, taskNam
 }
 func (receiver *linkTraceRepository) ToFScheduleList(traceId, appName, appIp, taskName string, taskGroupId, taskId, searchUseTs int64, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceContextView.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,create_at,task_name,task_group_id,task_id").
+		ts := context.CHContext.TraceContextView.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,create_at,task_name,task_group_name,task_id,task_data").
 			Where("trace_type = ? and parent_app_name = ''", eumTraceType.FSchedule).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).

@@ -1,7 +1,6 @@
 package apps
 
 import (
-	"fmt"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/str"
@@ -29,10 +28,16 @@ func NewLogQueue(buildId int64) *LogQueue {
 // 开启后台日志写入
 func (receiver *LogQueue) startPush() {
 	logfile := receiver.GenerateFilename()
+	var prevContent string
 	for log := range receiver.progress {
+		curLog := str.ToDateTime(time.Now()) + " " + log
+		// 如果内容与前面一样，则不记录
+		if prevContent == curLog {
+			continue
+		}
 		// 写入日志文件
 		file.AppendLine(logfile, str.ToDateTime(time.Now())+" "+log)
-		fmt.Println(str.ToDateTime(time.Now()) + " " + log)
+		prevContent = curLog
 	}
 }
 

@@ -49,7 +49,7 @@ type TaskContextPO struct {
 	TaskName      string                                 `gorm:"not null;default:'';comment:任务名称"`
 	TaskGroupName string                                 `gorm:"not null;default:'';comment:任务组名称"`
 	TaskId        int64                                  `gorm:"not null;default:0;comment:任务ID"`
-	Data          collections.Dictionary[string, string] `gorm:"type:String;json;not null;comment:任务数据" es_type:"flattened"`
+	TaskData      collections.Dictionary[string, string] `gorm:"type:String;json;not null;comment:任务数据" es_type:"flattened"`
 }
 
 type WatchKeyContextPO struct {

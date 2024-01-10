@@ -21,17 +21,22 @@
             </el-button>
           </div>
           <el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%;">
-            <el-table-column prop="Id" label="任务ID" width="180" />
+            <el-table-column prop="Id" label="任务ID" width="180">
+              <template #default="scope">
+                <span title="任务ID">{{scope.row.Id}}</span><br>
+                <span title="TraceId">{{scope.row.TraceId}}</span>
+              </template>
+            </el-table-column>
             <el-table-column prop="StartAt" label="时间" width="210" show-overflow-tooltip>
               <template #default="scope">
                 <span>开始: {{scope.row.StartAt}}</span><br>
-                <span>运行: {{scope.row.RunAt}}</span>
+                <span>完成: {{scope.row.RunAt}}</span>
               </template>
             </el-table-column>
             <el-table-column label="运行情况"  width="110" show-overflow-tooltip>
               <template #default="scope">
                 <span>耗时: {{scope.row.RunSpeed}}</span><br>
-                <span>进度: {{scope.row.Progress}}</span>
+                <span>进度: {{scope.row.Progress}}%</span>
               </template>
             </el-table-column>
             <el-table-column label="数据"  width="450">
@@ -136,7 +141,7 @@ const getTableData = () => {
 const openDialog = (row: any) => {
   state.taskGroupName = row.Name
   state.dialog.isShowDialog = true;
-  state.dialog.title = row.Caption;
+  state.dialog.title = row.Name + " " +row.Caption;
   getTableData();
 };
 // 关闭弹窗

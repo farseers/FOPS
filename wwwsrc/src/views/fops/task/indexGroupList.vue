@@ -67,8 +67,8 @@
             </el-table-column>
             <el-table-column label="运行情况" width="170" show-overflow-tooltip>
               <template #default="scope">
-                <span>平均耗时: {{scope.row.RunSpeedAvg}}ms</span><br>
-                <span>运行次数: {{scope.row.RunCount}}</span>
+                <span>平均耗时: {{scope.row.RunSpeedAvg}} ms</span><br>
+                <span>运行次数: {{scope.row.RunCount}} 次</span>
               </template>
             </el-table-column>
             <el-table-column label="数据">

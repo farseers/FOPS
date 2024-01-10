@@ -3,7 +3,7 @@
       <div class="system-user-container layout-padding" style="width: 100%;">
         <el-card shadow="hover" class="layout-padding-auto">
           <div class="system-user-search mb15">
-            <span>任务组名称：{{state.dialog.title}}</span>
+            <span>任务组：{{state.dialog.title}}</span>
 <!--            <el-input size="default" v-model="state.taskGroupId" placeholder="请输入任务组ID" style="max-width: 180px"> </el-input>-->
             <el-select v-model="state.logLevel" placeholder="请选择日志等级" clearable class="ml10">
               <el-option label="全部" :value="-1"></el-option>
@@ -22,13 +22,7 @@
             </el-button>
           </div>
           <el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
-            <el-table-column prop="TaskId" label="序号" width="180" />
-            <el-table-column label="名称" width="230">
-              <template #default="scope">
-                <span>{{scope.row.Caption}}</span><br>
-                <span>{{scope.row.Name}}（<span style="color:blue">Ver:{{scope.row.Ver}}</span>）</span>
-              </template>
-            </el-table-column>
+            <el-table-column prop="TaskId" label="任务ID" width="180" />
             <el-table-column label="日志内容">
               <template #default="scope">
                 <el-tag v-if="scope.row.LogLevel == 'Info'">{{scope.row.LogLevel}}</el-tag>
@@ -131,7 +125,7 @@ const onEdit=(type: string,row:any)=>{
 const openDialog = (row: any) => {
   state.taskGroupName=row.Name
   state.dialog.isShowDialog = true;
-  state.dialog.title = row.Caption;
+  state.dialog.title = row.Name + " " +row.Caption;
   getTableData();
 };
 // 关闭弹窗

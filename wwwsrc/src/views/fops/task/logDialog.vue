@@ -25,7 +25,7 @@
             <el-table-column prop="TaskId" label="任务ID" width="180" />
             <el-table-column label="日志内容">
               <template #default="scope">
-                <el-tag v-if="scope.row.LogLevel == 'Info'">{{scope.row.LogLevel}}</el-tag>
+                <el-tag v-if="scope.row.LogLevel == 'Info'" size="small">{{scope.row.LogLevel}}</el-tag>
                 <el-tag v-else-if="scope.row.LogLevel == 'Debug'" type="info" size="small">{{scope.row.LogLevel}}</el-tag>
                 <el-tag v-else-if="scope.row.LogLevel == 'Warn'" type="warning" size="small">{{scope.row.LogLevel}}</el-tag>
                 <el-tag v-else-if="scope.row.LogLevel == 'Error'" type="danger" size="small">{{scope.row.LogLevel}}</el-tag>

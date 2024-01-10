@@ -105,7 +105,7 @@ var chineseTips = collections.NewList(
 var cmdPrefix = collections.NewList(
 	"git -C ",
 	"docker login ",
-	"docker build -t ",
+	"docker build -t",
 	"docker push ",
 	"kubectl set image ",
 	"Successfully built ",

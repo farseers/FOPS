@@ -88,6 +88,8 @@ func (receiver *linkTraceWarp) addEntry(po linkTraceCom.TraceContext) {
 		entryTrace.Caption = fmt.Sprintf("本地Queue消费 %s", po.ConsumerQueueName)
 	case eumTraceType.FSchedule:
 		entryTrace.Caption = fmt.Sprintf("任务调度 任务组：%s 任务ID：%v", po.TaskGroupName, po.TaskId)
+		dataJson, _ := po.TaskData.MarshalJSON()
+		entryTrace.Desc = fmt.Sprintf("参数 %s", string(dataJson))
 	case eumTraceType.Task:
 		entryTrace.Caption = fmt.Sprintf("本地任务 %s", po.TaskName)
 	case eumTraceType.WatchKey:

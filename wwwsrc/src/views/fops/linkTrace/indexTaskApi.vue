@@ -14,17 +14,17 @@
         <label class="ml5">任务名称</label>
         <el-input class="ml5" size="default" v-model="state.taskName" placeholder="任务名称" clearable style="max-width: 180px;"> </el-input>
         <label class="ml5">往前推N分钟的数据</label>
-        <el-select class="ml5" v-model="state.startMin" placeholder="往前推N分钟的数据" style="max-width: 150px;" size="small">
+        <el-select class="ml5" v-model="state.startMin" placeholder="往前推N分钟的数据" style="max-width: 120px;" size="default">
           <el-option label="全部" :value="0"></el-option>
-          <el-option label="1小时耗时最高" :value="60"></el-option>
-          <el-option label="30分钟耗时最高" :value="30"></el-option>
-          <el-option label="10分钟耗时最高" :value="10"></el-option>
-          <el-option label="5分钟耗时最高" :value="5"></el-option>
-          <el-option label="1分钟耗时最高" :value="1"></el-option>
+          <el-option label="1小时最高" :value="60"></el-option>
+          <el-option label="30分钟最高" :value="30"></el-option>
+          <el-option label="10分钟最高" :value="10"></el-option>
+          <el-option label="5分钟最高" :value="5"></el-option>
+          <el-option label="1分钟最高" :value="1"></el-option>
         </el-select>
         <label class="ml5">执行时间</label>
         <el-input class="ml5" size="default" v-model="state.searchUseTs" placeholder="执行时间大于毫秒的记录" clearable style="max-width: 80px;"> </el-input> ms
-
+        <el-checkbox v-model="state.onlyViewException" label="仅看异常" size="small" class="ml5" style="color:#ff5000;"/>
 				<el-button size="default" type="primary" class="ml5" @click="onQuery">
 					<el-icon>
 						<ele-Search />

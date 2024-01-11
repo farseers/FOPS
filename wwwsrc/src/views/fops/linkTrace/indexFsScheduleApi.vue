@@ -113,6 +113,7 @@ const detailDialogRef = ref();
 const state = reactive({
   keyWord:'',
   appName:'',
+  traceId:'',
   appIp:'',
   taskName:'',
   taskGroupId:'',

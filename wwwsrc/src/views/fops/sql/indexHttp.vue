@@ -117,6 +117,7 @@ const detailDialogRef = ref();
 const showDialogRef = ref();
 const state = reactive({
   appName:'',
+  traceId:'',
   appIp:'',
   method:'',
   url:'',

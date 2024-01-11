@@ -100,6 +100,7 @@ const detailDialog = defineAsyncComponent(() => import('/src/views/fops/linkTrac
 const detailDialogRef = ref();
 const state = reactive({
   appName:'',
+  traceId:'',
   appIp:'',
   name:'',
   startMin:0,

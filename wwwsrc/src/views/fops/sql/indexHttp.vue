@@ -12,7 +12,7 @@
         <label class="ml10">执行端IP</label>
         <el-input class="ml5" size="default" v-model="state.appIp" placeholder="执行端IP" style="max-width: 120px;"></el-input>
         <label class="ml10">请求方法</label>
-        <el-select class="ml5" v-model="state.method" placeholder="请求方法" class="ml10" style="max-width: 110px;" size="small">
+        <el-select class="ml5" v-model="state.method" placeholder="请求方法" style="max-width: 110px;" size="small">
           <el-option label="全部" value=""></el-option>
           <el-option label="GET" value="GET"></el-option>
           <el-option label="POST" value="POST"></el-option>

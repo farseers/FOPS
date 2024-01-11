@@ -3,22 +3,22 @@
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="system-user-search mb15">
         <label>TraceId</label>
-        <el-input size="default" v-model="state.traceId" placeholder="链路ID" style="max-width: 165px;margin-left: 5px;margin-right: 5px;"> </el-input>
-        <label>应用</label>
-        <el-select class="ml10" style="max-width: 110px;" size="small" v-model="state.appName">
+        <el-input class="ml5" size="default" v-model="state.traceId" placeholder="链路ID" style="max-width: 165px;"> </el-input>
+        <label class="ml5">应用</label>
+        <el-select class="ml5" style="max-width: 110px;" size="small" v-model="state.appName">
           <el-option label="全部" value=""></el-option>
           <el-option v-for="item in state.appData" :label="item.AppName" :value="item.AppName" ></el-option>
         </el-select>
         <label class="ml10">执行端IP</label>
-        <el-input size="default" v-model="state.appIp" placeholder="执行端IP" clearable style="max-width: 130px;padding-left: 5px"> </el-input>
+        <el-input class="ml5" size="default" v-model="state.appIp" placeholder="执行端IP" clearable style="max-width: 130px;"> </el-input>
         <label class="ml10">MQ服务端</label>
-        <el-input size="default" v-model="state.server" placeholder="MQ服务端" clearable style="max-width: 180px;padding-left: 5px"> </el-input>
+        <el-input class="ml5" size="default" v-model="state.server" placeholder="MQ服务端" clearable style="max-width: 180px;"> </el-input>
         <label class="ml10">队列名称</label>
-        <el-input size="default" v-model="state.queueName" placeholder="队列名称" clearable style="max-width: 180px;padding-left: 5px"> </el-input>
+        <el-input class="ml5" size="default" v-model="state.queueName" placeholder="队列名称" clearable style="max-width: 180px;"> </el-input>
         <label class="ml10">路由key</label>
-        <el-input size="default" v-model="state.routingKey" placeholder="路由key" clearable style="max-width: 180px;padding-left: 5px"> </el-input>
+        <el-input class="ml5" size="default" v-model="state.routingKey" placeholder="路由key" clearable style="max-width: 180px;"> </el-input>
         <label class="ml10">往前推N分钟的数据</label>
-        <el-select v-model="state.startMin" placeholder="往前推N分钟的数据" class="ml10" style="max-width: 150px;" size="small">
+        <el-select class="ml5" v-model="state.startMin" placeholder="往前推N分钟的数据" style="max-width: 150px;" size="small">
           <el-option label="全部" :value="0"></el-option>
           <el-option label="1小时耗时最高" :value="60"></el-option>
           <el-option label="30分钟耗时最高" :value="30"></el-option>
@@ -27,7 +27,7 @@
           <el-option label="1分钟耗时最高" :value="1"></el-option>
         </el-select>
         <label class="ml10">执行时间</label>
-        <el-input size="default" v-model="state.searchUseTs" placeholder="执行时间大于毫秒的记录" clearable style="max-width: 80px;padding-left: 5px"> </el-input> ms
+        <el-input class="ml5" size="default" v-model="state.searchUseTs" placeholder="执行时间大于毫秒的记录" clearable style="max-width: 80px;"> </el-input> ms
 
 				<el-button size="default" type="primary" class="ml10" @click="onQuery">
 					<el-icon>

@@ -6,7 +6,6 @@ import (
 	"fops/application/linkTraceApp/response"
 	"fops/domain/linkTrace"
 	"github.com/farseer-go/collections"
-	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/fs/trace"
 	"github.com/farseer-go/fs/trace/eumCallType"
 	linkTraceCom "github.com/farseer-go/linkTrace"
@@ -168,7 +167,7 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 		if baseDetailPO.CallType == eumCallType.Http {
 			// 查找串联的服务
 			nextEntry := receiver.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
-				return item.ParentAppName == detailTrace.AppName && parse.ToFloat64(item.StartTs) >= detailTrace.StartTs
+				return item.ParentAppName == detailTrace.AppName && item.TraceLevel == po.TraceLevel+1
 			}).First()
 			receiver.PreDetail = baseDetailPO
 			receiver.addEntry(nextEntry)

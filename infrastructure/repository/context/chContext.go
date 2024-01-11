@@ -11,7 +11,7 @@ var CHContext *chContext
 // EsContext 链路追踪上下文
 type chContext struct {
 	TraceContextView    data.TableSet[model.TraceContextViewPO]    `data:"name=v_link_trace;migrate"`
-	TraceContext        data.TableSet[model.TraceContextPO]        `data:"name=link_trace;migrate=ReplacingMergeTree() ORDER BY (app_name,parent_app_name,app_ip,app_id,trace_id,start_ts) PARTITION BY toYYYYMM(create_at)"`
+	TraceContext        data.TableSet[model.TraceContextPO]        `data:"name=link_trace;migrate=ReplacingMergeTree() ORDER BY (trace_level,app_name,parent_app_name,app_ip,app_id,trace_id,start_ts) PARTITION BY toYYYYMM(create_at)"`
 	TraceDetailDatabase data.TableSet[model.TraceDetailDatabasePO] `data:"name=trace_detail_database;migrate=ReplacingMergeTree() ORDER BY (app_name,parent_app_name,app_ip,app_id,trace_id,db_name,table_name,start_ts) PARTITION BY toYYYYMM(create_at)"`
 	TraceDetailEs       data.TableSet[model.TraceDetailEsPO]       `data:"name=trace_detail_es;migrate=ReplacingMergeTree() ORDER BY (app_name,parent_app_name,app_ip,app_id,trace_id,index_name,aliases_name,start_ts) PARTITION BY toYYYYMM(create_at)"`
 	TraceDetailEtcd     data.TableSet[model.TraceDetailEtcdPO]     `data:"name=trace_detail_etcd;migrate=ReplacingMergeTree() ORDER BY (app_name,parent_app_name,app_ip,app_id,trace_id,key,start_ts) PARTITION BY toYYYYMM(create_at)"`

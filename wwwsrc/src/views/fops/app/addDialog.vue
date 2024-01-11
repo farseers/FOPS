@@ -83,7 +83,7 @@ import {friendlyJSONstringify} from "@intlify/shared";
 // 引入 api 请求接口
 const serverApi = fopsApi();
 // 定义子组件向父组件传值/事件
-const emit = defineEmits(['refresh']);
+const emit = defineEmits(['refresh','showOverlay','hideOverlay']);
 const { proxy } = getCurrentInstance() as any;
 // 定义变量内容
 const gitDialogFormRef = ref();
@@ -260,7 +260,7 @@ const onSubmit = () => {
     "DockerNodeRole":state.ruleForm.DockerNodeRole,
     "AdditionalScripts":state.ruleForm.AdditionalScripts,
   }
-
+  emit('showOverlay');
 	if (state.dialog.type === 'add') {
     var json=JSON.stringify(param)
     serverApi.appsAdd(json).then(function (res){
@@ -271,6 +271,7 @@ const onSubmit = () => {
       }else{
         ElMessage.error(res.StatusMessage)
       }
+      emit('hideOverlay');
     })
 
   }else if (state.dialog.type=='edit'){
@@ -282,6 +283,7 @@ const onSubmit = () => {
       }else{
         ElMessage.error(res.StatusMessage)
       }
+      emit('hideOverlay');
     })
 
   }

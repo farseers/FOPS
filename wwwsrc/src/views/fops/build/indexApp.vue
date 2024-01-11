@@ -95,14 +95,20 @@
       </el-container>
     </el-card>
 
-  <appDialog ref="appDialogRef" @refresh="getTableData()" />
-  <appAddDialog ref="appAddDialogRef" @refresh="getTableData()" />
+  <appDialog ref="appDialogRef" @refresh="getTableData()" @showOverlay="onShowOverlay()" @hideOverlay="onHideOverlay()" />
+  <appAddDialog ref="appAddDialogRef" @refresh="getTableData()" @showOverlay="onShowOverlay()" @hideOverlay="onHideOverlay()" />
     <logDialog ref="logDialogRef"  />
   <el-dialog title="构建日志" v-model="state.logDialogIsShow" style="width: 80%;height: 85%;top:20px;margin-bottom: 50px">
     <el-card shadow="hover" class="layout-padding-auto" style="background-color:#393d49;overflow: auto;">
       <pre style="color: #fff;background-color:#393d49;height: 100%;" v-html="state.logContent"></pre>
     </el-card>
   </el-dialog>
+
+    <div v-if="state.showOverlay" class="overlay">
+      <div class="overlay-content">
+        <img :src="Image" style="width: 200px" alt="Image">
+      </div>
+    </div>
   </div>
 </template>
 
@@ -111,7 +117,7 @@
 import {defineAsyncComponent, reactive, onMounted, ref, nextTick, watch, onUnmounted} from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import {fopsApi} from "/@/api/fops";
-
+import Image from '/@/assets/loading.gif';
 // var idPre = document.getElementById('idPre');
 // idPre.scrollIntoView(false); // 滚动到底部
 
@@ -119,7 +125,9 @@ import {fopsApi} from "/@/api/fops";
 const serverApi = fopsApi();
 
 // 引入组件
+// 修改弹窗
 const appDialog = defineAsyncComponent(() => import('/@/views/fops/app/dialog.vue'));
+// 添加弹窗
 const appAddDialog = defineAsyncComponent(() => import('/@/views/fops/app/addDialog.vue'));
 
 // 日志
@@ -153,6 +161,7 @@ const state = reactive({
   logId:0,
   clusterId:0,
   clusterData:[],
+  showOverlay:false,
 });
 
 // 初始化表格数据
@@ -236,6 +245,7 @@ const onOpenEdit = (type: string, row: any) => {
   appDialogRef.value.openDialog(type, row);
 };
 
+
 // 清除镜像
 const onClearDockerImage = () => {
   ElMessageBox.confirm(`此操作将永久清除：“None镜像”，是否继续?`, '提示', {
@@ -244,7 +254,7 @@ const onClearDockerImage = () => {
     type: 'warning',
   })
       .then(() => {
-        state.tableData.loading = true;
+        state.showOverlay=true
         // 删除逻辑
         serverApi.dockerClearImage().then(function (res){
           if (res.Status){
@@ -252,8 +262,8 @@ const onClearDockerImage = () => {
           }else{
             ElMessageBox.alert(res.StatusMessage,'Warning',{ type: 'warning',dangerouslyUseHTMLString: true})
           }
+          state.showOverlay=false
         })
-        state.tableData.loading = false;
       })
       .catch(() => {});
 };
@@ -307,7 +317,12 @@ const onShowLog=()=>{
     state.logContent=res
   })
 }
-
+const onShowOverlay=()=>{
+  state.showOverlay=true
+}
+const onHideOverlay=()=>{
+  state.showOverlay=false
+}
 // 构建
 const onBuildAdd = (row:any) => {
   ElMessageBox.confirm(`请确认是否添加构建?`, '提示', {
@@ -562,5 +577,22 @@ onUnmounted(()=>{
 }
 .el-space__item .el-card__body{
   background-color: #f9f9e3;
+}
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.overlay-content {
+  text-align: center;
+  color: white;
 }
 </style>

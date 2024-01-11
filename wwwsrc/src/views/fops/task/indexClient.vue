@@ -61,12 +61,12 @@
             <span>内存百分比：{{scope.row.MemoryUsage}}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="Jobs" label="Jobs">
+        <el-table-column prop="Jobs" label="Jobs" show-overflow-tooltip>
           <template #default="scope">
             <el-tag
                 v-for="(tag, index) in scope.row.Jobs"
                 :key="index">
-              {{ tag.Name }}-{{tag.Ver}}
+              【{{ tag.Name }}-{{tag.Ver}}】
             </el-tag>
           </template>
         </el-table-column>

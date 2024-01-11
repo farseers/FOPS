@@ -169,8 +169,10 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 			nextEntry := receiver.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
 				return item.ParentAppName == detailTrace.AppName && item.TraceLevel == po.TraceLevel+1
 			}).First()
-			receiver.PreDetail = baseDetailPO
-			receiver.addEntry(nextEntry)
+			if nextEntry.TraceId != "" {
+				receiver.PreDetail = baseDetailPO
+				receiver.addEntry(nextEntry)
+			}
 		}
 	}
 }

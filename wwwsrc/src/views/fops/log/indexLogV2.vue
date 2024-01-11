@@ -5,7 +5,7 @@
         <label>TraceId</label>
         <el-input size="default" v-model="state.traceId" placeholder="链路ID" style="max-width: 180px;padding-left: 5px"> </el-input>
         <label class="ml10">应用名称</label>
-        <el-select class="ml10" style="max-width: 150px;" size="small" v-model="state.appName">
+        <el-select class="ml10" style="max-width: 110px;" size="small" v-model="state.appName">
           <el-option label="全部" value=""></el-option>
           <el-option v-for="item in state.appData" :label="item.AppName" :value="item.AppName" ></el-option>
         </el-select>

@@ -2,8 +2,10 @@
 	<div class="system-user-container layout-padding">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="system-user-search mb15">
+        <label>TraceId</label>
+        <el-input size="default" v-model="state.traceId" placeholder="链路ID" style="max-width: 165px;margin-left: 5px;margin-right: 5px;"> </el-input>
         <label>应用</label>
-        <el-select class="ml10" style="max-width: 150px;" size="small" v-model="state.appName">
+        <el-select class="ml10" style="max-width: 110px;" size="small" v-model="state.appName">
           <el-option label="全部" value=""></el-option>
           <el-option v-for="item in state.appData" :label="item.AppName" :value="item.AppName" ></el-option>
         </el-select>
@@ -132,6 +134,7 @@ const getTableData = () => {
 	state.tableData.loading = true;
 
   var data={
+    traceId:state.traceId,
     appName:state.appName,
     appIp:state.appIp,
     dbName:state.dbName,

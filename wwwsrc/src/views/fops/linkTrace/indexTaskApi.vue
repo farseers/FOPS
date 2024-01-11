@@ -2,13 +2,15 @@
 	<div class="system-user-container layout-padding">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="system-user-search mb15">
+        <label>TraceId</label>
+        <el-input size="default" v-model="state.traceId" placeholder="链路ID" style="max-width: 165px;margin-left: 5px;margin-right: 5px;"> </el-input>
         <label>应用</label>
-        <el-select class="ml10" style="max-width: 150px;" size="small" v-model="state.appName">
+        <el-select class="ml10" style="max-width: 110px;" size="small" v-model="state.appName">
           <el-option label="全部" value=""></el-option>
           <el-option v-for="item in state.appData" :label="item.AppName" :value="item.AppName" ></el-option>
         </el-select>
         <label class="ml10">执行端IP</label>
-        <el-input size="default" v-model="state.appIp" placeholder="执行端IP" clearable style="max-width: 120px;padding-left: 5px"> </el-input>
+        <el-input size="default" v-model="state.appIp" placeholder="执行端IP" clearable style="max-width: 130px;padding-left: 5px"> </el-input>
         <label class="ml10">任务名称</label>
         <el-input size="default" v-model="state.taskName" placeholder="任务名称" clearable style="max-width: 180px;padding-left: 5px"> </el-input>
         <label class="ml10">往前推N分钟的数据</label>
@@ -135,6 +137,7 @@ const getTableData = () => {
 	state.tableData.loading = true;
 
   var data={
+    traceId:state.traceId,
     appName:state.appName,
     appIp:state.appIp,
     taskName:state.taskName,

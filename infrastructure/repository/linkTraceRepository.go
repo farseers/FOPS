@@ -313,6 +313,10 @@ func (receiver *linkTraceRepository) saveDetail(lst collections.List[model.Trace
 		for _, detail := range traceContext.List {
 			m := detail.(map[string]any)
 			baseDetailPO := mapper.Single[model.BaseTraceDetailPO](m)
+			if m["Exception"] != nil {
+				_ = mapper.Auto(m["Exception"].(map[string]any), &baseDetailPO)
+
+			}
 			switch baseDetailPO.CallType {
 			case eumCallType.Database:
 				detailPO := mapper.Single[model.TraceDetailDatabasePO](m)

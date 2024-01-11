@@ -13,6 +13,7 @@ type TraceContextPO struct {
 	AppName           string            `gorm:"not null;default:'';comment:应用名称"`
 	AppIp             string            `gorm:"not null;default:'';comment:应用IP"`
 	ParentAppName     string            `gorm:"not null;default:'';comment:上游应用"`
+	TraceLevel        int               `gorm:"not null;default:0;comment:逐层递增（显示上下游顺序）"`
 	StartTs           int64             `gorm:"not null;default:0;comment:调用开始时间戳（微秒）"`
 	EndTs             int64             `gorm:"not null;default:0;comment:调用结束时间戳（微秒）"`
 	UseTs             time.Duration     `gorm:"not null;default:0;comment:总共使用时间（微秒）"`

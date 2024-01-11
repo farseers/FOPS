@@ -31,8 +31,8 @@
           <template #default="scope">
           <div style="float: left;padding-right: 10px;padding-top: 5px">
             <el-tag v-if="scope.row.Status==0">刚上线</el-tag>
-            <el-tag v-if="scope.row.Status==1">无法调度</el-tag>
-            <el-tag v-if="scope.row.Status==2">接受调度</el-tag>
+            <el-tag v-if="scope.row.Status==1">接受调度</el-tag>
+            <el-tag v-if="scope.row.Status==2">无法调度</el-tag>
             <el-tag v-if="scope.row.Status==3">拒绝调度</el-tag>
             <el-tag v-if="scope.row.Status==4">离线</el-tag>
           </div>

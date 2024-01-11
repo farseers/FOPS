@@ -1,6 +1,6 @@
 package response
 
-import "fops/infrastructure/repository/model"
+import "github.com/farseer-go/fs/trace"
 
 // "245,108,108,0.4"
 var RgbaList = []string{"95,184,120,0.4", "65,105,225,0.4", "219,112,147,0.4", "128,0,128,0.4", "153,50,204,0.4", "123,104,238,0.4", "119,136,153,0.4", "70,130,180,0.4", "0,139,139,0.4", "34,139,34,0.4", "128,128,0,0.4", "238,232,170,0.4", "218,165,32,0.4", "255,165,0,0.4", "255,140,0,0.4", "210,105,30,0.4"}
@@ -17,5 +17,5 @@ type LinkTraceVO struct {
 	UseDesc   string  // 使用时间（描述）
 	Caption   string  // 标题
 	Desc      string  // tips描述
-	Exception *model.ExceptionStackPO
+	Exception *trace.ExceptionStack
 }

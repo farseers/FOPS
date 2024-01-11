@@ -16,30 +16,34 @@
                 <el-tag size="small" v-else type="success">{{state.UseDesc}}</el-tag>
             </div>
             <!--webapi-->
-            <div class="mt10" v-if="state.TraceType == 0">
-              <el-tag size="small">{{state.WebStatusCode}}</el-tag> {{state.WebRequestIp}} <el-tag type="success" size="small">{{state.WebMethod}}</el-tag>
-              <el-tag v-if="state.WebContentType!=''" type="info" size="small">{{state.WebContentType}}</el-tag>{{state.WebPath}}
-              <el-button style="margin-left: 20px" type="primary" @click="onShow()" size="small">查看报文</el-button>
+            <div class="mt10">
+              <span v-if="state.TraceType == 0">
+                <el-tag size="small">{{state.WebStatusCode}}</el-tag> {{state.WebRequestIp}} <el-tag type="success" size="small">{{state.WebMethod}}</el-tag>
+                <el-tag v-if="state.WebContentType!=''" type="info" size="small">{{state.WebContentType}}</el-tag>{{state.WebPath}}
+                <el-button style="margin-left: 20px" type="primary" @click="onShow()" size="small">查看报文</el-button>
+              </span>
+              <!--MqConsumer--> <!--QueueConsumer-->
+              <span v-else-if="state.TraceType == 1 || state.TraceType == 2">
+                {{state.ConsumerServer}}
+                <el-tag v-if="state.ConsumerRoutingKey !=''" size="small">{{state.ConsumerRoutingKey}}</el-tag>
+                <br v-if="state.ConsumerRoutingKey !=''" />
+                {{state.ConsumerQueueName}}
+              </span>
+              <!--FSchedule--> <!--Task-->
+              <span v-else-if="state.TraceType == 3 || state.TraceType == 4">
+                <el-tag v-if="state.TaskGroupId >0" size="small">任务组Id：{{state.TaskGroupId}}</el-tag>
+                <el-tag v-if="state.TaskId >0" size="small" type="success">任务Id：{{state.TaskId}}</el-tag>
+                {{state.TaskName}}
+              </span>
+              <!--WatchKey-->
+              <span v-else-if="state.TraceType == 5"></span>
               <el-button style="margin-left: 20px" size="small" type="success" @click="showLog()">查看日志</el-button>
-            </div>
-            <!--MqConsumer--> <!--QueueConsumer-->
-            <div class="mt10" v-else-if="state.TraceType == 1 || state.TraceType == 2">
-              {{state.ConsumerServer}}
-              <el-tag v-if="state.ConsumerRoutingKey !=''" size="small">{{state.ConsumerRoutingKey}}</el-tag>
-              <br v-if="state.ConsumerRoutingKey !=''" />
-              {{state.ConsumerQueueName}}
-              <el-button style="margin-left: 20px" size="small" type="success" @click="showLog()">查看日志</el-button>
-            </div>
-            <!--FSchedule--> <!--Task-->
-            <div class="mt10" v-else-if="state.TraceType == 3 || state.TraceType == 4">
-              <el-tag v-if="state.TaskGroupId >0" size="small">任务组Id：{{state.TaskGroupId}}</el-tag>
-              <el-tag v-if="state.TaskId >0" size="small" type="success">任务Id：{{state.TaskId}}</el-tag>
-              {{state.TaskName}}
-              <el-button style="margin-left: 20px" size="small" type="success" @click="showLog()">查看日志</el-button>
-            </div>
-            <!--WatchKey-->
-            <div class="mt10" v-else-if="state.TraceType == 5">
-              <el-button style="margin-left: 20px" size="small" type="success" @click="showLog()">查看日志</el-button>
+              <div v-if="state.Exception!=null" class="mt5">
+              <el-tag type="danger">
+                异常：{{state.Exception.ExceptionCallFile}}:{{state.Exception.ExceptionCallLine}} {{state.Exception.ExceptionCallFuncName}}
+                {{state.Exception.ExceptionMessage}}
+              </el-tag>
+              </div>
             </div>
             <div :style="{'width':'95%','white-space': 'nowrap'}">
             <ul class="custom-list mt10">
@@ -62,6 +66,7 @@
                           <div class="el-progress-bar__inner" :style="{'height': '21px','width': '100%', 'animation-duration': '3s','text-align': 'left','background-color':'rgb('+info.Rgba+')'}">
                             <div class="el-progress-bar__innerText" style="color:#181818">
                               <el-tag size="small" style="margin-right: 5px;">{{info.AppName}}</el-tag>
+                              <el-tag size="small" style="margin-right: 5px;" v-if="info.Exception!=null" :title="info.Exception.ExceptionMessage" type="danger">【异常】</el-tag>
                               {{info.Caption}}
                               <span v-if="index > 0 && info.UseTs > 0">，耗时：
                                 <el-tag size="small" v-if="info.UseTs > 100000000" type="danger">{{info.UseDesc}}</el-tag>
@@ -73,11 +78,9 @@
                         </div>
                       </div>
                     </div>
-
-
                   </span>
-                  <span v-if="info.Exception!=null">异常：{{friendlyJSONstringify(info.Exception)}}</span>
-                  <span v-else></span>
+<!--                  <span v-if="info.Exception!=null">异常：{{friendlyJSONstringify(info.Exception)}}</span>-->
+<!--                  <span v-else></span>-->
                 </div>
               </li>
             </ul>
@@ -169,6 +172,7 @@ const state = reactive({
   ConsumerRoutingKey:'',
   ConsumerQueueName:'',
   CreateAt:'',
+  Exception:{},
 	dialog: {
 		isShowDialog: false,
 		type: '',
@@ -198,6 +202,11 @@ const openDialog = (row2: any) => {
       } else{
         state.spacePx = 60
       }
+
+      if (res.Data.Entry.TraceType == 0) {
+
+      }
+
       // 绑定数据
       state.tableData=res.Data.List
       state.AppId=res.Data.Entry.AppId
@@ -224,6 +233,7 @@ const openDialog = (row2: any) => {
       state.ConsumerRoutingKey=res.Data.Entry.ConsumerRoutingKey
       state.ConsumerQueueName=res.Data.Entry.ConsumerQueueName
       state.CreateAt=res.Data.Entry.CreateAt
+      state.Exception=res.Data.Entry.Exception
     }
   })
 	state.dialog.isShowDialog = true;

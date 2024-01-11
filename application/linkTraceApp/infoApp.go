@@ -6,6 +6,7 @@ import (
 	"fops/application/linkTraceApp/response"
 	"fops/domain/linkTrace"
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/fs/trace"
 	"github.com/farseer-go/fs/trace/eumCallType"
 	linkTraceCom "github.com/farseer-go/linkTrace"
@@ -32,7 +33,9 @@ func Info(traceId string, linkTraceRepository linkTrace.Repository) response.Lin
 
 	// 当A服务调用B服务时，前后均有可能包含数据库之类的操作。因此需要将lstPO重新组织。按实际的调用顺序重新排序
 	// 前端就可以简单的遍历lst显示到页面即可
-	entryPO := l.lstPO.First()
+	entryPO := l.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
+		return item.ParentAppName == "" // 不同服务的机器时间会有差异，不能直接通过start_ts来排序
+	}).First()
 	l.startTs = entryPO.StartTs
 	l.TotalUse += float64(entryPO.UseTs.Microseconds())
 	l.addEntry(entryPO)
@@ -47,7 +50,7 @@ func Info(traceId string, linkTraceRepository linkTrace.Repository) response.Lin
 	})
 
 	rsp := response.LinkTraceResponse{
-		Entry: l.lstPO.First(),
+		Entry: entryPO,
 		List:  l.lst,
 	}
 	rsp.Entry.List = nil
@@ -69,12 +72,13 @@ func (receiver *linkTraceWarp) addEntry(po linkTraceCom.TraceContext) {
 	// 添加服务的入口
 	entryTrace := response.LinkTraceVO{
 		Rgba: response.RgbaList[receiver.rgbaIndex], AppId: po.AppId, AppIp: po.AppIp, AppName: po.AppName, UseTs: float64(po.UseTs.Microseconds()), UseDesc: po.UseTs.String(),
-		StartTs: float64(po.StartTs - receiver.startTs),
+		StartTs:   float64(po.StartTs - receiver.startTs),
+		Exception: po.Exception,
 	}
 	entryTrace.StartRate = entryTrace.StartTs / receiver.TotalUse * 100
 	entryTrace.UseRate = entryTrace.UseTs / receiver.TotalUse * 100
 	// 通常说明不同服务间的机器时间不同步
-	if entryTrace.StartRate > 100 {
+	if entryTrace.StartRate > 100 || entryTrace.StartRate < 0 {
 		// 使用上一个入口的结束时间
 		entryTrace.StartRate = float64(receiver.PreDetail.EndTs-receiver.startTs) / receiver.TotalUse * 100
 	}
@@ -108,7 +112,9 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 		detailTrace := response.LinkTraceVO{
 			Rgba: response.RgbaList[receiver.rgbaIndex], AppId: po.AppId, AppIp: po.AppIp, AppName: po.AppName,
 			StartTs: float64(baseDetailPO.StartTs - receiver.startTs),
-			UseTs:   float64(baseDetailPO.UseTs.Microseconds()), UseDesc: baseDetailPO.UseTs.String()}
+			UseTs:   float64(baseDetailPO.UseTs.Microseconds()), UseDesc: baseDetailPO.UseTs.String(),
+			Exception: baseDetailPO.Exception,
+		}
 
 		detailTrace.StartRate = detailTrace.StartTs / receiver.TotalUse * 100
 		detailTrace.UseRate = detailTrace.UseTs / receiver.TotalUse * 100
@@ -157,10 +163,12 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 		}
 		receiver.lst.Add(detailTrace)
 
+		// 在明细执行期间，会穿插下游服务。所以通过查找的方式来获取下游。然后在回到当前明细
+		// a --> b -- > a  --> c -- b
 		if baseDetailPO.CallType == eumCallType.Http {
 			// 查找串联的服务
 			nextEntry := receiver.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
-				return item.ParentAppName == detailTrace.AppName
+				return item.ParentAppName == detailTrace.AppName && parse.ToFloat64(item.StartTs) >= detailTrace.StartTs
 			}).First()
 			receiver.PreDetail = baseDetailPO
 			receiver.addEntry(nextEntry)

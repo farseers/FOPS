@@ -10,7 +10,7 @@ import (
 
 // WebApiList WebApi链路追踪列表
 // @get webApiList
-func WebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode int, searchUseTs int64, startMin, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceContext] {
+func WebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode int, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceContext] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -23,12 +23,12 @@ func WebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode
 	requestIp = strings.TrimSpace(requestIp)
 	searchUrl = strings.TrimSpace(searchUrl)
 
-	return linkTraceRepository.ToWebApiList(traceId, appName, appIp, requestIp, searchUrl, statusCode, searchUseTs, startMin, pageSize, pageIndex)
+	return linkTraceRepository.ToWebApiList(traceId, appName, appIp, requestIp, searchUrl, statusCode, searchUseTs, onlyViewException, startMin, pageSize, pageIndex)
 }
 
 // TaskList Task链路追踪列表
 // @get taskList
-func TaskList(traceId, appName, appIp, taskName string, searchUseTs int64, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceContext] {
+func TaskList(traceId, appName, appIp, taskName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceContext] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -40,12 +40,12 @@ func TaskList(traceId, appName, appIp, taskName string, searchUseTs int64, start
 	appIp = strings.TrimSpace(appIp)
 	taskName = strings.TrimSpace(taskName)
 
-	return linkTraceRepository.ToTaskList(traceId, appName, appIp, taskName, searchUseTs, startMin, pageSize, pageIndex)
+	return linkTraceRepository.ToTaskList(traceId, appName, appIp, taskName, searchUseTs, onlyViewException, startMin, pageSize, pageIndex)
 }
 
 // FScheduleList FSchedule链路追踪列表
 // @get fScheduleList
-func FScheduleList(traceId, appName, appIp, taskName string, taskGroupId, taskId, searchUseTs int64, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceContext] {
+func FScheduleList(traceId, appName, appIp, taskName string, taskGroupId, taskId, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceContext] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -57,12 +57,12 @@ func FScheduleList(traceId, appName, appIp, taskName string, taskGroupId, taskId
 	appIp = strings.TrimSpace(appIp)
 	taskName = strings.TrimSpace(taskName)
 
-	return linkTraceRepository.ToFScheduleList(traceId, appName, appIp, taskName, taskGroupId, taskId, searchUseTs, startMin, pageSize, pageIndex)
+	return linkTraceRepository.ToFScheduleList(traceId, appName, appIp, taskName, taskGroupId, taskId, searchUseTs, onlyViewException, startMin, pageSize, pageIndex)
 }
 
 // ConsumerList Consumer链路追踪列表
 // @get consumerList
-func ConsumerList(traceId, appName, appIp, server, queueName, routingKey string, searchUseTs int64, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceContext] {
+func ConsumerList(traceId, appName, appIp, server, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceContext] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -76,5 +76,5 @@ func ConsumerList(traceId, appName, appIp, server, queueName, routingKey string,
 	queueName = strings.TrimSpace(queueName)
 	routingKey = strings.TrimSpace(routingKey)
 
-	return linkTraceRepository.ToConsumerList(traceId, appName, appIp, server, queueName, routingKey, searchUseTs, startMin, pageSize, pageIndex)
+	return linkTraceRepository.ToConsumerList(traceId, appName, appIp, server, queueName, routingKey, searchUseTs, onlyViewException, startMin, pageSize, pageIndex)
 }

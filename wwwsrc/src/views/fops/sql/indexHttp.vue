@@ -2,15 +2,17 @@
 	<div class="system-user-container layout-padding">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="system-user-search mb15">
-        <label>应用</label>
-        <el-select class="ml10" style="max-width: 150px;" size="small" v-model="state.appName">
+        <label>TraceId</label>
+        <el-input class="ml5" size="default" v-model="state.traceId" placeholder="链路ID" style="max-width: 165px;"> </el-input>
+        <label class="ml5">应用</label>
+        <el-select class="ml5" style="max-width: 110px;" size="small" v-model="state.appName">
           <el-option label="全部" value=""></el-option>
           <el-option v-for="item in state.appData" :label="item.AppName" :value="item.AppName" ></el-option>
         </el-select>
         <label class="ml10">执行端IP</label>
-        <el-input size="default" v-model="state.appIp" placeholder="执行端IP" style="max-width: 120px;padding-left: 5px"> </el-input>
+        <el-input class="ml5" size="default" v-model="state.appIp" placeholder="执行端IP" style="max-width: 120px;"></el-input>
         <label class="ml10">请求方法</label>
-        <el-select v-model="state.method" placeholder="请求方法" class="ml10" style="max-width: 110px;" size="small">
+        <el-select class="ml5" v-model="state.method" placeholder="请求方法" style="max-width: 110px;" size="small">
           <el-option label="全部" value=""></el-option>
           <el-option label="GET" value="GET"></el-option>
           <el-option label="POST" value="POST"></el-option>
@@ -18,18 +20,19 @@
           <el-option label="DELETE" value="DELETE"></el-option>
         </el-select>
         <label class="ml10">请求地址</label>
-        <el-input size="default" v-model="state.url" placeholder="请求地址" style="max-width: 180px;padding-left: 5px"> </el-input>
-        <label class="ml10">往前推N分钟的数据</label>
-        <el-select v-model="state.startMin" placeholder="往前推N分钟的数据" class="ml10" style="max-width: 150px;" size="small">
+        <el-input class="ml5" size="default" v-model="state.url" placeholder="请求地址" style="max-width: 180px;"> </el-input>
+        <label class="ml10">耗时最高</label>
+        <el-select class="ml5" v-model="state.startMin" placeholder="往前推N分钟的数据" style="max-width: 120px;" size="default">
           <el-option label="全部" :value="0"></el-option>
-          <el-option label="1小时耗时最高" :value="60"></el-option>
-          <el-option label="30分钟耗时最高" :value="30"></el-option>
-          <el-option label="10分钟耗时最高" :value="10"></el-option>
-          <el-option label="5分钟耗时最高" :value="5"></el-option>
-          <el-option label="1分钟耗时最高" :value="1"></el-option>
+          <el-option label="1小时最高" :value="60"></el-option>
+          <el-option label="30分钟最高" :value="30"></el-option>
+          <el-option label="10分钟最高" :value="10"></el-option>
+          <el-option label="5分钟最高" :value="5"></el-option>
+          <el-option label="1分钟最高" :value="1"></el-option>
         </el-select>
         <label class="ml10">执行时间</label>
-        <el-input size="default" v-model="state.searchUseTs" placeholder="执行时间大于毫秒的记录" style="max-width: 80px;padding-left: 5px"> </el-input> ms
+        <el-input class="ml5" size="default" v-model="state.searchUseTs" placeholder="执行时间大于毫秒的记录" style="max-width: 80px;"> </el-input> ms
+        <el-checkbox v-model="state.onlyViewException" label="仅看异常" size="small" class="ml5" style="color:#ff5000;"/>
 				<el-button size="default" type="primary" class="ml10" @click="onQuery">
 					<el-icon>
 						<ele-Search />
@@ -65,8 +68,8 @@
         </el-table-column>
         <el-table-column width="300px" label="异常" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small" v-if="scope.row.Exception!=null">{{scope.row.Exception.ExceptionCallFile}}:{{scope.row.Exception.ExceptionCallLine}} {{scope.row.Exception.ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.Exception!=null">
-            <el-tag size="small" v-if="scope.row.Exception!=null">{{scope.row.Exception.ExceptionMessage}}</el-tag>
+            <el-tag size="small" v-if="scope.row.Exception!=null" type="danger">{{scope.row.Exception.ExceptionCallFile}}:{{scope.row.Exception.ExceptionCallLine}} {{scope.row.Exception.ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.Exception!=null">
+            <el-tag size="small" v-if="scope.row.Exception!=null" type="danger">{{scope.row.Exception.ExceptionMessage}}</el-tag>
             <el-tag size="small" v-else type="info">无</el-tag>
           </template>
         </el-table-column>
@@ -115,11 +118,13 @@ const detailDialogRef = ref();
 const showDialogRef = ref();
 const state = reactive({
   appName:'',
+  traceId:'',
   appIp:'',
   method:'',
   url:'',
   startMin:0,
   searchUseTs:0,
+  onlyViewException:false,
 	tableData: {
 		data: [],
 		total: 0,
@@ -148,12 +153,14 @@ const getTableData = () => {
 	state.tableData.loading = true;
 
   var data={
+    traceId:state.traceId,
     appName:state.appName,
     appIp:state.appIp,
     method:state.method,
     url:state.url,
     startMin:state.startMin.toString(),
     searchUseTs:state.searchUseTs.toString(),
+    onlyViewException:state.onlyViewException,
     pageSize:state.tableData.param.pageSize.toString(),
     pageIndex:state.tableData.param.pageNum.toString(),
   }

@@ -120,6 +120,7 @@ const state = reactive({
   searchUseTs:0,
   taskId:'',
   startMin:0,
+  onlyViewException:false,
 	tableData: {
 		data: [],
 		total: 0,
@@ -152,6 +153,7 @@ const getTableData = () => {
     startMin:state.startMin.toString(),
     searchUseTs:state.searchUseTs.toString(),
     taskId:state.taskId.toString(),
+    onlyViewException:state.onlyViewException,
     pageSize:state.tableData.param.pageSize.toString(),
     pageIndex:state.tableData.param.pageNum.toString(),
   }

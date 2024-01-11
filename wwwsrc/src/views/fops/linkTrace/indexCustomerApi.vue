@@ -119,6 +119,7 @@ const state = reactive({
   routingKey:'',
   searchUseTs:0,
   startMin:0,
+  onlyViewException:false,
 	tableData: {
 		data: [],
 		total: 0,
@@ -151,6 +152,7 @@ const getTableData = () => {
     startMin:state.startMin.toString(),
     searchUseTs:state.searchUseTs.toString(),
     routingKey:state.routingKey,
+    onlyViewException:state.onlyViewException,
     pageSize:state.tableData.param.pageSize.toString(),
     pageIndex:state.tableData.param.pageNum.toString(),
   }

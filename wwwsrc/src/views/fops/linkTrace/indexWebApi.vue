@@ -155,6 +155,7 @@ const getTableData = () => {
     startMin:state.startMin.toString(),
     searchUseTs:state.searchUseTs.toString(),
     statusCode:state.statusCode.toString(),
+    onlyViewException:state.onlyViewException,
     pageSize:state.tableData.param.pageSize.toString(),
     pageIndex:state.tableData.param.pageNum.toString(),
   }

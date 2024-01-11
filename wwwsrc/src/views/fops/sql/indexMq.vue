@@ -60,8 +60,8 @@
         <el-table-column prop="RoutingKey" label="路由KEY" show-overflow-tooltip></el-table-column>
         <el-table-column width="300px" label="异常" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small" v-if="scope.row.Exception!=null">{{scope.row.Exception.ExceptionCallFile}}:{{scope.row.Exception.ExceptionCallLine}} {{scope.row.Exception.ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.Exception!=null">
-            <el-tag size="small" v-if="scope.row.Exception!=null">{{scope.row.Exception.ExceptionMessage}}</el-tag>
+            <el-tag size="small" v-if="scope.row.Exception!=null" type="danger">{{scope.row.Exception.ExceptionCallFile}}:{{scope.row.Exception.ExceptionCallLine}} {{scope.row.Exception.ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.Exception!=null">
+            <el-tag size="small" v-if="scope.row.Exception!=null" type="danger">{{scope.row.Exception.ExceptionMessage}}</el-tag>
             <el-tag size="small" v-else type="info">无</el-tag>
           </template>
         </el-table-column>

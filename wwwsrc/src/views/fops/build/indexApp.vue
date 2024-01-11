@@ -357,12 +357,14 @@ const onRestartDocker = (row:any) => {
     type: 'warning',
   })
       .then(() => {
+        state.showOverlay=true
         // 提交数据
         var param={
           "AppName":row.AppName,
           "ClusterId":state.clusterId,
         }
         serverApi.restartDocker(param).then(async function(res){
+          state.showOverlay=false
           if(res.Status){
             ElMessage.success("重启成功")
             // 刷新应用界面
@@ -372,7 +374,8 @@ const onRestartDocker = (row:any) => {
           }
         })
       })
-      .catch(() => {});
+      .catch(() => {
+        state.showOverlay=false});
 };
 // 同步版本
 const onSyncDockerVer = (row:any) => {
@@ -382,12 +385,14 @@ const onSyncDockerVer = (row:any) => {
     type: 'warning',
   })
       .then(() => {
+        state.showOverlay=true
         // 提交数据
         var param={
           "appName":row.AppName,
           "clusterId":state.clusterId,
         }
         serverApi.syncDockerImage(param).then(async function(res){
+          state.showOverlay=false
           if(res.Status){
             ElMessage.success("同步成功")
             // 刷新构建日志
@@ -397,7 +402,8 @@ const onSyncDockerVer = (row:any) => {
           }
         })
       })
-      .catch(() => {});
+      .catch(() => {
+        state.showOverlay=false});
 };
 // 全部构建
 const onAllBuild=()=>{

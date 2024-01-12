@@ -312,12 +312,14 @@ func (receiver *linkTraceRepository) saveDetail(lst collections.List[model.Trace
 	lst.Foreach(func(traceContext *model.TraceContextPO) {
 		for _, detail := range traceContext.List {
 			m := detail.(map[string]any)
-			baseDetailPO := mapper.Single[model.BaseTraceDetailPO](m)
-			if m["Exception"] != nil {
-				_ = mapper.Auto(m["Exception"].(map[string]any), &baseDetailPO)
-
+			var callType eumCallType.Enum
+			if m["CallType"] != nil {
+				callType = eumCallType.Enum(parse.ToInt(m["CallType"]))
 			}
-			switch baseDetailPO.CallType {
+			if m["Exception"] != nil {
+				fmt.Sprintf("")
+			}
+			switch callType {
 			case eumCallType.Database:
 				detailPO := mapper.Single[model.TraceDetailDatabasePO](m)
 				lstTraceDetailDatabase.Add(detailPO)

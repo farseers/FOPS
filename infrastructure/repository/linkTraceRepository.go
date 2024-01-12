@@ -316,9 +316,6 @@ func (receiver *linkTraceRepository) saveDetail(lst collections.List[model.Trace
 			if m["CallType"] != nil {
 				callType = eumCallType.Enum(parse.ToInt(m["CallType"]))
 			}
-			if m["Exception"] != nil {
-				fmt.Sprintf("")
-			}
 			switch callType {
 			case eumCallType.Database:
 				detailPO := mapper.Single[model.TraceDetailDatabasePO](m)

@@ -6,6 +6,7 @@ import (
 	"fops/domain/register"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/core"
+	"github.com/farseer-go/fs/trace"
 	"github.com/farseer-go/mapper"
 	"github.com/farseer-go/tasks"
 	"strings"
@@ -13,6 +14,10 @@ import (
 
 // StatAppOnlineJob 统计应用的在线实例
 func StatAppOnlineJob(*tasks.TaskContext) {
+	if traceContext := trace.CurTraceContext.Get(); traceContext != nil {
+		traceContext.Ignore()
+	}
+
 	registerRepository := container.Resolve[register.Repository]()
 	appsRepository := container.Resolve[apps.Repository]()
 	lstGroupBy := registerRepository.StatRegisterApp()

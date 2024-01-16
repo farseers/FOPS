@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// GitCloneOrPulledConsumer 更新git拉取时间
 func GitCloneOrPulledConsumer(message any, ea core.EventArgs) {
 	appsRepository := container.Resolve[apps.Repository]()
 	gitCloneOrPulledEvent := message.(event.GitCloneOrPulledEvent)

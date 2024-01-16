@@ -37,9 +37,9 @@ func (module Module) PostInitialize() {
 	device.RegisterKubectlDevice()
 	device.RegisterShellDevice()
 
-	eventBus.Subscribe(event.BuildFinishedEventName, domainEvent.BuildFinishedConsumer)
-	eventBus.Subscribe(event.DockerPushedEventName, domainEvent.DockerPushedConsumer)
-	eventBus.Subscribe(event.GitCloneOrPulledEventName, domainEvent.GitCloneOrPulledConsumer)
+	eventBus.RegisterEvent(event.BuildFinishedEventName).RegisterSubscribe("更新应用的版本信息", domainEvent.BuildFinishedConsumer)
+	eventBus.RegisterEvent(event.DockerPushedEventName).RegisterSubscribe("docker推送完成事件", domainEvent.DockerPushedConsumer)
+	eventBus.RegisterEvent(event.GitCloneOrPulledEventName).RegisterSubscribe("更新git拉取时间", domainEvent.GitCloneOrPulledConsumer)
 
 	// 启用链路追踪写入CH
 	linkTrace.Config = configure.ParseConfig[linkTrace.ConfigEO]("Fops.LinkTrace")

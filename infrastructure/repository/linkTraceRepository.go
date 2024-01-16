@@ -121,7 +121,7 @@ func (receiver *linkTraceRepository) ToFScheduleList(traceId, appName, appIp, ta
 func (receiver *linkTraceRepository) ToConsumerList(traceId, appName, appIp, server, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
 		ts := context.CHContext.TraceContextView.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,create_at,exception,consumer_server,consumer_queue_name,consumer_routing_key").
-			Where("(trace_type = ? or trace_type = ?) and parent_app_name = ''", eumTraceType.MqConsumer, eumTraceType.QueueConsumer).
+			Where("trace_type = ? or ((trace_type = ? or trace_type = ?) and parent_app_name = '')", eumTraceType.EventConsumer, eumTraceType.MqConsumer, eumTraceType.QueueConsumer).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
 			WhereIf(appIp != "", "app_ip = ?", appIp).

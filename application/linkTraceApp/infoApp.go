@@ -86,17 +86,19 @@ func (receiver *linkTraceWarp) addEntry(po linkTraceCom.TraceContext) {
 		entryTrace.Caption = fmt.Sprintf("收到%s请求【%s】 => %s", po.WebRequestIp, po.WebMethod, po.WebPath)
 		entryTrace.Desc = fmt.Sprintf("%s 客户端IP：%s", po.WebContentType, po.WebRequestIp)
 	case eumTraceType.MqConsumer:
-		entryTrace.Caption = fmt.Sprintf("MQ消费 %s %s %s", po.ConsumerServer, po.ConsumerQueueName, po.ConsumerRoutingKey)
+		entryTrace.Caption = fmt.Sprintf("MQ订阅 => %s %s %s", po.ConsumerServer, po.ConsumerQueueName, po.ConsumerRoutingKey)
 	case eumTraceType.QueueConsumer:
-		entryTrace.Caption = fmt.Sprintf("本地Queue消费 %s", po.ConsumerQueueName)
+		entryTrace.Caption = fmt.Sprintf("本地Queue订阅 => %s", po.ConsumerQueueName)
+	case eumTraceType.EventConsumer:
+		entryTrace.Caption = fmt.Sprintf("事件订阅 => %s %s", po.ConsumerServer, po.ConsumerQueueName)
 	case eumTraceType.FSchedule:
-		entryTrace.Caption = fmt.Sprintf("任务调度 任务组：%s 任务ID：%v", po.TaskGroupName, po.TaskId)
+		entryTrace.Caption = fmt.Sprintf("任务调度 => 任务组：%s 任务ID：%v", po.TaskGroupName, po.TaskId)
 		dataJson, _ := po.TaskData.MarshalJSON()
 		entryTrace.Desc = fmt.Sprintf("参数 %s", string(dataJson))
 	case eumTraceType.Task:
-		entryTrace.Caption = fmt.Sprintf("本地任务 %s", po.TaskName)
+		entryTrace.Caption = fmt.Sprintf("本地任务 => %s", po.TaskName)
 	case eumTraceType.WatchKey:
-		entryTrace.Caption = fmt.Sprintf("监控KEY %s", po.WatchKey)
+		entryTrace.Caption = fmt.Sprintf("监控KEY => %s", po.WatchKey)
 	}
 	receiver.lst.Add(entryTrace)
 	receiver.addDetail(po)
@@ -159,12 +161,15 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 		case *linkTraceCom.TraceDetailHand:
 			detailTrace.Caption = fmt.Sprintf("手动埋点 => %s", detailPO.Name)
 			detailTrace.Desc = fmt.Sprintf("%s", detailPO.Name)
+		case *linkTraceCom.TraceDetailEventConsumer:
+			detailTrace.Caption = fmt.Sprintf("事件订阅 => %s", detailPO.Name)
+			detailTrace.Desc = fmt.Sprintf("%s", detailPO.Name)
 		}
 		receiver.lst.Add(detailTrace)
 
 		// 在明细执行期间，会穿插下游服务。所以通过查找的方式来获取下游。然后在回到当前明细
 		// a --> b -- > a  --> c -- b
-		if baseDetailPO.CallType == eumCallType.Http {
+		if baseDetailPO.CallType == eumCallType.Http || baseDetailPO.CallType == eumCallType.EventPublish {
 			// 查找串联的服务
 			nextEntry := receiver.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
 				return item.ParentAppName == detailTrace.AppName && item.TraceLevel == po.TraceLevel+1

@@ -13,6 +13,7 @@ import (
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/str"
 	"os"
+	"regexp"
 	"strconv"
 )
 
@@ -192,4 +193,17 @@ func (dockerDevice) Restart(cluster cluster.DomainObject, appName string, progre
 	}
 	progress <- "Docker Swarm的容器重启完成。"
 	return true
+}
+
+func (dockerDevice) GetVersion() string {
+	receiveOutput := make(chan string, 100)
+	exec.RunShell("docker version --format '{{.Server.Version}}'", receiveOutput, nil, "")
+	lst := collections.NewListFromChan(receiveOutput)
+	re := regexp.MustCompile(`^\d+\.\d+\.\d+$`)
+	for _, s := range lst.ToArray() {
+		if re.MatchString(s) {
+			return s
+		}
+	}
+	return ""
 }

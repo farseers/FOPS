@@ -44,6 +44,8 @@ type IDockerDevice interface {
 	CreateService(appName, dockerNodeRole, additionalScripts, dockerNetwork string, dockerReplicas int, dockerImages string, progress chan string, ctx context.Context) bool
 	// DeleteService 删除容器服务
 	DeleteService(appName string, progress chan string) bool
+	// GetVersion 获取版本
+	GetVersion() string
 }
 
 type IGitDevice interface {

@@ -8,6 +8,7 @@ import (
 	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/str"
+	"github.com/timandy/routine"
 	"path/filepath"
 	"sync"
 )
@@ -94,12 +95,12 @@ func (device *gitDevice) CloneOrPullAndDependent(lstGit []apps.GitEO, progress c
 	for _, git := range lstGit {
 		sw.Add(1)
 		g := git
-		go func() {
+		routine.Go(func() {
 			defer sw.Done()
 			if !device.CloneOrPull(g, progress, ctx) {
 				result = false
 			}
-		}()
+		})
 	}
 	sw.Wait()
 	if result {

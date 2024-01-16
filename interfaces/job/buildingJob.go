@@ -11,8 +11,8 @@ import (
 func BuildingJob(*tasks.TaskContext) {
 	appsRepository := container.Resolve[apps.Repository]()
 	buildEO := appsRepository.GetUnBuildInfo()
-	if buildEO.IsNil() {
-		trace.CurTraceContext.Get().Ignore()
+	if traceContext := trace.CurTraceContext.Get(); traceContext != nil && buildEO.IsNil() {
+		traceContext.Ignore()
 		return
 	}
 

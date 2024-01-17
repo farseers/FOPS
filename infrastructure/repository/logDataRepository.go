@@ -1,6 +1,7 @@
 package repository
 
 import (
+	_ "embed"
 	"fmt"
 	"fops/domain/linkTrace"
 	"fops/domain/logData"
@@ -57,19 +58,11 @@ func (receiver *logDataRepository) ToInfo(id string) flog.LogData {
 	return do
 }
 
-func (receiver *logDataRepository) StatCount(appName string) collections.List[logData.LogCountEO] {
-	query := fmt.Sprintf(`
-			SELECT
-				COUNT(*) AS log_count,
-				log_level
-			FROM
-				linkTrace.log_data
-			WHERE
-				app_name='%s' and create_at >= (NOW() - INTERVAL 30 MINUTE)
-			GROUP BY
-				log_level;
-	`, appName)
+//go:embed model/sql/statLogCount.sql
+var statLogCountSql string
+
+func (receiver *logDataRepository) StatCount() collections.List[logData.LogCountEO] {
 	var array []logData.LogCountEO
-	_, _ = context.CHContext.ExecuteSqlToResult(&array, query)
+	_, _ = context.CHContext.ExecuteSqlToResult(&array, statLogCountSql)
 	return mapper.ToList[logData.LogCountEO](array)
 }

@@ -73,22 +73,25 @@ func Delete(appName string, appsRepository apps.Repository, appsIDockerDevice ap
 func List(clusterId int64, appsRepository apps.Repository, logDataRepository logData.Repository) collections.List[response.AppsResponse] {
 	lstDO := appsRepository.ToList()
 	lstGit := appsRepository.ToGitListAll(-1)
+	countList := logDataRepository.StatCount()
 
 	lst := collections.NewList[response.AppsResponse]()
 	lstDO.Foreach(func(item *apps.DomainObject) {
-		countList := logDataRepository.StatCount(item.AppName)
 		item.ShellScript = ""
 		item.Dockerfile = ""
 		appsResponse := doToAppsResponse(clusterId, *item)
 		appsResponse.AppGitName = lstGit.Where(func(gitItem apps.GitEO) bool {
 			return item.AppGit == parse.ToInt64(gitItem.Id)
 		}).First().Name
-		appsResponse.LogErrorCount = countList.Where(func(item logData.LogCountEO) bool {
-			return item.LogType == eumLogLevel.Error
+
+		appsResponse.LogErrorCount = countList.Where(func(logItem logData.LogCountEO) bool {
+			return item.AppName == logItem.AppName && logItem.LogLevel == eumLogLevel.Error
 		}).First().LogCount
-		appsResponse.LogWaringCount = countList.Where(func(item logData.LogCountEO) bool {
-			return item.LogType == eumLogLevel.Warning
+
+		appsResponse.LogWaringCount = countList.Where(func(logItem logData.LogCountEO) bool {
+			return item.AppName == logItem.AppName && logItem.LogLevel == eumLogLevel.Warning
 		}).First().LogCount
+
 		lst.Add(appsResponse)
 	})
 	return lst

@@ -51,8 +51,15 @@
                   <el-button size="small" @click="onBuildAdd(v)" type="danger" style="margin-left: 5px"><el-icon><ele-SwitchButton /></el-icon>构建</el-button>
                 </div>
               <div class="appItem" style="margin-bottom: 10px">日志
-                <el-tag type="warning" size="small" style="margin-left: 5px">{{ v.LogWaringCount }}</el-tag>/
-                <el-tag type="danger" size="small" style="margin-left: 5px">{{ v.LogErrorCount }}</el-tag>
+                <el-tooltip content="警告数量" slot="label">
+                  <el-tag v-if="v.LogWaringCount > 0" type="warning" size="small" style="margin-left: 5px" title="警告数量">{{ v.LogWaringCount }}</el-tag>
+                  <el-tag v-else type="info" size="small" style="margin-left: 5px">{{ v.LogWaringCount }}</el-tag>
+                </el-tooltip>
+                /
+                <el-tooltip content="异常数量" slot="label">
+                  <el-tag v-if="v.LogErrorCount > 0" type="danger" size="small" style="margin-left: 5px">{{ v.LogErrorCount }}</el-tag>
+                  <el-tag v-else type="info" size="small" style="margin-left: 5px">{{ v.LogErrorCount }}</el-tag>
+                </el-tooltip>
               </div>
             </el-card>
           </el-space>

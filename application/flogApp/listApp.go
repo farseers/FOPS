@@ -40,5 +40,5 @@ func Info(id string, logDataRepository logData.Repository) flog.LogData {
 // @get StatCount
 func StatCount(appName string, logDataRepository logData.Repository) collections.List[logData.LogCountEO] {
 	appName = strings.TrimSpace(appName)
-	return logDataRepository.StatCount(appName)
+	return logDataRepository.StatCount()
 }

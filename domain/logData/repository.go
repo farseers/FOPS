@@ -11,5 +11,5 @@ type Repository interface {
 	Save(lstEO collections.List[flog.LogData]) error
 	ToInfo(id string) flog.LogData
 	ToList(traceId string, appName, appIp, logContent string, logLevel eumLogLevel.Enum, pageSize, pageIndex int) collections.PageList[flog.LogData]
-	StatCount(appName string) collections.List[LogCountEO]
+	StatCount() collections.List[LogCountEO]
 }

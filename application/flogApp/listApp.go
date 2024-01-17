@@ -35,3 +35,10 @@ func List(traceId, appName, appIp, logContent string, logLevel eumLogLevel.Enum,
 func Info(id string, logDataRepository logData.Repository) flog.LogData {
 	return logDataRepository.ToInfo(id)
 }
+
+// StatCount 日志类型统计
+// @get StatCount
+func StatCount(appName string, logDataRepository logData.Repository) collections.List[logData.LogCountEO] {
+	appName = strings.TrimSpace(appName)
+	return logDataRepository.StatCount(appName)
+}

@@ -50,6 +50,10 @@
                   <el-tag v-else size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
                   <el-button size="small" @click="onBuildAdd(v)" type="danger" style="margin-left: 5px"><el-icon><ele-SwitchButton /></el-icon>构建</el-button>
                 </div>
+              <div class="appItem" style="margin-bottom: 10px">日志
+                <el-tag type="warning" size="small" style="margin-left: 5px">{{ v.LogWaringCount }}</el-tag>/
+                <el-tag type="danger" size="small" style="margin-left: 5px">{{ v.LogErrorCount }}</el-tag>
+              </div>
             </el-card>
           </el-space>
         </el-main>
@@ -180,12 +184,19 @@ const getTableData = () => {
       state.tableData.data =data;
       state.tableData.total = data.length;
       state.tableData.loading = false;
+
+      getStatCount(state.tableData.data)
+
     }else{
       state.tableData.data=[]
       state.tableData.loading = false;
     }
   })
 };
+
+
+
+
 
 const getTableLogData = () => {
   state.tableLogData.loading = true;

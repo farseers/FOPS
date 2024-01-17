@@ -10,6 +10,7 @@ var CHContext *chContext
 
 // EsContext 链路追踪上下文
 type chContext struct {
+	data.IInternalContext
 	TraceContextView    data.TableSet[model.TraceContextViewPO]    `data:"name=v_link_trace;migrate"`
 	TraceContext        data.TableSet[model.TraceContextPO]        `data:"name=link_trace;migrate=ReplacingMergeTree() ORDER BY (trace_level,app_name,parent_app_name,app_ip,app_id,trace_id,start_ts) PARTITION BY toYYYYMM(create_at)"`
 	TraceDetailDatabase data.TableSet[model.TraceDetailDatabasePO] `data:"name=trace_detail_database;migrate=ReplacingMergeTree() ORDER BY (app_name,parent_app_name,app_ip,app_id,trace_id,db_name,table_name,start_ts) PARTITION BY toYYYYMM(create_at)"`

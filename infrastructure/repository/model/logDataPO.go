@@ -15,4 +15,5 @@ type LogDataPO struct {
 	LogLevel  eumLogLevel.Enum  `gorm:"not null;comment:日志等级"`
 	Content   string            `gorm:"not null;default:'';comment:日志内容"`
 	CreateAt  dateTime.DateTime `gorm:"type:DateTime64(3);not null;comment:发生时间"`
+	//LogCount  int               `gorm:"-"`
 }

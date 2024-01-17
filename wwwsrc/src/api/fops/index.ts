@@ -321,6 +321,12 @@ export function fopsApi() {
 				method: 'get',
 				//data:param,
 			});
+		},logStatCount:(param: string) => {
+			return requestGet({
+				url: '/flog/StatCount?'+param,
+				method: 'get',
+				//data:param,
+			});
 		}
 	};
 }

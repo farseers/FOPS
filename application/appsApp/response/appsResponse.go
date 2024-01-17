@@ -21,4 +21,6 @@ type AppsResponse struct {
 	DockerReplicas    int                     // 副本数量
 	DockerNodeRole    string                  // 容器节点角色 manager or worker
 	AdditionalScripts string                  // 首次创建应用时附加脚本
+	LogErrorCount     int                     // 日志错误数量
+	LogWaringCount    int                     // 日志警告数量
 }

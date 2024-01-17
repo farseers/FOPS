@@ -6,7 +6,9 @@ import (
 	"fops/application/appsApp/response"
 	"fops/domain/apps"
 	"fops/domain/cluster"
+	"fops/domain/logData"
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/core/eumLogLevel"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/mapper"
@@ -68,18 +70,25 @@ func Delete(appName string, appsRepository apps.Repository, appsIDockerDevice ap
 
 // List 应用列表
 // @post list
-func List(clusterId int64, appsRepository apps.Repository) collections.List[response.AppsResponse] {
+func List(clusterId int64, appsRepository apps.Repository, logDataRepository logData.Repository) collections.List[response.AppsResponse] {
 	lstDO := appsRepository.ToList()
 	lstGit := appsRepository.ToGitListAll(-1)
 
 	lst := collections.NewList[response.AppsResponse]()
 	lstDO.Foreach(func(item *apps.DomainObject) {
+		countList := logDataRepository.StatCount(item.AppName)
 		item.ShellScript = ""
 		item.Dockerfile = ""
 		appsResponse := doToAppsResponse(clusterId, *item)
 		appsResponse.AppGitName = lstGit.Where(func(gitItem apps.GitEO) bool {
 			return item.AppGit == parse.ToInt64(gitItem.Id)
 		}).First().Name
+		appsResponse.LogErrorCount = countList.Where(func(item logData.LogCountEO) bool {
+			return item.LogType == eumLogLevel.Error
+		}).First().LogCount
+		appsResponse.LogWaringCount = countList.Where(func(item logData.LogCountEO) bool {
+			return item.LogType == eumLogLevel.Warning
+		}).First().LogCount
 		lst.Add(appsResponse)
 	})
 	return lst

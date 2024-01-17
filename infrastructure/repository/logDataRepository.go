@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"fops/domain/linkTrace"
+	"fops/domain/logData"
 	"fops/infrastructure/repository/context"
 	"fops/infrastructure/repository/model"
 	"github.com/farseer-go/collections"
@@ -54,4 +55,21 @@ func (receiver *logDataRepository) ToInfo(id string) flog.LogData {
 		exception.ThrowRefuseExceptionf("不支持的链路追踪驱动：%s", linkTrace.Config.Driver)
 	}
 	return do
+}
+
+func (receiver *logDataRepository) StatCount(appName string) collections.List[logData.LogCountEO] {
+	query := fmt.Sprintf(`
+			SELECT
+				COUNT(*) AS log_count,
+				log_level
+			FROM
+				linkTrace.log_data
+			WHERE
+				app_name='%s' and create_at >= (NOW() - INTERVAL 30 MINUTE)
+			GROUP BY
+				log_level;
+	`, appName)
+	var array []logData.LogCountEO
+	_, _ = context.CHContext.ExecuteSqlToResult(&array, query)
+	return mapper.ToList[logData.LogCountEO](array)
 }

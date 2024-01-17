@@ -67,7 +67,7 @@
                             <div class="el-progress-bar__innerText" style="color:#181818">
                               <el-tag size="small" style="margin-right: 5px;">{{info.AppName}}</el-tag>
                               <el-tag size="small" style="margin-right: 5px;" v-if="info.Exception!=null" :title="info.Exception.ExceptionMessage" type="danger">【异常】</el-tag>
-                              {{info.Caption}}
+                              <span v-html="info.Caption"></span>
                               <span v-if="index > 0 && info.UseTs > 0">，耗时：
                                 <el-tag size="small" v-if="info.UseTs > 100000000" type="danger">{{info.UseDesc}}</el-tag>
                                 <el-tag size="small" v-else-if="info.UseTs > 50000000" type="warning">{{info.UseDesc}}</el-tag>

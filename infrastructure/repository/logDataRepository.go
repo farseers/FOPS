@@ -34,7 +34,7 @@ func (receiver *logDataRepository) ToList(traceId, appName, appIp, logContent st
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
 			WhereIf(appIp != "", "app_ip = ?", appIp).
-			WhereIf(logLevel > -1, "log_level = ?", logLevel).
+			WhereIf(logLevel > -1, "log_level >= ?", logLevel).
 			WhereIf(logContent != "", "content like ?", "%"+logContent+"%").
 			Desc("create_at").
 			ToPageList(pageSize, pageIndex)

@@ -20,20 +20,20 @@
 					查询
 				</el-button>
 			</div>
-			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
-        <el-table-column prop="TaskId" label="任务ID" width="180" />
-        <el-table-column label="日志内容">
-          <template #default="scope">
-            <el-tag v-if="scope.row.LogLevel == 'Info'" size="small">{{scope.row.LogLevel}}</el-tag>
-            <el-tag v-else-if="scope.row.LogLevel == 'Debug'" type="info" size="small">{{scope.row.LogLevel}}</el-tag>
-            <el-tag v-else-if="scope.row.LogLevel == 'Warn'" type="warning" size="small">{{scope.row.LogLevel}}</el-tag>
-            <el-tag v-else-if="scope.row.LogLevel == 'Error'" type="danger" size="small">{{scope.row.LogLevel}}</el-tag>
-            <span v-else>{{scope.row.LogLevel}}</span>
-            {{scope.row.Content}}
-          </template>
-        </el-table-column>
-        <el-table-column prop="CreateAt" width="170" label="日志时间" show-overflow-tooltip></el-table-column>
-			</el-table>
+      <el-card style="color: #fff;background-color:#393d49;height: 100%;line-height:35px;overflow: auto;" class="layout-padding-auto">
+        <p v-for="(v, k) in state.tableData.data" :key="k">
+          <span style="color: #9caf62">{{v.CreateAt}}</span>
+          {{v.TaskId}}
+          <el-tooltip :content="v.Caption" slot="label">
+            <el-tag size="small" style="margin-right: 5px;">{{v.Name}}</el-tag>
+          </el-tooltip>
+          <el-tag v-if="v.LogLevel == 'Info'" size="small">{{v.LogLevel}}</el-tag>
+          <el-tag v-else-if="v.LogLevel == 'Debug'" type="info" size="small">{{v.LogLevel}}</el-tag>
+          <el-tag v-else-if="v.LogLevel == 'Warn'" type="warning" size="small">{{v.LogLevel}}</el-tag>
+          <el-tag v-else-if="v.LogLevel == 'Error'" type="danger" size="small">{{v.LogLevel}}</el-tag>
+          {{v.Content}}
+        </p>
+      </el-card>
 			<el-pagination
 				@size-change="onHandleSizeChange"
 				@current-change="onHandleCurrentChange"
@@ -74,7 +74,7 @@ const state = reactive({
 		loading: false,
 		param: {
 			pageNum: 1,
-			pageSize: 10,
+			pageSize: 19,
 		},
 	},
 });

@@ -42,13 +42,6 @@
            {{v.Content}}
         </p>
       </el-card>
-<!--			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">-->
-<!--				<el-table-column label="操作" width="100">-->
-<!--					<template #default="scope">-->
-<!--						<el-button size="small" text type="primary" @click="onDetail(scope.row)">详情</el-button>-->
-<!--					</template>-->
-<!--				</el-table-column>-->
-<!--			</el-table>-->
 			<el-pagination
 				@size-change="onHandleSizeChange"
 				@current-change="onHandleCurrentChange"

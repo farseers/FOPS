@@ -195,7 +195,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					},{
 						path: '/dispatch/taskGroup2',
 						name: 'taskGroup2',
-						component: () => import('/@/views/fops/task/indexGroupSuccessFailList.vue'),
+						component: () => import('/src/views/fops/task/indexSuccessFailList.vue'),
 						meta: {
 							title: 'message.router.TaskGroup2',
 							isLink: '',

@@ -18,67 +18,44 @@
 				</el-button>
 			</div>
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%" class="mytable">
-				<el-table-column label="名称" style="line-height: 45px;height: 45px">
+        <el-table-column prop="Id" label="任务ID" width="180">
           <template #default="scope">
-            <div style="float: left;padding-right: 10px;padding-top: 5px">
-              <el-tag size="small" cursor="cursor" @click="onIsEnable(scope.row)" v-if="scope.row.IsEnable">启用</el-tag>
-              <el-tag size="small" cursor="cursor" @click="onIsEnable(scope.row)" v-else type="info">停用</el-tag>
-<!--                      <el-switch v-model="scope.row.IsEnable" @click="onIsEnable(scope.row)" inline-prompt active-text="启用" inactive-text="停用"></el-switch>-->
-            </div>
-            <div style="float: left;padding-right: 10px;padding-top: 5px">
-              <el-tag size="small" v-if="scope.row.Task.Status==0" type="info">未开始</el-tag>
-              <el-tag size="small" v-if="scope.row.Task.Status==1" type="success">调度中</el-tag>
-              <el-tag size="small" style="color:red" v-if="scope.row.Task.Status==2" type="warning">调度失败</el-tag>
-              <el-tag size="small" v-if="scope.row.Task.Status==3" type="success">执行中</el-tag>
-              <el-tag size="small" v-if="scope.row.Task.Status==4" type="danger">失败</el-tag>
-              <el-tag size="small" style="color:green" v-if="scope.row.Task.Status==5" type="success">成功</el-tag>
-            </div>
-            <div @click="onTaskList(scope.row)" style="float: left">
-              <span>{{scope.row.Caption}}</span><br>
-              <span>{{scope.row.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Ver}}</span>）</span>
-            </div>
+            <span title="任务ID">{{scope.row.Id}}</span><br>
+            <span title="TraceId">{{scope.row.TraceId}}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="StartAt" label="开始时间" width="170" show-overflow-tooltip>
-                  <template #default="scope">
-                    <span title="开始时间">{{scope.row.StartAt}}</span><br>
-                    <span title="上次运行时间">{{scope.row.LastRunAt}}</span>
-                  </template>
+        <el-table-column prop="StartAt" label="时间" width="210" show-overflow-tooltip>
+          <template #default="scope">
+            <span>开始: {{scope.row.StartAt}}</span><br>
+            <span>完成: {{scope.row.RunAt}}</span>
+          </template>
         </el-table-column>
-            <el-table-column label="下次运行时间" width="170" show-overflow-tooltip>
-              <template #default="scope">
-                <span title="Cron表达式" >{{scope.row.Cron}}</span><br>
-                <span style="color:red" title="下次运行时间" v-if="compareTime(scope.row.NextAt)" > {{scope.row.NextAt}}</span>
-                <span title="下次运行时间" v-else> {{scope.row.NextAt}}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="运行情况" width="170" show-overflow-tooltip>
-              <template #default="scope">
-                <span>平均耗时: {{scope.row.RunSpeedAvg}} ms</span><br>
-                <span>运行次数: {{scope.row.RunCount}} 次</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="数据">
-              <template #default="scope">
-                <span>{{friendlyJSONstringify(scope.row.Data)}}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="客户端信息" width="180" show-overflow-tooltip>
-              <template #default="scope">
-                <div v-for="(item, index) in scope.row.Clients.slice(0, 3)" :key="index">
-                  <el-tag size="small">{{item.Name}} {{item.Ip}}:{{item.Port}}</el-tag>
-                  <span v-if="scope.row.Clients.length>3">更多</span>
-                </div>
-              </template>
-            </el-table-column>
-				<el-table-column label="操作" width="150">
-					<template #default="scope">
-						<el-button size="small" text type="primary" @click="onDetail(scope.row)">详情信息</el-button>
-            <el-button size="small" text type="warning" @click="onEdit('edit',scope.row)">修改</el-button>
-            <el-button size="small" text type="danger" @click="onLog(scope.row)">日志</el-button>
-            <el-button size="small" text type="info" @click="onDel(scope.row)">删除</el-button>
-					</template>
-				</el-table-column>
+        <el-table-column label="运行情况"  width="110" show-overflow-tooltip>
+          <template #default="scope">
+            <span>耗时: {{scope.row.RunSpeed}}</span><br>
+            <span>进度: {{scope.row.Progress}}%</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="数据"  width="450">
+          <template #default="scope">
+            <span>{{friendlyJSONstringify(scope.row.Data)}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="客户端信息"  width="180" show-overflow-tooltip>
+          <template #default="scope">
+            <span>{{scope.row.Client.Name}} {{scope.row.Client.Ip}}:{{scope.row.Client.Port}}</span><br>
+          </template>
+        </el-table-column>
+        <el-table-column label="任务状态" width="120" show-overflow-tooltip>
+          <template #default="scope">
+            <el-tag v-if="scope.row.Status==0" style="color:#7a7a7a">未开始</el-tag>
+            <el-tag v-else-if="scope.row.Status==1">调度中</el-tag>
+            <el-tag v-else-if="scope.row.Status==2" style="color:red">调度失败</el-tag>
+            <el-tag v-else-if="scope.row.Status==3">执行中</el-tag>
+            <el-tag v-else-if="scope.row.Status==4">失败</el-tag>
+            <el-tag v-else-if="scope.row.Status==5" style="color:green">成功</el-tag>
+          </template>
+        </el-table-column>
 			</el-table>
 			<el-pagination
 				@size-change="onHandleSizeChange"
@@ -181,7 +158,7 @@ const getTableData = () => {
   params.append('pageIndex', state.tableData.param.pageNum.toString());
 
   // 请求接口
-  serverApi.taskGroupList(params.toString()).then(function (res){
+  serverApi.taskList(params.toString()).then(function (res){
     if (res.Status){
       state.tableData.data = res.Data.List;
       state.tableData.total = res.Data.RecordCount;

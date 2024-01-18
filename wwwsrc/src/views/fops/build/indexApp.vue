@@ -26,7 +26,7 @@
                   <el-button class="button" size="small" @click="onOpenEdit('edit', v)" type="warning" style="float:right;position: relative;">修改</el-button>
                 </div>
               </template>
-                <el-button size="small" type="success"  @click="showFsLogLevel(4,v.AppName)" style="float:right;position: relative;margin-left: 5px">日志</el-button>
+                <el-button size="small" type="success"  @click="showFsLogLevel(2,v.AppName)" style="float:right;position: relative;margin-left: 5px">日志</el-button>
                 <el-button size="small" @click="onRestartDocker(v)" type="warning" style="float:right;position: relative;"><el-icon><ele-SwitchButton /></el-icon>重启</el-button>
                 <div class="appItem" style="margin-bottom: 10px">仓库版本
                   <div class="appItem">

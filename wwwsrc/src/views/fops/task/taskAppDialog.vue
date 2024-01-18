@@ -3,7 +3,8 @@
       <div class="system-user-container layout-padding" style="width: 100%;">
         <el-card shadow="hover" class="layout-padding-auto">
           <div class="system-user-search mb15">
-            <span>任务组名称：{{state.dialog.title}}</span>
+            <el-input size="default" v-model="state.clientName" placeholder="请输入应用名称" style="max-width: 180px"> </el-input>
+            <el-input size="default" v-model="state.taskGroupName" placeholder="请输入任务组名称" style="max-width: 180px"> </el-input>
             <el-select v-model="state.taskStatus" placeholder="请选择调度状态" class="ml10" @change="onStatusChange">
               <el-option label="全部" :value="-1"></el-option>
               <el-option style="color:#7a7a7a" label="未开始" :value="0"></el-option>
@@ -13,6 +14,7 @@
               <el-option label="失败" :value="4"></el-option>
               <el-option label="成功" :value="5"></el-option>
             </el-select>
+            <el-input size="default" v-model="state.taskId" placeholder="请输入任务ID" clearable style="max-width: 180px"  class="ml10"> </el-input>
             <el-button size="default" type="primary" class="ml10" @click="onQuery">
               <el-icon>
                 <ele-Search />
@@ -95,6 +97,7 @@ const state = reactive({
   taskStatus:-1,
   taskGroupName:'',
   clientName:'',
+  taskId:'',
   tableData: {
     data: [],
     total: 0,
@@ -125,6 +128,7 @@ const getTableData = () => {
   params.append('taskStatus', state.taskStatus.toString());
   params.append('clientName', state.clientName);
   params.append('taskGroupName', state.taskGroupName);
+  params.append('taskId', state.taskId);
   params.append('pageSize', state.tableData.param.pageSize.toString());
   params.append('pageIndex', state.tableData.param.pageNum.toString());
   // 请求接口
@@ -144,6 +148,12 @@ const openDialog = (row: any) => {
   state.taskGroupName = row.Name
   state.dialog.isShowDialog = true;
   state.dialog.title = row.Name + " " +row.Caption;
+  getTableData();
+};
+const openDialogApp = (st:any,appName:string) => {
+  state.clientName = appName
+  state.taskStatus = st
+  state.dialog.isShowDialog = true;
   getTableData();
 };
 // 关闭弹窗
@@ -182,6 +192,7 @@ onMounted(() => {
 defineExpose({
   openDialog,
   closeDialog,
+  openDialogApp,
 });
 </script>
 

@@ -61,8 +61,16 @@
                   <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogErrorCount }}</el-tag>
                 </el-tooltip>
               </div>
-              <div class="appItem">
-                <el-button size="small" type="success" @click="showTaskLog(v)" style="position: relative;margin-left: 5px">任务日志</el-button>
+              <div class="appItem" style="margin-bottom: 10px">任务
+                <el-tooltip content="成功数量" slot="label">
+                  <el-tag @click="showTask(5,v.AppName)" v-if="v.TaskSuccessCount > 0" type="warning" size="small" style="margin-left: 5px;cursor: pointer" title="警告数量">{{ v.TaskSuccessCount }}</el-tag>
+                  <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskSuccessCount }}</el-tag>
+                </el-tooltip>
+                /
+                <el-tooltip content="失败数量" slot="label">
+                  <el-tag  @click="showTask(4,v.AppName)" v-if="v.TaskFailCount > 0" type="danger" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskFailCount }}</el-tag>
+                  <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskFailCount }}</el-tag>
+                </el-tooltip>
               </div>
             </el-card>
           </el-space>
@@ -112,7 +120,7 @@
   <appDialog ref="appDialogRef" @refresh="getTableData()" @showOverlay="onShowOverlay()" @hideOverlay="onHideOverlay()" />
   <appAddDialog ref="appAddDialogRef" @refresh="getTableData()" @showOverlay="onShowOverlay()" @hideOverlay="onHideOverlay()" />
     <logDialog ref="logDialogRef"  />
-    <taskLogDialog ref="taskLogDialogRef"  />
+    <taskDialog ref="taskDialogRef"  />
   <el-dialog title="构建日志" v-model="state.logDialogIsShow" style="width: 80%;height: 85%;top:20px;margin-bottom: 50px">
     <el-card shadow="hover" class="layout-padding-auto" style="background-color:#393d49;overflow: auto;">
       <pre style="color: #fff;background-color:#393d49;height: 100%;" v-html="state.logContent"></pre>
@@ -145,14 +153,14 @@ const appDialog = defineAsyncComponent(() => import('/@/views/fops/app/dialog.vu
 // 添加弹窗
 const appAddDialog = defineAsyncComponent(() => import('/@/views/fops/app/addDialog.vue'));
 // 任务组日志
-const taskLogDialog= defineAsyncComponent(() => import('/src/views/fops/task/taskLogDialog.vue'));
+const taskDialog= defineAsyncComponent(() => import('/src/views/fops/task/taskAppDialog.vue'));
 // 日志
 const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logV2Dialog.vue'));
 const logDialogRef = ref();
 // 定义变量内容
 const appDialogRef = ref();
 const appAddDialogRef = ref();
-const taskLogDialogRef=ref();
+const taskDialogRef=ref();
 const state = reactive({
   logDialogIsShow:false,
   logContent:'',
@@ -179,10 +187,14 @@ const state = reactive({
   clusterId:0,
   clusterData:[],
   showOverlay:false,
+  statTask:[],
 });
 
 // 初始化表格数据
 const getTableData = () => {
+  // 任务日志统计列表
+  taskLogStat()
+
 	state.tableData.loading = true;
 	const data = [];
   // 请求接口
@@ -190,8 +202,20 @@ const getTableData = () => {
     if (res.Status){
       for (let i = 0; i < res.Data.length; i++) {
         var item=res.Data[i]
-        //item.FrameworkGitsStr=getGitArray(item.FrameworkGits)
-        //item.AppGitStr=getGit(item.AppGit)
+        var taskFailCount=state.statTask.filter(t=>t.Status==4&&t.ClientName==item.AppName)
+        var taskSuccessCount=state.statTask.filter(t=>t.Status==5&&t.ClientName==item.AppName)
+        if(taskFailCount.length>0)
+        {
+          item.TaskFailCount=taskFailCount[0].Count
+        }else{
+          item.TaskFailCount=0
+        }
+        if(taskSuccessCount.length>0)
+        {
+          item.TaskSuccessCount=taskSuccessCount[0].Count
+        }else{
+          item.TaskSuccessCount=0
+        }
         data.push(item)
       }
       state.tableData.data =data;
@@ -255,8 +279,8 @@ const showFsLogLevel=(level:any,appName:any)=>{
   logDialogRef.value.openDialogLogLevel(level,appName);
 }
 // 任务组日志
-const showTaskLog=(row:any)=>{
-  taskLogDialogRef.value.openDialog(row);
+const showTask=(st:any,appName:any)=>{
+  taskDialogRef.value.openDialogApp(st,appName);
 }
 
 const onClusterChange=(value:number)=>{
@@ -483,6 +507,16 @@ const getGit=(val:number)=>{
     })
   return array
 }
+
+// 任务日志统计列表
+const taskLogStat=()=>{
+  serverApi.taskStatList("").then(function (res){
+    if (res.Status){
+      state.statTask=res.Data
+    }
+  })
+}
+
 let intervalLogId = null;
 let intervalAppId = null;
 // 页面加载时

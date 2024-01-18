@@ -101,9 +101,9 @@ const getTableData = () => {
 
   const params = new URLSearchParams();
   params.append('logLevel', state.logLevel.toString());
-  params.append('taskGroupName', state.taskGroupName.toString());
+  params.append('taskGroupName', state.taskGroupName);
   params.append('taskId', state.taskId.toString());
-  params.append('clientName', state.clientName.toString());
+  params.append('clientName', state.clientName);
   params.append('pageSize', state.tableData.param.pageSize.toString());
   params.append('pageIndex', state.tableData.param.pageNum.toString());
 
@@ -127,8 +127,9 @@ const onDetail=(row: any)=>{
 const onEdit=(type: string,row:any)=>{
   editDialogRef.value.openDialog(type, row);
 }
-const openDialog = (row: any) => {
-  state.clientName=row.AppName
+const openDialog = (level:any,appName: any) => {
+  state.logLevel=level
+  state.clientName=appName
   state.dialog.isShowDialog = true;
   getTableData();
 };

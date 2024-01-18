@@ -219,6 +219,11 @@ export function fopsApi() {
 				url: '/basicapi/log/listByClientName?'+param,
 				method: 'get',
 			});
+		},taskStatList: (param: string) => {
+			return requestFSGet({
+				url: '/basicapi/task/statList?'+param,
+				method: 'get',
+			});
 		},taskFinishedList: (param: object) => {
 			return requestFSGet({
 				url: '/basicapi/task/list',

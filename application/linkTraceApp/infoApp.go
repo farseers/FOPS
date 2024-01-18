@@ -130,7 +130,7 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 			if detailPO.TableName == "" && detailPO.Sql == "" {
 				detailTrace.Caption = fmt.Sprintf("打开数据库 => %s %s", detailPO.DbName, detailPO.ConnectionString)
 			} else {
-				if len(detailPO.Sql) < 100 {
+				if len(detailPO.Sql) < 400 {
 					detailPO.Sql = strings.ReplaceAll(detailPO.Sql, "\n", "")
 					detailTrace.Caption = fmt.Sprintf("SQL => <span style='background-color: #ead996;'>%s</span> 影响%v行", detailPO.Sql, detailPO.RowsAffected)
 				} else {

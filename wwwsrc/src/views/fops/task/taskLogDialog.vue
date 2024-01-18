@@ -3,8 +3,8 @@
       <div class="system-user-container layout-padding" style="width: 100%;">
         <el-card shadow="hover" class="layout-padding-auto">
           <div class="system-user-search mb15">
-            <span>任务组：{{state.dialog.title}}</span>
-<!--            <el-input size="default" v-model="state.taskGroupId" placeholder="请输入任务组ID" style="max-width: 180px"> </el-input>-->
+            <el-input size="default" v-model="state.clientName" placeholder="请输入应用名称" style="max-width: 180px"> </el-input>
+            <el-input size="default" v-model="state.taskGroupName" placeholder="请输入任务组名称" style="max-width: 180px"> </el-input>
             <el-select v-model="state.logLevel" placeholder="请选择日志等级" clearable class="ml10">
               <el-option label="全部" :value="-1"></el-option>
               <el-option label="Trace" :value="0"></el-option>
@@ -14,6 +14,7 @@
               <el-option label="Error" :value="4"></el-option>
               <el-option label="Critical" :value="5"></el-option>
             </el-select>
+            <el-input size="default" v-model="state.taskId" placeholder="请输入任务ID" clearable style="max-width: 180px"  class="ml10"> </el-input>
             <el-button size="default" type="primary" class="ml10" @click="onQuery">
               <el-icon>
                 <ele-Search />
@@ -75,7 +76,9 @@ const editDialogRef = ref();
 const state = reactive({
   keyWord:'',
   taskGroupName:'',
+  clientName:'',
   logLevel:-1,
+  taskId:'',
   tableData: {
     data: [],
     total: 0,
@@ -99,11 +102,13 @@ const getTableData = () => {
   const params = new URLSearchParams();
   params.append('logLevel', state.logLevel.toString());
   params.append('taskGroupName', state.taskGroupName.toString());
+  params.append('taskId', state.taskId.toString());
+  params.append('clientName', state.clientName.toString());
   params.append('pageSize', state.tableData.param.pageSize.toString());
   params.append('pageIndex', state.tableData.param.pageNum.toString());
 
   // 请求接口
-  serverApi.taskLogList(params.toString()).then(function (res){
+  serverApi.taskLogListClientName(params.toString()).then(function (res){
     if (res.Status){
       state.tableData.data = res.Data.List;
       state.tableData.total = res.Data.RecordCount;
@@ -123,12 +128,11 @@ const onEdit=(type: string,row:any)=>{
   editDialogRef.value.openDialog(type, row);
 }
 const openDialog = (row: any) => {
-  state.taskGroupName=row.Name
+  state.clientName=row.AppName
   state.dialog.isShowDialog = true;
-  state.dialog.title = row.Name + " " +row.Caption;
   getTableData();
 };
-
+ 
 // 关闭弹窗
 const closeDialog = () => {
   state.dialog.isShowDialog = false;

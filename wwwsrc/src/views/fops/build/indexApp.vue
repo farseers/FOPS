@@ -52,13 +52,13 @@
                 </div>
               <div class="appItem" style="margin-bottom: 10px">日志
                 <el-tooltip content="警告数量" slot="label">
-                  <el-tag @click="showFsLogLevel(3,v.AppName)" v-if="v.LogWaringCount > 0" type="warning" size="small" style="margin-left: 5px" title="警告数量">{{ v.LogWaringCount }}</el-tag>
-                  <el-tag v-else type="info" size="small" style="margin-left: 5px">{{ v.LogWaringCount }}</el-tag>
+                  <el-tag @click="showFsLogLevel(3,v.AppName)" v-if="v.LogWaringCount > 0" type="warning" size="small" style="margin-left: 5px;cursor: pointer" title="警告数量">{{ v.LogWaringCount }}</el-tag>
+                  <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogWaringCount }}</el-tag>
                 </el-tooltip>
                 /
                 <el-tooltip content="异常数量" slot="label">
-                  <el-tag @click="showFsLogLevel(4,v.AppName)" v-if="v.LogErrorCount > 0" type="danger" size="small" style="margin-left: 5px">{{ v.LogErrorCount }}</el-tag>
-                  <el-tag v-else type="info" size="small" style="margin-left: 5px">{{ v.LogErrorCount }}</el-tag>
+                  <el-tag  @click="showFsLogLevel(4,v.AppName)" v-if="v.LogErrorCount > 0" type="danger" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogErrorCount }}</el-tag>
+                  <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogErrorCount }}</el-tag>
                 </el-tooltip>
               </div>
             </el-card>

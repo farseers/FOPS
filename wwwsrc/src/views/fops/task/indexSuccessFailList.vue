@@ -18,10 +18,20 @@
 				</el-button>
 			</div>
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%" class="mytable">
-        <el-table-column prop="Id" label="任务ID" width="180">
+        <el-table-column prop="Id" label="任务ID" width="250">
           <template #default="scope">
-            <span title="任务ID">{{scope.row.Id}}</span><br>
-            <span title="TraceId">{{scope.row.TraceId}}</span>
+            <div style="float:left;margin: 6px">
+              <el-tag v-if="scope.row.Status==0" style="color:#7a7a7a">未开始</el-tag>
+              <el-tag v-else-if="scope.row.Status==1">调度中</el-tag>
+              <el-tag v-else-if="scope.row.Status==2" style="color:red">调度失败</el-tag>
+              <el-tag v-else-if="scope.row.Status==3">执行中</el-tag>
+              <el-tag v-else-if="scope.row.Status==4" style="color: red">失败</el-tag>
+              <el-tag v-else-if="scope.row.Status==5" style="color:green">成功</el-tag>
+            </div>
+            <div style="float:left;;">
+              <span title="任务ID">{{scope.row.Id}}</span><br>
+              <span title="TraceId">{{scope.row.TraceId}}</span>
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="任务名称" >
@@ -54,16 +64,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="任务状态" width="120" show-overflow-tooltip>
-          <template #default="scope">
-            <el-tag v-if="scope.row.Status==0" style="color:#7a7a7a">未开始</el-tag>
-            <el-tag v-else-if="scope.row.Status==1">调度中</el-tag>
-            <el-tag v-else-if="scope.row.Status==2" style="color:red">调度失败</el-tag>
-            <el-tag v-else-if="scope.row.Status==3">执行中</el-tag>
-            <el-tag v-else-if="scope.row.Status==4">失败</el-tag>
-            <el-tag v-else-if="scope.row.Status==5" style="color:green">成功</el-tag>
-          </template>
-        </el-table-column>
+
 			</el-table>
 			<el-pagination
 				@size-change="onHandleSizeChange"

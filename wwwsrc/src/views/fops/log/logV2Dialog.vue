@@ -150,6 +150,13 @@ const openDialogAppName = (row: any) => {
   getTableData()
   getAppData();
 }
+const openDialogLogLevel = (level: any,appName:any) => {
+  state.dialog.isShowDialog = true;
+  state.logLevel=level
+  state.appName=appName
+  getTableData()
+  getAppData();
+}
 const closeDialog = () => {
   state.dialog.isShowDialog = false;
 };
@@ -203,7 +210,8 @@ onMounted(() => {
 // 暴露变量
 defineExpose({
   openDialog,
-  openDialogAppName
+  openDialogAppName,
+  openDialogLogLevel
 });
 </script>
 

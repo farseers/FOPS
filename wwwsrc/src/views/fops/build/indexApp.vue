@@ -52,12 +52,12 @@
                 </div>
               <div class="appItem" style="margin-bottom: 10px">日志
                 <el-tooltip content="警告数量" slot="label">
-                  <el-tag v-if="v.LogWaringCount > 0" type="warning" size="small" style="margin-left: 5px" title="警告数量">{{ v.LogWaringCount }}</el-tag>
+                  <el-tag @click="showFsLogLevel(3,v.AppName)" v-if="v.LogWaringCount > 0" type="warning" size="small" style="margin-left: 5px" title="警告数量">{{ v.LogWaringCount }}</el-tag>
                   <el-tag v-else type="info" size="small" style="margin-left: 5px">{{ v.LogWaringCount }}</el-tag>
                 </el-tooltip>
                 /
                 <el-tooltip content="异常数量" slot="label">
-                  <el-tag v-if="v.LogErrorCount > 0" type="danger" size="small" style="margin-left: 5px">{{ v.LogErrorCount }}</el-tag>
+                  <el-tag @click="showFsLogLevel(4,v.AppName)" v-if="v.LogErrorCount > 0" type="danger" size="small" style="margin-left: 5px">{{ v.LogErrorCount }}</el-tag>
                   <el-tag v-else type="info" size="small" style="margin-left: 5px">{{ v.LogErrorCount }}</el-tag>
                 </el-tooltip>
               </div>
@@ -192,7 +192,6 @@ const getTableData = () => {
       state.tableData.total = data.length;
       state.tableData.loading = false;
 
-      getStatCount(state.tableData.data)
 
     }else{
       state.tableData.data=[]
@@ -248,6 +247,9 @@ const getTableClusterData = () => {
 // 打开FS日志
 const showFsLog=(row:any)=>{
   logDialogRef.value.openDialogAppName(row);
+}
+const showFsLogLevel=(level:any,appName:any)=>{
+  logDialogRef.value.openDialogLogLevel(level,appName);
 }
 
 const onClusterChange=(value:number)=>{

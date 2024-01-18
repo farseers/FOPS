@@ -24,10 +24,10 @@
             <span title="TraceId">{{scope.row.TraceId}}</span>
           </template>
         </el-table-column>
-        <el-table-column label="任务名称" width="250">
+        <el-table-column label="任务名称" >
           <template #default="scope">
-            <span title="任务名称">{{scope.row.Name}}</span><br>
-            <span title="任务名称">{{scope.row.Caption}}</span>
+            <span>{{scope.row.Caption}}</span><br>
+            <span>{{scope.row.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Ver}}</span>）</span>
           </template>
         </el-table-column>
         <el-table-column prop="StartAt" label="时间" width="210" show-overflow-tooltip>
@@ -47,9 +47,11 @@
             <span>{{friendlyJSONstringify(scope.row.Data)}}</span>
           </template>
         </el-table-column>
-        <el-table-column label="客户端信息"  width="180" show-overflow-tooltip>
+        <el-table-column label="客户端信息" width="180" show-overflow-tooltip>
           <template #default="scope">
-            <span>{{scope.row.Client.Name}} {{scope.row.Client.Ip}}:{{scope.row.Client.Port}}</span><br>
+            <div>
+              <el-tag size="small">{{scope.row.Client.Name}} {{scope.row.Client.Ip}}:{{scope.row.Client.Port}}</el-tag>
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="任务状态" width="120" show-overflow-tooltip>

@@ -24,6 +24,12 @@
             <span title="TraceId">{{scope.row.TraceId}}</span>
           </template>
         </el-table-column>
+        <el-table-column label="任务名称" width="250">
+          <template #default="scope">
+            <span title="任务名称">{{scope.row.Name}}</span><br>
+            <span title="任务名称">{{scope.row.Caption}}</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="StartAt" label="时间" width="210" show-overflow-tooltip>
           <template #default="scope">
             <span>开始: {{scope.row.StartAt}}</span><br>

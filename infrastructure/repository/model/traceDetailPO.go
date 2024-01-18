@@ -26,6 +26,7 @@ type BaseTraceDetailPO struct {
 	UseDesc        string                `gorm:"not null;default:'';comment:总共使用时间（描述）"`
 	Exception      *trace.ExceptionStack `gorm:"json;not null;comment:异常信息"`
 	MethodName     string                `gorm:"not null;default:'';comment:调用方法"`
+	Comment        string                `gorm:"not null;default:'';comment:调用注释"`
 	CreateAt       dateTime.DateTime     `gorm:"type:DateTime64(3);not null;comment:请求时间"`
 }
 

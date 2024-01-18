@@ -128,51 +128,51 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 		switch detailPO := detail.(type) {
 		case *linkTraceCom.TraceDetailDatabase:
 			if detailPO.TableName == "" && detailPO.Sql == "" {
-				detailTrace.Caption = fmt.Sprintf("打开数据库 => %s %s", detailPO.DbName, detailPO.ConnectionString)
+				detailTrace.Caption = fmt.Sprintf("%s[打开数据库] => %s %s", detailPO.Comment, detailPO.DbName, detailPO.ConnectionString)
 			} else {
 				if len(detailPO.Sql) < 400 {
 					detailPO.Sql = strings.ReplaceAll(detailPO.Sql, "\n", "")
-					detailTrace.Caption = fmt.Sprintf("SQL => <span style='background-color: #ead996;'>%s</span> 影响%v行", detailPO.Sql, detailPO.RowsAffected)
+					detailTrace.Caption = fmt.Sprintf("%s[SQL] => <span style='background-color: #ead996;'>%s</span> 影响%v行", detailPO.Comment, detailPO.Sql, detailPO.RowsAffected)
 				} else {
-					detailTrace.Caption = fmt.Sprintf("执行数据库 => %s.<b>%s</b> 影响%v行", detailPO.DbName, detailPO.TableName, detailPO.RowsAffected)
+					detailTrace.Caption = fmt.Sprintf("%s[执行数据库] => %s.<b>%s</b> 影响%v行", detailPO.Comment, detailPO.DbName, detailPO.TableName, detailPO.RowsAffected)
 				}
 			}
 			detailTrace.Desc = detailPO.Sql
 		case *linkTraceCom.TraceDetailHttp:
-			detailTrace.Caption = fmt.Sprintf("调用http => %v %s <span style='background-color: #ead996;'>%s</span>", detailPO.StatusCode, detailPO.Method, detailPO.Url)
+			detailTrace.Caption = fmt.Sprintf("%s[调用http] => %v %s <span style='background-color: #ead996;'>%s</span>", detailPO.Comment, detailPO.StatusCode, detailPO.Method, detailPO.Url)
 			lstHeader := collections.NewList[string]()
 			for k, v := range detailPO.Headers.ToMap() {
 				lstHeader.Add(fmt.Sprintf("%s=%v", k, v))
 			}
 			detailTrace.Desc = fmt.Sprintf("头部：%s 入参：%s 出参：%s", lstHeader.ToString(","), detailPO.RequestBody, detailPO.ResponseBody)
 		case *linkTraceCom.TraceDetailGrpc:
-			detailTrace.Caption = fmt.Sprintf("调用http => %v %s <span style='background-color: #ead996;'>%s</span>", detailPO.StatusCode, detailPO.Method, detailPO.Url)
+			detailTrace.Caption = fmt.Sprintf("%s[调用http] => %v %s <span style='background-color: #ead996;'>%s</span>", detailPO.Comment, detailPO.StatusCode, detailPO.Method, detailPO.Url)
 			lstHeader := collections.NewList[string]()
 			for k, v := range detailPO.Headers.ToMap() {
 				lstHeader.Add(fmt.Sprintf("%s=%v", k, v))
 			}
 			detailTrace.Desc = fmt.Sprintf("头部：%s 入参：%s 出参：%s", lstHeader.ToString(","), detailPO.RequestBody, detailPO.ResponseBody)
 		case *linkTraceCom.TraceDetailRedis:
-			detailTrace.Caption = fmt.Sprintf("执行Redis => <span style='background-color: #ead996;'>%s</span> %s %s", detailPO.MethodName, detailPO.Key, detailPO.Field)
+			detailTrace.Caption = fmt.Sprintf("%s[执行Redis] => <span style='background-color: #ead996;'>%s</span> %s %s", detailPO.Comment, detailPO.MethodName, detailPO.Key, detailPO.Field)
 			detailTrace.Desc = fmt.Sprintf("%s %s", detailPO.Key, detailPO.Field)
 		case *linkTraceCom.TraceDetailMq:
 			if detailPO.MethodName == "Send" {
-				detailTrace.Caption = fmt.Sprintf("MQ发送消息 => %s <span style='background-color: #ead996;'>%s</span> %s", detailPO.Server, detailPO.Exchange, detailPO.RoutingKey)
+				detailTrace.Caption = fmt.Sprintf("%s[MQ发送消息] => %s <span style='background-color: #ead996;'>%s</span> %s", detailPO.Comment, detailPO.Server, detailPO.Exchange, detailPO.RoutingKey)
 			} else {
-				detailTrace.Caption = fmt.Sprintf("MQ %s => %s <span style='background-color: #ead996;'>%s</span> %s", detailPO.MethodName, detailPO.Server, detailPO.Exchange, detailPO.RoutingKey)
+				detailTrace.Caption = fmt.Sprintf("%s[MQ] %s => %s <span style='background-color: #ead996;'>%s</span> %s", detailPO.Comment, detailPO.MethodName, detailPO.Server, detailPO.Exchange, detailPO.RoutingKey)
 			}
 			detailTrace.Desc = fmt.Sprintf("%s %s %s", detailPO.Server, detailPO.Exchange, detailPO.RoutingKey)
 		case *linkTraceCom.TraceDetailEs:
-			detailTrace.Caption = fmt.Sprintf("执行ES => %s %s", detailPO.IndexName, detailPO.AliasesName)
+			detailTrace.Caption = fmt.Sprintf("%s[执行ES] => %s %s", detailPO.Comment, detailPO.IndexName, detailPO.AliasesName)
 			detailTrace.Desc = fmt.Sprintf("%s %s", detailPO.IndexName, detailPO.AliasesName)
 		case *linkTraceCom.TraceDetailEtcd:
-			detailTrace.Caption = fmt.Sprintf("执行Etcd => %s %v", detailPO.Key, detailPO.LeaseID)
+			detailTrace.Caption = fmt.Sprintf("%s[执行Etcd] => %s %v", detailPO.Comment, detailPO.Key, detailPO.LeaseID)
 			detailTrace.Desc = fmt.Sprintf("%s %v", detailPO.Key, detailPO.LeaseID)
 		case *linkTraceCom.TraceDetailHand:
-			detailTrace.Caption = fmt.Sprintf("=> %s", detailPO.Name)
+			detailTrace.Caption = fmt.Sprintf("%s=> %s", detailPO.Comment, detailPO.Name)
 			detailTrace.Desc = fmt.Sprintf("%s", detailPO.Name)
 		case *linkTraceCom.TraceDetailEventConsumer:
-			detailTrace.Caption = fmt.Sprintf("事件订阅 => <span style='background-color: #ead996;'>%s</span>", detailPO.Name)
+			detailTrace.Caption = fmt.Sprintf("%s[事件订阅] => <span style='background-color: #ead996;'>%s</span>", detailPO.Comment, detailPO.Name)
 			detailTrace.Desc = fmt.Sprintf("%s", detailPO.Name)
 		}
 		receiver.lst.Add(detailTrace)

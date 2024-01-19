@@ -169,7 +169,7 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 			detailTrace.Caption = fmt.Sprintf("Etcd <span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s</span> => %s %v", detailPO.Comment, detailPO.Key, detailPO.LeaseID)
 			detailTrace.Desc = fmt.Sprintf("%s %v", detailPO.Key, detailPO.LeaseID)
 		case *linkTraceCom.TraceDetailHand:
-			detailTrace.Caption = fmt.Sprintf("<span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s</span> => %s", detailPO.Comment, detailPO.Name)
+			detailTrace.Caption = fmt.Sprintf("<span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s %s</span>", detailPO.Comment, detailPO.Name)
 			detailTrace.Desc = fmt.Sprintf("%s", detailPO.Name)
 		case *linkTraceCom.TraceDetailEventConsumer:
 			detailTrace.Caption = fmt.Sprintf("事件订阅 <span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s</span> => <span style='background-color: #ead996;'>%s</span>", detailPO.Comment, detailPO.Name)

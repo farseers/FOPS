@@ -50,9 +50,9 @@
                   <el-tag v-else size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
                   <el-button size="small" @click="onBuildAdd(v)" type="danger" style="margin-left: 5px"><el-icon><ele-SwitchButton /></el-icon>构建</el-button>
                 </div>
-              <div class="appItem" style="margin-bottom: 10px">日志
+              <div class="appItem" style="margin-bottom: 10px">应用日志
                 <el-tooltip content="警告数量" slot="label">
-                  <el-tag @click="showFsLogLevel(3,v.AppName)" v-if="v.LogWaringCount > 0" type="warning" size="small" style="margin-left: 5px;cursor: pointer" title="警告数量">{{ v.LogWaringCount }}</el-tag>
+                  <el-tag @click="showFsLogLevel(3,v.AppName)" v-if="v.LogWaringCount > 0" type="warning" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogWaringCount }}</el-tag>
                   <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogWaringCount }}</el-tag>
                 </el-tooltip>
                 /
@@ -61,9 +61,9 @@
                   <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogErrorCount }}</el-tag>
                 </el-tooltip>
               </div>
-              <div class="appItem" style="margin-bottom: 10px">任务
+              <div class="appItem" style="margin-bottom: 10px">调度任务
                 <el-tooltip content="成功数量" slot="label">
-                  <el-tag @click="showTask(5,v.AppName)" v-if="v.TaskSuccessCount > 0" type="warning" size="small" style="margin-left: 5px;cursor: pointer" title="警告数量">{{ v.TaskSuccessCount }}</el-tag>
+                  <el-tag @click="showTask(5,v.AppName)" v-if="v.TaskSuccessCount > 0" type="success" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskSuccessCount }}</el-tag>
                   <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskSuccessCount }}</el-tag>
                 </el-tooltip>
                 /

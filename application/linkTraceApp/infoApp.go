@@ -175,6 +175,8 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 			detailTrace.Caption = fmt.Sprintf("事件订阅 <span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s</span> => <span style='background-color: #ead996;'>%s</span>", detailPO.Comment, detailPO.Name)
 			detailTrace.Desc = fmt.Sprintf("%s", detailPO.Name)
 		}
+
+		detailTrace.Caption = strings.ReplaceAll(detailTrace.Caption, "<span class=\"el-tag el-tag--danger el-tag--small el-tag--light\"></span>", "")
 		receiver.lst.Add(detailTrace)
 
 		// 在明细执行期间，会穿插下游服务。所以通过查找的方式来获取下游。然后在回到当前明细

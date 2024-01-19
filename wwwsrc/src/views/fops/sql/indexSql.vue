@@ -56,7 +56,11 @@
         </el-table-column>
         <el-table-column width="120px" prop="DbName" label="数据库名" show-overflow-tooltip></el-table-column>
         <el-table-column width="180px" prop="TableName" label="表名" show-overflow-tooltip></el-table-column>
-        <el-table-column width="400px" prop="Sql" label="Sql语句" show-overflow-tooltip></el-table-column>
+        <el-table-column width="400px" label="Sql语句" show-overflow-tooltip>
+          <template #default="scope">
+            <span style="cursor: pointer" title="点击复制" @click="copyText(scope.row.Sql)">{{scope.row.Sql}}</span>
+          </template>
+        </el-table-column>
         <el-table-column width="100px" prop="RowsAffected" label="影响行数" show-overflow-tooltip></el-table-column>
         <el-table-column width="250px" label="异常" show-overflow-tooltip>
           <template #default="scope">
@@ -95,7 +99,9 @@ import { defineAsyncComponent, reactive, onMounted, ref, watch } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import {fopsApi} from "/@/api/fops";
 import {friendlyJSONstringify} from "@intlify/shared";
-
+// 定义变量内容
+import commonFunction from '/@/utils/commonFunction';
+const { copyText } = commonFunction();
 // 引入 api 请求接口
 const serverApi = fopsApi();
 // 引入组件

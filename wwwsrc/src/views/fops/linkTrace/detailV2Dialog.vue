@@ -60,7 +60,7 @@
               <li style="clear: both;padding:2px 0;height:21px" v-for="(info, index) in state.tableData" :key="index">
                 <div>
                   <span style="float:left;position:absolute;margin: 0 5px;color:#8c8b8b">{{index + 1}}</span>
-                  <span :style="{'margin-left':info.StartRate+'%','float':'left','position':'relative','width':'100%'}" :title="info.Desc">
+                  <span :style="{'margin-left':info.StartRate+'%','float':'left','position':'relative','width':'100%','cursor':'pointer'}"  @click="copyText(info.Desc)"  :title="info.Desc">
                     <div class="el-progress el-progress--line is-exception el-progress--text-inside" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" :style="{'width':info.UseRate+'%'}">
                       <div class="el-progress-bar">
                           <div class="el-progress-bar__inner" :style="{'height': '21px','width': '100%', 'animation-duration': '3s','text-align': 'left','background-color':'rgb('+info.Rgba+')'}">
@@ -120,6 +120,9 @@ import {defineAsyncComponent, reactive, ref} from 'vue';
 import {fopsApi} from "/@/api/fops";
 import { ElMessageBox, ElMessage } from 'element-plus';
 import {friendlyJSONstringify} from "@intlify/shared";
+// 定义变量内容
+import commonFunction from '/@/utils/commonFunction';
+const { copyText } = commonFunction();
 // 引入 api 请求接口
 const serverApi = fopsApi();
 // 定义子组件向父组件传值/事件

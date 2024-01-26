@@ -32,14 +32,14 @@ func Add(req request.AddRequest, appsRepository apps.Repository) {
 
 // Update 修改应用
 // @post update
-func Update(req request.UpdateRequest, appsRepository apps.Repository, appsIDockerDevice apps.IDockerDevice) {
+func Update(req request.UpdateRequest, appsRepository apps.Repository, appsIDockerSwarmDevice apps.IDockerSwarmDevice) {
 	do := appsRepository.ToEntity(req.AppName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 
 	// 判断副本数量是否有变更
 	if do.DockerReplicas != req.DockerReplicas {
 		c := make(chan string, 100)
-		if !appsIDockerDevice.SetReplicas(cluster.DomainObject{}, req.AppName, req.DockerReplicas, c) {
+		if !appsIDockerSwarmDevice.SetReplicas(cluster.DomainObject{}, req.AppName, req.DockerReplicas, c) {
 			lstLog := collections.NewListFromChan(c)
 			exception.ThrowWebExceptionf(403, "更新副本失败:<br />%s", lstLog.ToString("<br />"))
 		}
@@ -57,11 +57,11 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, appsIDock
 
 // Delete 删除应用
 // @post delete
-func Delete(appName string, appsRepository apps.Repository, appsIDockerDevice apps.IDockerDevice) {
+func Delete(appName string, appsRepository apps.Repository, appsIDockerSwarmDevice apps.IDockerSwarmDevice) {
 	exception.ThrowWebExceptionBool(strings.Trim(appName, "") == "", 403, "参数不完整")
 	// 删除服务
 	c := make(chan string, 100)
-	appsIDockerDevice.DeleteService(appName, c)
+	appsIDockerSwarmDevice.DeleteService(appName, c)
 
 	// 删除应用
 	_, err := appsRepository.Delete(appName)

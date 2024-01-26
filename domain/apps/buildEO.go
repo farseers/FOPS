@@ -14,29 +14,30 @@ import (
 
 // BuildEO 聚合
 type BuildEO struct {
-	Id               int64               // 主键
-	ClusterId        int64               // 集群信息
-	BuildNumber      int                 // 构建号
-	Status           eumBuildStatus.Enum // 状态
-	IsSuccess        bool                // 是否成功
-	CreateAt         dateTime.DateTime   // 开始时间
-	FinishAt         dateTime.DateTime   // 完成时间
-	BuildServerId    int64               // 构建的服务端id
-	Log              []string            // 构建日志
-	Env              EnvVO               // 环境变量
-	AppName          string              // 应用名称
-	Dockerfile       string              // Dockerfile内容
-	ShellScript      string              // Shell脚本
-	dockerDevice     IDockerDevice
-	directoryDevice  IDirectoryDevice
-	gitDevice        IGitDevice
-	kubectlDevice    IKubectlDevice
-	copyToDistDevice ICopyToDistDevice
-	logQueue         *LogQueue
-	ctx              context.Context
-	cancel           context.CancelFunc
-	apps             DomainObject
-	appGit           GitEO // 应用的源代码
+	Id                int64               // 主键
+	ClusterId         int64               // 集群信息
+	BuildNumber       int                 // 构建号
+	Status            eumBuildStatus.Enum // 状态
+	IsSuccess         bool                // 是否成功
+	CreateAt          dateTime.DateTime   // 开始时间
+	FinishAt          dateTime.DateTime   // 完成时间
+	BuildServerId     int64               // 构建的服务端id
+	Log               []string            // 构建日志
+	Env               EnvVO               // 环境变量
+	AppName           string              // 应用名称
+	Dockerfile        string              // Dockerfile内容
+	ShellScript       string              // Shell脚本
+	dockerDevice      IDockerDevice
+	dockerSwarmDevice IDockerSwarmDevice
+	directoryDevice   IDirectoryDevice
+	gitDevice         IGitDevice
+	kubectlDevice     IKubectlDevice
+	copyToDistDevice  ICopyToDistDevice
+	logQueue          *LogQueue
+	ctx               context.Context
+	cancel            context.CancelFunc
+	apps              DomainObject
+	appGit            GitEO // 应用的源代码
 }
 
 func (receiver *BuildEO) IsNil() bool {
@@ -46,6 +47,7 @@ func (receiver *BuildEO) IsNil() bool {
 func (receiver *BuildEO) StartBuild() {
 	receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 	receiver.dockerDevice = container.Resolve[IDockerDevice]()
+	receiver.dockerSwarmDevice = container.Resolve[IDockerSwarmDevice]()
 	receiver.directoryDevice = container.Resolve[IDirectoryDevice]()
 	receiver.gitDevice = container.Resolve[IGitDevice]()
 	receiver.kubectlDevice = container.Resolve[IKubectlDevice]()
@@ -96,13 +98,13 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.checkResult(receiver.dockerDevice.Push(receiver.Env, receiver.logQueue.progress, receiver.ctx))
 
 	// 首次创建还是更新镜像
-	if receiver.dockerDevice.ExistsDocker(clusterDO, receiver.AppName) {
+	if receiver.dockerSwarmDevice.ExistsDocker(clusterDO, receiver.AppName) {
 		// 更新镜像
 		//receiver.checkResult(receiver.kubectlDevice.SetImages(receiver.Cluster, receiver.AppName, receiver.Env.DockerImage, receiver.Project.K8SControllersType, receiver.progress, receiver.ctx))
-		receiver.checkResult(receiver.dockerDevice.SetImages(clusterDO, receiver.AppName, receiver.Env.DockerImage, receiver.logQueue.progress, receiver.ctx))
+		receiver.checkResult(receiver.dockerSwarmDevice.SetImages(clusterDO, receiver.AppName, receiver.Env.DockerImage, receiver.logQueue.progress, receiver.ctx))
 	} else {
 		// 创建容器服务
-		receiver.checkResult(receiver.dockerDevice.CreateService(receiver.AppName, receiver.apps.DockerNodeRole, receiver.apps.AdditionalScripts, clusterDO.DockerNetwork, receiver.apps.DockerReplicas, receiver.Env.DockerImage, receiver.logQueue.progress, receiver.ctx))
+		receiver.checkResult(receiver.dockerSwarmDevice.CreateService(receiver.AppName, receiver.apps.DockerNodeRole, receiver.apps.AdditionalScripts, clusterDO.DockerNetwork, receiver.apps.DockerReplicas, receiver.Env.DockerImage, receiver.logQueue.progress, receiver.ctx))
 	}
 	receiver.success()
 }

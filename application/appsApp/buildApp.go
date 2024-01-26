@@ -61,12 +61,12 @@ func ClearDockerImage(device apps.IDockerDevice) {
 
 // RestartDocker 重启容器
 // @post build/restartDocker
-func RestartDocker(clusterId int64, appName string, device apps.IDockerDevice, clusterRepository cluster.Repository) {
+func RestartDocker(clusterId int64, appName string, appsIDockerSwarmDevice apps.IDockerSwarmDevice, clusterRepository cluster.Repository) {
 	clusterDO := clusterRepository.ToEntity(clusterId)
 	exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "集群不存在")
 
 	c := make(chan string, 100)
-	if !device.Restart(clusterDO, appName, c) {
+	if !appsIDockerSwarmDevice.Restart(clusterDO, appName, c) {
 		lstLog := collections.NewListFromChan(c)
 		exception.ThrowWebExceptionf(403, "容器重启失败:<br />%s", lstLog.ToString("<br />"))
 	}
@@ -74,7 +74,7 @@ func RestartDocker(clusterId int64, appName string, device apps.IDockerDevice, c
 
 // SyncDockerImage 同步仓库版本
 // @post build/syncDockerImage
-func SyncDockerImage(clusterId int64, appName string, device apps.IDockerDevice, appsRepository apps.Repository, clusterRepository cluster.Repository) {
+func SyncDockerImage(clusterId int64, appName string, appsIDockerSwarmDevice apps.IDockerSwarmDevice, appsRepository apps.Repository, clusterRepository cluster.Repository) {
 	do := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 
@@ -87,7 +87,7 @@ func SyncDockerImage(clusterId int64, appName string, device apps.IDockerDevice,
 	}
 
 	c := make(chan string, 100)
-	if device.SetImages(clusterDO, appName, do.DockerImage, c, context.Background()) {
+	if appsIDockerSwarmDevice.SetImages(clusterDO, appName, do.DockerImage, c, context.Background()) {
 		do.UpdateBuildVer(true, clusterId, 0)
 		_, _ = appsRepository.UpdateClusterVer(appName, do.ClusterVer)
 	} else {

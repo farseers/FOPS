@@ -30,24 +30,25 @@ type IDockerDevice interface {
 	Build(env EnvVO, progress chan string, ctx context.Context) bool
 	// Push 上传镜像
 	Push(env EnvVO, progress chan string, ctx context.Context) bool
-	// SetImages 更新镜像版本
-	SetImages(cluster cluster.DomainObject, appName string, dockerImages string, progress chan string, ctx context.Context) bool
-	// SetReplicas 更新副本数量
-	SetReplicas(cluster cluster.DomainObject, appName string, dockerReplicas int, progress chan string) bool
 	// ClearImages 清除镜像
 	ClearImages(progress chan string) bool
-	// Restart 重启容器
-	Restart(cluster cluster.DomainObject, appName string, progress chan string) bool
-	// ExistsDocker 判断集群中是否有容器
-	ExistsDocker(cluster cluster.DomainObject, appName string) bool
+	// GetVersion 获取版本
+	GetVersion() string
+}
+type IDockerSwarmDevice interface {
 	// CreateService 创建容器服务
 	CreateService(appName, dockerNodeRole, additionalScripts, dockerNetwork string, dockerReplicas int, dockerImages string, progress chan string, ctx context.Context) bool
 	// DeleteService 删除容器服务
 	DeleteService(appName string, progress chan string) bool
-	// GetVersion 获取版本
-	GetVersion() string
+	// SetImages 更新镜像版本
+	SetImages(cluster cluster.DomainObject, appName string, dockerImages string, progress chan string, ctx context.Context) bool
+	// SetReplicas 更新副本数量
+	SetReplicas(cluster cluster.DomainObject, appName string, dockerReplicas int, progress chan string) bool
+	// ExistsDocker 判断集群中是否有容器
+	ExistsDocker(cluster cluster.DomainObject, appName string) bool
+	// Restart 重启容器
+	Restart(cluster cluster.DomainObject, appName string, progress chan string) bool
 }
-
 type IGitDevice interface {
 	// GetGitPath 获取项目GIT源代码存的位置/var/lib/fops/git/{gitName}/
 	GetGitPath(gitHub string) string

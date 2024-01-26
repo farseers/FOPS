@@ -33,6 +33,7 @@ func (module Module) PostInitialize() {
 	device.RegisterCopyToDistDevice()
 	device.RegisterDirectoryDevice()
 	device.RegisterDockerDevice()
+	device.RegisterDockerSwarmDevice()
 	device.RegisterGitDevice()
 	device.RegisterKubectlDevice()
 	device.RegisterShellDevice()

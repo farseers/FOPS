@@ -3,25 +3,25 @@ module fops
 go 1.20
 
 require (
-	github.com/farseer-go/collections v0.12.0
-	github.com/farseer-go/data v0.12.0
-	github.com/farseer-go/elasticSearch v0.12.0
-	github.com/farseer-go/eventBus v0.12.0
-	github.com/farseer-go/fs v0.12.0
-	github.com/farseer-go/linkTrace v0.12.0
-	github.com/farseer-go/mapper v0.12.0
-	github.com/farseer-go/redis v0.12.0
-	github.com/farseer-go/tasks v0.12.0
-	github.com/farseer-go/utils v0.12.0
-	github.com/farseer-go/webapi v0.12.0
-	github.com/farseer-go/data/driver/clickhouse v0.12.0
+	github.com/farseer-go/collections v0.13.0
+	github.com/farseer-go/data v0.13.0
+	github.com/farseer-go/elasticSearch v0.13.0
+	github.com/farseer-go/eventBus v0.13.0
+	github.com/farseer-go/fs v0.13.0
+	github.com/farseer-go/linkTrace v0.13.0
+	github.com/farseer-go/mapper v0.13.0
+	github.com/farseer-go/redis v0.13.0
+	github.com/farseer-go/tasks v0.13.0
+	github.com/farseer-go/utils v0.13.0
+	github.com/farseer-go/webapi v0.13.0
+	github.com/farseer-go/data/driver/clickhouse v0.13.0
 )
 
 require (
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
-	github.com/farseer-go/cache v0.12.0 // indirect
-	github.com/farseer-go/queue v0.12.0 // indirect
+	github.com/farseer-go/cache v0.13.0 // indirect
+	github.com/farseer-go/queue v0.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect

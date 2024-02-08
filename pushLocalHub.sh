@@ -21,15 +21,3 @@ docker service create --name fops --replicas 1 -d --network=net \
 -l "traefik.http.routers.fops.tls=true" \
 -l "traefik.http.services.fops.loadbalancer.server.port=8889" \
 hub.fsgit.cc/fops:dev
-
-# docker
-docker service rm fops
-docker service create --name fops --replicas 1 -d --network=net \
---mount type=bind,src=/etc/localtime,dst=/etc/localtime \
---mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
---mount type=bind,src=/home/fops,dst=/var/lib/fops \
--l "traefik.http.routers.fops.rule=Host(\`fops.fsgit.cc\`)" \
--l "traefik.http.routers.fops.entrypoints=websecure" \
--l "traefik.http.routers.fops.tls=true" \
--l "traefik.http.services.fops.loadbalancer.server.port=8889" \
-hub.fsgit.cc/fops:107

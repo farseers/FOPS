@@ -20,7 +20,7 @@ COPY ./farseer-go .
 # 进入到项目目录中
 WORKDIR /src/fops
 # 编译
-RUN CGO_ENABLED=0 go build -o /app/fops-server -ldflags="-w -s" .
+RUN GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o /app/fops-server -ldflags="-w -s" .
 
 FROM steden88/cicd:1.0 AS base
 WORKDIR /app

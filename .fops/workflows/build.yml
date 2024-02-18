@@ -4,7 +4,7 @@ jobs:
     runs-on: steden88/cicd:1.0 # 工作流运行的环境
     steps:
       - name: Git clone # 拉取Git
-        uses: https://github.com/farseers/FOPS-Actions.git/checkout@v1
+        uses: farseers/FOPS-Actions/checkout@v1
 
       - name: Login docker # 登陆镜像
         uses: dockerLogin@v1

@@ -1,0 +1,24 @@
+name: build
+jobs:
+  build:
+    runs-on: steden88/cicd:1.0 # 工作流运行的环境
+    steps:
+      - name: Git clone # 拉取Git
+        uses: https://github.com/farseers/FOPS-Actions.git/checkout@v1
+
+      - name: Login docker # 登陆镜像
+        uses: dockerLogin@v1
+
+      - name: Build Dockerfile # 制作dockerfile
+        uses: dockerfile@v1
+
+      - name: Build Docker # 打包镜像
+        uses: dockerBuild@v1
+
+      - name: Upload Docker # 上传镜像
+        uses: dockerUpload@v1
+
+      - name: Update ImageVer # 更新镜像
+        uses: dockerswarmUpdateVer@v1
+
+        run: go build

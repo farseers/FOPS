@@ -37,7 +37,7 @@ func (repository *buildRepository) ToBuildList(appName string, pageSize int, pag
 
 // GetUnBuildInfo 获取未构建的任务
 func (repository *buildRepository) GetUnBuildInfo() apps.BuildEO {
-	po := context.MysqlContext.Build.Where("status = ?", eumBuildStatus.None).Asc("id").ToEntity() //  and build_server_id = ?
+	po := context.MysqlContext.Build.Where("status = ?", eumBuildStatus.None).Asc("id").ToEntity() //  and build_server_id = ?	, core.AppId
 	return mapper.Single[apps.BuildEO](po)
 }
 

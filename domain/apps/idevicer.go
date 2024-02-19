@@ -18,6 +18,16 @@ type IDockerDevice interface {
 	GetDockerHub(dockerHubAddress string) string
 	// GetDockerImage 生成镜像名称，如hub.fsgit.com/fops:1
 	GetDockerImage(dockerHubAddress string, projectName string, buildNumber int) string
+	// Run 运行容器
+	Run(name string, network string, dockerImage string, args []string, useRm bool, env EnvVO, progress chan string, ctx context.Context) bool
+	// Execute 执行容器命令
+	Execute(name string, execCmd string, env EnvVO, progress chan string, ctx context.Context) bool
+	// ExistsDocker 判断是否有容器在运行
+	ExistsDocker(dockerName string) bool
+	// Kill 停止容器
+	Kill(dockerName string)
+	// Remove 移除容器
+	Remove(dockerName string)
 	// Login 登陆容器仓库
 	Login(dockerHub string, loginName string, loginPwd string, progress chan string, env EnvVO, ctx context.Context) bool
 	// ExistsDockerfile dockerfile文件是否存在

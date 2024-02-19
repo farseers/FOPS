@@ -1,7 +1,9 @@
 package device
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"fops/domain/apps"
 	"fops/domain/apps/event"
 	"github.com/farseer-go/collections"
@@ -30,8 +32,8 @@ func (dockerDevice) GetDockerHub(dockerHubAddress string) string {
 	return dockerHub
 }
 
-func (device dockerDevice) GetDockerImage(dockerHubAddress string, projectName string, buildNumber int) string {
-	return device.GetDockerHub(dockerHubAddress) + "/" + projectName + ":" + strconv.Itoa(buildNumber)
+func (device dockerDevice) GetDockerImage(dockerHubAddress string, appName string, buildNumber int) string {
+	return device.GetDockerHub(dockerHubAddress) + "/" + appName + ":" + strconv.Itoa(buildNumber)
 }
 
 func (dockerDevice) Login(dockerHub string, loginName string, loginPwd string, progress chan string, env apps.EnvVO, ctx context.Context) bool {
@@ -57,6 +59,67 @@ func (dockerDevice) CreateDockerfile(projectName string, dockerfileContent strin
 		_ = os.RemoveAll(apps.DockerfilePath)
 	}
 	file.WriteString(apps.DockerfilePath, dockerfileContent)
+}
+
+func (dockerDevice) Run(name string, network string, dockerImage string, args []string, useRm bool, env apps.EnvVO, progress chan string, ctx context.Context) bool {
+	bf := bytes.Buffer{}
+	bf.WriteString("docker run")
+	if useRm {
+		bf.WriteString(" --rm")
+	}
+	if name != "" {
+		bf.WriteString(" --name ")
+		bf.WriteString(name)
+	}
+	if network != "" {
+		bf.WriteString(" --network=")
+		bf.WriteString(network)
+	}
+
+	if args != nil {
+		for _, arg := range args {
+			bf.WriteString(" " + arg)
+		}
+	}
+
+	bf.WriteString(" ")
+	bf.WriteString(dockerImage)
+
+	return exec.RunShellContext(ctx, bf.String(), progress, env.ToMap(), apps.DistRoot) == 0
+}
+
+func (dockerDevice) Execute(name string, execCmd string, env apps.EnvVO, progress chan string, ctx context.Context) bool {
+	bf := bytes.Buffer{}
+	bf.WriteString("docker exec ") // docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
+	bf.WriteString(name)
+	bf.WriteString(" ")
+	bf.WriteString(execCmd)
+	return exec.RunShellContext(ctx, bf.String(), progress, env.ToMap(), apps.DistRoot) == 0
+}
+
+func (dockerDevice) ExistsDocker(dockerName string) bool {
+	progress := make(chan string, 1000)
+	// docker inspect fops
+	var exitCode = exec.RunShell(fmt.Sprintf("docker inspect %s", dockerName), progress, nil, "")
+	lst := collections.NewListFromChan(progress)
+	if exitCode != 0 {
+		if lst.Contains("[]") && lst.ContainsPrefix("Error: No such object:") {
+			return false
+		}
+		return false
+	}
+	if lst.Contains("[]") && lst.ContainsPrefix("Error: No such object:") {
+		return false
+	}
+	return lst.ContainsAny(fmt.Sprintf("\"Name\": \"/%s\",", dockerName))
+}
+
+func (dockerDevice) Kill(dockerName string) {
+	exec.RunShell(fmt.Sprintf("docker kill %s", dockerName), make(chan string, 1000), nil, "")
+}
+
+func (dockerDevice) Remove(dockerName string) {
+	exec.RunShell(fmt.Sprintf("docker rm %s", dockerName), make(chan string, 1000), nil, "")
 }
 
 func (dockerDevice) Build(env apps.EnvVO, progress chan string, ctx context.Context) bool {

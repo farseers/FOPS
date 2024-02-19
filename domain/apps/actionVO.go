@@ -4,18 +4,21 @@ import (
 	"fmt"
 	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/parse"
+	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/http"
 	"strings"
 )
 
 type stepVO struct {
-	Index          int    // 步骤
-	Name           string // 名称
-	ActionName     string // action 名称
-	ActionVer      string // action 版本
-	ActionPath     string // 保存到本地的位置
-	ActionUrl      string // action下载地址
-	RepositoryName string // 仓库名称
+	Index             int            // 步骤
+	Name              string         // 名称
+	ActionName        string         // action 名称
+	ActionVer         string         // action 版本
+	ActionPath        string         // 保存到本地的位置
+	ActionDownloadUrl string         // action下载地址
+	RepositoryName    string         // 仓库名称
+	With              map[string]any // 参数
+	Run               string         // 运行脚本
 }
 
 type ActionVO struct {
@@ -27,6 +30,9 @@ type ActionVO struct {
 func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (ActionVO, error) {
 	// 通过http读取工作流定义的内容
 	workflowsYmlContent, _, err := http.RequestProxy("GET", workflowsYmlPath, nil, nil, "", 2000, configure.GetString("Fops.GitAgent"))
+	err = nil
+	workflowsYmlContent = file.ReadString("./.fops/workflows/build.yml")
+
 	if err != nil {
 		return ActionVO{}, fmt.Errorf("读取WorkflowsYml错误：%s", err.Error())
 	}
@@ -79,8 +85,16 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 				}
 
 				// https://github.com/farseer-go/fsctl/releases/download/v0.13.1/fsctl.Darwin.x86_64
-				step.ActionUrl = fmt.Sprintf("https://github.com/%s/releases/download/%s/%s", step.RepositoryName, step.ActionVer, step.ActionName)
+				step.ActionDownloadUrl = fmt.Sprintf("https://github.com/%s/releases/download/%s/%s", step.RepositoryName, step.ActionVer, step.ActionName)
 				step.ActionPath = ActionsRoot + step.RepositoryName + "/" + step.ActionVer + "/" + step.ActionName
+			}
+			// steps.with
+			if curStepsWith, b := workflowsYml.GetSubNodes(curSteps + "with"); b {
+				step.With = curStepsWith
+			}
+			// steps.run
+			if curStepsRun, b := workflowsYml.Get(curSteps + "run"); b {
+				step.Run = curStepsRun.(string)
 			}
 			act.Steps = append(act.Steps, step)
 		}

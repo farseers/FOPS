@@ -1,6 +1,7 @@
 package apps
 
 import (
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/str"
@@ -35,6 +36,7 @@ func (receiver *LogQueue) startPush() {
 			continue
 		}
 		prevContent = log
+		flog.Println(log)
 		// 写入日志文件
 		file.AppendLine(logfile, str.ToDateTime(time.Now())+" "+log)
 	}

@@ -6,14 +6,15 @@ import (
 )
 
 const (
-	FopsRoot         = "/var/lib/fops/"                   // FopsRoot Fops根目录
-	KubeRoot         = "/var/lib/fops/kube/"              // KubeRoot kubectlConfig配置
-	NpmModulesRoot   = "/var/lib/fops/npm"                // NpmModulesRoot NpmModules
-	DistRoot         = "/var/lib/fops/dist/"              // DistRoot 编译保存的根目录
-	GitRoot          = "/var/lib/fops/git/"               // GitRoot GIT根目录
-	DockerfilePath   = "/var/lib/fops/dist/Dockerfile"    // DockerfilePath Dockerfile文件地址
-	DockerIgnorePath = "/var/lib/fops/dist/.dockerignore" // DockerIgnorePath DockerIgnore文件地址
-	ShellRoot        = "/var/lib/fops/shell/"             // ShellRoot 生成Shell脚本的存放路径
+	FopsRoot         = "/var/lib/fops/"                   // Fops根目录
+	KubeRoot         = "/var/lib/fops/kube/"              // kubectlConfig配置
+	NpmModulesRoot   = "/var/lib/fops/npm"                // NpmModules
+	DistRoot         = "/var/lib/fops/dist/"              //  编译保存的根目录
+	GitRoot          = "/var/lib/fops/git/"               // GIT根目录
+	DockerfilePath   = "/var/lib/fops/dist/Dockerfile"    // Dockerfile文件地址
+	DockerIgnorePath = "/var/lib/fops/dist/.dockerignore" // DockerIgnore文件地址
+	ShellRoot        = "/var/lib/fops/shell/"             // 生成Shell脚本的存放路径
+	ActionsRoot      = "/var/lib/fops/actions/"           // 执行Actions的缓存目录
 )
 
 // EnvVO 构建时的环境变量

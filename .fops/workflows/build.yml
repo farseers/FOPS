@@ -3,6 +3,11 @@ jobs:
   build:
     runs-on: steden88/cicd:1.0 # 工作流运行的环境
     steps:
+      - name: 开启Git代理
+        uses: gitProxy@v1
+        with:
+          proxy: "socks5://192.168.1.88:7890"
+        #run: git config --global http.https://github.com.proxy socks5://192.168.1.88:7890 && git config --global https.https://github.com.proxy socks5://192.168.1.88:7890
       - name: Git clone # 拉取Git
         uses: farseers/FOPS-Actions/checkout@v1
         with:

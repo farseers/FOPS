@@ -20,4 +20,5 @@ type AppsPO struct {
 	DockerReplicas    int                          `gorm:"type:int;not null;comment:副本数量"`
 	DockerNodeRole    string                       `gorm:"size:256;not null;comment:容器节点角色"`
 	AdditionalScripts string                       `gorm:"type:text;not null;comment:首次创建应用时附加脚本"`
+	WorkflowsYmlPath  string                       `gorm:"size:256;not null;comment:工作流定义的路径"`
 }

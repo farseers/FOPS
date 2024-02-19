@@ -20,6 +20,7 @@ type DomainObject struct {
 	DockerReplicas    int                     // 副本数量
 	DockerNodeRole    string                  // 容器节点角色 manager or worker
 	AdditionalScripts string                  // 首次创建应用时附加脚本
+	WorkflowsYmlPath  string                  // 工作流定义的路径（默认：/.fops/workflows/build.yml）
 }
 
 func (receiver *DomainObject) IsNil() bool {

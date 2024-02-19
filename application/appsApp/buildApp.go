@@ -7,6 +7,7 @@ import (
 	"fops/domain/apps"
 	"fops/domain/cluster"
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/webapi/action"
@@ -27,14 +28,15 @@ func BuildAdd(appName string, clusterId int64, appsRepository apps.Repository, c
 
 	buildNumber := appsRepository.GetBuildNumber(appName) + 1
 	buildDO := apps.BuildEO{
-		ClusterId:   clusterId,
-		BuildNumber: buildNumber,
-		CreateAt:    dateTime.Now(),
-		FinishAt:    dateTime.Now(),
-		Env:         apps.EnvVO{},
-		AppName:     appName,
-		Dockerfile:  appDO.Dockerfile,
-		ShellScript: appDO.ShellScript,
+		BuildServerId: core.AppId,
+		ClusterId:     clusterId,
+		BuildNumber:   buildNumber,
+		CreateAt:      dateTime.Now(),
+		FinishAt:      dateTime.Now(),
+		Env:           apps.EnvVO{},
+		AppName:       appName,
+		Dockerfile:    appDO.Dockerfile,
+		ShellScript:   appDO.ShellScript,
 	}
 	err := appsRepository.AddBuild(buildDO)
 	exception.ThrowWebExceptionError(403, err)

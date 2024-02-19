@@ -1,14 +1,22 @@
 package apps
 
 import (
+	"bytes"
 	"context"
+	"fmt"
 	"fops/domain/_/eumBuildStatus"
 	"fops/domain/apps/event"
 	"fops/domain/cluster"
+	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
+	"github.com/farseer-go/fs/parse"
+	"github.com/farseer-go/fs/sonyflake"
 	"github.com/farseer-go/utils/file"
+	"github.com/farseer-go/utils/http"
+	"os"
+	"path"
 	"strings"
 )
 
@@ -21,11 +29,12 @@ type BuildEO struct {
 	IsSuccess         bool                // 是否成功
 	CreateAt          dateTime.DateTime   // 开始时间
 	FinishAt          dateTime.DateTime   // 完成时间
-	BuildServerId     int64               // 构建的服务端id
+	BuildServerId     int64               // 构建的服务端id（防止生产、开发环境混淆）
 	Log               []string            // 构建日志
 	Env               EnvVO               // 环境变量
 	AppName           string              // 应用名称
 	Dockerfile        string              // Dockerfile内容
+	WorkflowsAction   ActionVO            // 工作流定义的内容（通过读取WorkflowsYmlPath）
 	ShellScript       string              // Shell脚本
 	dockerDevice      IDockerDevice
 	dockerSwarmDevice IDockerSwarmDevice
@@ -72,40 +81,102 @@ func (receiver *BuildEO) StartBuild() {
 
 	defer receiver.catch()
 
-	// 打印环境变量
-	receiver.Env.Print(receiver.logQueue.progress)
+	// 生成Workflows文件
+	receiver.checkResult(receiver.GenerateWorkflowsContent())
 
-	// 前置检查
-	receiver.directoryDevice.Check(receiver.logQueue.progress)
+	receiver.logQueue.progress <- "读取到工作流文件：" + receiver.WorkflowsAction.Name
 
-	// 拉取主仓库及依赖仓库
-	receiver.checkResult(receiver.gitDevice.CloneOrPullAndDependent(receiver.getGits(), receiver.logQueue.progress, receiver.ctx))
-
-	// 登陆镜像仓库(先登陆，如果失败了，后则面也不需要编译、打包了)
-	receiver.checkResult(receiver.dockerDevice.Login(clusterDO.DockerHub, clusterDO.DockerUserName, clusterDO.DockerUserPwd, receiver.logQueue.progress, receiver.Env, receiver.ctx))
-
-	// 将需要打包的源代码，复制到dist目录
-	receiver.copyToDistDevice.Copy(receiver.getGits(), receiver.Env, receiver.logQueue.progress)
-
-	// 生成Dockerfile文件
-	receiver.checkResult(receiver.GenerateDockerfileContent())
-	receiver.dockerDevice.CreateDockerfile(receiver.AppName, receiver.Dockerfile, receiver.ctx)
-
-	// docker打包
-	receiver.checkResult(receiver.dockerDevice.Build(receiver.Env, receiver.logQueue.progress, receiver.ctx))
-
-	// docker上传
-	receiver.checkResult(receiver.dockerDevice.Push(receiver.Env, receiver.logQueue.progress, receiver.ctx))
-
-	// 首次创建还是更新镜像
-	if receiver.dockerSwarmDevice.ExistsDocker(clusterDO, receiver.AppName) {
-		// 更新镜像
-		//receiver.checkResult(receiver.kubectlDevice.SetImages(receiver.Cluster, receiver.AppName, receiver.Env.DockerImage, receiver.Project.K8SControllersType, receiver.progress, receiver.ctx))
-		receiver.checkResult(receiver.dockerSwarmDevice.SetImages(clusterDO, receiver.AppName, receiver.Env.DockerImage, receiver.logQueue.progress, receiver.ctx))
-	} else {
-		// 创建容器服务
-		receiver.checkResult(receiver.dockerSwarmDevice.CreateService(receiver.AppName, receiver.apps.DockerNodeRole, receiver.apps.AdditionalScripts, clusterDO.DockerNetwork, receiver.apps.DockerReplicas, receiver.Env.DockerImage, receiver.logQueue.progress, receiver.ctx))
+	// 启动构建系统
+	//dockerName := "FOPS-Build-" + strings.NewReplacer(":", "-", ".", "-", "/", "-").Replace(receiver.Env.DockerImage)
+	dockerName := "FOPS-Build"
+	if !receiver.dockerDevice.ExistsDocker(dockerName) {
+		receiver.logQueue.progress <- "启动构建系统：" + receiver.WorkflowsAction.RunsOn
+		receiver.checkResult(receiver.dockerDevice.Run(dockerName, "host", receiver.WorkflowsAction.RunsOn, []string{"-itd", "-v /var/lib/fops:/var/lib/fops", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-v /usr/bin/docker:/usr/bin/docker"}, true, receiver.Env, receiver.logQueue.progress, receiver.ctx))
 	}
+	//defer receiver.dockerDevice.Kill(dockerName)
+	receiver.logQueue.progress <- "---------------------------------------------------------"
+
+	// 运行step
+	for _, step := range receiver.WorkflowsAction.Steps {
+		receiver.logQueue.progress <- fmt.Sprintf("执行 %d %s: %s", step.Index, step.Name, step.ActionName)
+
+		// 使用action程序，需要判断是否要下载
+		if step.ActionPath != "" {
+			if !file.IsExists(step.ActionPath) {
+				receiver.logQueue.progress <- fmt.Sprintf("下载%s", step.ActionDownloadUrl)
+				// 先创建目录
+				file.CreateDir766(path.Dir(step.ActionPath))
+				// 下载文件
+				if err := http.Download(step.ActionDownloadUrl, step.ActionPath, 0, configure.GetString("Fops.GitAgent")); err != nil {
+					receiver.logQueue.progress <- fmt.Sprintf("下载action %s 时发生错误：%s", step.ActionDownloadUrl, err.Error())
+					receiver.checkResult(false)
+				}
+				_ = os.Chmod(step.ActionPath, 777)
+			}
+
+			// 拼接with参数
+			bf := bytes.Buffer{}
+			bf.WriteString(step.ActionPath)
+			// 支持checkout默认拉取应用
+			if step.ActionName == "checkout" && len(step.With) == 0 {
+				bf.WriteString("repository=" + receiver.appGit.Hub)
+				bf.WriteString("|branch=" + receiver.appGit.Branch)
+				bf.WriteString("|username=" + receiver.appGit.UserName)
+				bf.WriteString("|password=" + receiver.appGit.UserPwd)
+				bf.WriteString("|path=" + receiver.appGit.Dir)
+			} else {
+				for k, v := range step.With {
+					bf.WriteString(k)
+					bf.WriteString("=")
+					bf.WriteString(parse.ToString(v))
+					bf.WriteString("|")
+				}
+			}
+			// 执行 docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
+			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, strings.TrimRight(bf.String(), "|"), receiver.Env, receiver.logQueue.progress, receiver.ctx))
+		}
+
+		// 运行脚本
+		if step.Run != "" {
+			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.Run, receiver.Env, receiver.logQueue.progress, receiver.ctx))
+		}
+		receiver.logQueue.progress <- "---------------------------------------------------------"
+	}
+
+	//// 打印环境变量
+	//receiver.Env.Print(receiver.logQueue.progress)
+	//
+	//// 前置检查
+	//receiver.directoryDevice.Check(receiver.logQueue.progress)
+	//
+	//// 拉取主仓库及依赖仓库
+	//receiver.checkResult(receiver.gitDevice.CloneOrPullAndDependent(receiver.getGits(), receiver.logQueue.progress, receiver.ctx))
+	//
+	//// 登陆镜像仓库(先登陆，如果失败了，后则面也不需要编译、打包了)
+	//receiver.checkResult(receiver.dockerDevice.Login(clusterDO.DockerHub, clusterDO.DockerUserName, clusterDO.DockerUserPwd, receiver.logQueue.progress, receiver.Env, receiver.ctx))
+	//
+	//// 将需要打包的源代码，复制到dist目录
+	//receiver.copyToDistDevice.Copy(receiver.getGits(), receiver.Env, receiver.logQueue.progress)
+	//
+	//// 生成Dockerfile文件
+	//receiver.checkResult(receiver.GenerateDockerfileContent())
+	//receiver.dockerDevice.CreateDockerfile(receiver.AppName, receiver.Dockerfile, receiver.ctx)
+	//
+	//// docker打包
+	//receiver.checkResult(receiver.dockerDevice.Build(receiver.Env, receiver.logQueue.progress, receiver.ctx))
+	//
+	//// docker上传
+	//receiver.checkResult(receiver.dockerDevice.Push(receiver.Env, receiver.logQueue.progress, receiver.ctx))
+	//
+	//// 首次创建还是更新镜像
+	//if receiver.dockerSwarmDevice.ExistsDocker(clusterDO, receiver.AppName) {
+	//	// 更新镜像
+	//	//receiver.checkResult(receiver.kubectlDevice.SetImages(receiver.Cluster, receiver.AppName, receiver.Env.DockerImage, receiver.Project.K8SControllersType, receiver.progress, receiver.ctx))
+	//	receiver.checkResult(receiver.dockerSwarmDevice.SetImages(clusterDO, receiver.AppName, receiver.Env.DockerImage, receiver.logQueue.progress, receiver.ctx))
+	//} else {
+	//	// 创建容器服务
+	//	receiver.checkResult(receiver.dockerSwarmDevice.CreateService(receiver.AppName, receiver.apps.DockerNodeRole, receiver.apps.AdditionalScripts, clusterDO.DockerNetwork, receiver.apps.DockerReplicas, receiver.Env.DockerImage, receiver.logQueue.progress, receiver.ctx))
+	//}
 	receiver.success()
 }
 
@@ -189,13 +260,13 @@ func (receiver *BuildEO) getGits() []GitEO {
 	return gits
 }
 
-// GenerateDockerfileContent 替换模板
+// GenerateDockerfileContent 生成Dockerfile
 func (receiver *BuildEO) GenerateDockerfileContent() bool {
 	// 为空时，读取应用git文件中的Dockerfile文件
 	if receiver.Dockerfile == "" {
 		// 如果没有自定义，则使用应用仓库根目录的Dockerfile文件
 		if receiver.apps.DockerfilePath == "" {
-			receiver.apps.DockerfilePath = receiver.appGit.GetAbsolutePath() + "Dockerfile"
+			receiver.apps.DockerfilePath = "Dockerfile"
 		} else {
 			// 自定义Dockerfile路径
 			if strings.HasPrefix(receiver.apps.DockerfilePath, "/") {
@@ -203,8 +274,8 @@ func (receiver *BuildEO) GenerateDockerfileContent() bool {
 			} else if strings.HasPrefix(receiver.apps.DockerfilePath, "./") {
 				receiver.apps.DockerfilePath = receiver.apps.DockerfilePath[2:]
 			}
-			receiver.apps.DockerfilePath = receiver.appGit.GetAbsolutePath() + receiver.apps.DockerfilePath
 		}
+		receiver.apps.DockerfilePath = receiver.appGit.GetAbsolutePath() + receiver.apps.DockerfilePath
 		receiver.Dockerfile = file.ReadString(receiver.apps.DockerfilePath)
 		if receiver.Dockerfile == "" {
 			receiver.logQueue.progress <- "Dockerfile没有定义。"
@@ -219,5 +290,28 @@ func (receiver *BuildEO) GenerateDockerfileContent() bool {
 	//receiver.Dockerfile = strings.ReplaceAll(receiver.Dockerfile, "${entry_point}", do.Project.EntryPoint)
 	//receiver.Dockerfile = strings.ReplaceAll(receiver.Dockerfile, "${entry_port}", strconv.Itoa(do.Project.EntryPort))
 	//receiver.Dockerfile = strings.ReplaceAll(receiver.Dockerfile, "${project_path}", strings.TrimPrefix(do.Project.Path, "/"))
+	return true
+}
+
+// GenerateWorkflowsContent 生成Workflows
+func (receiver *BuildEO) GenerateWorkflowsContent() bool {
+	// 如果没有自定义，则使用应用仓库根目录的.fops/workflows/build.yml文件
+	if receiver.apps.WorkflowsYmlPath == "" {
+		receiver.apps.WorkflowsYmlPath = receiver.appGit.GetRawContent(".fops/workflows/build.yml")
+		// 自定义WorkflowsYmlPath路径
+	} else if !strings.HasPrefix(receiver.apps.WorkflowsYmlPath, "http://") && !strings.HasPrefix(receiver.apps.WorkflowsYmlPath, "https://") {
+		receiver.apps.WorkflowsYmlPath = receiver.appGit.GetRawContent(receiver.apps.WorkflowsYmlPath)
+	}
+
+	receiver.apps.WorkflowsYmlPath = receiver.apps.WorkflowsYmlPath + "?" + parse.ToString(sonyflake.GenerateId())
+	receiver.logQueue.progress <- "加载工作流文件：" + receiver.apps.WorkflowsYmlPath
+
+	// 通过http读取工作流定义的内容
+	var err error
+	receiver.WorkflowsAction, err = LoadWorkflows(receiver.apps.WorkflowsYmlPath, receiver.AppName, receiver.Env.GitName)
+	if err != nil {
+		receiver.logQueue.progress <- err.Error()
+		return false
+	}
 	return true
 }

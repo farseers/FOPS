@@ -5,7 +5,12 @@ jobs:
     steps:
       - name: Git clone # 拉取Git
         uses: farseers/FOPS-Actions/checkout@v1
-
+        with:
+          repository: https://github.com/farseers/FOPS.git
+          branch: main
+          username: test
+          password: 123456
+          path: fops
       - name: Login docker # 登陆镜像
         uses: dockerLogin@v1
 

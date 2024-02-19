@@ -14,11 +14,14 @@ type stepVO struct {
 	Name              string         // 名称
 	ActionName        string         // action 名称
 	ActionVer         string         // action 版本
-	ActionPath        string         // 保存到本地的位置
 	ActionDownloadUrl string         // action下载地址
 	RepositoryName    string         // 仓库名称
 	With              map[string]any // 参数
 	Run               string         // 运行脚本
+}
+
+func (receiver *stepVO) GetActionPath() string {
+	return ActionsRoot + receiver.RepositoryName + "/" + receiver.ActionVer + "/" + receiver.ActionName
 }
 
 type ActionVO struct {
@@ -64,7 +67,8 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 		stepsLength := len(steps.([]any))
 		for i := 0; i < stepsLength; i++ {
 			step := stepVO{
-				Index: i + 1,
+				Index: i + 2,
+				With:  make(map[string]any),
 			}
 			curSteps := fmt.Sprintf("jobs.build.steps[%d].", i)
 			// steps.name
@@ -86,12 +90,12 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 
 				// https://github.com/farseer-go/fsctl/releases/download/v0.13.1/fsctl.Darwin.x86_64
 				step.ActionDownloadUrl = fmt.Sprintf("https://github.com/%s/releases/download/%s/%s", step.RepositoryName, step.ActionVer, step.ActionName)
-				step.ActionPath = ActionsRoot + step.RepositoryName + "/" + step.ActionVer + "/" + step.ActionName
 			}
 			// steps.with
 			if curStepsWith, b := workflowsYml.GetSubNodes(curSteps + "with"); b {
 				step.With = curStepsWith
 			}
+
 			// steps.run
 			if curStepsRun, b := workflowsYml.Get(curSteps + "run"); b {
 				step.Run = curStepsRun.(string)

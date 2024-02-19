@@ -101,39 +101,57 @@ func (receiver *BuildEO) StartBuild() {
 		receiver.logQueue.progress <- fmt.Sprintf("执行 %d %s: %s", step.Index, step.Name, step.ActionName)
 
 		// 使用action程序，需要判断是否要下载
-		if step.ActionPath != "" {
-			if !file.IsExists(step.ActionPath) {
-				receiver.logQueue.progress <- fmt.Sprintf("下载%s", step.ActionDownloadUrl)
+		if step.GetActionPath() != "" {
+			if !file.IsExists(step.GetActionPath()) {
+				receiver.logQueue.progress <- fmt.Sprintf("下载 %s", step.ActionDownloadUrl)
 				// 先创建目录
-				file.CreateDir766(path.Dir(step.ActionPath))
+				file.CreateDir766(path.Dir(step.GetActionPath()))
 				// 下载文件
-				if err := http.Download(step.ActionDownloadUrl, step.ActionPath, 0, configure.GetString("Fops.GitAgent")); err != nil {
+				if err := http.Download(step.ActionDownloadUrl, step.GetActionPath(), 0, configure.GetString("Fops.GitAgent")); err != nil {
 					receiver.logQueue.progress <- fmt.Sprintf("下载action %s 时发生错误：%s", step.ActionDownloadUrl, err.Error())
 					receiver.checkResult(false)
 				}
-				_ = os.Chmod(step.ActionPath, 777)
+				_ = os.Chmod(step.GetActionPath(), 777)
 			}
 
 			// 拼接with参数
 			bf := bytes.Buffer{}
-			bf.WriteString(step.ActionPath)
-			// 支持checkout默认拉取应用
-			if step.ActionName == "checkout" && len(step.With) == 0 {
-				bf.WriteString("repository=" + receiver.appGit.Hub)
-				bf.WriteString("|branch=" + receiver.appGit.Branch)
-				bf.WriteString("|username=" + receiver.appGit.UserName)
-				bf.WriteString("|password=" + receiver.appGit.UserPwd)
-				bf.WriteString("|path=" + receiver.appGit.Dir)
-			} else {
-				for k, v := range step.With {
-					bf.WriteString(k)
-					bf.WriteString("=")
-					bf.WriteString(parse.ToString(v))
-					bf.WriteString("|")
+			bf.WriteString(step.GetActionPath())
+			bf.WriteString(" ")
+
+			step.With["distRoot"] = DistRoot
+			step.With["gitRoot"] = GitRoot
+			step.With["fopsRoot"] = FopsRoot
+			step.With["npmModulesRoot"] = NpmModulesRoot
+			step.With["kubeRoot"] = KubeRoot
+			step.With["dockerImage"] = receiver.Env.DockerImage
+			step.With["dockerfilePath"] = receiver.apps.DockerfilePath
+			step.With["appName"] = receiver.apps.AppName
+			step.With["buildId"] = receiver.Env.BuildId
+			step.With["buildNumber"] = receiver.Env.BuildNumber
+			step.With["appAbsolutePath"] = receiver.appGit.GetAbsolutePath()
+
+			switch step.ActionName {
+			case "checkout": // 支持checkout默认拉取应用
+				if len(step.With) == 0 {
+					step.With["hub"] = receiver.appGit.Hub
+					step.With["branch"] = receiver.appGit.Branch
+					step.With["username"] = receiver.appGit.UserName
+					step.With["password"] = receiver.appGit.UserPwd
+					step.With["path"] = receiver.appGit.Dir
 				}
 			}
+
+			// 定义的with参数
+			for k, v := range step.With {
+				bf.WriteString(k)
+				bf.WriteString("=")
+				bf.WriteString(parse.ToString(v))
+				bf.WriteString(",")
+			}
+
 			// 执行 docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
-			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, strings.TrimRight(bf.String(), "|"), receiver.Env, receiver.logQueue.progress, receiver.ctx))
+			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, strings.TrimRight(bf.String(), ","), receiver.Env, receiver.logQueue.progress, receiver.ctx))
 		}
 
 		// 运行脚本
@@ -163,7 +181,7 @@ func (receiver *BuildEO) StartBuild() {
 	//receiver.dockerDevice.CreateDockerfile(receiver.AppName, receiver.Dockerfile, receiver.ctx)
 	//
 	//// docker打包
-	//receiver.checkResult(receiver.dockerDevice.Build(receiver.Env, receiver.logQueue.progress, receiver.ctx))
+	receiver.checkResult(receiver.dockerDevice.Build(receiver.Env, receiver.logQueue.progress, receiver.ctx))
 	//
 	//// docker上传
 	//receiver.checkResult(receiver.dockerDevice.Push(receiver.Env, receiver.logQueue.progress, receiver.ctx))
@@ -281,6 +299,7 @@ func (receiver *BuildEO) GenerateDockerfileContent() bool {
 			receiver.logQueue.progress <- "Dockerfile没有定义。"
 			return false
 		}
+		return true
 	}
 
 	// 替换项目名称
@@ -313,5 +332,16 @@ func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 		receiver.logQueue.progress <- err.Error()
 		return false
 	}
+
+	receiver.WorkflowsAction.Steps = append([]stepVO{
+		{
+			Index:             1,
+			Name:              "初始化环境",
+			ActionName:        "clear",
+			ActionVer:         "v1",
+			ActionDownloadUrl: "https://github.com/farseers/FOPS-Actions/releases/download/v1/clear",
+			RepositoryName:    "farseers/FOPS-Actions",
+		},
+	}, receiver.WorkflowsAction.Steps...)
 	return true
 }

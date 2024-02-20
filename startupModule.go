@@ -1,13 +1,9 @@
 package main
 
 import (
-	"fops/application/appsApp"
-	"fops/domain/apps"
-	"fops/domain/cluster"
 	"fops/infrastructure"
 	"fops/interfaces"
 	"github.com/farseer-go/fs/configure"
-	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/modules"
 	"github.com/farseer-go/utils/exec"
@@ -38,7 +34,7 @@ func (module StartupModule) PostInitialize() {
 		exec.RunShell("git config --global --unset https.https://github.com.proxy", receiveOutput, nil, "", false)
 	}
 
-	appsApp.BuildAdd("fops", 1, container.Resolve[apps.Repository](), container.Resolve[cluster.Repository]())
+	//appsApp.BuildAdd("fops", 1, container.Resolve[apps.Repository](), container.Resolve[cluster.Repository]())
 }
 
 func (module StartupModule) Shutdown() {

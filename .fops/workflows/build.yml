@@ -43,11 +43,11 @@ jobs:
 
       - name: 编译前端
         run:
+          - mkdir wwwroot
           - cd ./wwwsrc
           - npm install
           - npm run build
-          - mkdir wwwroot
-          - cp -r ./wwwsrc/dist/* ./wwwroot/
+          - cp -r dist/* ../wwwroot/
 
       - name: 打包镜像
         uses: dockerBuild@v1

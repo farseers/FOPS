@@ -14,22 +14,17 @@ jobs:
       - name: 拉取框架fs
         uses: checkout@v1
         with:
-          hub: https://github.com/farseer-go/fs.git
-          branch: main
-          username: test
-          password: 123456
-          path: farseer-go/fs
+          gitHub: https://github.com/farseer-go/fs.git
+          gitBranch: main
+          gitUserName: test
+          gitUserPwd: 123456
+          gitPath: farseer-go/fs
 
-#      - name: Login docker # 登陆镜像
-#        uses: dockerLogin@v1
-
-      - name: Build Docker # 打包镜像
+      - name: 打包镜像
         uses: dockerBuild@v1
 
-      - name: Upload Docker # 上传镜像
-        uses: dockerUpload@v1
+      - name: 上传镜像
+        uses: dockerPush@v1
 
-      - name: Update ImageVer # 更新镜像
+      - name: 更新镜像
         uses: dockerswarmUpdateVer@v1
-
-        run: go build

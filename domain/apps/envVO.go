@@ -7,6 +7,7 @@ import (
 
 const (
 	FopsRoot         = "/var/lib/fops/"                   // Fops根目录
+	WithJsonPath     = "/var/lib/fops/dist/with.json"     // with.json文件位置
 	KubeRoot         = "/var/lib/fops/kube/"              // kubectlConfig配置
 	NpmModulesRoot   = "/var/lib/fops/npm"                // NpmModules
 	DistRoot         = "/var/lib/fops/dist/"              //  编译保存的根目录

@@ -12,6 +12,7 @@ import (
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/str"
 	"os"
+	"path"
 	"regexp"
 	"strconv"
 )
@@ -61,15 +62,15 @@ func (dockerDevice) CreateDockerfile(projectName string, dockerfileContent strin
 	file.WriteString(apps.DockerfilePath, dockerfileContent)
 }
 
-func (dockerDevice) Run(name string, network string, dockerImage string, args []string, useRm bool, env apps.EnvVO, progress chan string, ctx context.Context) bool {
+func (dockerDevice) Run(dockerName string, network string, dockerImage string, args []string, useRm bool, env apps.EnvVO, progress chan string, ctx context.Context) bool {
 	bf := bytes.Buffer{}
 	bf.WriteString("docker run")
 	if useRm {
 		bf.WriteString(" --rm")
 	}
-	if name != "" {
+	if dockerName != "" {
 		bf.WriteString(" --name ")
-		bf.WriteString(name)
+		bf.WriteString(dockerName)
 	}
 	if network != "" {
 		bf.WriteString(" --network=")
@@ -88,12 +89,25 @@ func (dockerDevice) Run(name string, network string, dockerImage string, args []
 	return exec.RunShellContext(ctx, bf.String(), progress, env.ToMap(), apps.DistRoot) == 0
 }
 
-func (dockerDevice) Execute(name string, execCmd string, env apps.EnvVO, progress chan string, ctx context.Context) bool {
+func (dockerDevice) Execute(dockerName string, execCmd string, env apps.EnvVO, progress chan string, ctx context.Context) bool {
 	bf := bytes.Buffer{}
 	bf.WriteString("docker exec ") // docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
-	bf.WriteString(name)
+	bf.WriteString(dockerName)
 	bf.WriteString(" ")
 	bf.WriteString(execCmd)
+	return exec.RunShellContext(ctx, bf.String(), progress, env.ToMap(), apps.DistRoot) == 0
+}
+
+func (device dockerDevice) Copy(dockerName string, sourceFile, destFile string, env apps.EnvVO, progress chan string, ctx context.Context) bool {
+	device.Execute(dockerName, "mkdir -p "+path.Dir(destFile), env, progress, ctx)
+
+	bf := bytes.Buffer{}
+	bf.WriteString("docker cp ") // docker cp /var/lib/fops/dist/Dockerfile FOPS-Build:/var/lib/fops/dist/Dockerfile
+	bf.WriteString(sourceFile)
+	bf.WriteString(" ")
+	bf.WriteString(dockerName)
+	bf.WriteString(":")
+	bf.WriteString(destFile)
 	return exec.RunShellContext(ctx, bf.String(), progress, env.ToMap(), apps.DistRoot) == 0
 }
 

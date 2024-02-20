@@ -22,6 +22,8 @@ type IDockerDevice interface {
 	Run(name string, network string, dockerImage string, args []string, useRm bool, env EnvVO, progress chan string, ctx context.Context) bool
 	// Execute 执行容器命令
 	Execute(name string, execCmd string, env EnvVO, progress chan string, ctx context.Context) bool
+	// Copy 复制文件到容器内
+	Copy(dockerName string, sourceFile, destFile string, env EnvVO, progress chan string, ctx context.Context) bool
 	// ExistsDocker 判断是否有容器在运行
 	ExistsDocker(dockerName string) bool
 	// Kill 停止容器

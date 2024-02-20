@@ -1,8 +1,8 @@
 package apps
 
 import (
-	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"fops/domain/_/eumBuildStatus"
 	"fops/domain/apps/event"
@@ -84,14 +84,14 @@ func (receiver *BuildEO) StartBuild() {
 	// 生成Workflows文件
 	receiver.checkResult(receiver.GenerateWorkflowsContent())
 
-	receiver.logQueue.progress <- "读取到工作流文件：" + receiver.WorkflowsAction.Name
-
 	// 启动构建系统
 	//dockerName := "FOPS-Build-" + strings.NewReplacer(":", "-", ".", "-", "/", "-").Replace(receiver.Env.DockerImage)
 	dockerName := "FOPS-Build"
 	if !receiver.dockerDevice.ExistsDocker(dockerName) {
 		receiver.logQueue.progress <- "启动构建系统：" + receiver.WorkflowsAction.RunsOn
-		receiver.checkResult(receiver.dockerDevice.Run(dockerName, "host", receiver.WorkflowsAction.RunsOn, []string{"-itd", "-v /var/lib/fops:/var/lib/fops", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-v /usr/bin/docker:/usr/bin/docker"}, true, receiver.Env, receiver.logQueue.progress, receiver.ctx))
+		//args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-v /usr/bin/docker:/usr/bin/docker", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
+		args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
+		receiver.checkResult(receiver.dockerDevice.Run(dockerName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env, receiver.logQueue.progress, receiver.ctx)) // , "-v /var/lib/fops:/var/lib/fops"
 	}
 	//defer receiver.dockerDevice.Kill(dockerName)
 	receiver.logQueue.progress <- "---------------------------------------------------------"
@@ -114,44 +114,44 @@ func (receiver *BuildEO) StartBuild() {
 				_ = os.Chmod(step.GetActionPath(), 777)
 			}
 
-			// 拼接with参数
-			bf := bytes.Buffer{}
-			bf.WriteString(step.GetActionPath())
-			bf.WriteString(" ")
+			// 将step文件复制到容器
+			receiver.dockerDevice.Copy(dockerName, step.GetActionPath(), step.GetActionPath(), receiver.Env, make(chan string, 100), receiver.ctx)
 
-			step.With["distRoot"] = DistRoot
-			step.With["gitRoot"] = GitRoot
-			step.With["fopsRoot"] = FopsRoot
-			step.With["npmModulesRoot"] = NpmModulesRoot
-			step.With["kubeRoot"] = KubeRoot
-			step.With["dockerImage"] = receiver.Env.DockerImage
-			step.With["dockerfilePath"] = receiver.apps.DockerfilePath
+			// 设置with参数
 			step.With["appName"] = receiver.apps.AppName
 			step.With["buildId"] = receiver.Env.BuildId
 			step.With["buildNumber"] = receiver.Env.BuildNumber
+			// 应用的git根目录
 			step.With["appAbsolutePath"] = receiver.appGit.GetAbsolutePath()
 
-			switch step.ActionName {
-			case "checkout": // 支持checkout默认拉取应用
-				if len(step.With) == 0 {
-					step.With["hub"] = receiver.appGit.Hub
-					step.With["branch"] = receiver.appGit.Branch
-					step.With["username"] = receiver.appGit.UserName
-					step.With["password"] = receiver.appGit.UserPwd
-					step.With["path"] = receiver.appGit.Dir
-				}
+			// docker
+			step.With["dockerImage"] = receiver.Env.DockerImage
+			step.With["dockerfilePath"] = receiver.apps.DockerfilePath
+			step.With["dockerHub"] = clusterDO.DockerHub
+			step.With["dockerUserName"] = clusterDO.DockerUserName
+			step.With["dockerUserPwd"] = clusterDO.DockerUserPwd
+			step.With["dockerNodeRole"] = receiver.apps.DockerNodeRole
+			step.With["dockerNetwork"] = clusterDO.DockerNetwork
+			step.With["dockerReplicas"] = receiver.apps.DockerReplicas
+			step.With["dockerAdditionalScripts"] = receiver.apps.AdditionalScripts
+
+			// 支持checkout默认拉取应用
+			if parse.ToString(step.With["gitHub"]) == "" {
+				step.With["gitHub"] = receiver.appGit.Hub
+				step.With["gitBranch"] = receiver.appGit.Branch
+				step.With["gitUserName"] = receiver.appGit.UserName
+				step.With["gitUserPwd"] = receiver.appGit.UserPwd
+				step.With["gitPath"] = receiver.appGit.Dir
 			}
 
-			// 定义的with参数
-			for k, v := range step.With {
-				bf.WriteString(k)
-				bf.WriteString("=")
-				bf.WriteString(parse.ToString(v))
-				bf.WriteString(",")
-			}
+			// 生成with.json文件，并复制到容器
+			file.Delete(WithJsonPath)
+			withContent, _ := json.Marshal(step.With)
+			file.WriteByte(WithJsonPath, withContent)
+			receiver.dockerDevice.Copy(dockerName, WithJsonPath, WithJsonPath, receiver.Env, make(chan string, 100), receiver.ctx)
 
 			// 执行 docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
-			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, strings.TrimRight(bf.String(), ","), receiver.Env, receiver.logQueue.progress, receiver.ctx))
+			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.GetActionPath(), receiver.Env, receiver.logQueue.progress, receiver.ctx))
 		}
 
 		// 运行脚本
@@ -181,7 +181,7 @@ func (receiver *BuildEO) StartBuild() {
 	//receiver.dockerDevice.CreateDockerfile(receiver.AppName, receiver.Dockerfile, receiver.ctx)
 	//
 	//// docker打包
-	receiver.checkResult(receiver.dockerDevice.Build(receiver.Env, receiver.logQueue.progress, receiver.ctx))
+	//receiver.checkResult(receiver.dockerDevice.Build(receiver.Env, receiver.logQueue.progress, receiver.ctx))
 	//
 	//// docker上传
 	//receiver.checkResult(receiver.dockerDevice.Push(receiver.Env, receiver.logQueue.progress, receiver.ctx))
@@ -189,7 +189,6 @@ func (receiver *BuildEO) StartBuild() {
 	//// 首次创建还是更新镜像
 	//if receiver.dockerSwarmDevice.ExistsDocker(clusterDO, receiver.AppName) {
 	//	// 更新镜像
-	//	//receiver.checkResult(receiver.kubectlDevice.SetImages(receiver.Cluster, receiver.AppName, receiver.Env.DockerImage, receiver.Project.K8SControllersType, receiver.progress, receiver.ctx))
 	//	receiver.checkResult(receiver.dockerSwarmDevice.SetImages(clusterDO, receiver.AppName, receiver.Env.DockerImage, receiver.logQueue.progress, receiver.ctx))
 	//} else {
 	//	// 创建容器服务
@@ -341,7 +340,10 @@ func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 			ActionVer:         "v1",
 			ActionDownloadUrl: "https://github.com/farseers/FOPS-Actions/releases/download/v1/clear",
 			RepositoryName:    "farseers/FOPS-Actions",
+			With:              make(map[string]any),
 		},
 	}, receiver.WorkflowsAction.Steps...)
+
+	receiver.logQueue.progress <- "读取到工作流文件：" + receiver.WorkflowsAction.Name
 	return true
 }

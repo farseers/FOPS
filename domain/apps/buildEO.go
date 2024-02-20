@@ -24,26 +24,24 @@ import (
 
 // BuildEO 聚合
 type BuildEO struct {
-	Id                int64               // 主键
-	ClusterId         int64               // 集群信息
-	BuildNumber       int                 // 构建号
-	Status            eumBuildStatus.Enum // 状态
-	IsSuccess         bool                // 是否成功
-	CreateAt          dateTime.DateTime   // 开始时间
-	FinishAt          dateTime.DateTime   // 完成时间
-	BuildServerId     int64               // 构建的服务端id（防止生产、开发环境混淆）
-	Log               []string            // 构建日志
-	Env               EnvVO               // 环境变量
-	AppName           string              // 应用名称
-	Dockerfile        string              // Dockerfile内容
-	WorkflowsAction   ActionVO            // 工作流定义的内容（通过读取WorkflowsYmlPath）
-	dockerDevice      IDockerDevice
-	dockerSwarmDevice IDockerSwarmDevice
-	logQueue          *LogQueue
-	ctx               context.Context
-	cancel            context.CancelFunc
-	apps              DomainObject
-	appGit            GitEO // 应用的源代码
+	Id              int64               // 主键
+	ClusterId       int64               // 集群信息
+	BuildNumber     int                 // 构建号
+	Status          eumBuildStatus.Enum // 状态
+	IsSuccess       bool                // 是否成功
+	CreateAt        dateTime.DateTime   // 开始时间
+	FinishAt        dateTime.DateTime   // 完成时间
+	BuildServerId   int64               // 构建的服务端id（防止生产、开发环境混淆）
+	Env             EnvVO               // 环境变量
+	AppName         string              // 应用名称
+	Dockerfile      string              // Dockerfile内容
+	WorkflowsAction ActionVO            // 工作流定义的内容（通过读取WorkflowsYmlPath）
+	dockerDevice    IDockerDevice
+	logQueue        *LogQueue
+	ctx             context.Context
+	cancel          context.CancelFunc
+	apps            DomainObject
+	appGit          GitEO // 应用的源代码
 }
 
 func (receiver *BuildEO) IsNil() bool {
@@ -53,7 +51,6 @@ func (receiver *BuildEO) IsNil() bool {
 func (receiver *BuildEO) StartBuild() {
 	receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 	receiver.dockerDevice = container.Resolve[IDockerDevice]()
-	receiver.dockerSwarmDevice = container.Resolve[IDockerSwarmDevice]()
 	receiver.logQueue = NewLogQueue(receiver.Id)
 
 	appsRepository := container.Resolve[Repository]()

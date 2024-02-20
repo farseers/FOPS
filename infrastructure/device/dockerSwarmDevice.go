@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"fops/domain/apps"
 	"fops/domain/cluster"
-	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/container"
-	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/utils/exec"
 )
 
@@ -28,37 +26,6 @@ func (dockerSwarmDevice) SetImages(cluster cluster.DomainObject, appName string,
 		return false
 	}
 	progress <- "Docker Swarm更新镜像版本完成。"
-	return true
-}
-
-func (dockerSwarmDevice) ExistsDocker(cluster cluster.DomainObject, appName string) bool {
-	progress := make(chan string, 1000)
-	// docker service inspect fops
-	var exitCode = exec.RunShell(fmt.Sprintf("docker service inspect %s", appName), progress, nil, "", false)
-	lst := collections.NewListFromChan(progress)
-	if exitCode != 0 {
-		if lst.Contains("[]") && lst.ContainsPrefix("Status: Error: no such service:") {
-			return false
-		}
-		exception.ThrowWebException(403, "获取应用信息时失败。")
-		return false
-	}
-	if lst.Contains("[]") && lst.ContainsPrefix("Status: Error: no such service:") {
-		return false
-	}
-	return lst.ContainsAny(fmt.Sprintf("\"Name\": \"%s\"", appName))
-}
-
-func (dockerSwarmDevice) CreateService(appName, dockerNodeRole, additionalScripts, dockerNetwork string, dockerReplicas int, dockerImages string, progress chan string, ctx context.Context) bool {
-	progress <- "---------------------------------------------------------"
-	progress <- "开始创建Docker Swarm容器服务。"
-
-	shell := fmt.Sprintf("docker service create --name %s --replicas %v -d --network=%s --constraint node.role==%s --mount type=bind,src=/etc/localtime,dst=/etc/localtime %s %s", appName, dockerReplicas, dockerNetwork, dockerNodeRole, additionalScripts, dockerImages)
-	var exitCode = exec.RunShellContext(ctx, shell, progress, nil, "", false)
-	if exitCode != 0 {
-		progress <- "创建Docker Swarm容器失败了。"
-		return false
-	}
 	return true
 }
 

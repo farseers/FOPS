@@ -2,7 +2,6 @@
 package gitApp
 
 import (
-	"context"
 	"fops/application/gitApp/request"
 	"fops/domain/apps"
 	"github.com/farseer-go/collections"
@@ -41,46 +40,16 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository) {
 
 // List Git列表
 // @post list
-func List(isApp int, appsRepository apps.Repository, appsIGitDevice apps.IGitDevice) collections.List[apps.GitEO] {
+func List(isApp int, appsRepository apps.Repository) collections.List[apps.GitEO] {
 	return appsRepository.ToGitListAll(isApp)
 }
 
 // Delete 删除Git
 // @post delete
-func Delete(gitId int64, appsRepository apps.Repository, appsIGitDevice apps.IGitDevice) {
+func Delete(gitId int64, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(gitId < 1, 403, "GitId没有填")
-	gitEO := appsRepository.ToGitEntity(gitId)
-	c := make(chan string, 100)
-	if !appsIGitDevice.Clear(gitEO, c) {
-		lstLog := collections.NewListFromChan(c)
-		exception.ThrowWebExceptionf(403, "清除目录失败:<br />%s", lstLog.ToString("<br />"))
-	}
 	_, err := appsRepository.DeleteGit(gitId)
 	exception.ThrowWebExceptionError(403, err)
-}
-
-// Clear 清除目录
-// @post clear
-func Clear(gitId int64, appsRepository apps.Repository, appsIGitDevice apps.IGitDevice) {
-	exception.ThrowWebExceptionBool(gitId < 1, 403, "GitId没有填")
-	gitEO := appsRepository.ToGitEntity(gitId)
-	c := make(chan string, 100)
-	if !appsIGitDevice.Clear(gitEO, c) {
-		lstLog := collections.NewListFromChan(c)
-		exception.ThrowWebExceptionf(403, "清除目录失败:<br />%s", lstLog.ToString("<br />"))
-	}
-}
-
-// Pull 拉取仓库
-// @post pull
-func Pull(gitId int64, appsRepository apps.Repository, appsIGitDevice apps.IGitDevice) {
-	exception.ThrowWebExceptionBool(gitId < 1, 403, "GitId没有填")
-	gitEO := appsRepository.ToGitEntity(gitId)
-	c := make(chan string, 100)
-	if !appsIGitDevice.CloneOrPull(gitEO, c, context.Background()) {
-		lstLog := collections.NewListFromChan(c)
-		exception.ThrowWebExceptionf(403, "拉取目录失败:<br />%s", lstLog.ToString("<br />"))
-	}
 }
 
 // Info 查询Git

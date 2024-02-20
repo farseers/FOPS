@@ -40,10 +40,6 @@ type BuildEO struct {
 	ShellScript       string              // Shell脚本
 	dockerDevice      IDockerDevice
 	dockerSwarmDevice IDockerSwarmDevice
-	directoryDevice   IDirectoryDevice
-	gitDevice         IGitDevice
-	kubectlDevice     IKubectlDevice
-	copyToDistDevice  ICopyToDistDevice
 	logQueue          *LogQueue
 	ctx               context.Context
 	cancel            context.CancelFunc
@@ -59,10 +55,6 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 	receiver.dockerDevice = container.Resolve[IDockerDevice]()
 	receiver.dockerSwarmDevice = container.Resolve[IDockerSwarmDevice]()
-	receiver.directoryDevice = container.Resolve[IDirectoryDevice]()
-	receiver.gitDevice = container.Resolve[IGitDevice]()
-	receiver.kubectlDevice = container.Resolve[IKubectlDevice]()
-	receiver.copyToDistDevice = container.Resolve[ICopyToDistDevice]()
 	receiver.logQueue = NewLogQueue(receiver.Id)
 
 	appsRepository := container.Resolve[Repository]()
@@ -174,39 +166,6 @@ func (receiver *BuildEO) StartBuild() {
 		receiver.logQueue.progress <- "---------------------------------------------------------"
 	}
 
-	//// 打印环境变量
-	//receiver.Env.Print(receiver.logQueue.progress)
-	//
-	//// 前置检查
-	//receiver.directoryDevice.Check(receiver.logQueue.progress)
-	//
-	//// 拉取主仓库及依赖仓库
-	//receiver.checkResult(receiver.gitDevice.CloneOrPullAndDependent(receiver.getGits(), receiver.logQueue.progress, receiver.ctx))
-	//
-	//// 登陆镜像仓库(先登陆，如果失败了，后则面也不需要编译、打包了)
-	//receiver.checkResult(receiver.dockerDevice.Login(clusterDO.DockerHub, clusterDO.DockerUserName, clusterDO.DockerUserPwd, receiver.logQueue.progress, receiver.Env, receiver.ctx))
-	//
-	//// 将需要打包的源代码，复制到dist目录
-	//receiver.copyToDistDevice.Copy(receiver.getGits(), receiver.Env, receiver.logQueue.progress)
-	//
-	//// 生成Dockerfile文件
-	//receiver.checkResult(receiver.GenerateDockerfileContent())
-	//receiver.dockerDevice.CreateDockerfile(receiver.AppName, receiver.Dockerfile, receiver.ctx)
-	//
-	//// docker打包
-	//receiver.checkResult(receiver.dockerDevice.Build(receiver.Env, receiver.logQueue.progress, receiver.ctx))
-	//
-	//// docker上传
-	//receiver.checkResult(receiver.dockerDevice.Push(receiver.Env, receiver.logQueue.progress, receiver.ctx))
-	//
-	//// 首次创建还是更新镜像
-	//if receiver.dockerSwarmDevice.ExistsDocker(clusterDO, receiver.AppName) {
-	//	// 更新镜像
-	//	receiver.checkResult(receiver.dockerSwarmDevice.SetImages(clusterDO, receiver.AppName, receiver.Env.DockerImage, receiver.logQueue.progress, receiver.ctx))
-	//} else {
-	//	// 创建容器服务
-	//	receiver.checkResult(receiver.dockerSwarmDevice.CreateService(receiver.AppName, receiver.apps.DockerNodeRole, receiver.apps.AdditionalScripts, clusterDO.DockerNetwork, receiver.apps.DockerReplicas, receiver.Env.DockerImage, receiver.logQueue.progress, receiver.ctx))
-	//}
 	receiver.success()
 }
 
@@ -274,20 +233,6 @@ func (receiver *BuildEO) success() {
 	event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: true}.PublishEvent()
 
 	container.Resolve[Repository]().SetSuccess(receiver.Id)
-}
-
-// 得到所有Git
-func (receiver *BuildEO) getGits() []GitEO {
-	var gits []GitEO
-	if !receiver.appGit.IsNil() {
-		gits = append(gits, receiver.appGit)
-	}
-	// 依赖的框架
-	frameworkGits := container.Resolve[Repository]().ToGitList(receiver.apps.FrameworkGits)
-	if frameworkGits.Count() > 0 {
-		gits = append(gits, frameworkGits.ToArray()...)
-	}
-	return gits
 }
 
 // GenerateDockerfileContent 生成Dockerfile

@@ -30,13 +30,9 @@ func (module Module) PostInitialize() {
 	repository.InitRepository()
 
 	// 注册驱动
-	device.RegisterCopyToDistDevice()
-	device.RegisterDirectoryDevice()
 	device.RegisterDockerDevice()
 	device.RegisterDockerSwarmDevice()
-	device.RegisterGitDevice()
 	device.RegisterKubectlDevice()
-	device.RegisterShellDevice()
 
 	eventBus.RegisterEvent(event.BuildFinishedEventName).RegisterSubscribe("更新应用的版本信息", domainEvent.BuildFinishedConsumer)
 	eventBus.RegisterEvent(event.DockerPushedEventName).RegisterSubscribe("docker推送完成事件", domainEvent.DockerPushedConsumer)

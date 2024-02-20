@@ -8,6 +8,12 @@ jobs:
         with:
           proxy: "socks5://192.168.1.88:7890"
 
+      - name: 安装GO
+        uses: setup-go@v1
+        with:
+          goVersion:
+          goDownload:
+
       - name: 拉取应用Git
         uses: checkout@v1
 
@@ -19,6 +25,9 @@ jobs:
           gitUserName: test
           gitUserPwd: 123456
           gitPath: farseer-go/fs
+
+      - name: 编译
+        run: go mod download && go mod tidy && GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags="-w -s" .
 
       - name: 打包镜像
         uses: dockerBuild@v1

@@ -40,7 +40,7 @@ func (device dockerDevice) GetDockerImage(dockerHubAddress string, appName strin
 func (dockerDevice) Login(dockerHub string, loginName string, loginPwd string, progress chan string, env apps.EnvVO, ctx context.Context) bool {
 	progress <- "---------------------------------------------------------"
 	if dockerHub != "" && loginName != "" {
-		var result = exec.RunShellContext(ctx, "docker login "+dockerHub+" -u "+loginName+" -p "+loginPwd, progress, env.ToMap(), "")
+		var result = exec.RunShellContext(ctx, "docker login "+dockerHub+" -u "+loginName+" -p "+loginPwd, progress, env.ToMap(), "", false)
 		if result != 0 {
 			progress <- "镜像仓库登陆失败。"
 			return false
@@ -86,7 +86,7 @@ func (dockerDevice) Run(dockerName string, network string, dockerImage string, a
 	bf.WriteString(" ")
 	bf.WriteString(dockerImage)
 
-	return exec.RunShellContext(ctx, bf.String(), progress, env.ToMap(), apps.DistRoot) == 0
+	return exec.RunShellContext(ctx, bf.String(), progress, env.ToMap(), apps.DistRoot, true) == 0
 }
 
 func (dockerDevice) Execute(dockerName string, execCmd string, env apps.EnvVO, progress chan string, ctx context.Context) bool {
@@ -95,7 +95,7 @@ func (dockerDevice) Execute(dockerName string, execCmd string, env apps.EnvVO, p
 	bf.WriteString(dockerName)
 	bf.WriteString(" ")
 	bf.WriteString(execCmd)
-	return exec.RunShellContext(ctx, bf.String(), progress, env.ToMap(), apps.DistRoot) == 0
+	return exec.RunShellContext(ctx, bf.String(), progress, env.ToMap(), apps.DistRoot, false) == 0
 }
 
 func (device dockerDevice) Copy(dockerName string, sourceFile, destFile string, env apps.EnvVO, progress chan string, ctx context.Context) bool {
@@ -108,13 +108,13 @@ func (device dockerDevice) Copy(dockerName string, sourceFile, destFile string, 
 	bf.WriteString(dockerName)
 	bf.WriteString(":")
 	bf.WriteString(destFile)
-	return exec.RunShellContext(ctx, bf.String(), progress, env.ToMap(), apps.DistRoot) == 0
+	return exec.RunShellContext(ctx, bf.String(), progress, env.ToMap(), apps.DistRoot, false) == 0
 }
 
 func (dockerDevice) ExistsDocker(dockerName string) bool {
 	progress := make(chan string, 1000)
 	// docker inspect fops
-	var exitCode = exec.RunShell(fmt.Sprintf("docker inspect %s", dockerName), progress, nil, "")
+	var exitCode = exec.RunShell(fmt.Sprintf("docker inspect %s", dockerName), progress, nil, "", false)
 	lst := collections.NewListFromChan(progress)
 	if exitCode != 0 {
 		if lst.Contains("[]") && lst.ContainsPrefix("Error: No such object:") {
@@ -129,11 +129,11 @@ func (dockerDevice) ExistsDocker(dockerName string) bool {
 }
 
 func (dockerDevice) Kill(dockerName string) {
-	exec.RunShell(fmt.Sprintf("docker kill %s", dockerName), make(chan string, 1000), nil, "")
+	exec.RunShell(fmt.Sprintf("docker kill %s", dockerName), make(chan string, 1000), nil, "", false)
 }
 
 func (dockerDevice) Remove(dockerName string) {
-	exec.RunShell(fmt.Sprintf("docker rm %s", dockerName), make(chan string, 1000), nil, "")
+	exec.RunShell(fmt.Sprintf("docker rm %s", dockerName), make(chan string, 1000), nil, "", false)
 }
 
 func (dockerDevice) Build(env apps.EnvVO, progress chan string, ctx context.Context) bool {
@@ -141,7 +141,7 @@ func (dockerDevice) Build(env apps.EnvVO, progress chan string, ctx context.Cont
 	progress <- "开始镜像打包。"
 
 	// 打包
-	var result = exec.RunShellContext(ctx, "docker build -t "+env.DockerImage+" --network=host -f "+apps.DockerfilePath+" "+apps.DistRoot, progress, env.ToMap(), apps.DistRoot)
+	var result = exec.RunShellContext(ctx, "docker build -t "+env.DockerImage+" --network=host -f "+apps.DockerfilePath+" "+apps.DistRoot, progress, env.ToMap(), apps.DistRoot, false)
 	if result == 0 {
 		progress <- "镜像打包完成。"
 	} else {
@@ -153,11 +153,11 @@ func (dockerDevice) Build(env apps.EnvVO, progress chan string, ctx context.Cont
 func (dockerDevice) Push(env apps.EnvVO, progress chan string, ctx context.Context) bool {
 	defer func() {
 		// 上传完后，删除本地镜像
-		exec.RunShellContext(ctx, "docker rmi "+env.DockerImage, progress, env.ToMap(), "")
+		exec.RunShellContext(ctx, "docker rmi "+env.DockerImage, progress, env.ToMap(), "", false)
 	}()
 
 	// 上传
-	var result = exec.RunShellContext(ctx, "docker push "+env.DockerImage, progress, env.ToMap(), "")
+	var result = exec.RunShellContext(ctx, "docker push "+env.DockerImage, progress, env.ToMap(), "", false)
 
 	if result == 0 {
 		progress <- "镜像上传完成。"
@@ -180,7 +180,7 @@ func (dockerDevice) ClearImages(progress chan string) bool {
 	progress <- "---------------------------------------------------------"
 	progress <- "开始清除镜像。"
 
-	var exitCode = exec.RunShell(`docker system prune -f && docker builder prune -f && docker rmi $(docker images -f "dangling=true" -q)`, progress, nil, "")
+	var exitCode = exec.RunShell(`docker system prune -f && docker builder prune -f && docker rmi $(docker images -f "dangling=true" -q)`, progress, nil, "", false)
 	if exitCode != 0 {
 		progress <- "清除镜像镜像失败。"
 		return false
@@ -191,7 +191,7 @@ func (dockerDevice) ClearImages(progress chan string) bool {
 
 func (dockerDevice) GetVersion() string {
 	receiveOutput := make(chan string, 100)
-	exec.RunShell("docker version --format '{{.Server.Version}}'", receiveOutput, nil, "")
+	exec.RunShell("docker version --format '{{.Server.Version}}'", receiveOutput, nil, "", false)
 	lst := collections.NewListFromChan(receiveOutput)
 	re := regexp.MustCompile(`^\d+\.\d+\.\d+$`)
 	for _, s := range lst.ToArray() {

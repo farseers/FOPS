@@ -37,7 +37,7 @@ func (*gitDevice) GetName(gitHub string) string {
 }
 
 func (*gitDevice) RememberPassword(env apps.EnvVO, progress chan string) {
-	exec.RunShell("git config --global credential.helper store", progress, env.ToMap(), "")
+	exec.RunShell("git config --global credential.helper store", progress, env.ToMap(), "", true)
 }
 
 func (*gitDevice) ExistsGitProject(gitPath string) bool {
@@ -51,7 +51,7 @@ func (*gitDevice) ExistsGitProject(gitPath string) bool {
 func (device *gitDevice) Clear(git apps.GitEO, progress chan string) bool {
 	// 获取Git存放的路径
 	gitPath := git.GetAbsolutePath()
-	exitCode := exec.RunShell("rm -rf "+gitPath, progress, nil, "")
+	exitCode := exec.RunShell("rm -rf "+gitPath, progress, nil, "", true)
 	if exitCode != 0 {
 		progress <- "Git清除失败"
 		return false
@@ -110,7 +110,7 @@ func (device *gitDevice) CloneOrPullAndDependent(lstGit []apps.GitEO, progress c
 }
 
 func pull(savePath string, progress chan string, ctx context.Context) bool {
-	exitCode := exec.RunShellContext(ctx, "git -C "+savePath+" pull --rebase", progress, nil, "")
+	exitCode := exec.RunShellContext(ctx, "git -C "+savePath+" pull --rebase", progress, nil, "", true)
 	if exitCode != 0 {
 		progress <- "Git拉取失败"
 		return false
@@ -119,7 +119,7 @@ func pull(savePath string, progress chan string, ctx context.Context) bool {
 }
 
 func (device *gitDevice) clone(gitPath string, github string, branch string, progress chan string, ctx context.Context) bool {
-	exitCode := exec.RunShellContext(ctx, "git clone -b "+branch+" "+github+" "+gitPath, progress, nil, "")
+	exitCode := exec.RunShellContext(ctx, "git clone -b "+branch+" "+github+" "+gitPath, progress, nil, "", true)
 	if exitCode != 0 {
 		progress <- "Git克隆失败"
 		return false

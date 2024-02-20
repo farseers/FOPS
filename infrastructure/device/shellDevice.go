@@ -22,7 +22,7 @@ func (shellDevice) ExecShell(env apps.EnvVO, shellScript string, progress chan s
 	file.WriteString(path, shellScript)
 
 	// 执行脚本
-	var exitCode = exec.RunShellContext(ctx, "/bin/sh -xe {path}", progress, env.ToMap(), apps.DistRoot)
+	var exitCode = exec.RunShellContext(ctx, "/bin/sh -xe {path}", progress, env.ToMap(), apps.DistRoot, true)
 	if exitCode == 0 {
 		progress <- "执行脚本完成。"
 	} else {

@@ -7,12 +7,14 @@ import (
 	"fops/domain/_/eumBuildStatus"
 	"fops/domain/apps/event"
 	"fops/domain/cluster"
+	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/fs/sonyflake"
+	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/http"
 	"os"
@@ -101,7 +103,7 @@ func (receiver *BuildEO) StartBuild() {
 		receiver.logQueue.progress <- fmt.Sprintf("执行 %d %s: %s", step.Index, step.Name, step.ActionName)
 
 		// 使用action程序，需要判断是否要下载
-		if step.GetActionPath() != "" {
+		if step.ActionName != "" {
 			if !file.IsExists(step.GetActionPath()) {
 				receiver.logQueue.progress <- fmt.Sprintf("下载 %s", step.ActionDownloadUrl)
 				// 先创建目录
@@ -156,7 +158,17 @@ func (receiver *BuildEO) StartBuild() {
 
 		// 运行脚本
 		if step.Run != "" {
-			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.Run, receiver.Env, receiver.logQueue.progress, receiver.ctx))
+			shellScript := collections.NewList[string]()
+			shellScript.Add("export PATH=$PATH:/usr/local/go/bin")
+			shellScript.Add("cd " + DistRoot + receiver.appGit.GetRelativePath())
+			shellScript.Add(step.Run)
+			shellScript.Add("")
+			shellPath := fmt.Sprintf("%s%d-%d.sh", ShellRoot, receiver.Env.BuildNumber, step.Index)
+			file.WriteString(shellPath, shellScript.ToString("\n"))
+			receiver.dockerDevice.Copy(dockerName, shellPath, shellPath, receiver.Env, make(chan string, 100), receiver.ctx)
+
+			receiver.checkResult(exec.RunShell("docker exec "+dockerName+" /bin/sh -x "+shellPath, receiver.logQueue.progress, receiver.Env.ToMap(), DistRoot, true) == 0)
+			//receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.Run, receiver.Env, receiver.logQueue.progress, receiver.ctx))
 		}
 		receiver.logQueue.progress <- "---------------------------------------------------------"
 	}

@@ -45,7 +45,7 @@ func (device kubectlDevice) SetYaml(clusterName string, projectName string, yaml
 	configFile := device.GetConfigFile(clusterName)
 
 	// 发布
-	var exitCode = exec.RunShellContext(ctx, "kubectl apply -f "+fileName+" --kubeconfig="+configFile+" --insecure-skip-tls-verify", progress, nil, "")
+	var exitCode = exec.RunShellContext(ctx, "kubectl apply -f "+fileName+" --kubeconfig="+configFile+" --insecure-skip-tls-verify", progress, nil, "", true)
 	if exitCode != 0 {
 		progress <- "K8S更新镜像失败。"
 		return false
@@ -65,7 +65,7 @@ func (device kubectlDevice) SetImagesByClusterName(clusterName string, clusterCo
 	progress <- "开始更新K8S POD的镜像版本。"
 
 	var configFile = device.CreateConfigFile(clusterName, clusterConfig)
-	var exitCode = exec.RunShellContext(ctx, "kubectl set image "+k8SControllersType.String()+"/"+projectName+" "+projectName+"="+dockerImages+" --kubeconfig="+configFile+" --insecure-skip-tls-verify", progress, nil, "")
+	var exitCode = exec.RunShellContext(ctx, "kubectl set image "+k8SControllersType.String()+"/"+projectName+" "+projectName+"="+dockerImages+" --kubeconfig="+configFile+" --insecure-skip-tls-verify", progress, nil, "", true)
 	if exitCode != 0 {
 		progress <- "K8S更新镜像失败。"
 		return false

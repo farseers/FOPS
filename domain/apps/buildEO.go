@@ -37,7 +37,6 @@ type BuildEO struct {
 	AppName           string              // 应用名称
 	Dockerfile        string              // Dockerfile内容
 	WorkflowsAction   ActionVO            // 工作流定义的内容（通过读取WorkflowsYmlPath）
-	ShellScript       string              // Shell脚本
 	dockerDevice      IDockerDevice
 	dockerSwarmDevice IDockerSwarmDevice
 	logQueue          *LogQueue

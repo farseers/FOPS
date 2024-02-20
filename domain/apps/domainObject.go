@@ -9,7 +9,6 @@ import (
 type DomainObject struct {
 	AppName           string                  // 应用名称（链路追踪）
 	DockerVer         int                     // 镜像版本
-	ShellScript       string                  // Shell脚本
 	ClusterVer        map[int64]*ClusterVerVO // 集群版本
 	AppGit            int64                   // 应用的源代码
 	FrameworkGits     collections.List[int64] // 依赖的框架源代码

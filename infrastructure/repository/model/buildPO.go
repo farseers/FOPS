@@ -20,5 +20,4 @@ type BuildPO struct {
 	Log           []string            `gorm:"type:text;json;not null;comment:构建日志"`
 	Env           apps.EnvVO          `gorm:"type:text;json;not null;comment:环境变量"`
 	Dockerfile    string              `gorm:"type:text;not null;comment:Dockerfile内容"`
-	ShellScript   string              `gorm:"type:mediumtext;not null;comment:Shell脚本"`
 }

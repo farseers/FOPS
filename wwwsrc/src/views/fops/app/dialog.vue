@@ -52,9 +52,6 @@
             </el-table-column>
           </el-table>
           </el-form-item>
-          <el-form-item label="Shell脚本" >
-            <el-input v-model="state.ruleForm.ShellScript" type="textarea" placeholder="请输入Shell脚本" clearable></el-input>
-          </el-form-item>
           <el-form-item label="Dockerfile内容" >
             <el-input v-model="state.ruleForm.Dockerfile" type="textarea"  placeholder="请输入Dockerfile内容" clearable></el-input>
           </el-form-item>
@@ -111,7 +108,6 @@ const state = reactive({
 	ruleForm: {
     AppName:'', //应用名称
     DockerVer: '', // 镜像版本
-    ShellScript: '', // Shell脚本
     ClusterVer: '', // 集群版本
     AppGit: 0, // 应用的源代码
     AppGitName: '', // 应用的源代码

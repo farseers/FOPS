@@ -17,7 +17,7 @@ type stepVO struct {
 	ActionDownloadUrl string         // action下载地址
 	RepositoryName    string         // 仓库名称
 	With              map[string]any // 参数
-	Run               string         // 运行脚本
+	Run               []string       // 运行脚本
 }
 
 func (receiver *stepVO) GetActionPath() string {
@@ -98,7 +98,9 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 
 			// steps.run
 			if curStepsRun, b := workflowsYml.Get(curSteps + "run"); b {
-				step.Run = curStepsRun.(string)
+				for _, run := range curStepsRun.([]any) {
+					step.Run = append(step.Run, parse.ToString(run))
+				}
 			}
 			act.Steps = append(act.Steps, step)
 		}

@@ -157,17 +157,18 @@ func (receiver *BuildEO) StartBuild() {
 		}
 
 		// 运行脚本
-		if step.Run != "" {
+		if len(step.Run) > 0 {
 			shellScript := collections.NewList[string]()
 			shellScript.Add("export PATH=$PATH:/usr/local/go/bin")
+			shellScript.Add("go env -w GO111MODULE=on && go env -w GOPROXY=https://goproxy.cn,direct")
 			shellScript.Add("cd " + DistRoot + receiver.appGit.GetRelativePath())
-			shellScript.Add(step.Run)
+			shellScript.AddArray(step.Run)
 			shellScript.Add("")
 			shellPath := fmt.Sprintf("%s%d-%d.sh", ShellRoot, receiver.Env.BuildNumber, step.Index)
 			file.WriteString(shellPath, shellScript.ToString("\n"))
 			receiver.dockerDevice.Copy(dockerName, shellPath, shellPath, receiver.Env, make(chan string, 100), receiver.ctx)
 
-			receiver.checkResult(exec.RunShell("docker exec "+dockerName+" /bin/sh -x "+shellPath, receiver.logQueue.progress, receiver.Env.ToMap(), DistRoot, true) == 0)
+			receiver.checkResult(exec.RunShell("docker exec "+dockerName+" /bin/sh -x "+shellPath, receiver.logQueue.progress, receiver.Env.ToMap(), DistRoot, false) == 0)
 			//receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.Run, receiver.Env, receiver.logQueue.progress, receiver.ctx))
 		}
 		receiver.logQueue.progress <- "---------------------------------------------------------"

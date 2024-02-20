@@ -100,7 +100,7 @@ func (receiver *BuildEO) StartBuild() {
 
 	// 运行step
 	for _, step := range receiver.WorkflowsAction.Steps {
-		receiver.logQueue.progress <- fmt.Sprintf("执行 %d %s: %s", step.Index, step.Name, step.ActionName)
+		receiver.logQueue.progress <- fmt.Sprintf("执行 %d %s: %s", step.Index, step.ActionName, step.Name)
 
 		// 使用action程序，需要判断是否要下载
 		if step.ActionName != "" {

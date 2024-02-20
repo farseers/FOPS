@@ -142,6 +142,14 @@ func (receiver *BuildEO) StartBuild() {
 
 			// 执行 docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
 			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.GetActionPath(), receiver.Env, receiver.logQueue.progress, receiver.ctx))
+
+			switch step.ActionName {
+			case "checkout":
+				event.GitCloneOrPulledEvent{GitId: receiver.appGit.Id}.PublishEvent()
+			case "dockerPush":
+				// 上传成功后，需要更新项目中的镜像版本属性
+				event.DockerPushedEvent{BuildNumber: receiver.Env.BuildNumber, AppName: receiver.Env.AppName, ImageName: receiver.Env.DockerImage}.PublishEvent()
+			}
 		}
 
 		// 运行脚本

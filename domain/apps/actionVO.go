@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/parse"
-	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/http"
 	"strings"
 )
@@ -33,8 +32,8 @@ type ActionVO struct {
 func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (ActionVO, error) {
 	// 通过http读取工作流定义的内容
 	workflowsYmlContent, _, err := http.RequestProxy("GET", workflowsYmlPath, nil, nil, "", 2000, configure.GetString("Fops.GitAgent"))
-	err = nil
-	workflowsYmlContent = file.ReadString("./.fops/workflows/build.yml")
+	//err = nil
+	//workflowsYmlContent = file.ReadString("./.fops/workflows/build.yml")
 
 	if err != nil {
 		return ActionVO{}, fmt.Errorf("读取WorkflowsYml错误：%s", err.Error())

@@ -43,6 +43,7 @@ jobs:
           - go work init ./
           - go work edit -replace github.com/farseer-go/fs=../farseer-go/fs
           - go work edit -replace github.com/farseer-go/utils=../farseer-go/utils
+          - go work edit -replace github.com/farseer-go/mapper=../farseer-go/mapper
           - go mod download
           - go mod tidy
           - GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./fops-server -ldflags="-w -s" .

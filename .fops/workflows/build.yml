@@ -39,6 +39,7 @@ jobs:
 
       - name: 编译前端
         run:
+          - apk add nodejs npm # 安装npm
           - mkdir wwwroot
           - cd ./wwwsrc
           - npm install

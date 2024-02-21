@@ -35,7 +35,6 @@ func BuildAdd(appName string, clusterId int64, appsRepository apps.Repository, c
 		FinishAt:      dateTime.Now(),
 		Env:           apps.EnvVO{},
 		AppName:       appName,
-		Dockerfile:    appDO.Dockerfile,
 	}
 	err := appsRepository.AddBuild(buildDO)
 	exception.ThrowWebExceptionError(403, err)

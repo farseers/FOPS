@@ -34,7 +34,6 @@ type BuildEO struct {
 	BuildServerId   int64               // 构建的服务端id（防止生产、开发环境混淆）
 	Env             EnvVO               // 环境变量
 	AppName         string              // 应用名称
-	Dockerfile      string              // Dockerfile内容
 	WorkflowsAction ActionVO            // 工作流定义的内容（通过读取WorkflowsYmlPath）
 	dockerDevice    IDockerDevice
 	logQueue        *LogQueue
@@ -241,40 +240,6 @@ func (receiver *BuildEO) success() {
 	event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: true}.PublishEvent()
 
 	container.Resolve[Repository]().SetSuccess(receiver.Id)
-}
-
-// GenerateDockerfileContent 生成Dockerfile
-func (receiver *BuildEO) GenerateDockerfileContent() bool {
-	// 为空时，读取应用git文件中的Dockerfile文件
-	if receiver.Dockerfile == "" {
-		// 如果没有自定义，则使用应用仓库根目录的Dockerfile文件
-		if receiver.apps.DockerfilePath == "" {
-			receiver.apps.DockerfilePath = "Dockerfile"
-		} else {
-			// 自定义Dockerfile路径
-			if strings.HasPrefix(receiver.apps.DockerfilePath, "/") {
-				receiver.apps.DockerfilePath = receiver.apps.DockerfilePath[1:]
-			} else if strings.HasPrefix(receiver.apps.DockerfilePath, "./") {
-				receiver.apps.DockerfilePath = receiver.apps.DockerfilePath[2:]
-			}
-		}
-		receiver.apps.DockerfilePath = receiver.appGit.GetAbsolutePath() + receiver.apps.DockerfilePath
-		receiver.Dockerfile = file.ReadString(receiver.apps.DockerfilePath)
-		if receiver.Dockerfile == "" {
-			receiver.logQueue.progress <- "Dockerfile没有定义。"
-			return false
-		}
-		return true
-	}
-
-	// 替换项目名称
-	receiver.Dockerfile = strings.ReplaceAll(receiver.Dockerfile, "${app_name}", receiver.AppName)
-	receiver.Dockerfile = strings.ReplaceAll(receiver.Dockerfile, "${git_name}", receiver.Env.GitName)
-	//receiver.Dockerfile = strings.ReplaceAll(receiver.Dockerfile, "${domain}", do.Project.Domain)
-	//receiver.Dockerfile = strings.ReplaceAll(receiver.Dockerfile, "${entry_point}", do.Project.EntryPoint)
-	//receiver.Dockerfile = strings.ReplaceAll(receiver.Dockerfile, "${entry_port}", strconv.Itoa(do.Project.EntryPort))
-	//receiver.Dockerfile = strings.ReplaceAll(receiver.Dockerfile, "${project_path}", strings.TrimPrefix(do.Project.Path, "/"))
-	return true
 }
 
 // GenerateWorkflowsContent 生成Workflows

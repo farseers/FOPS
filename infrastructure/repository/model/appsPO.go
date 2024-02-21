@@ -13,7 +13,6 @@ type AppsPO struct {
 	AppGit            int64                        `gorm:"not null;default:0;comment:应用的源代码"`
 	FrameworkGits     collections.List[int64]      `gorm:"size:64;json;not null;comment:依赖的框架源代码"`
 	DockerImage       string                       `gorm:"type:text;not null;comment:仓库镜像名称"`
-	Dockerfile        string                       `gorm:"type:text;not null;comment:Dockerfile内容"`
 	DockerfilePath    string                       `gorm:"size:256;not null;comment:Dockerfile路径"`
 	ActiveInstance    []apps.ActiveInstanceEO      `gorm:"size:1024;json;not null;comment:正在运行的实例"`
 	DockerReplicas    int                          `gorm:"type:int;not null;comment:副本数量"`

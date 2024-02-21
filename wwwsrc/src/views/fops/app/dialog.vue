@@ -52,9 +52,6 @@
             </el-table-column>
           </el-table>
           </el-form-item>
-          <el-form-item label="Dockerfile内容" >
-            <el-input v-model="state.ruleForm.Dockerfile" type="textarea"  placeholder="请输入Dockerfile内容" clearable></el-input>
-          </el-form-item>
           <el-form-item label="Dockerfile">
             <el-input v-model="state.ruleForm.DockerfilePath" placeholder="请输入Dockerfile路径" clearable></el-input>
           </el-form-item>
@@ -115,7 +112,6 @@ const state = reactive({
     AppGit: 0, // 应用的源代码
     AppGitName: '', // 应用的源代码
     FrameworkGits:[], // 依赖的框架源代码
-    Dockerfile: '', // Dockerfile内容
     DockerfilePath: '', // Dockerfile路径
     IsHealth:false, // 是否健康
     DockerReplicas:1,// 副本数量
@@ -161,11 +157,9 @@ const openDialog = (type: string, row: any) => {
         // 绑定数据
         state.ruleForm.AppName=row.AppName
         state.ruleForm.DockerVer=row.DockerVer
-        state.ruleForm.ShellScript=row.ShellScript
         state.ruleForm.ClusterVer=row.ClusterVer
         state.ruleForm.AppGit=row.AppGit
         state.ruleForm.FrameworkGits=row.FrameworkGits
-        state.ruleForm.Dockerfile=row.Dockerfile
         state.ruleForm.DockerfilePath=row.DockerfilePath
         state.SelectItem=row.FrameworkGits
         state.ruleForm.IsHealth=row.IsHealth
@@ -194,7 +188,6 @@ const openDialog = (type: string, row: any) => {
     state.ruleForm.AppGit=0
     state.ruleForm.AppGitName=''
     state.ruleForm.FrameworkGits=[]
-    state.ruleForm.Dockerfile=""
     state.ruleForm.DockerfilePath=""
     state.ruleForm.DockerReplicas=0
     state.ruleForm.DockerNodeRole=''
@@ -274,7 +267,6 @@ const onSubmit = () => {
     "AppName":state.ruleForm.AppName,
     "AppGit":parseInt(state.ruleForm.AppGit),
     "FrameworkGits":state.ruleForm.FrameworkGits,
-    "Dockerfile":state.ruleForm.Dockerfile,
     "DockerfilePath":state.ruleForm.DockerfilePath,
     "DockerReplicas":parseInt(state.ruleForm.DockerReplicas),
     "DockerNodeRole":state.ruleForm.DockerNodeRole,

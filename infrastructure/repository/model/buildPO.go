@@ -19,5 +19,4 @@ type BuildPO struct {
 	BuildServerId int64               `gorm:"not null;default:0;comment:构建的服务端id"`
 	Log           []string            `gorm:"type:text;json;not null;comment:构建日志"`
 	Env           apps.EnvVO          `gorm:"type:text;json;not null;comment:环境变量"`
-	Dockerfile    string              `gorm:"type:text;not null;comment:Dockerfile内容"`
 }

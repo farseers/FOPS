@@ -77,7 +77,6 @@ func List(clusterId int64, appsRepository apps.Repository, logDataRepository log
 
 	lst := collections.NewList[response.AppsResponse]()
 	lstDO.Foreach(func(item *apps.DomainObject) {
-		item.Dockerfile = ""
 		appsResponse := doToAppsResponse(clusterId, *item)
 		appsResponse.AppGitName = lstGit.Where(func(gitItem apps.GitEO) bool {
 			return item.AppGit == parse.ToInt64(gitItem.Id)
@@ -125,7 +124,6 @@ func doToAppsResponse(clusterId int64, do apps.DomainObject) response.AppsRespon
 		ClusterVer:        *vo,
 		AppGit:            do.AppGit,
 		FrameworkGits:     do.FrameworkGits,
-		Dockerfile:        do.Dockerfile,
 		DockerfilePath:    do.DockerfilePath,
 		DockerNodeRole:    do.DockerNodeRole,
 		DockerReplicas:    do.DockerReplicas,

@@ -13,7 +13,6 @@ type DomainObject struct {
 	AppGit            int64                   // 应用的源代码
 	FrameworkGits     collections.List[int64] // 依赖的框架源代码
 	DockerImage       string                  // 仓库镜像名称
-	Dockerfile        string                  // Dockerfile内容
 	DockerfilePath    string                  // Dockerfile路径
 	ActiveInstance    []ActiveInstanceEO      // 正在运行的实例
 	DockerReplicas    int                     // 副本数量

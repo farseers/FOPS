@@ -125,14 +125,18 @@ func (receiver *BuildEO) StartBuild() {
 			step.With["dockerReplicas"] = receiver.apps.DockerReplicas
 			step.With["dockerAdditionalScripts"] = receiver.apps.AdditionalScripts
 
+			gits := receiver.getGits()
 			// 支持checkout默认拉取应用
-			if parse.ToString(step.With["gitHub"]) == "" {
-				step.With["gitHub"] = receiver.appGit.Hub
-				step.With["gitBranch"] = receiver.appGit.Branch
-				step.With["gitUserName"] = receiver.appGit.UserName
-				step.With["gitUserPwd"] = receiver.appGit.UserPwd
-				step.With["gitPath"] = receiver.appGit.Dir
+			if parse.ToString(step.With["gitHub"]) != "" {
+				gits = append(gits, GitEO{
+					Hub:      parse.ToString(step.With["gitHub"]),
+					Branch:   parse.ToString(step.With["gitBranch"]),
+					UserName: parse.ToString(step.With["gitUserName"]),
+					UserPwd:  parse.ToString(step.With["gitUserPwd"]),
+					Path:     parse.ToString(step.With["gitPath"]),
+				})
 			}
+			step.With["gits"] = gits
 
 			// 生成with.json文件，并复制到容器
 			file.Delete(WithJsonPath)
@@ -308,4 +312,18 @@ func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 
 	receiver.logQueue.progress <- "读取到工作流文件：" + receiver.WorkflowsAction.Name
 	return true
+}
+
+// 得到所有Git
+func (receiver *BuildEO) getGits() []GitEO {
+	var gits []GitEO
+	if !receiver.appGit.IsNil() {
+		gits = append(gits, receiver.appGit)
+	}
+	// 依赖的框架
+	frameworkGits := container.Resolve[Repository]().ToGitList(receiver.apps.FrameworkGits)
+	if frameworkGits.Count() > 0 {
+		gits = append(gits, frameworkGits.ToArray()...)
+	}
+	return gits
 }

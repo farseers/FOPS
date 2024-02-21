@@ -30,7 +30,7 @@
 					</el-col>
           <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
             <el-form-item label="存储目录">
-              <el-input v-model="state.ruleForm.Dir" placeholder="请输入存储目录" clearable></el-input>
+              <el-input v-model="state.ruleForm.Path" placeholder="请输入存储目录" clearable></el-input>
             </el-form-item>
           </el-col>
 
@@ -69,7 +69,7 @@ const state = reactive({
     Branch: 'main', // Git分支
     UserName: '', // 账户名称
     UserPwd: '', // 账户密码
-    Dir: '', // 存储目录
+    Path: '', // 存储目录
     PullAt: '', // 拉取时间
     IsApp:false, // 是否为应用仓库
 
@@ -96,7 +96,7 @@ const openDialog = (type: string, row: any) => {
     state.ruleForm.Branch=row.Branch
     state.ruleForm.UserName=row.UserName
     state.ruleForm.UserPwd=row.UserPwd
-    state.ruleForm.Dir=row.Dir
+    state.ruleForm.Path=row.Path
     state.ruleForm.PullAt=row.PullAt
     state.ruleForm.IsApp=row.IsApp
 
@@ -111,7 +111,7 @@ const openDialog = (type: string, row: any) => {
     state.ruleForm.Branch="main"
     state.ruleForm.UserName=""
     state.ruleForm.UserPwd=""
-    state.ruleForm.Dir=""
+    state.ruleForm.Path=""
     state.ruleForm.PullAt=""
 		// 清空表单，此项需加表单验证才能使用
 		// nextTick(() => {
@@ -142,7 +142,7 @@ const onSubmit = () => {
     "Branch":state.ruleForm.Branch,
     "UserName":state.ruleForm.UserName,
     "UserPwd":state.ruleForm.UserPwd,
-    "Dir":state.ruleForm.Dir,
+    "Path":state.ruleForm.Path,
     "IsApp":state.ruleForm.IsApp
   }
 

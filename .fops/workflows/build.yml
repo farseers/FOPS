@@ -15,28 +15,16 @@ jobs:
           goDownload:
 
       - name: 拉取应用Git
-        uses: checkout@v1
+        uses: checkout@v1 # 在fops配置了依赖时，将自动拉取所有依赖Git
 
-      - name: 拉取框架fs
-        uses: checkout@v1
-        with:
-          gitHub: https://github.com/farseer-go/fs.git
-          gitBranch: main
-          gitUserName: test
-          gitUserPwd: 123456
-          gitPath: farseer-go/fs
-
-      - name: 拉取框架utils
-        uses: checkout@v1
-        with:
-          gitHub: https://github.com/farseer-go/utils.git
-          gitPath: farseer-go/utils
-
-      - name: 拉取框架mapper
-        uses: checkout@v1
-        with:
-          gitHub: https://github.com/farseer-go/mapper.git
-          gitPath: farseer-go/mapper
+#      - name: 拉取框架fs
+#        uses: checkout@v1
+#        with:
+#          gitHub: https://github.com/farseer-go/fs.git
+#          gitBranch: main
+#          gitUserName: test
+#          gitUserPwd: 123456
+#          gitPath: farseer-go/fs
 
       - name: 编译
         run:

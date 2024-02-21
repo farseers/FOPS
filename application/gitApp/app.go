@@ -14,8 +14,8 @@ import (
 // @post add
 func Add(req request.AddRequest, appsRepository apps.Repository) {
 	do := mapper.Single[apps.GitEO](req)
-	if !strings.HasPrefix(do.Dir, "/") {
-		do.Dir = "/" + do.Dir
+	if !strings.HasPrefix(do.Path, "/") {
+		do.Path = "/" + do.Path
 	}
 	// 添加
 	err := appsRepository.AddGit(do)
@@ -28,11 +28,11 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository) {
 	do := mapper.Single[apps.GitEO](req)
 	exception.ThrowWebExceptionBool(!appsRepository.ExistsGit(req.Id), 403, "GitId不存在")
 
-	if !strings.HasPrefix(do.Dir, "/") {
-		do.Dir = "/" + do.Dir
+	if !strings.HasPrefix(do.Path, "/") {
+		do.Path = "/" + do.Path
 	}
-	if !strings.HasSuffix(do.Dir, "/") {
-		do.Dir += "/"
+	if !strings.HasSuffix(do.Path, "/") {
+		do.Path += "/"
 	}
 	_, err := appsRepository.UpdateGit(do)
 	exception.ThrowWebExceptionError(403, err)

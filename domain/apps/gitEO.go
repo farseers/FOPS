@@ -17,7 +17,7 @@ type GitEO struct {
 	Branch   string            // Git分支
 	UserName string            // 账户名称
 	UserPwd  string            // 账户密码
-	Dir      string            // 存储目录
+	Path     string            // 存储目录
 	PullAt   dateTime.DateTime // 拉取时间
 	IsApp    bool              // 是否为应用
 }
@@ -33,13 +33,13 @@ func (receiver *GitEO) GetAbsolutePath() string {
 
 // GetRelativePath 获取git存储的相对路径 如："fops/"
 func (receiver *GitEO) GetRelativePath() string {
-	if receiver.Dir == "" || receiver.Dir == "/" {
-		receiver.Dir = receiver.GetName()
+	if receiver.Path == "" || receiver.Path == "/" {
+		receiver.Path = receiver.GetName()
 	}
 	// 移除前后/
-	receiver.Dir = strings.TrimPrefix(receiver.Dir, "/")
-	receiver.Dir = strings.TrimSuffix(receiver.Dir, "/")
-	return receiver.Dir + "/"
+	receiver.Path = strings.TrimPrefix(receiver.Path, "/")
+	receiver.Path = strings.TrimSuffix(receiver.Path, "/")
+	return receiver.Path + "/"
 }
 
 // GetName 获取仓库名称 如："fops"

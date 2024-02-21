@@ -1,4 +1,4 @@
-FROM steden88/cicd:1.0
+FROM steden88/cicd:2.0
 WORKDIR /app
 # 复制配置（没有配置需要注释掉）
 COPY /fops/farseer.yaml .

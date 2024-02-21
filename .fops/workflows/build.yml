@@ -1,7 +1,7 @@
 name: build
 jobs:
   build:
-    runs-on: steden88/cicd:1.0 # 工作流运行的环境
+    runs-on: steden88/cicd:2.0 # 工作流运行的环境
     steps:
       - name: 开启Git代理
         uses: gitProxy@v1
@@ -20,7 +20,7 @@ jobs:
 #          gitUserPwd: 123456
 #          gitPath: farseer-go/fs
 
-      - name: 安装GO
+      - name: 安装go
         uses: setup-go@v1
         with:
           goVersion: go1.22.0
@@ -37,9 +37,11 @@ jobs:
           - go mod tidy
           - GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./app-server -ldflags="-w -s" .
 
+      - name: 安装npm
+        uses: setup-npm@v1
+
       - name: 编译前端
         run:
-          - apk add nodejs npm # 安装npm
           - mkdir wwwroot
           - cd ./wwwsrc
           - npm install

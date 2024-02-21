@@ -101,6 +101,7 @@ func (receiver *BuildEO) StartBuild() {
 					receiver.checkResult(false)
 				}
 				_ = os.Chmod(step.GetActionPath(), 777)
+				receiver.logQueue.progress <- "下载完成"
 			}
 
 			// 将step文件复制到容器

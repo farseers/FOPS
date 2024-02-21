@@ -58,6 +58,9 @@
           <el-form-item label="Dockerfile">
             <el-input v-model="state.ruleForm.DockerfilePath" placeholder="请输入Dockerfile路径" clearable></el-input>
           </el-form-item>
+          <el-form-item label="工作流yml文件">
+            <el-input v-model="state.ruleForm.WorkflowsYmlPath" placeholder="请输入工作流yml文件路径，默认为：.fops/workflows/build.yml" clearable></el-input>
+          </el-form-item>
 				</el-row>
 			</el-form>
 			<template #footer>
@@ -119,6 +122,7 @@ const state = reactive({
     DockerNodeRole:'',// 容器节点角色 manager or worker
     DockerNodeRoleInt:1,// 容器节点角色 manager or worker
     AdditionalScripts:'',// 多行内容，用多行文本框
+    WorkflowsYmlPath:'',// 工作流定义的路径
     ActiveInstance:[]
 	},
   gitList:[],
@@ -168,6 +172,7 @@ const openDialog = (type: string, row: any) => {
         state.ruleForm.DockerReplicas=row.DockerReplicas
         state.ruleForm.DockerNodeRole=row.DockerNodeRole
         state.ruleForm.AdditionalScripts=row.AdditionalScripts
+        state.ruleForm.WorkflowsYmlPath=row.WorkflowsYmlPath
         if(state.ruleForm.DockerNodeRole=="manager"){
           state.ruleForm.DockerNodeRoleInt=0
         }else {
@@ -185,7 +190,6 @@ const openDialog = (type: string, row: any) => {
 		// 清空表单，此项需加表单验证才能使用
     state.ruleForm.AppName=""
     state.ruleForm.DockerVer=""
-    state.ruleForm.ShellScript=""
     state.ruleForm.ClusterVer=""
     state.ruleForm.AppGit=0
     state.ruleForm.AppGitName=''
@@ -195,6 +199,7 @@ const openDialog = (type: string, row: any) => {
     state.ruleForm.DockerReplicas=0
     state.ruleForm.DockerNodeRole=''
     state.ruleForm.AdditionalScripts=''
+    state.ruleForm.WorkflowsYmlPath=''
     state.SelectItem=[] // 清空
     state.tableData.data=[]
 	}
@@ -267,7 +272,6 @@ const onSubmit = () => {
   // 提交数据
   var param={
     "AppName":state.ruleForm.AppName,
-    "ShellScript":state.ruleForm.ShellScript,
     "AppGit":parseInt(state.ruleForm.AppGit),
     "FrameworkGits":state.ruleForm.FrameworkGits,
     "Dockerfile":state.ruleForm.Dockerfile,
@@ -275,6 +279,7 @@ const onSubmit = () => {
     "DockerReplicas":parseInt(state.ruleForm.DockerReplicas),
     "DockerNodeRole":state.ruleForm.DockerNodeRole,
     "AdditionalScripts":state.ruleForm.AdditionalScripts,
+    "WorkflowsYmlPath":state.ruleForm.WorkflowsYmlPath,
   }
   emit('showOverlay');
 	if (state.dialog.type === 'add') {

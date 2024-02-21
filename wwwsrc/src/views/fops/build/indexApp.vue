@@ -230,10 +230,6 @@ const getTableData = () => {
   })
 };
 
-
-
-
-
 const getTableLogData = () => {
   state.tableLogData.loading = true;
   const data = {

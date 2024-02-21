@@ -8,12 +8,6 @@ jobs:
         with:
           proxy: "socks5://192.168.1.88:7890"
 
-      - name: 安装GO
-        uses: setup-go@v1
-        with:
-          goVersion: go1.22.0
-          goDownload:
-
       - name: 拉取应用Git
         uses: checkout@v1 # 在fops配置了依赖时，将自动拉取所有依赖Git
 
@@ -25,6 +19,12 @@ jobs:
 #          gitUserName: test
 #          gitUserPwd: 123456
 #          gitPath: farseer-go/fs
+
+      - name: 安装GO
+        uses: setup-go@v1
+        with:
+          goVersion: go1.22.0
+          goDownload:
 
       - name: 编译
         run:

@@ -7,7 +7,8 @@
         </el-select>
         <el-button size="default" type="success" class="ml10" @click="onOpenAdd('add')"><el-icon><ele-FolderAdd /></el-icon>新增应用</el-button>
         <el-button size="default" type="info" class="ml10" @click="onClearDockerImage('add')"><el-icon><ele-Delete /></el-icon>清除None镜像</el-button>
-        <el-button size="default" type="danger" class="ml10" @click="onAllBuild()"><el-icon><ele-SwitchButton /></el-icon>全部构建</el-button>
+        <el-button size="default" type="warning" class="ml10" @click="onAllBuild()"><el-icon><ele-SwitchButton /></el-icon>全部构建</el-button>
+        <el-button size="default" type="danger" class="ml10" @click="onStopBuild()"><el-icon><ele-SwitchButton /></el-icon>停止构建</el-button>
       </el-header>
       <!--应用列表-->
       <el-container>
@@ -461,8 +462,18 @@ const onAllBuild=()=>{
   })
       .then(() => {
         for (let i = 0; i < state.tableData.data.length; i++) {
-          var item=state.tableData.data[i]
-          onBuildAddFunc(item)
+          // 提交数据
+          var param={
+          }
+          serverApi.buildStop(param).then(async function(res){
+            if(res.Status){
+              ElMessage.success("成功停止")
+              // 刷新构建日志
+              getTableLogData()
+            }else{
+              ElMessage.error(res.StatusMessage)
+            }
+          })
         }
       })
       .catch(() => {});
@@ -483,6 +494,21 @@ const onBuildAddFunc = (row:any) => {
       }
     })
 };
+// 全部构建
+const onStopBuild=()=>{
+  ElMessageBox.confirm(`请确认是否停止构建?`, '提示', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+      .then(() => {
+        for (let i = 0; i < state.tableData.data.length; i++) {
+          var item=state.tableData.data[i]
+          onBuildAddFunc(item)
+        }
+      })
+      .catch(() => {});
+}
 const getGitArray=(lst:[])=>{
   var array=[]
   for (let i = 0; i < lst.length; i++) {

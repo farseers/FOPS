@@ -117,6 +117,12 @@ export function fopsApi() {
 				method: 'post',
 				data:param,
 			});
+		},buildStop: (param: object) => {
+			return request({
+				url: '/apps/build/stop',
+				method: 'post',
+				data:param,
+			});
 		},restartDocker: (param: object) => {
 			return request({
 				url: '/apps/build/restartDocker',

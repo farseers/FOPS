@@ -23,6 +23,7 @@ var route = []webapi.Route{
 	{"POST", "/apps/build/restartDocker", appsApp.RestartDocker, "", []context.IFilter{}, []string{"clusterId", "appName", "", ""}},
 	{"POST", "/apps/build/syncDockerImage", appsApp.SyncDockerImage, "", []context.IFilter{}, []string{"clusterId", "appName", "", "", ""}},
 	{"GET", "/apps/build/view-{buildId}", appsApp.View, "", []context.IFilter{}, []string{"buildId"}},
+	{"GET", "/apps/build/stop", appsApp.Stop, "", []context.IFilter{}, []string{""}},
 	{"POST", "/apps/register", appsApp.Register, "", []context.IFilter{}, []string{"req", ""}},
 	{"POST", "/cluster/add", clusterApp.Add, "", []context.IFilter{}, []string{"req", ""}},
 	{"POST", "/cluster/update", clusterApp.Update, "", []context.IFilter{}, []string{"req", ""}},

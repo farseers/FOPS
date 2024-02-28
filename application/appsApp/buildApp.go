@@ -175,7 +175,7 @@ func View(buildId int64) action.IResult {
 }
 
 // Stop 停止构建
-// @get build/stop
+// @post build/stop
 func Stop(dockerDevice apps.IDockerDevice) {
 	dockerDevice.Kill("FOPS-Build")
 }

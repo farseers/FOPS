@@ -61,17 +61,20 @@ func (dockerDevice) Run(dockerName string, network string, dockerImage string, a
 	return exec.RunShellContext(ctx, bf.String(), progress, env.ToMap(), apps.DistRoot, true) == 0
 }
 
-func (dockerDevice) Execute(dockerName string, execCmd string, env apps.EnvVO, progress chan string, ctx context.Context) bool {
+func (dockerDevice) Execute(dockerName string, execCmd string, env map[string]string, progress chan string, ctx context.Context) bool {
 	bf := bytes.Buffer{}
 	bf.WriteString("docker exec ") // docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
+	for k, v := range env {
+		bf.WriteString(fmt.Sprintf("-e %s=%s ", k, v))
+	}
 	bf.WriteString(dockerName)
 	bf.WriteString(" ")
 	bf.WriteString(execCmd)
-	return exec.RunShellContext(ctx, bf.String(), progress, env.ToMap(), apps.DistRoot, false) == 0
+	return exec.RunShellContext(ctx, bf.String(), progress, nil, apps.DistRoot, false) == 0
 }
 
 func (device dockerDevice) Copy(dockerName string, sourceFile, destFile string, env apps.EnvVO, progress chan string, ctx context.Context) bool {
-	device.Execute(dockerName, "mkdir -p "+path.Dir(destFile), env, progress, ctx)
+	device.Execute(dockerName, "mkdir -p "+path.Dir(destFile), nil, progress, ctx)
 
 	bf := bytes.Buffer{}
 	bf.WriteString("docker cp ") // docker cp /var/lib/fops/dist/Dockerfile FOPS-Build:/var/lib/fops/dist/Dockerfile

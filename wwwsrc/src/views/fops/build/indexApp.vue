@@ -462,18 +462,8 @@ const onAllBuild=()=>{
   })
       .then(() => {
         for (let i = 0; i < state.tableData.data.length; i++) {
-          // 提交数据
-          var param={
-          }
-          serverApi.buildStop(param).then(async function(res){
-            if(res.Status){
-              ElMessage.success("成功停止")
-              // 刷新构建日志
-              getTableLogData()
-            }else{
-              ElMessage.error(res.StatusMessage)
-            }
-          })
+          var item=state.tableData.data[i]
+          onBuildAddFunc(item)
         }
       })
       .catch(() => {});
@@ -494,7 +484,7 @@ const onBuildAddFunc = (row:any) => {
       }
     })
 };
-// 全部构建
+// 停止构建
 const onStopBuild=()=>{
   ElMessageBox.confirm(`请确认是否停止构建?`, '提示', {
     confirmButtonText: '确认',
@@ -502,10 +492,18 @@ const onStopBuild=()=>{
     type: 'warning',
   })
       .then(() => {
-        for (let i = 0; i < state.tableData.data.length; i++) {
-          var item=state.tableData.data[i]
-          onBuildAddFunc(item)
+        // 提交数据
+        var param={
         }
+        serverApi.buildStop(param).then(async function(res){
+          if(res.Status){
+            ElMessage.success("成功停止")
+            // 刷新构建日志
+            getTableLogData()
+          }else{
+            ElMessage.error(res.StatusMessage)
+          }
+        })
       })
       .catch(() => {});
 }

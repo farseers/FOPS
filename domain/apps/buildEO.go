@@ -87,6 +87,7 @@ func (receiver *BuildEO) StartBuild() {
 		//}
 		receiver.checkResult(receiver.dockerDevice.Run(dockerName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env, receiver.logQueue.progress, receiver.ctx)) // , "-v /var/lib/fops:/var/lib/fops"
 	}
+	//defer receiver.dockerDevice.Kill(dockerName)
 
 	// 设置镜像的代理
 	if receiver.WorkflowsAction.Proxy != "" {
@@ -94,7 +95,13 @@ func (receiver *BuildEO) StartBuild() {
 		receiver.WorkflowsAction.Env["HTTPS_PROXY"] = "http://" + receiver.WorkflowsAction.Proxy
 	}
 
-	//defer receiver.dockerDevice.Kill(dockerName)
+	// 加载环境变量提示
+	if len(receiver.WorkflowsAction.Env) > 0 {
+		receiver.logQueue.progress <- "加载环境变量："
+		for k, v := range receiver.WorkflowsAction.Env {
+			receiver.logQueue.progress <- fmt.Sprintf("%s=%s", k, v)
+		}
+	}
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 
 	// 运行step

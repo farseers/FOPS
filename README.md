@@ -22,7 +22,12 @@ fops是一款集自动化部署、调度中心管理（FSchedule2.x)、日志采
 name: build
 jobs:
   build:
-    runs-on: steden88/cicd:2.0 # 工作流运行的环境
+    runs-on: steden88/cicd:2.0      # 工作流运行的容器镜像
+    proxy: "192.168.1.123:7890"     # 配置工作环境的代理
+    env:
+      GO111MODULE: on               # 配置构建容器环境变量
+      GOPROXY: https://goproxy.cn   # 配置构建容器环境变量
+      
     steps:
       - name: 开启Git代理
         uses: gitProxy@v1

@@ -89,10 +89,9 @@ func (receiver *BuildEO) StartBuild() {
 	}
 
 	// 设置镜像的代理
-	env := make(map[string]string)
 	if receiver.WorkflowsAction.Proxy != "" {
-		env["HTTP_PROXY"] = "http://" + receiver.WorkflowsAction.Proxy
-		env["HTTPS_PROXY"] = "http://" + receiver.WorkflowsAction.Proxy
+		receiver.WorkflowsAction.Env["HTTP_PROXY"] = "http://" + receiver.WorkflowsAction.Proxy
+		receiver.WorkflowsAction.Env["HTTPS_PROXY"] = "http://" + receiver.WorkflowsAction.Proxy
 	}
 
 	//defer receiver.dockerDevice.Kill(dockerName)
@@ -158,7 +157,7 @@ func (receiver *BuildEO) StartBuild() {
 			receiver.dockerDevice.Copy(dockerName, WithJsonPath, WithJsonPath, receiver.Env, make(chan string, 100), receiver.ctx)
 
 			// 执行 docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
-			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.GetActionPath(), env, receiver.logQueue.progress, receiver.ctx))
+			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx))
 
 			switch step.ActionName {
 			case "checkout":

@@ -23,9 +23,10 @@ func (receiver *stepVO) GetActionPath() string {
 }
 
 type ActionVO struct {
-	Name   string   // 工作流名称
-	RunsOn string   // 基础镜像系统
-	Proxy  string   // 代理
+	Name   string // 工作流名称
+	RunsOn string // 基础镜像系统
+	Proxy  string // 代理
+	Env    map[string]string
 	Steps  []stepVO // 步骤
 }
 
@@ -54,12 +55,18 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 	name, _ := workflowsYml.Get("name")
 	proxy, _ := workflowsYml.Get("jobs.build.proxy")
 	sysImage, _ := workflowsYml.Get("jobs.build.runs-on")
+	env, _ := workflowsYml.GetSubNodes("jobs.build.env")
 
 	act := ActionVO{
 		Name:   strings.TrimSpace(parse.ToString(name)),
 		Proxy:  strings.TrimSpace(parse.ToString(proxy)),
 		RunsOn: strings.TrimSpace(parse.ToString(sysImage)),
+		Env:    make(map[string]string),
 	}
+	for k, v := range env {
+		act.Env[k] = parse.ToString(v)
+	}
+
 	// 移除前缀//
 	if index := strings.Index(act.Proxy, "//"); index > -1 {
 		act.Proxy = act.Proxy[index+2:]

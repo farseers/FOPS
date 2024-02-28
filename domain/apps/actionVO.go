@@ -52,7 +52,7 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 	}
 
 	name, _ := workflowsYml.Get("name")
-	proxy, _ := workflowsYml.Get("proxy")
+	proxy, _ := workflowsYml.Get("jobs.build.proxy")
 	sysImage, _ := workflowsYml.Get("jobs.build.runs-on")
 
 	act := ActionVO{

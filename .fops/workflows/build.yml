@@ -4,8 +4,8 @@ jobs:
     runs-on: steden88/cicd:2.0 # 工作流运行的环境
     proxy: "192.168.1.88:7890"
     env:
-#      GO111MODULE: on
-#      GOPROXY: https://goproxy.cn
+      GO111MODULE: on
+      GOPROXY: https://goproxy.cn
 
     steps:
 #      - name: 开启Git代理
@@ -33,6 +33,8 @@ jobs:
 
       - name: 编译
         run:
+          - unset HTTPS_PROXY
+          - unset HTTP_PROXY
           - rm -rf ./go.work
           - go work init ./
           - go work edit -replace github.com/farseer-go/fs=../farseer-go/fs

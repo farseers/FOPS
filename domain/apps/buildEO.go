@@ -287,11 +287,11 @@ func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 		},
 	}, receiver.WorkflowsAction.Steps...)
 
-	if receiver.WorkflowsAction.Proxy != "" {
-
-	}
-
 	receiver.logQueue.progress <- "读取到工作流文件：" + receiver.WorkflowsAction.Name
+
+	if receiver.WorkflowsAction.Proxy != "" {
+		receiver.logQueue.progress <- "使用代理：" + receiver.WorkflowsAction.Proxy
+	}
 	return true
 }
 

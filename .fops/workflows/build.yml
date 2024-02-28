@@ -8,10 +8,10 @@ jobs:
       GOPROXY: https://goproxy.cn
 
     steps:
-#      - name: 开启Git代理
-#        uses: gitProxy@v1
-#        with:
-#          proxy: "socks5://192.168.1.88:7890"
+      - name: 开启Git代理
+        uses: gitProxy@v1
+        with:
+          proxy: "socks5://192.168.1.88:7890"
 
       - name: 拉取应用Git
         uses: checkout@v1 # 在fops配置了依赖时，将自动拉取所有依赖Git
@@ -62,6 +62,8 @@ jobs:
 
       - name: 编译前端
         run:
+          - unset HTTPS_PROXY
+          - unset HTTP_PROXY
           - mkdir wwwroot
           - cd ./wwwsrc
           - npm install

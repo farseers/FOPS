@@ -31,8 +31,17 @@ type ActionVO struct {
 }
 
 func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (ActionVO, error) {
-	// 通过http读取工作流定义的内容
-	workflowsYmlContent, _, err := http.RequestProxy("GET", workflowsYmlPath, nil, nil, "", 2000, configure.GetString("Fops.GitAgent"))
+	var (
+		workflowsYmlContent string
+		err                 error
+	)
+	// 支持读取失败时，尝试3次读取
+	for i := 0; i < 3; i++ {
+		// 通过http读取工作流定义的内容
+		if workflowsYmlContent, _, err = http.RequestProxy("GET", workflowsYmlPath, nil, nil, "", 2000, configure.GetString("Fops.GitAgent")); err == nil {
+			break
+		}
+	}
 
 	if err != nil {
 		return ActionVO{}, fmt.Errorf("读取WorkflowsYml错误：%s", err.Error())

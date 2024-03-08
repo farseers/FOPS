@@ -26,6 +26,7 @@ type TraceContextPO struct {
 	TaskContextPO     `gorm:"embedded;not null;comment:任务上下文" es_type:"object"`
 	WatchKeyContextPO `gorm:"embedded;not null;comment:Etcd上下文" es_type:"object"`
 	CreateAt          dateTime.DateTime `gorm:"type:DateTime64(3);not null;comment:请求时间"`
+	TraceCount        int               `gorm:"not null;default:0;comment:追踪明细数量"`
 }
 
 type WebContextPO struct {

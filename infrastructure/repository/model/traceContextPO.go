@@ -14,6 +14,7 @@ type TraceContextPO struct {
 	AppIp             string            `gorm:"not null;default:'';comment:应用IP"`
 	ParentAppName     string            `gorm:"not null;default:'';comment:上游应用"`
 	TraceLevel        int               `gorm:"not null;default:0;comment:逐层递增（显示上下游顺序）"`
+	TraceCount        int               `gorm:"not null;default:0;comment:追踪明细数量"`
 	StartTs           int64             `gorm:"not null;default:0;comment:调用开始时间戳（微秒）"`
 	EndTs             int64             `gorm:"not null;default:0;comment:调用结束时间戳（微秒）"`
 	UseTs             time.Duration     `gorm:"not null;default:0;comment:总共使用时间（微秒）"`
@@ -26,7 +27,6 @@ type TraceContextPO struct {
 	TaskContextPO     `gorm:"embedded;not null;comment:任务上下文" es_type:"object"`
 	WatchKeyContextPO `gorm:"embedded;not null;comment:Etcd上下文" es_type:"object"`
 	CreateAt          dateTime.DateTime `gorm:"type:DateTime64(3);not null;comment:请求时间"`
-	TraceCount        int               `gorm:"not null;default:0;comment:追踪明细数量"`
 }
 
 type WebContextPO struct {

@@ -81,17 +81,16 @@
             <h3 style="padding: 5px;">构建队列</h3>
             <template v-if="state.tableLogData.data.length > 0">
               <el-table  :data="state.tableLogData.data" v-loading="state.tableLogData.loading" style="width: 100%;background: #ffffff;">
-                <el-table-column prop="Id" label="编号" width="70" />
-                <el-table-column prop="AppName" label="应用名称" ></el-table-column>
-                <el-table-column label="状态" width="90" show-overflow-tooltip>
+                <el-table-column prop="FinishAt" width="170" label="构建时间"></el-table-column>
+                <el-table-column label="应用名称" show-overflow-tooltip>
                   <template #default="scope">
                     <el-tag v-if="scope.row.Status==0" size="small" type="info">未开始</el-tag>
                     <el-tag v-else-if="scope.row.Status==1" size="small" type="warning">构建中</el-tag>
                     <el-tag v-if="scope.row.Status==2 && scope.row.IsSuccess == true" size="small" type="success">成功</el-tag>
                     <el-tag v-else-if="scope.row.Status==2 && scope.row.IsSuccess == false" size="small" type="danger">失败</el-tag>
+                    <span>{{ scope.row.AppName }}</span>
                   </template>
                 </el-table-column>
-                <el-table-column prop="FinishAt" width="170" label="完成时间"></el-table-column>
                 <el-table-column label="操作" width="80">
                   <template #default="scope">
                     <el-button v-if="scope.row.Status!=0" size="small" type="success" @click="showLog(scope.row)">日志</el-button>

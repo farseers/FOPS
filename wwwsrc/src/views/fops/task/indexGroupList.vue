@@ -86,7 +86,7 @@
             </el-table-column>
 				<el-table-column label="操作" width="150">
 					<template #default="scope">
-						<el-button size="small" text type="primary" @click="onDetail(scope.row)">详情信息</el-button>
+						<el-button size="small" text type="primary" @click="onDetail(scope.row)">信息</el-button>
             <el-button size="small" text type="warning" @click="onEdit('edit',scope.row)">修改</el-button>
             <el-button size="small" text type="danger" @click="onLog(scope.row)">日志</el-button>
             <el-button size="small" text type="info" @click="onDel(scope.row)">删除</el-button>

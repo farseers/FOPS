@@ -106,7 +106,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					icon: 'iconfont icon-shouye',
 				},children: [
 					{
-						path: '/app/buildDeployment',
+						path: '/app',
 						name: 'appBuildDeployment',
 						component: () => import('/@/views/fops/build/indexApp.vue'),
 						meta: {

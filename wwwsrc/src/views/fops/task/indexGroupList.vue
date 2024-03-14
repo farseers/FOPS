@@ -3,7 +3,7 @@
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="system-user-search mb15">
         <label>客户端名称</label>
-        <el-select class="ml10" style="max-width: 150px;margin-right: 5px;" size="small" v-model="state.appName">
+        <el-select  class="ml10" style="max-width: 150px;margin-right: 5px;" size="small" v-model="state.appName">
           <el-option label="全部" value=""></el-option>
           <el-option v-for="item in state.appData" :label="item.AppName" :value="item.AppName" ></el-option>
         </el-select>

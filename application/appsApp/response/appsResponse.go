@@ -21,4 +21,5 @@ type AppsResponse struct {
 	AdditionalScripts string                  // 首次创建应用时附加脚本
 	LogErrorCount     int                     // 日志错误数量
 	LogWaringCount    int                     // 日志警告数量
+	WorkflowsYmlPath  string                  // 工作流定义的路径（默认：/.fops/workflows/build.yml）
 }

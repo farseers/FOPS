@@ -164,12 +164,18 @@ func View(buildId int64) action.IResult {
 			if dockerLogMatch != nil {
 				cmd := dockerLogMatch[1]
 				logPart = strings.Replace(logPart, cmd, fmt.Sprintf("<span style=\"color:#38e4c6\">%s</span>", cmd), 1)
-				logPart = fmt.Sprintf("<span style=\"color:#6a6964\">%s</span>", logPart)
+				logPart = fmt.Sprintf("<span style=\"color:#a6a49a\">%s</span>", logPart)
 			} else {
-				logPart = fmt.Sprintf("<span style=\"color:#6a6964\">%s</span>", logPart)
+				logPart = fmt.Sprintf("<span style=\"color:#a6a49a\">%s</span>", logPart)
 			}
 		}
 		logContent[i] = dateTimePart + " " + logPart
 	}
 	return action.Content(strings.Join(logContent, "\n"))
+}
+
+// Stop 停止构建
+// @post build/stop
+func Stop(dockerDevice apps.IDockerDevice) {
+	dockerDevice.Kill("FOPS-Build")
 }

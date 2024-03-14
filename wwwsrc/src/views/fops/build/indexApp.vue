@@ -7,11 +7,12 @@
         </el-select>
         <el-button size="default" type="success" class="ml10" @click="onOpenAdd('add')"><el-icon><ele-FolderAdd /></el-icon>新增应用</el-button>
         <el-button size="default" type="info" class="ml10" @click="onClearDockerImage('add')"><el-icon><ele-Delete /></el-icon>清除None镜像</el-button>
-        <el-button size="default" type="danger" class="ml10" @click="onAllBuild()"><el-icon><ele-SwitchButton /></el-icon>全部构建</el-button>
+        <el-button size="default" type="warning" class="ml10" @click="onAllBuild()"><el-icon><ele-SwitchButton /></el-icon>全部构建</el-button>
+        <el-button size="default" type="danger" class="ml10" @click="onStopBuild()"><el-icon><ele-SwitchButton /></el-icon>停止构建</el-button>
       </el-header>
       <!--应用列表-->
       <el-container>
-        <el-main style="padding: 0">
+        <el-main style="padding: 0;overflow: hidden;">
           <el-space wrap style="align-items: unset;">
             <el-card shadow="hover" v-for="(v, k) in state.tableData.data" :key="k" style="width: 280px;">
               <template #header>
@@ -80,17 +81,16 @@
             <h3 style="padding: 5px;">构建队列</h3>
             <template v-if="state.tableLogData.data.length > 0">
               <el-table  :data="state.tableLogData.data" v-loading="state.tableLogData.loading" style="width: 100%;background: #ffffff;">
-                <el-table-column prop="Id" label="编号" width="70" />
-                <el-table-column prop="AppName" label="应用名称" ></el-table-column>
-                <el-table-column label="状态" width="90" show-overflow-tooltip>
+                <el-table-column prop="FinishAt" width="170" label="构建时间"></el-table-column>
+                <el-table-column label="应用名称" show-overflow-tooltip>
                   <template #default="scope">
                     <el-tag v-if="scope.row.Status==0" size="small" type="info">未开始</el-tag>
                     <el-tag v-else-if="scope.row.Status==1" size="small" type="warning">构建中</el-tag>
                     <el-tag v-if="scope.row.Status==2 && scope.row.IsSuccess == true" size="small" type="success">成功</el-tag>
                     <el-tag v-else-if="scope.row.Status==2 && scope.row.IsSuccess == false" size="small" type="danger">失败</el-tag>
+                    <span style="margin-left: 5px ">{{ scope.row.AppName }}</span>
                   </template>
                 </el-table-column>
-                <el-table-column prop="FinishAt" width="170" label="完成时间"></el-table-column>
                 <el-table-column label="操作" width="80">
                   <template #default="scope">
                     <el-button v-if="scope.row.Status!=0" size="small" type="success" @click="showLog(scope.row)">日志</el-button>
@@ -483,6 +483,29 @@ const onBuildAddFunc = (row:any) => {
       }
     })
 };
+// 停止构建
+const onStopBuild=()=>{
+  ElMessageBox.confirm(`请确认是否停止构建?`, '提示', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+      .then(() => {
+        // 提交数据
+        var param={
+        }
+        serverApi.buildStop(param).then(async function(res){
+          if(res.Status){
+            ElMessage.success("成功停止")
+            // 刷新构建日志
+            getTableLogData()
+          }else{
+            ElMessage.error(res.StatusMessage)
+          }
+        })
+      })
+      .catch(() => {});
+}
 const getGitArray=(lst:[])=>{
   var array=[]
   for (let i = 0; i < lst.length; i++) {

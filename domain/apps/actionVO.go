@@ -9,7 +9,6 @@ import (
 )
 
 type stepVO struct {
-	Index             int            // 步骤
 	Name              string         // 名称
 	ActionName        string         // action 名称
 	ActionVer         string         // action 版本
@@ -24,16 +23,25 @@ func (receiver *stepVO) GetActionPath() string {
 }
 
 type ActionVO struct {
-	Name   string   // 工作流名称
-	RunsOn string   // 基础镜像系统
+	Name   string // 工作流名称
+	RunsOn string // 基础镜像系统
+	Proxy  string // 代理
+	Env    map[string]string
 	Steps  []stepVO // 步骤
 }
 
 func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (ActionVO, error) {
-	// 通过http读取工作流定义的内容
-	workflowsYmlContent, _, err := http.RequestProxy("GET", workflowsYmlPath, nil, nil, "", 2000, configure.GetString("Fops.GitAgent"))
-	//err = nil
-	//workflowsYmlContent = file.ReadString("./.fops/workflows/build.yml")
+	var (
+		workflowsYmlContent string
+		err                 error
+	)
+	// 支持读取失败时，尝试3次读取
+	for i := 0; i < 3; i++ {
+		// 通过http读取工作流定义的内容
+		if workflowsYmlContent, _, err = http.RequestProxy("GET", workflowsYmlPath, nil, nil, "", 2000, configure.GetString("Fops.GitAgent")); err == nil {
+			break
+		}
+	}
 
 	if err != nil {
 		return ActionVO{}, fmt.Errorf("读取WorkflowsYml错误：%s", err.Error())
@@ -54,11 +62,23 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 	}
 
 	name, _ := workflowsYml.Get("name")
+	proxy, _ := workflowsYml.Get("jobs.build.proxy")
 	sysImage, _ := workflowsYml.Get("jobs.build.runs-on")
+	env, _ := workflowsYml.GetSubNodes("jobs.build.env")
 
 	act := ActionVO{
-		Name:   parse.ToString(name),
-		RunsOn: parse.ToString(sysImage),
+		Name:   strings.TrimSpace(parse.ToString(name)),
+		Proxy:  strings.TrimSpace(parse.ToString(proxy)),
+		RunsOn: strings.TrimSpace(parse.ToString(sysImage)),
+		Env:    make(map[string]string),
+	}
+	for k, v := range env {
+		act.Env[k] = parse.ToString(v)
+	}
+
+	// 移除前缀//
+	if index := strings.Index(act.Proxy, "//"); index > -1 {
+		act.Proxy = act.Proxy[index+2:]
 	}
 
 	// 运行steps
@@ -66,8 +86,7 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 		stepsLength := len(steps.([]any))
 		for i := 0; i < stepsLength; i++ {
 			step := stepVO{
-				Index: i + 2,
-				With:  make(map[string]any),
+				With: make(map[string]any),
 			}
 			curSteps := fmt.Sprintf("jobs.build.steps[%d].", i)
 			// steps.name

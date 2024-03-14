@@ -14,7 +14,6 @@ import (
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/fs/sonyflake"
-	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/http"
 	"os"
@@ -80,14 +79,33 @@ func (receiver *BuildEO) StartBuild() {
 		receiver.logQueue.progress <- "启动构建系统：" + receiver.WorkflowsAction.RunsOn
 		//args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-v /usr/bin/docker:/usr/bin/docker", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
 		args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
+		//// 设置镜像的代理
+		//if receiver.WorkflowsAction.Proxy != "" {
+		//	args = append(args, "-e HTTP_PROXY="+receiver.WorkflowsAction.Proxy)
+		//	args = append(args, "-e HTTPS_PROXY="+receiver.WorkflowsAction.Proxy)
+		//}
 		receiver.checkResult(receiver.dockerDevice.Run(dockerName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env, receiver.logQueue.progress, receiver.ctx)) // , "-v /var/lib/fops:/var/lib/fops"
 	}
 	//defer receiver.dockerDevice.Kill(dockerName)
+
+	// 设置镜像的代理
+	if receiver.WorkflowsAction.Proxy != "" {
+		receiver.WorkflowsAction.Env["HTTP_PROXY"] = "http://" + receiver.WorkflowsAction.Proxy
+		receiver.WorkflowsAction.Env["HTTPS_PROXY"] = "http://" + receiver.WorkflowsAction.Proxy
+	}
+
+	// 加载环境变量提示
+	if len(receiver.WorkflowsAction.Env) > 0 {
+		receiver.logQueue.progress <- "加载环境变量："
+		for k, v := range receiver.WorkflowsAction.Env {
+			receiver.logQueue.progress <- fmt.Sprintf("%s=%s", k, v)
+		}
+	}
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 
 	// 运行step
-	for _, step := range receiver.WorkflowsAction.Steps {
-		receiver.logQueue.progress <- fmt.Sprintf("执行 %d %s: %s", step.Index, step.ActionName, step.Name)
+	for index, step := range receiver.WorkflowsAction.Steps {
+		receiver.logQueue.progress <- fmt.Sprintf("执行 %d %s: %s", index+1, step.ActionName, step.Name)
 
 		// 使用action程序，需要判断是否要下载
 		if step.ActionName != "" {
@@ -145,7 +163,7 @@ func (receiver *BuildEO) StartBuild() {
 			receiver.dockerDevice.Copy(dockerName, WithJsonPath, WithJsonPath, receiver.Env, make(chan string, 100), receiver.ctx)
 
 			// 执行 docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
-			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.GetActionPath(), receiver.Env, receiver.logQueue.progress, receiver.ctx))
+			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx))
 
 			switch step.ActionName {
 			case "checkout":
@@ -160,15 +178,16 @@ func (receiver *BuildEO) StartBuild() {
 		if len(step.Run) > 0 {
 			shellScript := collections.NewList[string]()
 			shellScript.Add("source /etc/profile")
-			shellScript.Add("go env -w GO111MODULE=on && go env -w GOPROXY=https://goproxy.cn,direct")
+			//shellScript.Add("go env -w GO111MODULE=on && go env -w GOPROXY=https://goproxy.cn,direct")
 			shellScript.Add("cd " + DistRoot + receiver.appGit.GetRelativePath())
 			shellScript.AddArray(step.Run)
 			shellScript.Add("")
-			shellPath := fmt.Sprintf("%s%d-%d.sh", ShellRoot, receiver.Env.BuildNumber, step.Index)
+			shellPath := fmt.Sprintf("%s%d-%d.sh", ShellRoot, receiver.Env.BuildNumber, index+1)
 			file.WriteString(shellPath, shellScript.ToString("\n"))
 			receiver.dockerDevice.Copy(dockerName, shellPath, shellPath, receiver.Env, make(chan string, 100), receiver.ctx)
 
-			receiver.checkResult(exec.RunShell("docker exec "+dockerName+" /bin/sh -xe "+shellPath, receiver.logQueue.progress, receiver.Env.ToMap(), DistRoot, false) == 0)
+			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, "/bin/sh -x "+shellPath, receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx))
+			//receiver.checkResult(exec.RunShell("docker exec "+dockerName+" /bin/sh -x "+shellPath, receiver.logQueue.progress, receiver.Env.ToMap(), DistRoot, false) == 0)
 		}
 		receiver.logQueue.progress <- "---------------------------------------------------------"
 	}
@@ -265,7 +284,6 @@ func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 
 	receiver.WorkflowsAction.Steps = append([]stepVO{
 		{
-			Index:             1,
 			Name:              "初始化环境",
 			ActionName:        "clear",
 			ActionVer:         "v1",
@@ -276,6 +294,7 @@ func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 	}, receiver.WorkflowsAction.Steps...)
 
 	receiver.logQueue.progress <- "读取到工作流文件：" + receiver.WorkflowsAction.Name
+
 	return true
 }
 

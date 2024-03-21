@@ -116,7 +116,7 @@ func (dockerDevice) ClearImages(progress chan string) bool {
 	progress <- "---------------------------------------------------------"
 	progress <- "开始清除镜像。"
 
-	var exitCode = exec.RunShell(`docker system prune -f && docker builder prune -f && docker rmi $(docker images -f "dangling=true" -q)`, progress, nil, "", false)
+	var exitCode = exec.RunShell(`docker rmi $(docker images -f "dangling=true" -q) && docker builder prune -f && docker system prune -f`, progress, nil, "", false)
 	if exitCode != 0 {
 		progress <- "清除镜像镜像失败。"
 		return false

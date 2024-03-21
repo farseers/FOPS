@@ -2,7 +2,7 @@ name: build
 jobs:
   build:
     runs-on: steden88/cicd:2.0 # 工作流运行的环境
-    proxy: ""
+    proxy: "192.168.1.88:7890"
     env:
       GO111MODULE: on
       GOPROXY: https://goproxy.cn
@@ -11,14 +11,14 @@ jobs:
       - name: 拉取应用Git
         uses: checkout@v1 # 在fops配置了依赖时，将自动拉取所有依赖Git
 
-#      - name: 拉取框架fs
-#        uses: checkout@v1
-#        with:
-#          gitHub: https://github.com/farseer-go/fs.git
-#          gitBranch: main
-#          gitUserName: test
-#          gitUserPwd: 123456
-#          gitPath: farseer-go/fs
+      #      - name: 拉取框架fs
+      #        uses: checkout@v1
+      #        with:
+      #          gitHub: https://github.com/farseer-go/fs.git
+      #          gitBranch: main
+      #          gitUserName: test
+      #          gitUserPwd: 123456
+      #          gitPath: farseer-go/fs
 
       - name: 安装go
         uses: setup-go@v1

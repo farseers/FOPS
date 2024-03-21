@@ -73,17 +73,10 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.checkResult(receiver.GenerateWorkflowsContent())
 
 	// 启动构建系统
-	//dockerName := "FOPS-Build-" + strings.NewReplacer(":", "-", ".", "-", "/", "-").Replace(receiver.Env.DockerImage)
 	dockerName := "FOPS-Build"
 	if !receiver.dockerDevice.ExistsDocker(dockerName) {
 		receiver.logQueue.progress <- "启动构建系统：" + receiver.WorkflowsAction.RunsOn
-		//args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-v /usr/bin/docker:/usr/bin/docker", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
 		args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
-		//// 设置镜像的代理
-		//if receiver.WorkflowsAction.Proxy != "" {
-		//	args = append(args, "-e HTTP_PROXY="+receiver.WorkflowsAction.Proxy)
-		//	args = append(args, "-e HTTPS_PROXY="+receiver.WorkflowsAction.Proxy)
-		//}
 		receiver.checkResult(receiver.dockerDevice.Run(dockerName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env, receiver.logQueue.progress, receiver.ctx)) // , "-v /var/lib/fops:/var/lib/fops"
 	}
 	//defer receiver.dockerDevice.Kill(dockerName)
@@ -280,6 +273,19 @@ func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 	if err != nil {
 		receiver.logQueue.progress <- err.Error()
 		return false
+	}
+
+	if gitAgent := configure.GetString("Fops.GitAgent"); gitAgent != "" {
+		receiver.WorkflowsAction.Steps = append([]stepVO{
+			{
+				Name:              "开启Git代理",
+				ActionName:        "gitProxy",
+				ActionVer:         "v1",
+				ActionDownloadUrl: "https://github.com/farseers/FOPS-Actions/releases/download/v1/gitProxy",
+				RepositoryName:    "farseers/FOPS-Actions",
+				With:              map[string]any{"proxy": gitAgent},
+			},
+		}, receiver.WorkflowsAction.Steps...)
 	}
 
 	receiver.WorkflowsAction.Steps = append([]stepVO{

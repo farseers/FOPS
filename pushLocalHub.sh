@@ -20,4 +20,4 @@ docker service create --name fops --replicas 1 -d --network=net \
 -l "traefik.http.routers.fops.entrypoints=websecure" \
 -l "traefik.http.routers.fops.tls=true" \
 -l "traefik.http.services.fops.loadbalancer.server.port=8889" \
-hub.fsgit.cc/fops:dev
+steden88/fops:2.0.beta3

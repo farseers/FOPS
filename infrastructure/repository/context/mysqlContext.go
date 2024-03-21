@@ -1,6 +1,7 @@
 package context
 
 import (
+	"fops/domain/accountLogin"
 	"fops/domain/apps"
 	"fops/domain/cluster"
 	"fops/domain/register"
@@ -28,6 +29,9 @@ type mysqlContext struct {
 	Git data.DomainSet[model.GitPO, apps.GitEO] `data:"name=git;migrate;"`
 	// 注册
 	Register data.DomainSet[model.RegisterPO, register.DomainObject] `data:"name=register;migrate;"`
+	// 登录帐号
+	// 期数数据
+	Login data.DomainSet[model.AccountLoginPO, accountLogin.DomainObject] `data:"name=account_login;migrate;"`
 }
 
 // InitMysqlContext 初始化上下文

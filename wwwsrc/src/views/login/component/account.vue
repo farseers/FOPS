@@ -27,26 +27,26 @@
 				</template>
 			</el-input>
 		</el-form-item>
-		<el-form-item class="login-animation3">
-			<el-col :span="15">
-				<el-input
-					text
-					maxlength="4"
-					:placeholder="$t('message.account.accountPlaceholder3')"
-					v-model="state.ruleForm.code"
-					clearable
-					autocomplete="off"
-				>
-					<template #prefix>
-						<el-icon class="el-input__icon"><ele-Position /></el-icon>
-					</template>
-				</el-input>
-			</el-col>
-			<el-col :span="1"></el-col>
-			<el-col :span="8">
-				<el-button class="login-content-code" v-waves>1234</el-button>
-			</el-col>
-		</el-form-item>
+<!--		<el-form-item class="login-animation3">-->
+<!--			<el-col :span="15">-->
+<!--				<el-input-->
+<!--					text-->
+<!--					maxlength="4"-->
+<!--					:placeholder="$t('message.account.accountPlaceholder3')"-->
+<!--					v-model="state.ruleForm.code"-->
+<!--					clearable-->
+<!--					autocomplete="off"-->
+<!--				>-->
+<!--					<template #prefix>-->
+<!--						<el-icon class="el-input__icon"><ele-Position /></el-icon>-->
+<!--					</template>-->
+<!--				</el-input>-->
+<!--			</el-col>-->
+<!--			<el-col :span="1"></el-col>-->
+<!--			<el-col :span="8">-->
+<!--				<el-button class="login-content-code" v-waves></el-button>-->
+<!--			</el-col>-->
+<!--		</el-form-item>-->
 		<el-form-item class="login-animation4">
 			<el-button type="primary" class="login-content-submit" round v-waves @click="onSignIn" :loading="state.loading.signIn">
 				<span>{{ $t('message.account.accountBtnText') }}</span>
@@ -69,6 +69,7 @@ import { Session } from '/@/utils/storage';
 import { formatAxis } from '/@/utils/formatTime';
 import { NextLoading } from '/@/utils/loading';
 import {fopsApi} from "/@/api/fops";
+import {useLoginApi} from "/@/api/login";
 // 定义变量内容
 const { t } = useI18n();
 const storesThemeConfig = useThemeConfig();
@@ -76,13 +77,14 @@ const { themeConfig } = storeToRefs(storesThemeConfig);
 const route = useRoute();
 const router = useRouter();
 // 引入 api 请求接口
+const userApi = useLoginApi();
 const serverApi = fopsApi();
 const state = reactive({
 	isShowPassword: false,
 	ruleForm: {
-		userName: 'admin',
-		password: '123456',
-		code: '1234',
+		userName: '',
+		password: '',
+		code: '',
 	},
 	loading: {
 		signIn: false,
@@ -94,23 +96,37 @@ const currentTime = computed(() => {
 	return formatAxis(new Date());
 });
 // 登录
-const onSignIn = async () => {
+const onSignIn = () => {
 	state.loading.signIn = true;
-	// 存储 token 到浏览器缓存
-	Session.set('token', Math.random().toString(36).substr(0));
-	// 模拟数据，对接接口时，记得删除多余代码及对应依赖的引入。用于 `/src/stores/userInfo.ts` 中不同用户登录判断（模拟数据）
-	Cookies.set('userName', state.ruleForm.userName);
-	if (!themeConfig.value.isRequestRoutes) {
-		// 前端控制路由，2、请注意执行顺序
-		const isNoPower = await initFrontEndControlRoutes();
-		signInSuccess(isNoPower);
-	} else {
-		// 模拟后端控制路由，isRequestRoutes 为 true，则开启后端控制路由
-		// 添加完动态路由，再进行 router 跳转，否则可能报错 No match found for location with path "/"
-		const isNoPower = await initBackEndControlRoutes();
-		// 执行完 initBackEndControlRoutes，再执行 signInSuccess
-		signInSuccess(isNoPower);
-	}
+
+  // 登录
+  var param = {
+    "LoginName":state.ruleForm.userName,
+    "LoginPwd":state.ruleForm.password
+  }
+  userApi.signIn(param).then(function (res) {
+    if (res.StatusCode===200) {
+      // 存储 token 到浏览器缓存
+      Session.set('token', res.Data.Token);
+      // 模拟数据，对接接口时，记得删除多余代码及对应依赖的引入。用于 `/src/stores/userInfo.ts` 中不同用户登录判断（模拟数据）
+      Cookies.set('userName', state.ruleForm.userName);
+      if (!themeConfig.value.isRequestRoutes) {
+        // 前端控制路由，2、请注意执行顺序
+        initFrontEndControlRoutes();
+      } else {
+        // 模拟后端控制路由，isRequestRoutes 为 true，则开启后端控制路由
+        // 添加完动态路由，再进行 router 跳转，否则可能报错 No match found for location with path "/"
+        initBackEndControlRoutes();
+        // 执行完 initBackEndControlRoutes，再执行 signInSuccess
+      }
+      signInSuccess(false);
+    } else {
+      ElMessage.error(res.StatusMessage);
+      Session.clear();
+      state.loading.signIn = false;
+    }
+  })
+
 
 };
 // 登录成功后的跳转

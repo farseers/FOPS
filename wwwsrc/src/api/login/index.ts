@@ -9,11 +9,11 @@ import request from '/@/utils/request';
  */
 export function useLoginApi() {
 	return {
-		signIn: (data: object) => {
+		signIn: (param: object) => {
 			return request({
-				url: '/user/signIn',
+				url: '/user/passport/Login',
 				method: 'post',
-				data,
+				data:param,
 			});
 		},
 		signOut: (data: object) => {

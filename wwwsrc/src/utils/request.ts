@@ -35,18 +35,19 @@ service.interceptors.response.use(
 	(response) => {
 		// 对响应数据做点什么
 		const res = response.data;
-		if (res.code && res.code !== 0) {
+		if (res.StatusCode && res.StatusCode !== 0) {
 			// `token` 过期或者账号已在别处登录
-			if (res.code === 401 || res.code === 4001) {
+			if (res.StatusCode === 207 || res.StatusCode === 4001) {
 				Session.clear(); // 清除浏览器全部临时缓存
 				window.location.href = '/'; // 去登录页
-				ElMessageBox.alert('你已被登出，请重新登录', '提示', {})
+				ElMessageBox.alert('登录失效', '提示', {})
 					.then(() => {})
 					.catch(() => {});
+			}else{
+				return res;
 			}
-			return Promise.reject(service.interceptors.response);
 		} else {
-			return res;
+			ElMessage.error(res.StatusMessage);
 		}
 	},
 	(error) => {

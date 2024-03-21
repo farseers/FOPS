@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fops/domain/accountLogin"
 	"fops/domain/apps"
 	"fops/domain/cluster"
 	"fops/domain/linkTrace"
@@ -21,4 +22,6 @@ func InitRepository() {
 	container.Register(func() logData.Repository { return &logDataRepository{} })
 	// 注册应用
 	container.Register(func() register.Repository { return &registerRepository{} })
+	// 登录帐号
+	container.Register(func() accountLogin.Repository { return &accountLoginRepository{} })
 }

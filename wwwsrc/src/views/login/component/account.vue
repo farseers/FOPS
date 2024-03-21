@@ -68,13 +68,15 @@ import { initBackEndControlRoutes } from '/@/router/backEnd';
 import { Session } from '/@/utils/storage';
 import { formatAxis } from '/@/utils/formatTime';
 import { NextLoading } from '/@/utils/loading';
-
+import {fopsApi} from "/@/api/fops";
 // 定义变量内容
 const { t } = useI18n();
 const storesThemeConfig = useThemeConfig();
 const { themeConfig } = storeToRefs(storesThemeConfig);
 const route = useRoute();
 const router = useRouter();
+// 引入 api 请求接口
+const serverApi = fopsApi();
 const state = reactive({
 	isShowPassword: false,
 	ruleForm: {
@@ -109,6 +111,7 @@ const onSignIn = async () => {
 		// 执行完 initBackEndControlRoutes，再执行 signInSuccess
 		signInSuccess(isNoPower);
 	}
+
 };
 // 登录成功后的跳转
 const signInSuccess = (isNoPower: boolean | undefined) => {
@@ -135,7 +138,19 @@ const signInSuccess = (isNoPower: boolean | undefined) => {
 		NextLoading.start();
 	}
 	state.loading.signIn = false;
+  // 请求调度中心地址
+  getFScheduleUrl()
 };
+// 获取调度中心接口地址：
+const getFScheduleUrl= () =>{
+    // 获取地址逻辑
+    serverApi.clusterList({}).then(function (res){
+      if (res.Status){
+        //import.meta.env.VITE_API_Schedule_URL=res.Data[0].FScheduleAddr
+        Session.set("FScheduleAddr",res.Data[0].FScheduleAddr)
+      }
+    })
+}
 </script>
 
 <style scoped lang="scss">

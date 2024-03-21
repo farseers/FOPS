@@ -5,7 +5,7 @@ import qs from 'qs';
 
 // 配置新建一个 axios 实例
 const service: AxiosInstance = axios.create({
-	baseURL: import.meta.env.VITE_API_Schedule_URL,
+	baseURL:"",//
 	timeout: 50000,
 	headers: { 'Content-Type': 'application/json',"Access-Control-Allow-Origin":"*" },
 	paramsSerializer: {
@@ -22,6 +22,7 @@ service.interceptors.request.use(
 		if (Session.get('token')) {
 			config.headers!['Authorization'] = `${Session.get('token')}`;
 		}
+		config.baseURL=Session.get("FScheduleAddr");
 		return config;
 	},
 	(error) => {

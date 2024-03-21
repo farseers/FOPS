@@ -14,8 +14,8 @@
 						</el-form-item>
 					</el-col>
 					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-						<el-form-item label="K8s连接配置">
-							<el-input v-model="state.ruleForm.K8sConnectConfig" placeholder="请输入K8s连接配置" clearable></el-input>
+						<el-form-item label="调度中心地址">
+							<el-input v-model="state.ruleForm.FScheduleAddr" placeholder="请输入调度中心地址，例如：https://fschedule.xxx.com/" clearable></el-input>
 						</el-form-item>
 					</el-col>
           <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
@@ -71,7 +71,7 @@ const state = reactive({
     Id:0, //编号
     Name: '', // 集群名称
     Ip: '', // 集群地址
-    K8sConnectConfig: '', // K8s连接配置
+    FScheduleAddr: '', // K8s连接配置
     DockerNetwork: '', // Docker网络
     DockerName: '', // 仓库名称
     DockerHub: '', // 托管地址
@@ -97,7 +97,7 @@ const openDialog = (type: string, row: any) => {
     state.ruleForm.Id=row.Id
     state.ruleForm.Name=row.Name
     state.ruleForm.Ip=row.Ip
-    state.ruleForm.K8sConnectConfig=row.K8sConnectConfig
+    state.ruleForm.FScheduleAddr=row.FScheduleAddr
     state.ruleForm.DockerNetwork=row.DockerNetwork
     state.ruleForm.DockerName=row.DockerName
     state.ruleForm.DockerHub=row.DockerHub
@@ -111,7 +111,7 @@ const openDialog = (type: string, row: any) => {
     state.ruleForm.Id=0
     state.ruleForm.Name=""
     state.ruleForm.Ip=""
-    state.ruleForm.K8sConnectConfig=""
+    state.ruleForm.FScheduleAddr=""
     state.ruleForm.DockerNetwork=""
     state.ruleForm.DockerName=""
     state.ruleForm.DockerHub=""
@@ -140,7 +140,7 @@ const onSubmit = () => {
     "Id":state.ruleForm.Id,
     "Name":state.ruleForm.Name,
     "Ip":state.ruleForm.Ip,
-    "K8sConnectConfig":state.ruleForm.K8sConnectConfig,
+    "FScheduleAddr":state.ruleForm.FScheduleAddr,
     "DockerNetwork":state.ruleForm.DockerNetwork,
     "DockerName":state.ruleForm.DockerName,
     "DockerHub":state.ruleForm.DockerHub,

@@ -3,6 +3,7 @@ package apps
 import (
 	"fmt"
 	"github.com/farseer-go/fs/parse"
+	"github.com/farseer-go/utils/file"
 )
 
 const (
@@ -17,6 +18,17 @@ const (
 	ShellRoot        = "/var/lib/fops/shell/"             // 生成Shell脚本的存放路径
 	ActionsRoot      = "/var/lib/fops/actions/"           // 执行Actions的缓存目录
 )
+
+// InitFopsDir 初始化目录
+func InitFopsDir() {
+	file.CreateDir766(FopsRoot)
+	file.CreateDir766(KubeRoot)
+	file.CreateDir766(NpmModulesRoot)
+	file.CreateDir766(DistRoot)
+	file.CreateDir766(GitRoot)
+	file.CreateDir766(ShellRoot)
+	file.CreateDir766(ActionsRoot)
+}
 
 // EnvVO 构建时的环境变量
 type EnvVO struct {

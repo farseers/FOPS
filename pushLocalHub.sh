@@ -15,7 +15,6 @@ docker service create --name fops --replicas 1 -d --network=net \
 --constraint node.role==manager \
 --mount type=bind,src=/etc/localtime,dst=/etc/localtime \
 --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
---mount type=bind,src=/usr/bin/docker,dst=/usr/bin/docker \
 --mount type=bind,src=/home/nfs/fops,dst=/var/lib/fops \
 -l "traefik.http.routers.fops.rule=Host(\`fops.fsgit.cc\`)" \
 -l "traefik.http.routers.fops.entrypoints=websecure" \

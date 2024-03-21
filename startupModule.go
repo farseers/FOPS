@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fops/domain/apps"
 	"fops/infrastructure"
 	"fops/interfaces"
 	"github.com/farseer-go/fs/configure"
@@ -34,7 +35,8 @@ func (module StartupModule) PostInitialize() {
 		exec.RunShell("git config --global --unset https.https://github.com.proxy", receiveOutput, nil, "", false)
 	}
 
-	//appsApp.BuildAdd("fops", 1, container.Resolve[apps.Repository](), container.Resolve[cluster.Repository]())
+	// 初始化目录
+	apps.InitFopsDir()
 }
 
 func (module StartupModule) Shutdown() {

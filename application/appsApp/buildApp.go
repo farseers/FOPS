@@ -17,6 +17,7 @@ import (
 
 // BuildAdd 添加构建
 // @post build/add
+// @filter application.Jwt
 func BuildAdd(appName string, clusterId int64, appsRepository apps.Repository, clusterRepository cluster.Repository) {
 	appDO := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionfBool(appDO.IsNil(), 403, "应用不存在")
@@ -42,6 +43,7 @@ func BuildAdd(appName string, clusterId int64, appsRepository apps.Repository, c
 
 // BuildList 构建列表
 // @post build/list
+// @filter application.Jwt
 func BuildList(appName string, pageSize int, pageIndex int, appsRepository apps.Repository) collections.PageList[apps.BuildEO] {
 	if pageSize < 1 {
 		pageSize = 20
@@ -54,6 +56,7 @@ func BuildList(appName string, pageSize int, pageIndex int, appsRepository apps.
 
 // ClearDockerImage 清除Docker镜像
 // @post build/clearDockerImage
+// @filter application.Jwt
 func ClearDockerImage(device apps.IDockerDevice) {
 	c := make(chan string, 100)
 	device.ClearImages(c)
@@ -61,6 +64,7 @@ func ClearDockerImage(device apps.IDockerDevice) {
 
 // RestartDocker 重启容器
 // @post build/restartDocker
+// @filter application.Jwt
 func RestartDocker(clusterId int64, appName string, appsIDockerSwarmDevice apps.IDockerSwarmDevice, clusterRepository cluster.Repository) {
 	clusterDO := clusterRepository.ToEntity(clusterId)
 	exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "集群不存在")
@@ -74,6 +78,7 @@ func RestartDocker(clusterId int64, appName string, appsIDockerSwarmDevice apps.
 
 // SyncDockerImage 同步仓库版本
 // @post build/syncDockerImage
+// @filter application.Jwt
 func SyncDockerImage(clusterId int64, appName string, appsIDockerSwarmDevice apps.IDockerSwarmDevice, appsRepository apps.Repository, clusterRepository cluster.Repository) {
 	do := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
@@ -132,6 +137,7 @@ var errorTips = collections.NewList(
 
 // View 构建日志
 // @get build/view-{buildId}
+// @filter application.Jwt
 func View(buildId int64) action.IResult {
 	logQueue := apps.LogQueue{
 		BuildId: buildId,
@@ -176,6 +182,7 @@ func View(buildId int64) action.IResult {
 
 // Stop 停止构建
 // @post build/stop
+// @filter application.Jwt
 func Stop(dockerDevice apps.IDockerDevice) {
 	dockerDevice.Kill("FOPS-Build")
 }

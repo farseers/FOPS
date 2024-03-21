@@ -9,6 +9,7 @@ import (
 
 // Upload 上传链路记录
 // @post upload
+// @filter application.Jwt
 func Upload(req request.UploadRequest, logDataRepository logData.Repository) {
 	err := logDataRepository.Save(req.List)
 	exception.ThrowWebExceptionError(403, err)

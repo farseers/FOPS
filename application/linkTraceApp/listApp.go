@@ -10,6 +10,7 @@ import (
 
 // WebApiList WebApi链路追踪列表
 // @get webApiList
+// @filter application.Jwt
 func WebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode int, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceContext] {
 	if pageSize < 1 {
 		pageSize = 20
@@ -28,6 +29,7 @@ func WebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode
 
 // TaskList Task链路追踪列表
 // @get taskList
+// @filter application.Jwt
 func TaskList(traceId, appName, appIp, taskName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceContext] {
 	if pageSize < 1 {
 		pageSize = 20
@@ -45,6 +47,7 @@ func TaskList(traceId, appName, appIp, taskName string, searchUseTs int64, onlyV
 
 // FScheduleList FSchedule链路追踪列表
 // @get fScheduleList
+// @filter application.Jwt
 func FScheduleList(traceId, appName, appIp, taskName string, taskGroupId, taskId, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceContext] {
 	if pageSize < 1 {
 		pageSize = 20
@@ -62,6 +65,7 @@ func FScheduleList(traceId, appName, appIp, taskName string, taskGroupId, taskId
 
 // ConsumerList Consumer链路追踪列表
 // @get consumerList
+// @filter application.Jwt
 func ConsumerList(traceId, appName, appIp, server, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceContext] {
 	if pageSize < 1 {
 		pageSize = 20

@@ -17,6 +17,7 @@ import (
 
 // Add 添加应用
 // @post add
+// @filter application.Jwt
 func Add(req request.AddRequest, appsRepository apps.Repository) {
 	do := mapper.Single[apps.DomainObject](req)
 	exception.ThrowWebExceptionBool(appsRepository.IsExists(req.AppName), 403, "应用不能重复")
@@ -32,6 +33,7 @@ func Add(req request.AddRequest, appsRepository apps.Repository) {
 
 // Update 修改应用
 // @post update
+// @filter application.Jwt
 func Update(req request.UpdateRequest, appsRepository apps.Repository, appsIDockerSwarmDevice apps.IDockerSwarmDevice) {
 	do := appsRepository.ToEntity(req.AppName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
@@ -57,6 +59,7 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, appsIDock
 
 // Delete 删除应用
 // @post delete
+// @filter application.Jwt
 func Delete(appName string, appsRepository apps.Repository, appsIDockerSwarmDevice apps.IDockerSwarmDevice) {
 	exception.ThrowWebExceptionBool(strings.Trim(appName, "") == "", 403, "参数不完整")
 	// 删除服务
@@ -70,6 +73,7 @@ func Delete(appName string, appsRepository apps.Repository, appsIDockerSwarmDevi
 
 // List 应用列表
 // @post list
+// @filter application.Jwt
 func List(clusterId int64, appsRepository apps.Repository, logDataRepository logData.Repository) collections.List[response.AppsResponse] {
 	lstDO := appsRepository.ToList()
 	lstGit := appsRepository.ToGitListAll(-1)
@@ -97,6 +101,7 @@ func List(clusterId int64, appsRepository apps.Repository, logDataRepository log
 
 // Info 查询应用
 // @post info
+// @filter application.Jwt
 func Info(appName string, appsRepository apps.Repository) response.AppsResponse {
 	do := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")

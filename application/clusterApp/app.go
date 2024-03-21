@@ -11,6 +11,7 @@ import (
 
 // Add 添加集群
 // @post add
+// @filter application.Jwt
 func Add(req request.AddRequest, clusterRepository cluster.Repository) {
 	do := mapper.Single[cluster.DomainObject](req)
 	// 添加
@@ -20,6 +21,7 @@ func Add(req request.AddRequest, clusterRepository cluster.Repository) {
 
 // Update 修改集群
 // @post update
+// @filter application.Jwt
 func Update(req request.UpdateRequest, clusterRepository cluster.Repository) {
 	do := mapper.Single[cluster.DomainObject](req)
 	exception.ThrowWebExceptionBool(!clusterRepository.IsExists(req.Id), 403, "集群Id不存在")
@@ -30,12 +32,14 @@ func Update(req request.UpdateRequest, clusterRepository cluster.Repository) {
 
 // List 集群列表
 // @post list
+// @filter application.Jwt
 func List(clusterRepository cluster.Repository) collections.List[cluster.DomainObject] {
 	return clusterRepository.ToList()
 }
 
 // Delete 删除集群
 // @post delete
+// @filter application.Jwt
 func Delete(clusterId int64, clusterRepository cluster.Repository) {
 	exception.ThrowWebExceptionBool(clusterId < 1, 403, "集群Id没有填")
 	_, err := clusterRepository.Delete(clusterId)

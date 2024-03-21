@@ -4,6 +4,8 @@ Redis:
   default: "Server=192.168.1.8:6379,DB=0,Password=steden@123,ConnectTimeout=600000,SyncTimeout=10000,ResponseTimeout=10000"
 WebApi:
   Url: ":8889"
+  Jwt:
+    Key: "123456"
   Session:
     Store: "Redis"
     StoreConfigName: "default"

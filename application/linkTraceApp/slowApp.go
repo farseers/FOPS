@@ -10,6 +10,7 @@ import (
 
 // SlowDbList 慢数据库列表
 // @get slowDbList
+// @filter application.Jwt
 func SlowDbList(traceId, appName, appIp, dbName, tableName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailDatabase] {
 	if pageSize < 1 {
 		pageSize = 20
@@ -28,6 +29,7 @@ func SlowDbList(traceId, appName, appIp, dbName, tableName string, searchUseTs i
 
 // SlowEsList 慢Es列表
 // @get slowEsList
+// @filter application.Jwt
 func SlowEsList(traceId, appName, appIp, indexName, aliasesName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailEs] {
 	if pageSize < 1 {
 		pageSize = 20
@@ -46,6 +48,7 @@ func SlowEsList(traceId, appName, appIp, indexName, aliasesName string, searchUs
 
 // SlowEtcdList 慢Etcd列表
 // @get slowEtcdList
+// @filter application.Jwt
 func SlowEtcdList(traceId, appName, appIp, key string, leaseID int64, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailEtcd] {
 	if pageSize < 1 {
 		pageSize = 20
@@ -63,6 +66,7 @@ func SlowEtcdList(traceId, appName, appIp, key string, leaseID int64, searchUseT
 
 // SlowHandList 慢手动列表
 // @get slowHandList
+// @filter application.Jwt
 func SlowHandList(traceId, appName, appIp, name string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailHand] {
 	if pageSize < 1 {
 		pageSize = 20
@@ -80,6 +84,7 @@ func SlowHandList(traceId, appName, appIp, name string, searchUseTs int64, onlyV
 
 // SlowHttpList 慢Http列表
 // @get slowHttpList
+// @filter application.Jwt
 func SlowHttpList(traceId, appName, appIp, method, url, requestBody, responseBody string, statusCode int, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailHttp] {
 	if pageSize < 1 {
 		pageSize = 20
@@ -100,6 +105,7 @@ func SlowHttpList(traceId, appName, appIp, method, url, requestBody, responseBod
 
 // SlowMqList 慢Mq列表
 // @get slowMqList
+// @filter application.Jwt
 func SlowMqList(traceId, appName, appIp, server, exchange, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailMq] {
 	if pageSize < 1 {
 		pageSize = 20
@@ -119,6 +125,7 @@ func SlowMqList(traceId, appName, appIp, server, exchange, routingKey string, se
 
 // SlowRedisList 慢Redis列表
 // @get slowRedisList
+// @filter application.Jwt
 func SlowRedisList(traceId, appName, appIp, key, field string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailRedis] {
 	if pageSize < 1 {
 		pageSize = 20

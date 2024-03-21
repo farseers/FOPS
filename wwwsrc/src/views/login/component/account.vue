@@ -104,6 +104,14 @@ const onSignIn = () => {
     "LoginName":state.ruleForm.userName,
     "LoginPwd":state.ruleForm.password
   }
+
+  if (state.ruleForm.userName==""||state.ruleForm.password==""){
+    ElMessage.error("帐号密码不能为空");
+    Session.clear();
+    state.loading.signIn = false;
+    return;
+  }
+
   userApi.signIn(param).then(function (res) {
     if (res.StatusCode===200) {
       // 存储 token 到浏览器缓存

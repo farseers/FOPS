@@ -11,6 +11,7 @@ import (
 
 // List 日志列表
 // @get list
+// @filter application.Jwt
 func List(traceId, appName, appIp, logContent string, logLevel eumLogLevel.Enum, pageSize, pageIndex int, logDataRepository logData.Repository) collections.PageList[flog.LogData] {
 	if pageSize < 1 {
 		pageSize = 20
@@ -32,12 +33,14 @@ func List(traceId, appName, appIp, logContent string, logLevel eumLogLevel.Enum,
 
 // Info 日志详情
 // @get info-{id}
+// @filter application.Jwt
 func Info(id string, logDataRepository logData.Repository) flog.LogData {
 	return logDataRepository.ToInfo(id)
 }
 
 // StatCount 日志类型统计
 // @get StatCount
+// @filter application.Jwt
 func StatCount(appName string, logDataRepository logData.Repository) collections.List[logData.LogCountEO] {
 	appName = strings.TrimSpace(appName)
 	return logDataRepository.StatCount()

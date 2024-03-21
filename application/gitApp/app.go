@@ -12,6 +12,7 @@ import (
 
 // Add 添加Git
 // @post add
+// @filter application.Jwt
 func Add(req request.AddRequest, appsRepository apps.Repository) {
 	do := mapper.Single[apps.GitEO](req)
 	if !strings.HasPrefix(do.Path, "/") {
@@ -24,6 +25,7 @@ func Add(req request.AddRequest, appsRepository apps.Repository) {
 
 // Update 修改Git
 // @post update
+// @filter application.Jwt
 func Update(req request.UpdateRequest, appsRepository apps.Repository) {
 	do := mapper.Single[apps.GitEO](req)
 	exception.ThrowWebExceptionBool(!appsRepository.ExistsGit(req.Id), 403, "GitId不存在")
@@ -40,12 +42,14 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository) {
 
 // List Git列表
 // @post list
+// @filter application.Jwt
 func List(isApp int, appsRepository apps.Repository) collections.List[apps.GitEO] {
 	return appsRepository.ToGitListAll(isApp)
 }
 
 // Delete 删除Git
 // @post delete
+// @filter application.Jwt
 func Delete(gitId int64, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(gitId < 1, 403, "GitId没有填")
 	_, err := appsRepository.DeleteGit(gitId)
@@ -54,6 +58,7 @@ func Delete(gitId int64, appsRepository apps.Repository) {
 
 // Info 查询Git
 // @post info
+// @filter application.Jwt
 func Info(gitId int64, appsRepository apps.Repository) apps.GitEO {
 	return appsRepository.ToGitEntity(gitId)
 }

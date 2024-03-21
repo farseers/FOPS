@@ -55,7 +55,7 @@ func (device kubectlDevice) SetYaml(clusterName string, projectName string, yaml
 }
 
 func (device kubectlDevice) SetImages(cluster cluster.DomainObject, projectName string, dockerImages string, k8SControllersType eumK8SControllers.Enum, progress chan string, ctx context.Context) bool {
-	return device.SetImagesByClusterName(cluster.Name, cluster.K8sConnectConfig, projectName, dockerImages, k8SControllersType, progress, ctx)
+	return device.SetImagesByClusterName(cluster.Name, "cluster.K8sConnectConfig", projectName, dockerImages, k8SControllersType, progress, ctx)
 
 }
 

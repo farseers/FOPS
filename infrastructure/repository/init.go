@@ -4,6 +4,7 @@ import (
 	"fops/domain/accountLogin"
 	"fops/domain/apps"
 	"fops/domain/cluster"
+	"fops/domain/configure"
 	"fops/domain/linkTrace"
 	"fops/domain/logData"
 	"fops/domain/register"
@@ -24,4 +25,6 @@ func InitRepository() {
 	container.Register(func() register.Repository { return &registerRepository{} })
 	// 登录帐号
 	container.Register(func() accountLogin.Repository { return &accountLoginRepository{} })
+	// 配置中心
+	container.Register(func() configure.Repository { return &configureRepository{} })
 }

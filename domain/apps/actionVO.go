@@ -34,11 +34,13 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 	var (
 		workflowsYmlContent string
 		err                 error
+		statusCode          int
 	)
+
 	// 支持读取失败时，尝试3次读取
 	for i := 0; i < 3; i++ {
 		// 通过http读取工作流定义的内容
-		if workflowsYmlContent, _, err = http.RequestProxy("GET", workflowsYmlPath, nil, nil, "", 2000, configure.GetString("Fops.GitAgent")); err == nil {
+		if workflowsYmlContent, statusCode, err = http.RequestProxy("GET", workflowsYmlPath, nil, nil, "", 2000, configure.GetString("Fops.GitAgent")); err == nil && statusCode == 200 {
 			break
 		}
 	}
@@ -49,6 +51,10 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 
 	if workflowsYmlContent == "" {
 		return ActionVO{}, fmt.Errorf("WorkflowsYml没有定义。")
+	}
+
+	if statusCode != 200 {
+		return ActionVO{}, fmt.Errorf("读取WorkflowsYml失败：%d", statusCode)
 	}
 
 	// 替换项目名称

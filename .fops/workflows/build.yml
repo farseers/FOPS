@@ -75,13 +75,5 @@ jobs:
       - name: 上传镜像
         uses: dockerPush@v1
 
-      - name: 上传镜像到Dockerhub
-        run:
-          - docker pull {{dockerImage}}
-          - docker tag {{dockerImage}} steden88/fops:2.0.beta.{{buildNumber}}
-          - docker push steden88/fops:2.0.beta.{{buildNumber}}
-          - docker rmi {{dockerImage}}
-          - docker rmi steden88/fops:2.0.beta.{{buildNumber}}
-
       - name: 更新镜像
         uses: dockerswarmUpdateVer@v1

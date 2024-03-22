@@ -86,6 +86,7 @@ func (receiver *BuildEO) StartBuild() {
 		"dockerNetwork":           clusterDO.DockerNetwork,
 		"dockerReplicas":          receiver.apps.DockerReplicas,
 		"dockerAdditionalScripts": receiver.apps.AdditionalScripts,
+		"clusterId":               receiver.ClusterId,
 	}
 
 	// 生成Workflows文件

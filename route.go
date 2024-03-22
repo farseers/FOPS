@@ -5,6 +5,7 @@ import (
 	"fops/application"
 	"fops/application/appsApp"
 	"fops/application/clusterApp"
+	"fops/application/configureApp"
 	"fops/application/flogApp"
 	"fops/application/gitApp"
 	"fops/application/linkTraceApp"
@@ -31,6 +32,7 @@ var route = []webapi.Route{
 	{"POST", "/cluster/update", clusterApp.Update, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
 	{"POST", "/cluster/list", clusterApp.List, "", []context.IFilter{application.Jwt{}}, []string{""}},
 	{"POST", "/cluster/delete", clusterApp.Delete, "", []context.IFilter{application.Jwt{}}, []string{"clusterId", ""}},
+	{"POST", "/configure/list", configureApp.List, "", []context.IFilter{}, []string{"appName", ""}},
 	{"GET", "/flog/list", flogApp.List, "", []context.IFilter{application.Jwt{}}, []string{"traceId", "appName", "appIp", "logContent", "logLevel", "pageSize", "pageIndex", ""}},
 	{"GET", "/flog/info-{id}", flogApp.Info, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
 	{"GET", "/flog/StatCount", flogApp.StatCount, "", []context.IFilter{application.Jwt{}}, []string{"appName", ""}},
@@ -40,7 +42,7 @@ var route = []webapi.Route{
 	{"POST", "/git/list", gitApp.List, "", []context.IFilter{application.Jwt{}}, []string{"isApp", ""}},
 	{"POST", "/git/delete", gitApp.Delete, "", []context.IFilter{application.Jwt{}}, []string{"gitId", ""}},
 	{"POST", "/git/info", gitApp.Info, "", []context.IFilter{application.Jwt{}}, []string{"gitId", ""}},
-	{"GET", "/linkTrace/info/{traceId}", linkTraceApp.Info, "", []context.IFilter{}, []string{"traceId", ""}},
+	{"GET", "/linkTrace/info/{traceId}", linkTraceApp.Info, "", []context.IFilter{application.Jwt{}}, []string{"traceId", ""}},
 	{"GET", "/linkTrace/webApiList", linkTraceApp.WebApiList, "", []context.IFilter{application.Jwt{}}, []string{"traceId", "appName", "appIp", "requestIp", "searchUrl", "statusCode", "searchUseTs", "onlyViewException", "startMin", "pageSize", "pageIndex", ""}},
 	{"GET", "/linkTrace/taskList", linkTraceApp.TaskList, "", []context.IFilter{application.Jwt{}}, []string{"traceId", "appName", "appIp", "taskName", "searchUseTs", "onlyViewException", "startMin", "pageSize", "pageIndex", ""}},
 	{"GET", "/linkTrace/fScheduleList", linkTraceApp.FScheduleList, "", []context.IFilter{application.Jwt{}}, []string{"traceId", "appName", "appIp", "taskName", "taskGroupId", "taskId", "searchUseTs", "onlyViewException", "startMin", "pageSize", "pageIndex", ""}},

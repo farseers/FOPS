@@ -74,7 +74,7 @@ func (dockerSwarmDevice) ExistsDocker(appName string) bool {
 func (dockerSwarmDevice) CreateService(appName, dockerNodeRole, additionalScripts, dockerNetwork string, dockerReplicas int, dockerImages string, progress chan string, ctx context.Context) bool {
 	progress <- "开始创建Docker Swarm容器服务。"
 
-	shell := fmt.Sprintf("docker service create --name %s --replicas %v -d --network=%s --constraint node.role==%s --mount type=bind,src=/etc/localtime,dst=/etc/localtime %s %s", appName, dockerReplicas, dockerNetwork, dockerNodeRole, additionalScripts, dockerImages)
+	shell := fmt.Sprintf("docker service create --name %s --replicas %v -d --network=%s --with-registry-auth --constraint node.role==%s --mount type=bind,src=/etc/localtime,dst=/etc/localtime %s %s", appName, dockerReplicas, dockerNetwork, dockerNodeRole, additionalScripts, dockerImages)
 	var exitCode = exec.RunShellContext(ctx, shell, progress, nil, "", true)
 	if exitCode != 0 {
 		progress <- "创建Docker Swarm容器失败了。"

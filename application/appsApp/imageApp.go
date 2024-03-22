@@ -61,12 +61,21 @@ func DeleteService(appName string, appsRepository apps.Repository, appsIDockerSw
 
 // UpdateDockerImage 更新仓库版本
 // @post updateDockerImage
-func UpdateDockerImage(appName string, dockerImage string, buildNumber int, clusterId int64, appsIDockerSwarmDevice apps.IDockerSwarmDevice, appsRepository apps.Repository, clusterRepository cluster.Repository) {
+func UpdateDockerImage(appName string, dockerImage string, buildNumber int, clusterId int64, dockerHub, dockerUserName, dockerUserPwd string, appsIDockerDevice apps.IDockerDevice, appsIDockerSwarmDevice apps.IDockerSwarmDevice, appsRepository apps.Repository, clusterRepository cluster.Repository) {
 	// 更新仓库版本
 	event.DockerPushedEvent{BuildNumber: buildNumber, AppName: appName, ImageName: dockerImage}.PublishEvent()
 
 	// 如果集群ID大于0，则同步应用
 	if clusterId > 0 {
+		// 先登陆仓库
+		if dockerUserName != "" && dockerUserPwd != "" {
+			c := make(chan string, 100)
+			appsIDockerDevice.Login(dockerHub, dockerUserName, dockerUserPwd, c)
+			lstLog := collections.NewListFromChan(c)
+			exception.ThrowWebExceptionf(403, "镜像登陆失败:<br />%s", lstLog.ToString("<br />"))
+		}
+
+		// 同步镜像
 		SyncDockerImage(clusterId, appName, appsIDockerSwarmDevice, appsRepository, clusterRepository)
 	}
 }

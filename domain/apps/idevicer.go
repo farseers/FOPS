@@ -27,6 +27,8 @@ type IDockerDevice interface {
 	ClearImages(progress chan string) bool
 	// GetVersion 获取版本
 	GetVersion() string
+	// Login 登陆镜像仓库
+	Login(dockerHub string, loginName string, loginPwd string, progress chan string) bool
 }
 
 type IDockerSwarmDevice interface {

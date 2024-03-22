@@ -137,3 +137,16 @@ func (dockerDevice) GetVersion() string {
 	}
 	return ""
 }
+
+func (dockerDevice) Login(dockerHub string, loginName string, loginPwd string, progress chan string) bool {
+	if loginName != "" && loginPwd != "" {
+		var result = exec.RunShell("docker login "+dockerHub+" -u "+loginName+" -p "+loginPwd, progress, nil, "", true)
+		if result != 0 {
+			progress <- "镜像仓库登陆失败。"
+			return false
+		}
+	}
+
+	progress <- "镜像仓库登陆成功。"
+	return true
+}

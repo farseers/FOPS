@@ -310,10 +310,14 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 
 	// 替换with内的变量
 	for _, step := range receiver.WorkflowsAction.Steps {
-		for k := range step.With {
-			for sysKey, sysVal := range sysWith {
-				step.With[k] = strings.ReplaceAll(parse.ToString(step.With[k]), "{{"+sysKey+"}}", parse.ToString(sysVal))
+		for k, v := range step.With {
+			switch v.(type) {
+			case string: // 字符串的类型，才需要替换
+				for sysKey, sysVal := range sysWith {
+					step.With[k] = strings.ReplaceAll(parse.ToString(step.With[k]), "{{"+sysKey+"}}", parse.ToString(sysVal))
+				}
 			}
+
 		}
 
 		// 自定义参数高于系统参数

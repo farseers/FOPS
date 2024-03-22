@@ -87,7 +87,7 @@ func (dockerSwarmDevice) SetImages(cluster cluster.DomainObject, appName string,
 	progress <- "---------------------------------------------------------"
 	progress <- "开始更新Docker Swarm的镜像版本。"
 
-	var exitCode = exec.RunShellContext(ctx, fmt.Sprintf("docker service update --image %s --update-delay 10s %s", dockerImages, appName), progress, nil, "", false)
+	var exitCode = exec.RunShellContext(ctx, fmt.Sprintf("docker service update --image %s --update-delay 10s --with-registry-auth %s", dockerImages, appName), progress, nil, "", false)
 	if exitCode != 0 {
 		progress <- "Docker Swarm更新镜像失败。"
 		return false

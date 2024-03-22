@@ -121,13 +121,13 @@
   <appAddDialog ref="appAddDialogRef" @refresh="getTableData()" @showOverlay="onShowOverlay()" @hideOverlay="onHideOverlay()" />
     <logDialog ref="logDialogRef"  />
     <taskDialog ref="taskDialogRef"  />
-  <el-dialog title="构建日志" v-model="state.logDialogIsShow" style="width: 80%;height: 83%;top:20px;margin-bottom: 50px">
-    <el-card shadow="hover" class="layout-padding-auto" style="background-color:#393d49;height: 95%">
-      <div  ref="scrollableDiv"  style="height:9%;overflow-y: scroll;">
-        <pre style="color: #fff;background-color:#393d49;height: 100%;" v-html="state.logContent"></pre>
-      </div>
-    </el-card>
-  </el-dialog>
+    <el-dialog title="构建日志" v-model="state.logDialogIsShow" style="width: 80%;height: 85%;top:20px;margin-bottom: 50px">
+      <el-card shadow="hover" class="layout-padding-auto" style="background-color:#393d49;">
+        <div  ref="scrollableDiv"  style="height:10%;overflow-y: scroll;">
+          <pre style="color: #fff;background-color:#393d49;height: 100%;" v-html="state.logContent"></pre>
+        </div>
+      </el-card>
+    </el-dialog>
 
     <div v-if="state.showOverlay" class="overlay">
       <div class="overlay-content">
@@ -195,8 +195,8 @@ const state = reactive({
 
 // 初始化表格数据
 const getTableData = () => {
-  // // 任务日志统计列表
-  // taskLogStat()
+  // 任务日志统计列表
+  taskLogStat()
 
 	state.tableData.loading = true;
 	const data = [];
@@ -360,13 +360,13 @@ const showLog=(row:any)=>{
   serverApi.buildLog(state.logId.toString()).then(function (res){
     state.logContent=res
     state.logDialogIsShow=true
-    scrollableDiv.value.scrollTop=scrollableDiv.value.scrollHeight;
+    //scrollableDiv.value.scrollTop=scrollableDiv.value.scrollHeight;
   })
 }
 const onShowLog=()=>{
   serverApi.buildLog(state.logId.toString()).then(function (res){
     state.logContent=res;
-    scrollableDiv.value.scrollTop=scrollableDiv.value.scrollHeight;
+    //scrollableDiv.value.scrollTop=scrollableDiv.value.scrollHeight;
   })
 }
 const onShowOverlay=()=>{

@@ -1,3 +1,4 @@
+// @area /apps/
 package appsApp
 
 import (

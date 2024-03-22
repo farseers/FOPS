@@ -121,9 +121,9 @@
   <appAddDialog ref="appAddDialogRef" @refresh="getTableData()" @showOverlay="onShowOverlay()" @hideOverlay="onHideOverlay()" />
     <logDialog ref="logDialogRef"  />
     <taskDialog ref="taskDialogRef"  />
-  <el-dialog title="构建日志" v-model="state.logDialogIsShow" style="width: 80%;height: 85%;top:20px;margin-bottom: 50px">
-    <el-card shadow="hover" class="layout-padding-auto" style="background-color:#393d49;">
-      <div  ref="scrollableDiv"  style="height:10%;overflow-y: scroll;">
+  <el-dialog title="构建日志" v-model="state.logDialogIsShow" style="width: 80%;height: 83%;top:20px;margin-bottom: 50px">
+    <el-card shadow="hover" class="layout-padding-auto" style="background-color:#393d49;height: 95%">
+      <div  ref="scrollableDiv"  style="height:9%;overflow-y: scroll;">
         <pre style="color: #fff;background-color:#393d49;height: 100%;" v-html="state.logContent"></pre>
       </div>
     </el-card>

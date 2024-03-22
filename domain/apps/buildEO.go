@@ -119,22 +119,23 @@ func (receiver *BuildEO) StartBuild() {
 			receiver.dockerDevice.Copy(dockerName, step.GetActionPath(), step.GetActionPath(), receiver.Env, make(chan string, 100), receiver.ctx)
 
 			// 设置with参数
-			step.With["appName"] = receiver.apps.AppName
-			step.With["buildId"] = receiver.Env.BuildId
-			step.With["buildNumber"] = receiver.Env.BuildNumber
-			// 应用的git根目录
-			step.With["appAbsolutePath"] = receiver.appGit.GetAbsolutePath()
-
-			// docker
-			step.With["dockerImage"] = receiver.Env.DockerImage
-			step.With["dockerfilePath"] = receiver.apps.DockerfilePath
-			step.With["dockerHub"] = clusterDO.DockerHub
-			step.With["dockerUserName"] = clusterDO.DockerUserName
-			step.With["dockerUserPwd"] = clusterDO.DockerUserPwd
-			step.With["dockerNodeRole"] = receiver.apps.DockerNodeRole
-			step.With["dockerNetwork"] = clusterDO.DockerNetwork
-			step.With["dockerReplicas"] = receiver.apps.DockerReplicas
-			step.With["dockerAdditionalScripts"] = receiver.apps.AdditionalScripts
+			sysWith := map[string]any{
+				"appName":     receiver.apps.AppName,
+				"buildId":     receiver.Env.BuildId,
+				"buildNumber": receiver.Env.BuildNumber,
+				// 应用的git根目录
+				"appAbsolutePath": receiver.appGit.GetAbsolutePath(),
+				// docker
+				"dockerImage":             receiver.Env.DockerImage,
+				"dockerfilePath":          receiver.apps.DockerfilePath,
+				"dockerHub":               clusterDO.DockerHub,
+				"dockerUserName":          clusterDO.DockerUserName,
+				"dockerUserPwd":           clusterDO.DockerUserPwd,
+				"dockerNodeRole":          receiver.apps.DockerNodeRole,
+				"dockerNetwork":           clusterDO.DockerNetwork,
+				"dockerReplicas":          receiver.apps.DockerReplicas,
+				"dockerAdditionalScripts": receiver.apps.AdditionalScripts,
+			}
 
 			gits := receiver.getGits()
 			// 支持checkout默认拉取应用
@@ -148,6 +149,13 @@ func (receiver *BuildEO) StartBuild() {
 				})
 			}
 			step.With["gits"] = gits
+
+			// 自定义参数高于系统参数
+			for k, v := range sysWith {
+				if _, exists := step.With[k]; !exists {
+					step.With[k] = v
+				}
+			}
 
 			// 生成with.json文件，并复制到容器
 			file.Delete(WithJsonPath)
@@ -176,7 +184,12 @@ func (receiver *BuildEO) StartBuild() {
 			shellScript.AddArray(step.Run)
 			shellScript.Add("")
 			shellPath := fmt.Sprintf("%s%d-%d.sh", ShellRoot, receiver.Env.BuildNumber, index+1)
-			file.WriteString(shellPath, shellScript.ToString("\n"))
+			script := shellScript.ToString("\n")
+			// 支持参数化脚本
+			for k, v := range step.With {
+				script = strings.ReplaceAll(script, "{{"+k+"}}", parse.ToString(v))
+			}
+			file.WriteString(shellPath, script)
 			receiver.dockerDevice.Copy(dockerName, shellPath, shellPath, receiver.Env, make(chan string, 100), receiver.ctx)
 
 			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, "/bin/sh -x "+shellPath, receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx))

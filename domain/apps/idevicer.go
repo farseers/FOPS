@@ -38,6 +38,8 @@ type IDockerSwarmDevice interface {
 	SetReplicas(cluster cluster.DomainObject, appName string, dockerReplicas int, progress chan string) bool
 	// Restart 重启容器
 	Restart(cluster cluster.DomainObject, appName string, progress chan string) bool
+	ExistsDocker(appName string) bool
+	CreateService(appName, dockerNodeRole, additionalScripts, dockerNetwork string, dockerReplicas int, dockerImages string, progress chan string, ctx context.Context) bool
 }
 
 type IKubectlDevice interface {

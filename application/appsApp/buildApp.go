@@ -92,12 +92,19 @@ func SyncDockerImage(clusterId int64, appName string, appsIDockerSwarmDevice app
 	}
 
 	c := make(chan string, 100)
-	if appsIDockerSwarmDevice.SetImages(clusterDO, appName, do.DockerImage, c, context.Background()) {
-		do.UpdateBuildVer(true, clusterId, 0)
-		_, _ = appsRepository.UpdateClusterVer(appName, do.ClusterVer)
+	// 首次创建还是更新镜像
+	if appsIDockerSwarmDevice.ExistsDocker(appName) {
+		// 更新镜像
+		if !appsIDockerSwarmDevice.SetImages(clusterDO, appName, do.DockerImage, c, context.Background()) {
+			lstLog := collections.NewListFromChan(c)
+			exception.ThrowWebExceptionf(403, "同步仓库版本失败:<br />%s", lstLog.ToString("<br />"))
+		}
 	} else {
-		lstLog := collections.NewListFromChan(c)
-		exception.ThrowWebExceptionf(403, "同步仓库版本失败:<br />%s", lstLog.ToString("<br />"))
+		// 创建容器服务
+		if !appsIDockerSwarmDevice.CreateService(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, do.DockerImage, c, context.Background()) {
+			lstLog := collections.NewListFromChan(c)
+			exception.ThrowWebExceptionf(403, "同步仓库版本失败:<br />%s", lstLog.ToString("<br />"))
+		}
 	}
 }
 

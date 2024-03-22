@@ -71,9 +71,10 @@ func UpdateDockerImage(appName string, dockerImage string, buildNumber int, clus
 		// 先登陆仓库
 		if dockerUserName != "" && dockerUserPwd != "" {
 			c := make(chan string, 100)
-			appsIDockerDevice.Login(dockerHub, dockerUserName, dockerUserPwd, c)
-			lstLog := collections.NewListFromChan(c)
-			exception.ThrowWebExceptionf(403, "镜像登陆失败:<br />%s", lstLog.ToString("<br />"))
+			if !appsIDockerDevice.Login(dockerHub, dockerUserName, dockerUserPwd, c) {
+				lstLog := collections.NewListFromChan(c)
+				exception.ThrowWebExceptionf(403, "镜像登陆失败:<br />%s", lstLog.ToString("<br />"))
+			}
 		}
 
 		// 同步镜像

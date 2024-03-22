@@ -176,6 +176,7 @@ func View(buildId int64) action.IResult {
 		}
 		logContent[i] = dateTimePart + " " + logPart
 	}
+
 	return action.Content(strings.Join(logContent, "\n"))
 }
 

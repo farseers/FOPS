@@ -122,8 +122,10 @@
     <logDialog ref="logDialogRef"  />
     <taskDialog ref="taskDialogRef"  />
   <el-dialog title="构建日志" v-model="state.logDialogIsShow" style="width: 80%;height: 85%;top:20px;margin-bottom: 50px">
-    <el-card shadow="hover" class="layout-padding-auto" style="background-color:#393d49;overflow: auto;">
-      <pre style="color: #fff;background-color:#393d49;height: 100%;" v-html="state.logContent"></pre>
+    <el-card shadow="hover" class="layout-padding-auto" style="background-color:#393d49;">
+      <div  ref="scrollableDiv"  style="height:10%;overflow-y: scroll;">
+        <pre style="color: #fff;background-color:#393d49;height: 100%;" v-html="state.logContent"></pre>
+      </div>
     </el-card>
   </el-dialog>
 
@@ -161,6 +163,7 @@ const logDialogRef = ref();
 const appDialogRef = ref();
 const appAddDialogRef = ref();
 const taskDialogRef=ref();
+const scrollableDiv=ref();
 const state = reactive({
   logDialogIsShow:false,
   logContent:'',
@@ -192,8 +195,8 @@ const state = reactive({
 
 // 初始化表格数据
 const getTableData = () => {
-  // 任务日志统计列表
-  taskLogStat()
+  // // 任务日志统计列表
+  // taskLogStat()
 
 	state.tableData.loading = true;
 	const data = [];
@@ -357,11 +360,13 @@ const showLog=(row:any)=>{
   serverApi.buildLog(state.logId.toString()).then(function (res){
     state.logContent=res
     state.logDialogIsShow=true
+    scrollableDiv.value.scrollTop=scrollableDiv.value.scrollHeight;
   })
 }
 const onShowLog=()=>{
   serverApi.buildLog(state.logId.toString()).then(function (res){
-    state.logContent=res
+    state.logContent=res;
+    scrollableDiv.value.scrollTop=scrollableDiv.value.scrollHeight;
   })
 }
 const onShowOverlay=()=>{
@@ -538,18 +543,22 @@ const taskLogStat=()=>{
 
 let intervalLogId = null;
 let intervalAppId = null;
+let statCountAppId = null;
 // 页面加载时
 onMounted(() => {
 	getTableData();
   getTableLogData();
   getTableClusterData();
+  taskLogStat();
   intervalLogId = setInterval(getTableLogData, 3000);
   intervalAppId = setInterval(getTableData, 3000);
+  statCountAppId = setInterval(taskLogStat, 10000);
 });
 // 页面注销的时候
 onUnmounted(()=>{
   clearInterval(intervalLogId);
   clearInterval(intervalAppId);
+  clearInterval(statCountAppId);
 })
 </script>
 

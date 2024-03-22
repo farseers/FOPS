@@ -106,6 +106,10 @@ func SyncDockerImage(clusterId int64, appName string, appsIDockerSwarmDevice app
 			exception.ThrowWebExceptionf(403, "同步仓库版本失败:<br />%s", lstLog.ToString("<br />"))
 		}
 	}
+
+	// 更新集群版本信息
+	do.UpdateBuildVer(true, clusterId, 0)
+	_, _ = appsRepository.UpdateClusterVer(appName, do.ClusterVer)
 }
 
 // 语法高亮

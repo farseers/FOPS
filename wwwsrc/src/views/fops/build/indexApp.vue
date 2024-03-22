@@ -49,7 +49,7 @@
                 <div class="appItem" style="margin-bottom: 10px">部署角色
                   <el-tag v-if="v.DockerNodeRole=='manager'" type="danger" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
                   <el-tag v-else size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
-                  <el-button size="small" @click="onBuildAdd(v)" type="danger" style="margin-left: 5px"><el-icon><ele-SwitchButton /></el-icon>构建</el-button>
+                  <el-button v-if="v.AppGit > 0" size="small" @click="onBuildAdd(v)" type="danger" style="margin-left: 5px"><el-icon><ele-SwitchButton /></el-icon>构建</el-button>
                 </div>
               <div class="appItem" style="margin-bottom: 10px">应用日志
                 <el-tooltip content="警告数量" slot="label">

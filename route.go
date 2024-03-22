@@ -21,6 +21,7 @@ var route = []webapi.Route{
 	{"POST", "/apps/list", appsApp.List, "", []context.IFilter{application.Jwt{}}, []string{"clusterId", "", ""}},
 	{"POST", "/apps/info", appsApp.Info, "", []context.IFilter{application.Jwt{}}, []string{"appName", ""}},
 	{"POST", "/apps/updateDockerImage", appsApp.UpdateDockerImage, "", []context.IFilter{}, []string{"appName", "dockerImage", "buildNumber", "clusterId", "", "", ""}},
+	{"POST", "/apps/deleteService", appsApp.DeleteService, "", []context.IFilter{application.Jwt{}}, []string{"appName", "", ""}},
 	{"POST", "/apps/build/add", appsApp.BuildAdd, "", []context.IFilter{application.Jwt{}}, []string{"appName", "clusterId", "", ""}},
 	{"POST", "/apps/build/list", appsApp.BuildList, "", []context.IFilter{application.Jwt{}}, []string{"appName", "pageSize", "pageIndex", ""}},
 	{"POST", "/apps/build/clearDockerImage", appsApp.ClearDockerImage, "", []context.IFilter{application.Jwt{}}, []string{""}},

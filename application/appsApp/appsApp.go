@@ -150,3 +150,16 @@ func UpdateDockerImage(appName string, dockerImage string, buildNumber int, clus
 		SyncDockerImage(clusterId, appName, appsIDockerSwarmDevice, appsRepository, clusterRepository)
 	}
 }
+
+// DeleteService 删除容器服务
+// @post deleteService
+// @filter application.Jwt
+func DeleteService(appName string, appsRepository apps.Repository, appsIDockerSwarmDevice apps.IDockerSwarmDevice) {
+	exception.ThrowWebExceptionBool(strings.Trim(appName, "") == "", 403, "参数不完整")
+	// 删除服务
+	c := make(chan string, 100)
+	if !appsIDockerSwarmDevice.DeleteService(appName, c) {
+		lstLog := collections.NewListFromChan(c)
+		exception.ThrowWebExceptionf(403, "删除容器服务失败:<br />%s", lstLog.ToString("<br />"))
+	}
+}

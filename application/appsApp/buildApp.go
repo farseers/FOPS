@@ -137,7 +137,6 @@ var errorTips = collections.NewList(
 
 // View 构建日志
 // @get build/view-{buildId}
-// @filter application.Jwt
 func View(buildId int64) action.IResult {
 	logQueue := apps.LogQueue{
 		BuildId: buildId,

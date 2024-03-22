@@ -139,7 +139,7 @@ export function fopsApi() {
 			return requestGet({
 				url: '/apps/build/view-'+param,
 				method: 'get',
-				//data:param,
+				data:{},
 			});
 		},dockerClearImage: () => {
 			return request({

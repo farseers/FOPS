@@ -48,7 +48,7 @@ service.interceptors.response.use(
 				return res;
 			}
 		} else {
-			ElMessage.error(res.StatusMessage);
+			return res;
 		}
 	},
 	(error) => {

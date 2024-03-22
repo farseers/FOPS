@@ -522,7 +522,7 @@ const initEchartsResize = () => {
 // 当前数值
 const initCount=()=>{
   // 任务组数量
-  serverApi.taskCount().then(function (res){
+  serverApi.taskCount({}).then(function (res){
     state.topCardItemList[0].titleNum=res.Data
     nextTick(() => {
         new CountUp(document.querySelector('#'+state.topCardItemList[0].id) as HTMLDivElement, res.Data).start();
@@ -530,12 +530,12 @@ const initCount=()=>{
     });
   })
   // 超时未运行的任务数量
-  serverApi.taskNoRunCount().then(function (res){
+  serverApi.taskNoRunCount({}).then(function (res){
     state.topCardItemList[1].titleNum=res.Data
     new CountUp(document.querySelector('#'+state.topCardItemList[1].id) as HTMLDivElement, res.Data).start();
   })
   // 今天失败数量
-  serverApi.taskTodayFailCount().then(function (res){
+  serverApi.taskTodayFailCount({}).then(function (res){
     state.topCardItemList[2].titleNum=res.Data
     new CountUp(document.querySelector('#'+state.topCardItemList[2].id) as HTMLDivElement, res.Data).start();
   })

@@ -30,7 +30,6 @@ type mysqlContext struct {
 	// 注册
 	Register data.DomainSet[model.RegisterPO, register.DomainObject] `data:"name=register;migrate;"`
 	// 登录帐号
-	// 期数数据
 	Login data.DomainSet[model.AccountLoginPO, accountLogin.DomainObject] `data:"name=account_login;migrate;"`
 }
 

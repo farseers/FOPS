@@ -5,6 +5,7 @@ import (
 	"fops/application/appsApp/request"
 	"fops/application/appsApp/response"
 	"fops/domain/apps"
+	"fops/domain/apps/event"
 	"fops/domain/cluster"
 	"fops/domain/logData"
 	"github.com/farseer-go/collections"
@@ -135,5 +136,17 @@ func doToAppsResponse(clusterId int64, do apps.DomainObject) response.AppsRespon
 		AdditionalScripts: do.AdditionalScripts,
 		WorkflowsYmlPath:  do.WorkflowsYmlPath,
 		IsHealth:          len(do.ActiveInstance) >= do.DockerReplicas,
+	}
+}
+
+// UpdateDockerImage 更新仓库版本
+// @post updateDockerImage
+func UpdateDockerImage(appName string, dockerImage string, buildNumber int, clusterId int64, appsIDockerSwarmDevice apps.IDockerSwarmDevice, appsRepository apps.Repository, clusterRepository cluster.Repository) {
+	// 更新仓库版本
+	event.DockerPushedEvent{BuildNumber: buildNumber, AppName: appName, ImageName: dockerImage}.PublishEvent()
+
+	// 如果集群ID大于0，则同步应用
+	if clusterId > 0 {
+		SyncDockerImage(clusterId, appName, appsIDockerSwarmDevice, appsRepository, clusterRepository)
 	}
 }

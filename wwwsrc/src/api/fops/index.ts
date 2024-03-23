@@ -75,6 +75,13 @@ export function fopsApi() {
 				method: 'post',
 				data:param,
 			});
+		},
+		appsServiceDel: (param: object) => {
+			return request({
+				url: '/apps/deleteService',
+				method: 'post',
+				data:param,
+			});
 		},appsDetail: (param: object) => {
 			return request({
 				url: '/apps/info',

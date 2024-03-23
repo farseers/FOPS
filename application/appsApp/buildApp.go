@@ -2,7 +2,6 @@
 package appsApp
 
 import (
-	"context"
 	"fmt"
 	"fops/domain/apps"
 	"fops/domain/cluster"
@@ -52,53 +51,6 @@ func BuildList(appName string, pageSize int, pageIndex int, appsRepository apps.
 		pageIndex = 1
 	}
 	return appsRepository.ToBuildList(appName, pageSize, pageIndex)
-}
-
-// ClearDockerImage 清除Docker镜像
-// @post build/clearDockerImage
-// @filter application.Jwt
-func ClearDockerImage(device apps.IDockerDevice) {
-	c := make(chan string, 100)
-	device.ClearImages(c)
-}
-
-// RestartDocker 重启容器
-// @post build/restartDocker
-// @filter application.Jwt
-func RestartDocker(clusterId int64, appName string, appsIDockerSwarmDevice apps.IDockerSwarmDevice, clusterRepository cluster.Repository) {
-	clusterDO := clusterRepository.ToEntity(clusterId)
-	exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "集群不存在")
-
-	c := make(chan string, 100)
-	if !appsIDockerSwarmDevice.Restart(clusterDO, appName, c) {
-		lstLog := collections.NewListFromChan(c)
-		exception.ThrowWebExceptionf(403, "容器重启失败:<br />%s", lstLog.ToString("<br />"))
-	}
-}
-
-// SyncDockerImage 同步仓库版本
-// @post build/syncDockerImage
-// @filter application.Jwt
-func SyncDockerImage(clusterId int64, appName string, appsIDockerSwarmDevice apps.IDockerSwarmDevice, appsRepository apps.Repository, clusterRepository cluster.Repository) {
-	do := appsRepository.ToEntity(appName)
-	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
-
-	clusterDO := clusterRepository.ToEntity(clusterId)
-	exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "集群不存在")
-
-	// 如果仓库和集群的版本一致时，不允许同步
-	if do.ClusterVer[clusterId] != nil && do.DockerVer == do.ClusterVer[clusterId].DockerVer {
-		exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "版本一致，不需要同步")
-	}
-
-	c := make(chan string, 100)
-	if appsIDockerSwarmDevice.SetImages(clusterDO, appName, do.DockerImage, c, context.Background()) {
-		do.UpdateBuildVer(true, clusterId, 0)
-		_, _ = appsRepository.UpdateClusterVer(appName, do.ClusterVer)
-	} else {
-		lstLog := collections.NewListFromChan(c)
-		exception.ThrowWebExceptionf(403, "同步仓库版本失败:<br />%s", lstLog.ToString("<br />"))
-	}
 }
 
 // 语法高亮

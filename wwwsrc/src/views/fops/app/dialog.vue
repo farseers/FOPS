@@ -5,8 +5,9 @@
 				<el-row :gutter="35">
           <el-form-item label="应用名称">
             <el-input v-model="state.ruleForm.AppName" placeholder="请输入应用名称" style="max-width: 200px;margin-right: 5px"></el-input>
-            名称需要与应用的AppName完全一致，才能检查健康状态
-            <el-button v-if="state.dialog.type=='edit'" @click="onDelete" size="default" type="danger" style="margin-left: 5px;">删 除</el-button>
+            与应用的AppName一致，才能检查健康状态
+            <el-button v-if="state.dialog.type=='edit'" @click="onDeleteApp" size="default" type="danger" style="margin-left: 5px;">删除应用</el-button>
+            <el-button v-if="state.dialog.type=='edit'" @click="onDeleteService" size="default" type="info" style="margin-left: 5px;">删除服务</el-button>
           </el-form-item>
           <el-form-item label="仓库版本">
             <el-tag v-if="state.ruleForm.DockerImage !=''" size="small">{{state.ruleForm.DockerImage}}</el-tag>
@@ -53,10 +54,10 @@
           </el-table>
           </el-form-item>
           <el-form-item label="Dockerfile">
-            <el-input v-model="state.ruleForm.DockerfilePath" placeholder="请输入Dockerfile路径" clearable></el-input>
+            <el-input v-model="state.ruleForm.DockerfilePath" placeholder="请输入Dockerfile路径，默认为：./Dockerfile" clearable></el-input>
           </el-form-item>
           <el-form-item label="工作流yml文件">
-            <el-input v-model="state.ruleForm.WorkflowsYmlPath" placeholder="请输入工作流yml文件路径，默认为：.fops/workflows/build.yml" clearable></el-input>
+            <el-input v-model="state.ruleForm.WorkflowsYmlPath" placeholder="请输入工作流yml文件路径，默认为：./.fops/workflows/build.yml" clearable></el-input>
           </el-form-item>
 				</el-row>
 			</el-form>
@@ -234,8 +235,8 @@ const onCancel = () => {
 	closeDialog();
 };
 
-// 删除
-const onDelete = () => {
+// 删除应用
+const onDeleteApp = () => {
   ElMessageBox.confirm(`此操作将永久删除应用：“${state.ruleForm.AppName}”，是否继续?`, '提示', {
     confirmButtonText: '确认',
     cancelButtonText: '取消',
@@ -255,6 +256,31 @@ const onDelete = () => {
       })
       .catch(() => {});
 };
+
+// 删除服务
+const onDeleteService = () => {
+  ElMessageBox.confirm(`此操作将删除服务：“${state.ruleForm.AppName}”，是否继续?`, '提示', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+      .then(() => {
+        // 删除逻辑
+        serverApi.appsServiceDel({"appName":state.ruleForm.AppName}).then(function (res){
+          if (res.Status){
+            closeDialog();
+            ElMessage.success('删除成功');
+            emit('refresh');
+          }else{
+            ElMessage.error(res.StatusMessage)
+          }
+        })
+      })
+      .catch(() => {});
+};
+
+
+
 // 提交
 const onSubmit = () => {
   if(state.ruleForm.DockerNodeRoleInt==0){

@@ -110,7 +110,7 @@ export default {
 		LogList:'查询列表',
 		Log:'日志',
 		TaskGroup2:'完成任务列表',
-		taskLogList:'任务组日志列表'
+		taskLogList:'任务日志'
 	},
 	staticRoutes: {
 		signIn: '登录',

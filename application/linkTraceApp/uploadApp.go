@@ -6,6 +6,7 @@ import (
 	"fops/domain/linkTrace"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/trace"
+	"github.com/farseer-go/queue"
 )
 
 // Upload 上传链路记录
@@ -15,6 +16,8 @@ func Upload(req request.UploadRequest, linkTraceRepository linkTrace.Repository)
 		t.Ignore()
 	}
 
+	// 先发送到本地队列
+	queue.Push("linkTrace", req.List)
 	err := linkTraceRepository.Save(req.List)
 	exception.ThrowWebExceptionError(403, err)
 }

@@ -135,9 +135,16 @@ var errorTips = collections.NewList(
 	"Unable to connect",
 	"Cannot connect")
 
+//var globalStr []string
+//var id int64
+
 // View 构建日志
 // @get build/view-{buildId}
 func View(buildId int64) action.IResult {
+	//if id != buildId {
+	//	globalStr = []string{}
+	//}
+	//id = buildId
 	logQueue := apps.LogQueue{
 		BuildId: buildId,
 	}
@@ -176,7 +183,10 @@ func View(buildId int64) action.IResult {
 		}
 		logContent[i] = dateTimePart + " " + logPart
 	}
-
+	//for i := 0; i < 5; i++ {
+	//	globalStr = append(globalStr, fmt.Sprintf("%s 测试数据显示 %d", time.Now(), i+1))
+	//}
+	//logContent = globalStr
 	return action.Content(strings.Join(logContent, "\n"))
 }
 

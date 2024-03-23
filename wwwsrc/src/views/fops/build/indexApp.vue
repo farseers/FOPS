@@ -122,9 +122,10 @@
     <logDialog ref="logDialogRef"  />
     <taskDialog ref="taskDialogRef"  />
   <el-dialog title="构建日志" v-model="state.logDialogIsShow" style="width: 80%;height: 83%;top:20px;margin-bottom: 50px">
+    <el-checkbox v-model="state.autoLog">自动刷新日志</el-checkbox>
     <el-card shadow="hover" class="layout-padding-auto" style="background-color:#393d49;height: 95%">
-      <div  ref="scrollableDiv"  style="height:9%;overflow-y: scroll;">
-        <pre style="color: #fff;background-color:#393d49;height: 100%;" v-html="state.logContent"></pre>
+      <div  ref="scrollableDiv"  style="height:70%;overflow-y: scroll;">
+        <pre style="color: #fff;background-color:#393d49;height:900px" v-html="state.logContent"></pre>
       </div>
     </el-card>
   </el-dialog>
@@ -191,6 +192,7 @@ const state = reactive({
   clusterData:[],
   showOverlay:false,
   statTask:[],
+  autoLog:true,
 });
 
 // 初始化表格数据
@@ -366,7 +368,10 @@ const showLog=(row:any)=>{
 const onShowLog=()=>{
   serverApi.buildLog(state.logId.toString()).then(function (res){
     state.logContent=res;
-    scrollableDiv.value.scrollTop=scrollableDiv.value.scrollHeight;
+    // 自动刷新日志
+    if (state.autoLog){
+      scrollableDiv.value.scrollTop=scrollableDiv.value.scrollHeight;
+    }
   })
 }
 const onShowOverlay=()=>{

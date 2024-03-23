@@ -4,8 +4,8 @@ package linkTraceApp
 import (
 	"fops/application/linkTraceApp/request"
 	"fops/domain/linkTrace"
-	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/trace"
+	linkTraceCom "github.com/farseer-go/linkTrace"
 	"github.com/farseer-go/queue"
 )
 
@@ -17,7 +17,7 @@ func Upload(req request.UploadRequest, linkTraceRepository linkTrace.Repository)
 	}
 
 	// 先发送到本地队列
-	queue.Push("linkTrace", req.List)
-	err := linkTraceRepository.Save(req.List)
-	exception.ThrowWebExceptionError(403, err)
+	req.List.Foreach(func(item *linkTraceCom.TraceContext) {
+		queue.Push("linkTrace", *item)
+	})
 }

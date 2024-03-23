@@ -5,6 +5,7 @@ import (
 	"fops/domain/linkTrace"
 	"fops/infrastructure/device"
 	"fops/infrastructure/domainEvent"
+	"fops/infrastructure/localQueue"
 	"fops/infrastructure/repository"
 	"fops/infrastructure/repository/context"
 	"github.com/farseer-go/data"
@@ -13,6 +14,7 @@ import (
 	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/modules"
 	linkTraceModule "github.com/farseer-go/linkTrace"
+	"github.com/farseer-go/queue"
 )
 
 type Module struct {
@@ -44,4 +46,7 @@ func (module Module) PostInitialize() {
 		data_clickhouse.Module{}.Initialize()
 		context.InitChContextContext()
 	}
+
+	// 日志消费
+	queue.Subscribe("flog", "saveToCh", 1000, localQueue.SaveFlogQueue)
 }

@@ -89,7 +89,7 @@ export default {
 		TaskFail:'失败任务',
 		TaskFinished:'已完成列表',
 		TaskRunning:'执行中的任务组',
-		DispatchNode:'服务端节点列表',
+		DispatchNode:'服务端节点',
 		Client:'客户端列表',
 		SlowQuery:'慢查询',
 		DataBase:'数据库',
@@ -107,9 +107,9 @@ export default {
 		fscheduleApi:'FSchedule列表',
 		Etcd:'Etcd',
 		Hand:'手动埋点',
-		LogList:'查询列表',
+		LogList:'应用日志',
 		Log:'日志',
-		TaskGroup2:'完成任务列表',
+		TaskGroup2:'历史记录',
 		taskLogList:'任务日志'
 	},
 	staticRoutes: {

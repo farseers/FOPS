@@ -120,6 +120,20 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 							icon: 'iconfont icon-step',
 						},
 					},{
+						path: '/log/list',
+						name: 'logList',
+						component: () => import('/@/views/fops/log/indexLogV2.vue'),
+						meta: {
+							title: 'message.router.LogList',
+							isLink: '',
+							isHide: false,
+							isKeepAlive: true,
+							isAffix: false,
+							isIframe: false,
+							roles: ['admin'],
+							icon: 'iconfont icon-zidingyibuju',
+						},
+					},{
 						path: '/cluster/clusterAdd',
 						name: 'clusterAdd',
 						component: () => import('/@/views/fops/cluster/index.vue'),
@@ -148,21 +162,6 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 							icon: 'iconfont icon-zujian',
 						},
 					},
-					// {
-					// 	path: '/build/Add',
-					// 	name: 'buildAdd',
-					// 	component: () => import('/@/views/fops/build/index.vue'),
-					// 	meta: {
-					// 		title: 'message.router.Build',
-					// 		isLink: '',
-					// 		isHide: false,
-					// 		isKeepAlive: true,
-					// 		isAffix: false,
-					// 		isIframe: false,
-					// 		roles: ['admin'],
-					// 		icon: 'iconfont icon-zujian',
-					// 	},
-					// },
 				]
 			},{
 				path: '/dispatch',
@@ -221,21 +220,6 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 							icon: 'iconfont icon-jinridaiban',
 						},
 					},
-					// {
-					// 	path: '/dispatch/taskFail',
-					// 	name: 'taskFail',
-					// 	component: () => import('/@/views/fops/task/indexFail.vue'),
-					// 	meta: {
-					// 		title: 'message.router.TaskFail',
-					// 		isLink: '',
-					// 		isHide: false,
-					// 		isKeepAlive: true,
-					// 		isAffix: false,
-					// 		isIframe: false,
-					// 		roles: ['admin'],
-					// 		icon: 'iconfont icon-jinridaiban',
-					// 	},
-					// },
 					{
 						path: '/dispatch/taskRunning',
 						name: 'taskRunning',
@@ -480,37 +464,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					}
 				]
 
-			},{
-				path: '/log',
-				name: 'log',
-				component: () => import('/@/views/fops/log/indexLogV2.vue'),
-				meta: {
-					title: 'message.router.Log',
-					isLink: '',
-					isHide: false,
-					isKeepAlive: true,
-					isAffix: true,
-					isIframe: false,
-					roles: ['admin', 'common'],
-					icon: 'iconfont icon-shuju',
-				},children: [
-					{
-						path: '/log/list',
-						name: 'logList',
-						component: () => import('/@/views/fops/log/indexLogV2.vue'),
-						meta: {
-							title: 'message.router.LogList',
-							isLink: '',
-							isHide: false,
-							isKeepAlive: true,
-							isAffix: false,
-							isIframe: false,
-							roles: ['admin'],
-							icon: 'iconfont icon-zidingyibuju',
-						},
-					}
-				]
-			},
+			}
 		],
 	},
 ];

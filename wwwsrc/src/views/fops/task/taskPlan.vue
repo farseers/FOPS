@@ -1,0 +1,177 @@
+<template>
+	<div class="system-user-container layout-padding">
+		<el-card shadow="hover" class="layout-padding-auto">
+      <el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%" class="mytable">
+        <el-table-column label="名称" style="line-height: 45px;height: 45px">
+          <template #default="scope">
+            <div style="float: left;padding-right: 10px;padding-top: 5px">
+              <el-tag size="small" cursor="cursor" @click="onIsEnable(scope.row)" v-if="scope.row.IsEnable">启用</el-tag>
+              <el-tag size="small" cursor="cursor" @click="onIsEnable(scope.row)" v-else type="info">停用</el-tag>
+            </div>
+            <div style="float: left;padding-right: 10px;padding-top: 5px">
+              <el-tag size="small" v-if="scope.row.Status==0" type="info">未开始</el-tag>
+              <el-tag size="small" v-if="scope.row.Status==1" type="success">调度中</el-tag>
+              <el-tag size="small" style="color:red" v-if="scope.row.Status==2" type="warning">调度失败</el-tag>
+              <el-tag size="small" v-if="scope.row.Status==3" type="success">执行中</el-tag>
+              <el-tag size="small" v-if="scope.row.Status==4" type="danger">失败</el-tag>
+              <el-tag size="small" style="color:green" v-if="scope.row.Status==5" type="success">成功</el-tag>
+            </div>
+            <div style="float: left">
+              <span>{{scope.row.Caption}}</span><br>
+              <span>{{scope.row.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Ver}}</span>）</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="StartAt" label="计划时间" width="170" show-overflow-tooltip>
+          <template #default="scope">
+            <span title="计划时间">{{scope.row.StartAt}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="StartAt" label="调度运行" width="170" show-overflow-tooltip>
+          <template #default="scope">
+            <span v-if="scope.row.Status >=1 && scope.row.Status <=3" title="调度时间">{{scope.row.SchedulerAt}}</span>
+            <span v-if="scope.row.Status ==3" title="执行时间">{{scope.row.RunAt}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="数据">
+          <template #default="scope">
+            <span>{{friendlyJSONstringify(scope.row.Data)}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="客户端信息" width="180" show-overflow-tooltip>
+          <template #default="scope">
+            <div>
+              <el-tag v-if="scope.row.Status >=1 && scope.row.Status <=3" size="small">{{scope.row.Client.Name}} {{scope.row.Client.Ip}}:{{scope.row.Client.Port}}</el-tag>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="150">
+          <template #default="scope">
+            <el-button size="small" text type="info" @click="onDel(scope.row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+		</el-card>
+	</div>
+</template>
+
+<script setup lang="ts" name="fopsTaskRunning">
+import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
+import { ElMessageBox, ElMessage } from 'element-plus';
+import {fopsApi} from "/@/api/fops";
+import {friendlyJSONstringify} from "@intlify/shared";
+
+// 引入 api 请求接口
+const serverApi = fopsApi();
+
+// 定义变量内容
+const state = reactive({
+	tableData: {
+		data: [],
+		total: 0,
+		loading: false,
+		param: {
+			pageNum: 1,
+			pageSize: 10,
+		},
+	},
+});
+
+// 初始化表格数据
+const getTableData = () => {
+	state.tableData.loading = true;
+
+  const params = new URLSearchParams();
+  params.append('top', '20');
+
+  // 请求接口
+  serverApi.taskPlanList(params.toString()).then(function (res){
+    if (res.Status){
+      state.tableData.data = res.Data;
+    }else{
+      state.tableData.data=[]
+    }
+    state.tableData.loading = false;
+  })
+};
+
+// 删除
+const onDel = (row: any) => {
+  ElMessageBox.confirm(`此操作将永久删除：“${row.Name}”，是否继续?`, '提示', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+      .then(() => {
+        // 删除逻辑
+        serverApi.taskDel({"taskGroupName":row.Name}).then(function (res){
+          if (res.Status){
+            getTableData();
+            ElMessage.success('删除成功');
+          }else{
+            ElMessage.error(res.StatusMessage)
+          }
+        })
+      })
+      .catch(() => {});
+};
+
+//启用停用
+const onIsEnable=(row: any)=>{
+  let setEnable = row.IsEnable;
+  let tips = "";
+  if (setEnable) {
+    setEnable = false
+    tips = "停用"
+  } else {
+    setEnable = true
+    tips = "启用"
+  }
+
+  ElMessageBox.confirm(`该任务即将：“${tips}”，是否继续?`, '提示', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+      .then(() => {
+        // 设置状态
+        serverApi.taskGroupSetEnable({"taskGroupName":row.Name,"enable":setEnable}).then(function (res){
+          if (res.Status){
+            getTableData();
+            if(setEnable){
+              ElMessage.success('启用-成功');
+            }else{
+              ElMessage.success('停用-成功');
+            }
+
+          }else{
+            ElMessage.error(res.StatusMessage)
+          }
+        })
+      })
+      .catch(() => {});
+}
+
+// 页面加载时
+onMounted(() => {
+	getTableData();
+});
+</script>
+
+<style lang="scss">
+.system-user-container {
+	:deep(.el-card__body) {
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		overflow: auto;
+		.el-table {
+			flex: 1;
+		}
+	}
+}
+.el-table tr td {
+  /* 你的自定义样式 */
+  padding: 0 0!important;
+}
+</style>

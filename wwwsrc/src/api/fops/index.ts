@@ -163,6 +163,11 @@ export function fopsApi() {
 				url: '/basicapi/task/list?'+param,
 				method: 'get',
 			});
+		},taskPlanList: (param: string) => {
+			return requestFSGet({
+				url: '/basicapi/task/planList?'+param,
+				method: 'get',
+			});
 		},taskGroupInfo: (url:string) => {
 			return requestFSGet({
 				url: url,
@@ -186,28 +191,6 @@ export function fopsApi() {
 				method: 'post',
 				data:param,
 			});
-		},taskCount: (param: object) => {
-			return requestFS({
-				url: '/basicapi/taskGroup/count',
-				method: 'get',
-				data:param,
-			});
-		},taskNoRunCount: (param: object) => {
-			return requestFS({
-				url: '/basicapi/taskGroup/unRunCount',
-				method: 'get',
-				data:param,
-			});
-		},taskNoRunList: (param: string) => {
-			return requestFSGet({
-				url: '/basicapi/taskGroup/unRunList?'+param,
-				method: 'get',
-			});
-		},taskRunningList: (param: string) => {
-			return requestFSGet({
-				url: '/basicapi/taskGroup/schedulerWorkingList?'+param,
-				method: 'get',
-			});
 		},taskLogList: (param: string) => {
 			return requestFSGet({
 				url: '/basicapi/log/list?'+param,
@@ -218,20 +201,9 @@ export function fopsApi() {
 				url: '/basicapi/log/listByClientName?'+param,
 				method: 'get',
 			});
-		},taskStatList: (param: string) => {
-			return requestFSGet({
-				url: '/basicapi/task/statList?'+param,
-				method: 'get',
-			});
 		},taskFinishedList: (param: object) => {
 			return requestFSGet({
 				url: '/basicapi/task/list',
-				method: 'get',
-				data:param,
-			});
-		},taskTodayFailCount: (param: object) => {
-			return requestFS({
-				url: '/basicapi/task/todayFailCount',
 				method: 'get',
 				data:param,
 			});
@@ -335,6 +307,29 @@ export function fopsApi() {
 				url: '/flog/StatCount?'+param,
 				method: 'get',
 				//data:param,
+			});
+		},taskCount: (param: object) => {
+			return requestFS({
+				url: '/basicapi/stat/count',
+				method: 'get',
+				data:param,
+			});
+		},taskNoRunCount: (param: object) => {
+			return requestFS({
+				url: '/basicapi/stat/unRunCount',
+				method: 'get',
+				data:param,
+			});
+		},taskTodayFailCount: (param: object) => {
+			return requestFS({
+				url: '/basicapi/stat/todayFailCount',
+				method: 'get',
+				data:param,
+			});
+		},taskStatList: (param: string) => {
+			return requestFSGet({
+				url: '/basicapi/stat/statList?'+param,
+				method: 'get',
 			});
 		}
 	};

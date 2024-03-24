@@ -36,7 +36,7 @@
             <div style="float: left;padding-right: 10px;padding-top: 5px">
               <el-tag size="small" cursor="cursor" @click="onIsEnable(scope.row)" v-if="scope.row.IsEnable">启用</el-tag>
               <el-tag size="small" cursor="cursor" @click="onIsEnable(scope.row)" v-else type="info">停用</el-tag>
-<!--                      <el-switch v-model="scope.row.IsEnable" @click="onIsEnable(scope.row)" inline-prompt active-text="启用" inactive-text="停用"></el-switch>-->
+
             </div>
             <div style="float: left;padding-right: 10px;padding-top: 5px">
               <el-tag size="small" v-if="scope.row.Task.Status==0" type="info">未开始</el-tag>

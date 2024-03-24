@@ -83,12 +83,10 @@ export default {
 		AppAdd:'添加应用',
 		GitAdd:'Git管理',
 		DispatchCenter:'调度中心',
-		TaskGroup:'任务组列表',
-		TaskLog:'日志列表',
-		TaskTimeOut:'超时的任务组',
-		TaskFail:'失败任务',
-		TaskFinished:'已完成列表',
-		TaskRunning:'执行中的任务组',
+		TaskGroup:'任务组管理',
+		TaskPlan:'执行计划',
+		TaskHistory:'执行历史',
+		taskLogList:'执行日志',
 		DispatchNode:'服务端节点',
 		Client:'客户端列表',
 		SlowQuery:'慢查询',
@@ -108,9 +106,7 @@ export default {
 		Etcd:'Etcd',
 		Hand:'手动埋点',
 		LogList:'应用日志',
-		Log:'日志',
-		TaskGroup2:'历史记录',
-		taskLogList:'任务日志'
+		Log:'日志'
 	},
 	staticRoutes: {
 		signIn: '登录',

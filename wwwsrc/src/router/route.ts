@@ -194,9 +194,9 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					},{
 						path: '/dispatch/taskGroup2',
 						name: 'taskGroup2',
-						component: () => import('/src/views/fops/task/indexSuccessFailList.vue'),
+						component: () => import('/src/views/fops/task/taskHistory.vue'),
 						meta: {
-							title: 'message.router.TaskGroup2',
+							title: 'message.router.TaskHistory',
 							isLink: '',
 							isHide: false,
 							isKeepAlive: true,
@@ -206,26 +206,11 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 							icon: 'iconfont icon-shuxingtu',
 						},
 					},{
-						path: '/dispatch/taskTimeOut',
-						name: 'taskTimeOut',
-						component: () => import('/@/views/fops/task/indexTimeOut.vue'),
+						path: '/dispatch/taskPlan',
+						name: 'taskPlan',
+						component: () => import('/wwwsrc/src/views/fops/task/taskPlan.vue'),
 						meta: {
-							title: 'message.router.TaskTimeOut',
-							isLink: '',
-							isHide: false,
-							isKeepAlive: true,
-							isAffix: false,
-							isIframe: false,
-							roles: ['admin'],
-							icon: 'iconfont icon-jinridaiban',
-						},
-					},
-					{
-						path: '/dispatch/taskRunning',
-						name: 'taskRunning',
-						component: () => import('/@/views/fops/task/indexRunning.vue'),
-						meta: {
-							title: 'message.router.TaskRunning',
+							title: 'message.router.TaskPlan',
 							isLink: '',
 							isHide: false,
 							isKeepAlive: true,

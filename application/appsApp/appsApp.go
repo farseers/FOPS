@@ -156,7 +156,6 @@ func doToAppsResponse(clusterId int64, do apps.DomainObject) response.AppsRespon
 		DockerNodeRole:    do.DockerNodeRole,
 		DockerReplicas:    do.DockerReplicas,
 		AdditionalScripts: do.AdditionalScripts,
-		WorkflowsYmlPath:  do.WorkflowsYmlPath,
 		IsHealth:          len(do.ActiveInstance) >= do.DockerReplicas,
 	}
 }

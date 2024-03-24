@@ -38,8 +38,8 @@
           <el-form-item label="Dockerfile">
             <el-input v-model="state.ruleForm.DockerfilePath" placeholder="请输入Dockerfile路径，默认为：./Dockerfile" clearable></el-input>
           </el-form-item>
-          <el-form-item label="工作流yml文件">
-            <el-input v-model="state.ruleForm.WorkflowsYmlPath" placeholder="请输入工作流yml文件路径，默认为：./.fops/workflows/build.yml" clearable></el-input>
+          <el-form-item label="工作流文件">
+            在git仓库 <b>.fops/workflows/</b> 目录中定义yml后缀文件
           </el-form-item>
 				</el-row>
 			</el-form>

@@ -6,7 +6,6 @@ import (
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	linkTraceCom "github.com/farseer-go/linkTrace"
-	"time"
 )
 
 func SaveLinkTraceQueue(subscribeName string, lstMessage collections.ListAny, remainingCount int) {
@@ -17,5 +16,4 @@ func SaveLinkTraceQueue(subscribeName string, lstMessage collections.ListAny, re
 
 	err := container.Resolve[linkTrace.Repository]().Save(lst)
 	flog.ErrorIfExists(err)
-	time.Sleep(5 * time.Second)
 }

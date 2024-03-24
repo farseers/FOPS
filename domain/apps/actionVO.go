@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/parse"
-	"github.com/farseer-go/utils/http"
+	"github.com/farseer-go/utils/file"
 	"strings"
 )
 
@@ -31,30 +31,9 @@ type ActionVO struct {
 }
 
 func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (ActionVO, error) {
-	var (
-		workflowsYmlContent string
-		err                 error
-		statusCode          int
-	)
-
-	// 支持读取失败时，尝试3次读取
-	for i := 0; i < 3; i++ {
-		// 通过http读取工作流定义的内容
-		if workflowsYmlContent, statusCode, err = http.RequestProxy("GET", workflowsYmlPath, nil, nil, "", 2000, configure.GetString("Fops.GitAgent")); err == nil && statusCode == 200 {
-			break
-		}
-	}
-
-	if err != nil {
-		return ActionVO{}, fmt.Errorf("读取WorkflowsYml错误：%s", err.Error())
-	}
-
+	workflowsYmlContent := file.ReadString(workflowsYmlPath)
 	if workflowsYmlContent == "" {
 		return ActionVO{}, fmt.Errorf("WorkflowsYml没有定义。")
-	}
-
-	if statusCode != 200 {
-		return ActionVO{}, fmt.Errorf("读取WorkflowsYml失败：%d", statusCode)
 	}
 
 	// 替换项目名称
@@ -62,7 +41,7 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 	workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "${git_name}", gitName)
 
 	workflowsYml := configure.NewYamlConfig("")
-	err = workflowsYml.LoadContent([]byte(workflowsYmlContent))
+	err := workflowsYml.LoadContent([]byte(workflowsYmlContent))
 	if err != nil {
 		return ActionVO{}, fmt.Errorf("读取WorkflowsYml错误：%s", err.Error())
 	}

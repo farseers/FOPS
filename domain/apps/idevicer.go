@@ -56,3 +56,7 @@ type IKubectlDevice interface {
 	// SetImagesByClusterName 更新k8s的镜像版本
 	SetImagesByClusterName(clusterName string, clusterConfig string, projectName string, dockerImages string, k8SControllersType eumK8SControllers.Enum, progress chan string, ctx context.Context) bool
 }
+
+type IGitDevice interface {
+	PullWorkflows(gitPath, branch string, gitRemote string, progress chan string) bool
+}

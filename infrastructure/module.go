@@ -36,6 +36,7 @@ func (module Module) PostInitialize() {
 	device.RegisterDockerDevice()
 	device.RegisterDockerSwarmDevice()
 	device.RegisterKubectlDevice()
+	device.RegisterGitDevice()
 
 	eventBus.RegisterEvent(event.BuildFinishedEventName).RegisterSubscribe("更新应用的版本信息", domainEvent.BuildFinishedConsumer)
 	eventBus.RegisterEvent(event.DockerPushedEventName).RegisterSubscribe("docker推送完成事件", domainEvent.DockerPushedConsumer)

@@ -17,10 +17,11 @@ import (
 // BuildAdd 添加构建
 // @post build/add
 // @filter application.Jwt
-func BuildAdd(appName string, clusterId int64, appsRepository apps.Repository, clusterRepository cluster.Repository) {
+func BuildAdd(appName string, clusterId int64, workflowsName string, appsRepository apps.Repository, clusterRepository cluster.Repository) {
 	appDO := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionfBool(appDO.IsNil(), 403, "应用不存在")
 	exception.ThrowWebExceptionfBool(appDO.DockerNodeRole == "", 403, "应用的容器节点角色未设置")
+	exception.ThrowWebExceptionfBool(workflowsName == "", 403, "工作流名称未设置")
 
 	clusterDO := clusterRepository.ToEntity(clusterId)
 	exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "集群不存在")
@@ -35,6 +36,7 @@ func BuildAdd(appName string, clusterId int64, appsRepository apps.Repository, c
 		FinishAt:      dateTime.Now(),
 		Env:           apps.EnvVO{},
 		AppName:       appName,
+		WorkflowsName: workflowsName,
 	}
 	err := appsRepository.AddBuild(buildDO)
 	exception.ThrowWebExceptionError(403, err)

@@ -13,7 +13,6 @@ import (
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
-	"github.com/farseer-go/fs/sonyflake"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/http"
 	"os"
@@ -33,8 +32,10 @@ type BuildEO struct {
 	BuildServerId   int64               // 构建的服务端id（防止生产、开发环境混淆）
 	Env             EnvVO               // 环境变量
 	AppName         string              // 应用名称
+	WorkflowsName   string              // 工作流名称（文件的名称）
 	WorkflowsAction ActionVO            // 工作流定义的内容（通过读取WorkflowsYmlPath）
 	dockerDevice    IDockerDevice
+	gitDevice       IGitDevice
 	logQueue        *LogQueue
 	ctx             context.Context
 	cancel          context.CancelFunc
@@ -49,6 +50,7 @@ func (receiver *BuildEO) IsNil() bool {
 func (receiver *BuildEO) StartBuild() {
 	receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 	receiver.dockerDevice = container.Resolve[IDockerDevice]()
+	receiver.gitDevice = container.Resolve[IGitDevice]()
 	receiver.logQueue = NewLogQueue(receiver.Id)
 
 	appsRepository := container.Resolve[Repository]()
@@ -263,20 +265,12 @@ func (receiver *BuildEO) success() {
 
 // GenerateWorkflowsContent 生成Workflows
 func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
-	// 如果没有自定义，则使用应用仓库根目录的.fops/workflows/build.yml文件
-	if receiver.apps.WorkflowsYmlPath == "" {
-		receiver.apps.WorkflowsYmlPath = receiver.appGit.GetRawContent(".fops/workflows/build.yml")
-		// 自定义WorkflowsYmlPath路径
-	} else if !strings.HasPrefix(receiver.apps.WorkflowsYmlPath, "http://") && !strings.HasPrefix(receiver.apps.WorkflowsYmlPath, "https://") {
-		receiver.apps.WorkflowsYmlPath = receiver.appGit.GetRawContent(receiver.apps.WorkflowsYmlPath)
-	}
-
-	receiver.apps.WorkflowsYmlPath = receiver.apps.WorkflowsYmlPath + "?" + parse.ToString(sonyflake.GenerateId())
-	receiver.logQueue.progress <- "加载工作流文件：" + receiver.apps.WorkflowsYmlPath
+	// 更新工作流文件到本地
+	receiver.gitDevice.PullWorkflows(receiver.apps.GetWorkflowsRoot(), receiver.appGit.Branch, receiver.appGit.GetAuthHub(), receiver.logQueue.progress)
 
 	// 通过http读取工作流定义的内容
 	var err error
-	receiver.WorkflowsAction, err = LoadWorkflows(receiver.apps.WorkflowsYmlPath, receiver.AppName, receiver.Env.GitName)
+	receiver.WorkflowsAction, err = LoadWorkflows(receiver.apps.GetWorkflowsRoot()+receiver.WorkflowsName+".yml", receiver.AppName, receiver.Env.GitName)
 	if err != nil {
 		receiver.logQueue.progress <- err.Error()
 		return false

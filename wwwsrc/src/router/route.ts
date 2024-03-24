@@ -194,7 +194,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					},{
 						path: '/dispatch/taskGroup2',
 						name: 'taskGroup2',
-						component: () => import('/src/views/fops/task/taskHistory.vue'),
+						component: () => import('/@/views/fops/task/taskHistory.vue'),
 						meta: {
 							title: 'message.router.TaskHistory',
 							isLink: '',
@@ -208,7 +208,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					},{
 						path: '/dispatch/taskPlan',
 						name: 'taskPlan',
-						component: () => import('/wwwsrc/src/views/fops/task/taskPlan.vue'),
+						component: () => import('/@/views/fops/task/taskPlan.vue'),
 						meta: {
 							title: 'message.router.TaskPlan',
 							isLink: '',

@@ -22,4 +22,5 @@ type AppsResponse struct {
 	LogErrorCount     int                     // 日志错误数量
 	LogWaringCount    int                     // 日志警告数量
 	WorkflowsYmlPath  string                  // 工作流定义的路径（默认：/.fops/workflows/build.yml）
+	WorkflowsNames    []string                // 工作流名称
 }

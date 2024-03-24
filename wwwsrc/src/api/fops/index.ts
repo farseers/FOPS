@@ -124,6 +124,12 @@ export function fopsApi() {
 				method: 'post',
 				data:param,
 			});
+		},syncWorkflows: (param: object) => {
+			return request({
+				url: '/apps/syncWorkflows',
+				method: 'post',
+				data:param,
+			});
 		},buildStop: (param: object) => {
 			return request({
 				url: '/apps/build/stop',

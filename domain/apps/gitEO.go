@@ -73,3 +73,8 @@ func (receiver *GitEO) GetRawContent(filePath string) string {
 	}
 	return gitUrl
 }
+
+//// GetWorkflowsRoot 获取工作流目录 如："/var/lib/fops/workflows/fops/"
+//func (receiver *GitEO) GetWorkflowsRoot() string {
+//	return WorkflowsRoot + receiver.GetName() + "/"
+//}

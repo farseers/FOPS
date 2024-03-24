@@ -7,7 +7,7 @@
         </el-select>
         <el-button size="default" type="success" class="ml10" @click="onOpenAdd('add')"><el-icon><ele-FolderAdd /></el-icon>新增应用</el-button>
         <el-button size="default" type="info" class="ml10" @click="onClearDockerImage('add')"><el-icon><ele-Delete /></el-icon>清除None镜像</el-button>
-        <el-button size="default" type="warning" class="ml10" @click="onAllBuild()"><el-icon><ele-SwitchButton /></el-icon>全部构建</el-button>
+<!--        <el-button size="default" type="warning" class="ml10" @click="onAllBuild()"><el-icon><ele-SwitchButton /></el-icon>全部构建</el-button>-->
         <el-button size="default" type="danger" class="ml10" @click="onStopBuild()"><el-icon><ele-SwitchButton /></el-icon>停止构建</el-button>
       </el-header>
       <!--应用列表-->
@@ -49,7 +49,6 @@
                 <div class="appItem" style="margin-bottom: 10px">部署角色
                   <el-tag v-if="v.DockerNodeRole=='manager'" type="danger" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
                   <el-tag v-else size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
-                  <el-button v-if="v.AppGit > 0" size="small" @click="onBuildAdd(v)" type="danger" style="margin-left: 5px"><el-icon><ele-SwitchButton /></el-icon>构建</el-button>
                 </div>
               <div class="appItem" style="margin-bottom: 10px">应用日志
                 <el-tooltip content="警告数量" slot="label">
@@ -72,6 +71,10 @@
                   <el-tag  @click="showTask(4,v.AppName)" v-if="v.TaskFailCount > 0" type="danger" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskFailCount }}</el-tag>
                   <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskFailCount }}</el-tag>
                 </el-tooltip>
+              </div>
+              <el-button v-if="v.AppGit > 0" size="small" @click="onSyncWorkflows(v)" type="info" style="margin-left: 5px;width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>
+              <div class="appItem" style="margin-bottom: 10px">构建应用
+                <el-button v-if="v.AppGit > 0" v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v,item)" type="danger" style="margin-left: 5px;margin-bottom: 5px;"><el-icon><ele-SwitchButton /></el-icon>{{item}}</el-button>
               </div>
             </el-card>
           </el-space>
@@ -152,9 +155,9 @@ const serverApi = fopsApi();
 
 // 引入组件
 // 修改弹窗
-const appDialog = defineAsyncComponent(() => import('/@/views/fops/app/dialog.vue'));
+const appDialog = defineAsyncComponent(() => import('/src/views/fops/build/editAppDialog.vue'));
 // 添加弹窗
-const appAddDialog = defineAsyncComponent(() => import('/@/views/fops/app/addDialog.vue'));
+const appAddDialog = defineAsyncComponent(() => import('/src/views/fops/build/addAppDialog.vue'));
 // 任务组日志
 const taskDialog= defineAsyncComponent(() => import('/src/views/fops/task/taskAppDialog.vue'));
 // 日志
@@ -197,9 +200,6 @@ const state = reactive({
 
 // 初始化表格数据
 const getTableData = () => {
-  // // 任务日志统计列表
-  // taskLogStat()
-
 	state.tableData.loading = true;
 	const data = [];
   // 请求接口
@@ -320,16 +320,6 @@ const onClearDockerImage = () => {
       .catch(() => {});
 };
 
-// 分页改变
-const onHandleSizeChange = (val: number) => {
-	state.tableData.param.pageSize = val;
-	getTableData();
-};
-// 分页改变
-const onHandleCurrentChange = (val: number) => {
-	state.tableData.param.pageNum = val;
-	getTableData();
-};
 const onHandleSizeLogChange = (val: number) => {
   state.tableLogData.param.pageSize = val;
   getTableLogData();
@@ -381,8 +371,8 @@ const onHideOverlay=()=>{
   state.showOverlay=false
 }
 // 构建
-const onBuildAdd = (row:any) => {
-  ElMessageBox.confirm(`请确认是否添加构建?`, '提示', {
+const onBuildAdd = (row:any,workflowsName:any) => {
+  ElMessageBox.confirm(`请确认是否添加构建`+ workflowsName +`?`, '提示', {
     confirmButtonText: '确认',
     cancelButtonText: '取消',
     type: 'warning',
@@ -390,8 +380,9 @@ const onBuildAdd = (row:any) => {
       .then(() => {
         // 提交数据
         var param={
-          "AppName":row.AppName,
-          "ClusterId":state.clusterId,
+          "AppName" : row.AppName,
+          "ClusterId" : state.clusterId,
+          "WorkflowsName" : workflowsName,
         }
         serverApi.buildAdd(param).then(async function(res){
           if(res.Status){
@@ -404,6 +395,24 @@ const onBuildAdd = (row:any) => {
         })
       })
       .catch(() => {});
+};
+
+// 刷新工作流文件
+const onSyncWorkflows = (row:any) => {
+  state.showOverlay=true
+  let param = {
+    "AppName": row.AppName
+  };
+  serverApi.syncWorkflows(param).then(async function(res){
+    if (res.Status) {
+      ElMessage.success("刷新成功")
+    } else {
+      ElMessage.error(res.StatusMessage)
+    }
+    // 刷新
+    getTableData()
+  })
+  state.showOverlay=false
 };
 
 // 重启容器
@@ -525,15 +534,6 @@ const getGitArray=(lst:[])=>{
       }
     })
   }
-  return array
-}
-const getGit=(val:number)=>{
-  var array=[]
-  serverApi.gitInfo({"gitId":val}).then(function (res){
-      if (res.Status){
-        array.push(res.Data.Name)
-      }
-    })
   return array
 }
 

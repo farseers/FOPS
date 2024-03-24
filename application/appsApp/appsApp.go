@@ -12,6 +12,8 @@ import (
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/mapper"
+	"github.com/farseer-go/utils/file"
+	"path/filepath"
 	"strings"
 )
 
@@ -94,6 +96,12 @@ func List(clusterId int64, appsRepository apps.Repository, logDataRepository log
 			return item.AppName == logItem.AppName && logItem.LogLevel == eumLogLevel.Warning
 		}).First().LogCount
 
+		// 获取工作流文件名称
+		appsResponse.WorkflowsNames = file.GetFiles(item.GetWorkflowsDir(), "*.yml", true)
+		for i, v := range appsResponse.WorkflowsNames {
+			v = filepath.Base(v)
+			appsResponse.WorkflowsNames[i] = v[:strings.Index(v, ".yml")]
+		}
 		lst.Add(appsResponse)
 	})
 	return lst
@@ -108,6 +116,21 @@ func Info(appName string, appsRepository apps.Repository) response.AppsResponse 
 	rsp := doToAppsResponse(0, do)
 	rsp.AppGitName = appsRepository.ToGitEntity(do.AppGit).Name
 	return rsp
+}
+
+// SyncWorkflows 同步工作流文件
+// @post syncWorkflows
+// @filter application.Jwt
+func SyncWorkflows(appName string, appsRepository apps.Repository, gitDevice apps.IGitDevice) {
+	do := appsRepository.ToEntity(appName)
+	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
+
+	c := make(chan string, 100)
+	gitEO := appsRepository.ToGitEntity(do.AppGit)
+	if !gitDevice.PullWorkflows(do.GetWorkflowsRoot(), gitEO.Branch, gitEO.GetAuthHub(), c) {
+		lstLog := collections.NewListFromChan(c)
+		exception.ThrowWebExceptionf(403, "同步工作流文件失败:<br />%s", lstLog.ToString("<br />"))
+	}
 }
 
 func doToAppsResponse(clusterId int64, do apps.DomainObject) response.AppsResponse {

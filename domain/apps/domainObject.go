@@ -59,3 +59,13 @@ func (receiver *DomainObject) UpdateBuildVer(isSuccess bool, clusterId int64, bu
 		receiver.ClusterVer[clusterId].BuildFailId = buildId
 	}
 }
+
+// GetWorkflowsRoot 获取工作流目录 如："/var/lib/fops/workflows/fops/"
+func (receiver *DomainObject) GetWorkflowsRoot() string {
+	return WorkflowsRoot + receiver.AppName + "/"
+}
+
+// GetWorkflowsDir 获取工作流目录 如："/var/lib/fops/workflows/fops/.fops/workflows/"
+func (receiver *DomainObject) GetWorkflowsDir() string {
+	return WorkflowsRoot + receiver.AppName + "/.fops/workflows/"
+}

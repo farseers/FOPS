@@ -17,6 +17,7 @@ type BuildPO struct {
 	CreateAt      time.Time           `gorm:"type:timestamp;size:6;not null;default:CURRENT_TIMESTAMP;comment:开始时间"`
 	FinishAt      time.Time           `gorm:"type:timestamp;size:6;not null;default:CURRENT_TIMESTAMP;comment:完成时间"`
 	BuildServerId int64               `gorm:"not null;default:0;comment:构建的服务端id"`
+	WorkflowsName string              `gorm:"size:32;not null;default:'';comment:工作流名称（文件的名称）"`
 	Log           []string            `gorm:"type:text;json;not null;comment:构建日志"`
 	Env           apps.EnvVO          `gorm:"type:text;json;not null;comment:环境变量"`
 }

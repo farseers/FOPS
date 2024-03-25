@@ -20,7 +20,9 @@
         </el-table-column>
         <el-table-column prop="StartAt" label="计划时间" width="170" show-overflow-tooltip>
           <template #default="scope">
-            <span title="计划时间">{{scope.row.StartAt}}</span>
+            <el-tag size="small" v-if="scope.row.StartAt.includes(`等待`)" type="info">{{scope.row.StartAt}}</el-tag>
+            <el-tag size="small" v-else-if="scope.row.StartAt.includes(`超时`)" type="danger">{{scope.row.StartAt}}</el-tag>
+            <el-tag size="small" v-else-if="scope.row.StartAt.includes(`已执行`)" type="success">{{scope.row.StartAt}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="数据">

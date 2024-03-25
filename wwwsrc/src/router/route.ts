@@ -128,7 +128,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 							isLink: '',
 							isHide: false,
 							isKeepAlive: true,
-							isAffix: false,
+							isAffix: true,
 							isIframe: false,
 							roles: ['admin'],
 							icon: 'iconfont icon-zidingyibuju',

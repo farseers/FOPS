@@ -15,11 +15,8 @@
             <el-tag size="small" v-if="scope.row.StartAt.includes(`等待`)" type="info">{{scope.row.StartAt}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.StartAt.includes(`超时`)" type="danger">{{scope.row.StartAt}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.StartAt.includes(`已执行`)" type="success">{{scope.row.StartAt}}</el-tag>
+            <br><span>{{scope.row.SchedulerAt}}</span>
           </template>
-        </el-table-column>
-        <el-table-column prop="SchedulerAt" label="调度时间" width="170" show-overflow-tooltip>
-        </el-table-column>
-        <el-table-column prop="CreateAt" label="调度时间" width="170" show-overflow-tooltip>
         </el-table-column>
         <el-table-column label="数据">
           <template #default="scope">

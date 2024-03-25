@@ -26,7 +26,7 @@ func (receiver *gitDevice) PullWorkflows(gitPath, branch string, gitRemote strin
 
 	var exitCode int
 	for i := 0; i < 3; i++ {
-		if exitCode = exec.RunShell(fmt.Sprintf("git pull %s %s --rebase", branch, branch), progress, nil, gitPath, true); exitCode == 0 {
+		if exitCode = exec.RunShell(fmt.Sprintf("git pull origin %s", branch), progress, nil, gitPath, true); exitCode == 0 {
 			break
 		}
 		if i == 2 {

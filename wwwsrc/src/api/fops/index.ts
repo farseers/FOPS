@@ -197,6 +197,12 @@ export function fopsApi() {
 				method: 'post',
 				data:param,
 			});
+		},killTask: (param: object) => {
+			return requestFS({
+				url: '/api/killTask',
+				method: 'post',
+				data:param,
+			});
 		},taskLogList: (param: string) => {
 			return requestFSGet({
 				url: '/basicapi/log/list?'+param,

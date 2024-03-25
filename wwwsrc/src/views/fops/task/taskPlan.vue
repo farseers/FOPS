@@ -5,10 +5,6 @@
         <el-table-column label="名称" style="line-height: 45px;height: 45px">
           <template #default="scope">
             <div style="float: left;padding-right: 10px;padding-top: 5px">
-              <el-tag size="small" cursor="cursor" @click="onIsEnable(scope.row)" v-if="scope.row.IsEnable">启用</el-tag>
-              <el-tag size="small" cursor="cursor" @click="onIsEnable(scope.row)" v-else type="info">停用</el-tag>
-            </div>
-            <div style="float: left;padding-right: 10px;padding-top: 5px">
               <el-tag size="small" v-if="scope.row.Status==0" type="info">未开始</el-tag>
               <el-tag size="small" v-if="scope.row.Status==1" type="success">调度中</el-tag>
               <el-tag size="small" style="color:red" v-if="scope.row.Status==2" type="warning">调度失败</el-tag>
@@ -47,7 +43,7 @@
         </el-table-column>
         <el-table-column label="操作" width="150">
           <template #default="scope">
-            <el-button size="small" text type="info" @click="onDel(scope.row)">删除</el-button>
+            <el-button size="small" text type="danger" @click="onKill(scope.row)">停止任务</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -95,19 +91,19 @@ const getTableData = () => {
   })
 };
 
-// 删除
-const onDel = (row: any) => {
-  ElMessageBox.confirm(`此操作将永久删除：“${row.Name}”，是否继续?`, '提示', {
+// 停止任务
+const onKill = (row: any) => {
+  ElMessageBox.confirm(`准备停止任务：“${row.Name}”，是否继续?`, '提示', {
     confirmButtonText: '确认',
     cancelButtonText: '取消',
     type: 'warning',
   })
       .then(() => {
         // 删除逻辑
-        serverApi.taskDel({"taskGroupName":row.Name}).then(function (res){
+        serverApi.killTask({"taskGroupName":row.Name}).then(function (res){
           if (res.Status){
             getTableData();
-            ElMessage.success('删除成功');
+            ElMessage.success('停止成功');
           }else{
             ElMessage.error(res.StatusMessage)
           }
@@ -115,42 +111,6 @@ const onDel = (row: any) => {
       })
       .catch(() => {});
 };
-
-//启用停用
-const onIsEnable=(row: any)=>{
-  let setEnable = row.IsEnable;
-  let tips = "";
-  if (setEnable) {
-    setEnable = false
-    tips = "停用"
-  } else {
-    setEnable = true
-    tips = "启用"
-  }
-
-  ElMessageBox.confirm(`该任务即将：“${tips}”，是否继续?`, '提示', {
-    confirmButtonText: '确认',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-      .then(() => {
-        // 设置状态
-        serverApi.taskGroupSetEnable({"taskGroupName":row.Name,"enable":setEnable}).then(function (res){
-          if (res.Status){
-            getTableData();
-            if(setEnable){
-              ElMessage.success('启用-成功');
-            }else{
-              ElMessage.success('停用-成功');
-            }
-
-          }else{
-            ElMessage.error(res.StatusMessage)
-          }
-        })
-      })
-      .catch(() => {});
-}
 
 // 页面加载时
 onMounted(() => {

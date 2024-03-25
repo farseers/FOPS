@@ -222,6 +222,7 @@ const onTaskList=(row: any)=>{
 const onLog=(row: any)=>{
   logDialogRef.value.openDialog(row);
 }
+
 // 删除
 const onDel = (row: any) => {
 	ElMessageBox.confirm(`此操作将永久删除：“${row.Name}”，是否继续?`, '提示', {
@@ -242,6 +243,7 @@ const onDel = (row: any) => {
 		})
 		.catch(() => {});
 };
+
 //启用停用
 const onIsEnable=(row: any)=>{
   var setEnable=row.IsEnable

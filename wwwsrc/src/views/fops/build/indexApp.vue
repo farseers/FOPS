@@ -122,22 +122,21 @@
 
   <appDialog ref="appDialogRef" @refresh="getTableData()" @showOverlay="onShowOverlay()" @hideOverlay="onHideOverlay()" />
   <appAddDialog ref="appAddDialogRef" @refresh="getTableData()" @showOverlay="onShowOverlay()" @hideOverlay="onHideOverlay()" />
-    <logDialog ref="logDialogRef"  />
-    <taskDialog ref="taskDialogRef"  />
+  <logDialog ref="logDialogRef"  />
+  <taskDialog ref="taskDialogRef"  />
   <el-dialog title="构建日志" v-model="state.logDialogIsShow" style="width: 80%;height: 83%;top:20px;margin-bottom: 50px">
     <el-checkbox v-model="state.autoLog">自动刷新日志</el-checkbox>
     <el-card shadow="hover" class="layout-padding-auto" style="background-color:#393d49;height: 95%">
-      <div  ref="scrollableDiv"  style="height:70%;overflow-y: scroll;">
+      <div ref="scrollableDiv"  style="height:70%;overflow-y: scroll;">
         <pre style="color: #fff;background-color:#393d49;height:900px" v-html="state.logContent"></pre>
       </div>
     </el-card>
   </el-dialog>
-
-    <div v-if="state.showOverlay" class="overlay">
-      <div class="overlay-content">
-        <img :src="Image" style="width: 200px" alt="Image">
-      </div>
+  <div v-if="state.showOverlay" class="overlay">
+    <div class="overlay-content">
+      <img :src="Image" style="width: 200px" alt="Image">
     </div>
+  </div>
   </div>
 </template>
 

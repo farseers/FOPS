@@ -89,7 +89,7 @@ const state = reactive({
 		loading: false,
 		param: {
 			pageNum: 1,
-			pageSize: 20,
+			pageSize: 18,
 		},
 	},
     dialog: {

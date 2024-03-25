@@ -23,12 +23,6 @@
             <span title="计划时间">{{scope.row.StartAt}}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="StartAt" label="调度运行" width="170" show-overflow-tooltip>
-          <template #default="scope">
-            <span v-if="scope.row.Status >=1 && scope.row.Status <=3" title="调度时间">{{scope.row.SchedulerAt}}</span>
-            <span v-if="scope.row.Status ==3" title="执行时间">{{scope.row.RunAt}}</span>
-          </template>
-        </el-table-column>
         <el-table-column label="数据">
           <template #default="scope">
             <span>{{friendlyJSONstringify(scope.row.Data)}}</span>
@@ -115,6 +109,7 @@ const onKill = (row: any) => {
 // 页面加载时
 onMounted(() => {
 	getTableData();
+  setInterval(getTableData, 1000);
 });
 </script>
 

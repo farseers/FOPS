@@ -18,6 +18,9 @@
         <el-form-item label="容器参数">
           <el-input v-model="state.ruleForm.AdditionalScripts" type="textarea" placeholder="容器在创建时，附加的参数" clearable></el-input>
         </el-form-item>
+        <el-form-item label="Dockerfile">
+          <el-input v-model="state.ruleForm.DockerfilePath" placeholder="请输入Dockerfile路径，默认为：./Dockerfile" clearable></el-input>
+        </el-form-item>
         <el-form-item label="Git主仓库">
           <el-tag size="small">{{state.ruleForm.AppGitName}}</el-tag>
           <el-button type="primary" @click="onOpenGit(2)" size="default" style="margin-left: 5px;">添加Git</el-button>
@@ -35,9 +38,6 @@
             </el-table-column>
           </el-table>
         </el-form-item>
-          <el-form-item label="Dockerfile">
-            <el-input v-model="state.ruleForm.DockerfilePath" placeholder="请输入Dockerfile路径，默认为：./Dockerfile" clearable></el-input>
-          </el-form-item>
           <el-form-item label="工作流文件">
             在git仓库 <b>.fops/workflows/</b> 目录中定义yml后缀文件
           </el-form-item>
@@ -68,7 +68,6 @@
         </el-table>
       </el-card>
     </el-dialog>
-
 	</div>
 </template>
 

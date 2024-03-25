@@ -22,11 +22,13 @@ func (receiver *gitDevice) PullWorkflows(gitPath, branch string, gitRemote strin
 		exec.RunShell(fmt.Sprintf("git remote add -f %s %s", branch, gitRemote), progress, nil, gitPath, true)
 		exec.RunShell("git config core.sparsecheckout true", progress, nil, gitPath, true)
 		exec.RunShell("echo .fops/workflows/ >> .git/info/sparse-checkout", progress, nil, gitPath, true)
+		exec.RunShell(fmt.Sprintf("git pull %s %s", branch, branch), progress, nil, gitPath, true)
 	}
 
 	var exitCode int
 	for i := 0; i < 3; i++ {
-		if exitCode = exec.RunShell(fmt.Sprintf("git pull %s %s", branch, branch), progress, nil, gitPath, true); exitCode == 0 {
+		//if exitCode = exec.RunShell(fmt.Sprintf("git pull %s %s", branch, branch), progress, nil, gitPath, true); exitCode == 0 {
+		if exitCode = exec.RunShell("git pull --rebase", progress, nil, gitPath, true); exitCode == 0 {
 			break
 		}
 		if i == 2 {

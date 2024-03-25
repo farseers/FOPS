@@ -46,7 +46,7 @@
 </template>
 
 <script setup lang="ts" name="fopsTaskRunning">
-import { defineAsyncComponent, reactive, onMounted, ref } from 'vue';
+import {defineAsyncComponent, reactive, onMounted, ref, onUnmounted} from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import {fopsApi} from "/@/api/fops";
 import {friendlyJSONstringify} from "@intlify/shared";
@@ -106,11 +106,19 @@ const onKill = (row: any) => {
       .catch(() => {});
 };
 
+let intervalTableDataId = null;
+
 // 页面加载时
 onMounted(() => {
 	getTableData();
-  setInterval(getTableData, 1000);
+  intervalTableDataId = setInterval(getTableData, 1000);
 });
+
+// 页面注销的时候
+onUnmounted(()=>{
+  clearInterval(intervalTableDataId);
+})
+
 </script>
 
 <style lang="scss">

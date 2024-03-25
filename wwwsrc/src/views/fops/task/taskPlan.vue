@@ -4,14 +4,6 @@
       <el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%" class="mytable">
         <el-table-column label="名称" style="line-height: 45px;height: 45px">
           <template #default="scope">
-            <div style="float: left;padding-right: 10px;padding-top: 5px">
-              <el-tag size="small" v-if="scope.row.Status==0" type="info">未开始</el-tag>
-              <el-tag size="small" v-if="scope.row.Status==1" type="success">调度中</el-tag>
-              <el-tag size="small" style="color:red" v-if="scope.row.Status==2" type="warning">调度失败</el-tag>
-              <el-tag size="small" v-if="scope.row.Status==3" type="success">执行中</el-tag>
-              <el-tag size="small" v-if="scope.row.Status==4" type="danger">失败</el-tag>
-              <el-tag size="small" style="color:green" v-if="scope.row.Status==5" type="success">成功</el-tag>
-            </div>
             <div style="float: left">
               <span>{{scope.row.Caption}}</span><br>
               <span>{{scope.row.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Ver}}</span>）</span>

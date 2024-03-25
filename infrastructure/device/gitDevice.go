@@ -29,7 +29,12 @@ func (receiver *gitDevice) PullWorkflows(gitPath, branch string, gitRemote strin
 		if exitCode = exec.RunShell(fmt.Sprintf("git pull %s %s", branch, branch), progress, nil, gitPath, true); exitCode == 0 {
 			break
 		}
-		progress <- "同步工作流文件失败"
+		if i == 2 {
+			progress <- "同步工作流文件失败，停止构建"
+		} else {
+			progress <- "拉取失败，正在尝试重新拉取"
+		}
+
 	}
 	return exitCode == 0
 }

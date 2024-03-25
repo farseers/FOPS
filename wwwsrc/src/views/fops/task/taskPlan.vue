@@ -43,7 +43,7 @@
         </el-table-column>
         <el-table-column label="操作" width="150">
           <template #default="scope">
-            <el-button size="small" text type="danger" @click="onKill(scope.row)">停止任务</el-button>
+            <el-button v-if="scope.row.Status !=0" size="small" text type="danger" @click="onKill(scope.row)">停止任务</el-button>
           </template>
         </el-table-column>
       </el-table>

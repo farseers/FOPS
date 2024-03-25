@@ -25,6 +25,11 @@
             <el-tag size="small" v-else-if="scope.row.StartAt.includes(`已执行`)" type="success">{{scope.row.StartAt}}</el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="StartAt" label="调度时间" width="170" show-overflow-tooltip>
+          <template #default="scope">
+            {{scope.row.SchedulerAt}}
+          </template>
+        </el-table-column>
         <el-table-column label="数据">
           <template #default="scope">
             <span>{{friendlyJSONstringify(scope.row.Data)}}</span>

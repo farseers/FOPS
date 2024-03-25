@@ -5,7 +5,7 @@ Redis:
 WebApi:
   Url: ":8889"
   Jwt:
-    Key: "123456"
+    Key: "uwzp4ASMYjgs"
   Session:
     Store: "Redis"
     StoreConfigName: "default"

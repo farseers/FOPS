@@ -19,6 +19,8 @@
         </el-table-column>
         <el-table-column prop="SchedulerAt" label="调度时间" width="170" show-overflow-tooltip>
         </el-table-column>
+        <el-table-column prop="CreateAt" label="调度时间" width="170" show-overflow-tooltip>
+        </el-table-column>
         <el-table-column label="数据">
           <template #default="scope">
             <span>{{friendlyJSONstringify(scope.row.Data)}}</span>

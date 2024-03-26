@@ -358,7 +358,7 @@ const showLog=(row:any)=>{
 const onShowLog=()=>{
   serverApi.buildLog(state.logId.toString()).then(function (res) {
     // 如果从接口获取到的内容与本地内容一样时，则不用滚动
-    let isChange= state.logContent == res;
+    let isChange= state.logContent != res;
     state.logContent = res;
     // 自动刷新日志
     if (state.autoLog && isChange) {

@@ -150,3 +150,7 @@ func (dockerDevice) Login(dockerHub string, loginName string, loginPwd string, p
 	progress <- "镜像仓库登陆成功。"
 	return true
 }
+
+func (dockerDevice) Pull(image string, progress chan string) {
+	exec.RunShell(fmt.Sprintf("docker pull %s", image), progress, nil, "", true)
+}

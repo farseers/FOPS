@@ -29,6 +29,8 @@ type IDockerDevice interface {
 	GetVersion() string
 	// Login 登陆镜像仓库
 	Login(dockerHub string, loginName string, loginPwd string, progress chan string) bool
+	// Pull 拉取镜像
+	Pull(image string, progress chan string)
 }
 
 type IDockerSwarmDevice interface {
@@ -58,5 +60,6 @@ type IKubectlDevice interface {
 }
 
 type IGitDevice interface {
+	// PullWorkflows 拉取工作流
 	PullWorkflows(gitPath, branch string, gitRemote string, progress chan string) bool
 }

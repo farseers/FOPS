@@ -74,7 +74,7 @@ func (dockerSwarmDevice) ExistsDocker(appName string) bool {
 func (dockerSwarmDevice) CreateService(appName, dockerNodeRole, additionalScripts, dockerNetwork string, dockerReplicas int, dockerImages string, progress chan string, ctx context.Context) bool {
 	progress <- "开始创建Docker Swarm容器服务。"
 
-	shell := fmt.Sprintf("docker service create --name %s --replicas %v -d --network=%s --with-registry-auth --constraint node.role==%s --mount type=bind,src=/etc/localtime,dst=/etc/localtime %s %s", appName, dockerReplicas, dockerNetwork, dockerNodeRole, additionalScripts, dockerImages)
+	shell := fmt.Sprintf("docker service create --with-registry-auth --name %s --replicas %v -d --network=%s --constraint node.role==%s --mount type=bind,src=/etc/localtime,dst=/etc/localtime %s %s", appName, dockerReplicas, dockerNetwork, dockerNodeRole, additionalScripts, dockerImages)
 	var exitCode = exec.RunShellContext(ctx, shell, progress, nil, "", true)
 	if exitCode != 0 {
 		progress <- "创建Docker Swarm容器失败了。"
@@ -87,7 +87,7 @@ func (dockerSwarmDevice) SetImages(cluster cluster.DomainObject, appName string,
 	progress <- "---------------------------------------------------------"
 	progress <- "开始更新Docker Swarm的镜像版本。"
 
-	var exitCode = exec.RunShellContext(ctx, fmt.Sprintf("docker service update --image %s --update-delay 10s --with-registry-auth %s", dockerImages, appName), progress, nil, "", false)
+	var exitCode = exec.RunShellContext(ctx, fmt.Sprintf("docker service update --with-registry-auth --image %s --update-delay 10s %s", dockerImages, appName), progress, nil, "", false)
 	if exitCode != 0 {
 		progress <- "Docker Swarm更新镜像失败。"
 		return false

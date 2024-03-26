@@ -14,7 +14,7 @@ import (
 // SyncDockerImage 同步仓库版本
 // @post build/syncDockerImage
 // @filter application.Jwt
-func SyncDockerImage(clusterId int64, appName string, appsIDockerSwarmDevice apps.IDockerSwarmDevice, appsRepository apps.Repository, clusterRepository cluster.Repository) {
+func SyncDockerImage(clusterId int64, appName string, appsIDockerSwarmDevice apps.IDockerSwarmDevice, appsIDockerDevice apps.IDockerDevice, appsRepository apps.Repository, clusterRepository cluster.Repository) {
 	do := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 
@@ -27,6 +27,9 @@ func SyncDockerImage(clusterId int64, appName string, appsIDockerSwarmDevice app
 	}
 
 	c := make(chan string, 100)
+	// 先拉取镜像
+	appsIDockerDevice.Pull(do.DockerImage, c)
+
 	// 首次创建还是更新镜像
 	if appsIDockerSwarmDevice.ExistsDocker(appName) {
 		// 更新镜像
@@ -78,7 +81,7 @@ func UpdateDockerImage(appName string, dockerImage string, buildNumber int, clus
 		}
 
 		// 同步镜像
-		SyncDockerImage(clusterId, appName, appsIDockerSwarmDevice, appsRepository, clusterRepository)
+		SyncDockerImage(clusterId, appName, appsIDockerSwarmDevice, appsIDockerDevice, appsRepository, clusterRepository)
 	}
 }
 

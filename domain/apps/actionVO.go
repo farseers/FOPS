@@ -31,7 +31,7 @@ type ActionVO struct {
 	Steps  []stepVO       // 步骤
 }
 
-func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (ActionVO, error) {
+func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysWith map[string]any) (ActionVO, error) {
 	workflowsYmlContent := file.ReadString(workflowsYmlPath)
 	if workflowsYmlContent == "" {
 		return ActionVO{}, fmt.Errorf("WorkflowsYml没有定义。")
@@ -40,6 +40,8 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 	// 替换项目名称
 	workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "${app_name}", appName)
 	workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "${git_name}", gitName)
+	workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "{{fops.ver}}", parse.ToString(sysWith["fops.ver"]))
+	workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "{{fschedule.ver}}", parse.ToString(sysWith["fschedule.ver"]))
 
 	workflowsYml := configure.NewYamlConfig("")
 	err := workflowsYml.LoadContent([]byte(workflowsYmlContent))

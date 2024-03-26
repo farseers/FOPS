@@ -273,7 +273,7 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 
 	// 通过http读取工作流定义的内容
 	var err error
-	receiver.WorkflowsAction, err = LoadWorkflows(receiver.apps.GetWorkflowsDir()+receiver.WorkflowsName+".yml", receiver.AppName, receiver.Env.GitName)
+	receiver.WorkflowsAction, err = LoadWorkflows(receiver.apps.GetWorkflowsDir()+receiver.WorkflowsName+".yml", receiver.AppName, receiver.Env.GitName, sysWith)
 	if err != nil {
 		receiver.logQueue.progress <- err.Error()
 		return false

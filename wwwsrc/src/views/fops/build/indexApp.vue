@@ -356,11 +356,13 @@ const showLog=(row:any)=>{
   })
 }
 const onShowLog=()=>{
-  serverApi.buildLog(state.logId.toString()).then(function (res){
-    state.logContent=res;
+  serverApi.buildLog(state.logId.toString()).then(function (res) {
+    // 如果从接口获取到的内容与本地内容一样时，则不用滚动
+    let isChange= state.logContent == res;
+    state.logContent = res;
     // 自动刷新日志
-    if (state.autoLog){
-      scrollableDiv.value.scrollTop=scrollableDiv.value.scrollHeight;
+    if (state.autoLog && isChange) {
+      scrollableDiv.value.scrollTop = scrollableDiv.value.scrollHeight;
     }
   })
 }
@@ -486,6 +488,7 @@ const onAllBuild=()=>{
       })
       .catch(() => {});
 }
+
 const onBuildAddFunc = (row:any) => {
     // 提交数据
     var param={
@@ -524,17 +527,6 @@ const onStopBuild=()=>{
         })
       })
       .catch(() => {});
-}
-const getGitArray=(lst:[])=>{
-  var array=[]
-  for (let i = 0; i < lst.length; i++) {
-    serverApi.gitInfo({"gitId":lst[i]}).then(function (res){
-      if (res.Status){
-        array.push(res.Data.Name)
-      }
-    })
-  }
-  return array
 }
 
 // 任务日志统计列表

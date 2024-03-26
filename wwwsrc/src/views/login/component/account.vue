@@ -65,7 +65,7 @@ import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
 import { initFrontEndControlRoutes } from '/@/router/frontEnd';
 import { initBackEndControlRoutes } from '/@/router/backEnd';
-import { Session } from '/@/utils/storage';
+import {Local, Session} from '/@/utils/storage';
 import { formatAxis } from '/@/utils/formatTime';
 import { NextLoading } from '/@/utils/loading';
 import {fopsApi} from "/@/api/fops";
@@ -171,7 +171,8 @@ const getFScheduleUrl= () =>{
     serverApi.clusterList({}).then(function (res){
       if (res.Status){
         //import.meta.env.VITE_API_Schedule_URL=res.Data[0].FScheduleAddr
-        Session.set("FScheduleAddr",res.Data[0].FScheduleAddr)
+        //Session.set("FScheduleAddr",res.Data[0].FScheduleAddr)
+        Local.set("FScheduleAddr",res.Data[0].FScheduleAddr)
       }
     })
 }

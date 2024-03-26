@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from 'axios';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Session } from '/@/utils/storage';
+import {Local, Session} from '/@/utils/storage';
 import qs from 'qs';
 
 // 配置新建一个 axios 实例
@@ -22,7 +22,7 @@ service.interceptors.request.use(
 		if (Session.get('token')) {
 			config.headers!['Authorization'] = `${Session.get('token')}`;
 		}
-		config.baseURL=Session.get("FScheduleAddr");
+		config.baseURL=Local.get("FScheduleAddr");
 		return config;
 	},
 	(error) => {

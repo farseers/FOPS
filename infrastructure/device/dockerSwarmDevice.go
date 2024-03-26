@@ -31,7 +31,7 @@ func (dockerSwarmDevice) SetReplicas(cluster cluster.DomainObject, appName strin
 	progress <- "---------------------------------------------------------"
 	progress <- "开始更新Docker Swarm的副本数量。"
 
-	var exitCode = exec.RunShell(fmt.Sprintf("docker service update --replicas %v %s", dockerReplicas, appName), progress, nil, "", false)
+	var exitCode = exec.RunShell(fmt.Sprintf("docker service update --with-registry-auth --replicas %v %s", dockerReplicas, appName), progress, nil, "", false)
 	if exitCode != 0 {
 		progress <- "Docker Swarm的副本数量更新失败。"
 		return false
@@ -44,7 +44,7 @@ func (dockerSwarmDevice) Restart(cluster cluster.DomainObject, appName string, p
 	progress <- "---------------------------------------------------------"
 	progress <- "开始重启Docker Swarm的容器。"
 
-	var exitCode = exec.RunShell(fmt.Sprintf("docker service update --force %s", appName), progress, nil, "", false)
+	var exitCode = exec.RunShell(fmt.Sprintf("docker service update --with-registry-auth --force %s", appName), progress, nil, "", false)
 	if exitCode != 0 {
 		progress <- "Docker Swarm的容器重启失败。"
 		return false

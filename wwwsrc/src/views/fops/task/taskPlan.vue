@@ -64,9 +64,7 @@ const state = reactive({
 
 // 初始化表格数据
 const getTableData = () => {
-	state.tableData.loading = true;
-
-  const params = new URLSearchParams();
+	const params = new URLSearchParams();
   params.append('top', '20');
 
   // 请求接口
@@ -105,6 +103,7 @@ let intervalTableDataId = null;
 
 // 页面加载时
 onMounted(() => {
+  state.tableData.loading = true; // 首次加载时，需要
 	getTableData();
   intervalTableDataId = setInterval(getTableData, 1000);
 });

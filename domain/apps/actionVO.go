@@ -27,7 +27,8 @@ type ActionVO struct {
 	RunsOn string // 基础镜像系统
 	Proxy  string // 代理
 	Env    map[string]string
-	Steps  []stepVO // 步骤
+	With   map[string]any // 全局参数
+	Steps  []stepVO       // 步骤
 }
 
 func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (ActionVO, error) {
@@ -50,11 +51,13 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 	proxy, _ := workflowsYml.Get("jobs.build.proxy")
 	sysImage, _ := workflowsYml.Get("jobs.build.runs-on")
 	env, _ := workflowsYml.GetSubNodes("jobs.build.env")
+	with, _ := workflowsYml.GetSubNodes("jobs.build.with")
 
 	act := ActionVO{
 		Name:   strings.TrimSpace(parse.ToString(name)),
 		Proxy:  strings.TrimSpace(parse.ToString(proxy)),
 		RunsOn: strings.TrimSpace(parse.ToString(sysImage)),
+		With:   with,
 		Env:    make(map[string]string),
 	}
 	for k, v := range env {

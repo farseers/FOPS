@@ -302,14 +302,13 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 
 	receiver.logQueue.progress <- "读取到工作流文件：" + receiver.WorkflowsAction.Name
 
+	// 将全局参数 覆盖到 系统参数
+	for k, v := range receiver.WorkflowsAction.With {
+		sysWith[k] = v
+	}
+
 	// 替换with内的变量
 	for _, step := range receiver.WorkflowsAction.Steps {
-		// 自定义参数高于系统参数
-		for k, v := range sysWith {
-			if _, exists := step.With[k]; !exists {
-				step.With[k] = v
-			}
-		}
 		// 替换参数变量
 		for k, v := range step.With {
 			switch v.(type) {
@@ -318,7 +317,14 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 					step.With[k] = strings.ReplaceAll(parse.ToString(step.With[k]), "{{"+sysKey+"}}", parse.ToString(sysVal))
 				}
 			}
+		}
 
+		// 复制系统参数到当前step参数。但不覆盖同名
+		for k, v := range sysWith {
+			// 系统参数 和 自定义参数 同时有的话，忽略
+			if _, exists := step.With[k]; !exists {
+				step.With[k] = v
+			}
 		}
 	}
 

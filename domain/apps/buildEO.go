@@ -94,6 +94,7 @@ func (receiver *BuildEO) StartBuild() {
 	// 把fops、fschedule版本写入到系统参数sysWith
 	sysWith["fops.ver"] = container.Resolve[Repository]().ToEntity("fops").DockerVer
 	sysWith["fschedule.ver"] = container.Resolve[Repository]().ToEntity("fschedule").DockerVer
+
 	// 生成Workflows文件
 	receiver.checkResult(receiver.GenerateWorkflowsContent(sysWith))
 
@@ -140,7 +141,7 @@ func (receiver *BuildEO) StartBuild() {
 				receiver.logQueue.progress <- "下载完成"
 			}
 
-			// 将step文件复制到容器
+			// 将action文件复制到容器
 			receiver.dockerDevice.Copy(dockerName, step.GetActionPath(), step.GetActionPath(), receiver.Env, make(chan string, 100), receiver.ctx)
 
 			gits := receiver.getGits()
@@ -307,14 +308,16 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 
 	// 将全局参数 覆盖到 系统参数
 	for k, v := range receiver.WorkflowsAction.With {
-		// 全局参数也可能用到系统参数变量
-		for sysKey, sysVal := range sysWith {
-			v = strings.ReplaceAll(parse.ToString(v), "{{"+sysKey+"}}", parse.ToString(sysVal))
+		switch v.(type) {
+		case string: // 字符串的类型，才需要替换
+			for sysKey, sysVal := range sysWith {
+				v = strings.ReplaceAll(parse.ToString(v), "{{"+sysKey+"}}", parse.ToString(sysVal))
+			}
 		}
 		sysWith[k] = v
 	}
 
-	// 替换with内的变量
+	// 系统参数替换到step.with变量
 	for _, step := range receiver.WorkflowsAction.Steps {
 		// 替换参数变量
 		for k, v := range step.With {
@@ -326,7 +329,7 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 			}
 		}
 
-		// 复制系统参数到当前step参数。但不覆盖同名
+		// 系统参数 合并到 step.with
 		for k, v := range sysWith {
 			// 系统参数 和 自定义参数 同时有的话，忽略
 			if _, exists := step.With[k]; !exists {

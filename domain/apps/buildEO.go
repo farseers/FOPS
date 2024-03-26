@@ -180,6 +180,7 @@ func (receiver *BuildEO) StartBuild() {
 			shellScript := collections.NewList[string]()
 			shellScript.Add("source /etc/profile")
 			//shellScript.Add("go env -w GO111MODULE=on && go env -w GOPROXY=https://goproxy.cn,direct")
+			shellScript.Add("mkdir -p " + DistRoot + receiver.appGit.GetRelativePath())
 			shellScript.Add("cd " + DistRoot + receiver.appGit.GetRelativePath())
 			shellScript.AddArray(step.Run)
 			shellScript.Add("")

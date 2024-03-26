@@ -304,6 +304,13 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 
 	// 替换with内的变量
 	for _, step := range receiver.WorkflowsAction.Steps {
+		// 自定义参数高于系统参数
+		for k, v := range sysWith {
+			if _, exists := step.With[k]; !exists {
+				step.With[k] = v
+			}
+		}
+		// 替换参数变量
 		for k, v := range step.With {
 			switch v.(type) {
 			case string: // 字符串的类型，才需要替换
@@ -312,13 +319,6 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 				}
 			}
 
-		}
-
-		// 自定义参数高于系统参数
-		for k, v := range sysWith {
-			if _, exists := step.With[k]; !exists {
-				step.With[k] = v
-			}
 		}
 	}
 

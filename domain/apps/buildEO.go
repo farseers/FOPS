@@ -201,72 +201,6 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.success()
 }
 
-// GenerateEnv 生成环境变量
-func (receiver *BuildEO) GenerateEnv(projectGitRoot string, dockerHub string, dockerImage string, gitName string) {
-	receiver.Env = EnvVO{
-		BuildId:     receiver.Id,
-		BuildNumber: receiver.BuildNumber,
-		AppName:     receiver.AppName,
-		DockerHub:   dockerHub,
-		DockerImage: dockerImage,
-		AppGitRoot:  projectGitRoot,
-		GitHub:      receiver.appGit.Hub,
-		GitName:     gitName,
-	}
-}
-
-func (receiver *BuildEO) catch() {
-	if err := recover(); err != nil {
-		receiver.cancel()
-		var msg string
-		switch e := err.(type) {
-		case string:
-			msg = e
-		case exception.RefuseException:
-			msg = e.Message
-		}
-		if msg != "exit" {
-			receiver.logQueue.progress <- msg
-		}
-		receiver.fail()
-	}
-	receiver.logQueue.Close()
-}
-
-// CheckResult 检查结构
-func (receiver *BuildEO) checkResult(result bool) {
-	status := container.Resolve[Repository]().GetStatus(receiver.Id)
-	if status == eumBuildStatus.Finish {
-		exception.ThrowRefuseException("手动取消，退出构建。")
-	}
-
-	if !result {
-		exception.ThrowRefuseException("exit")
-	}
-}
-
-// 设置任务失败
-func (receiver *BuildEO) fail() {
-	receiver.logQueue.progress <- "---------------------------------------------------------"
-	receiver.logQueue.progress <- "执行失败，退出构建。"
-
-	// 发布事件
-	event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: false}.PublishEvent()
-
-	container.Resolve[Repository]().SetCancel(receiver.Id)
-}
-
-// 设置任务成功
-func (receiver *BuildEO) success() {
-	receiver.logQueue.progress <- "---------------------------------------------------------"
-	receiver.logQueue.progress <- "构建完成。"
-
-	// 发布事件
-	event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: true}.PublishEvent()
-
-	container.Resolve[Repository]().SetSuccess(receiver.Id)
-}
-
 // GenerateWorkflowsContent 生成Workflows
 func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 	// 更新工作流文件到本地
@@ -341,6 +275,62 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 	return true
 }
 
+func (receiver *BuildEO) catch() {
+	if err := recover(); err != nil {
+		receiver.cancel()
+		var msg string
+		switch e := err.(type) {
+		case string:
+			msg = e
+		case exception.RefuseException:
+			msg = e.Message
+		}
+		if msg != "exit" {
+			receiver.logQueue.progress <- msg
+		}
+		receiver.fail()
+	}
+	receiver.logQueue.Close()
+}
+
+// CheckResult 检查结构
+func (receiver *BuildEO) checkResult(result bool) {
+	status := container.Resolve[Repository]().GetStatus(receiver.Id)
+	if status == eumBuildStatus.Finish {
+		exception.ThrowRefuseException("手动取消，退出构建。")
+	}
+
+	if !result {
+		exception.ThrowRefuseException("exit")
+	}
+}
+
+// 设置任务失败
+func (receiver *BuildEO) fail() {
+	receiver.logQueue.progress <- "---------------------------------------------------------"
+	receiver.logQueue.progress <- "执行失败，退出构建。"
+
+	// 发布事件
+	event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: false}.PublishEvent()
+
+	container.Resolve[Repository]().SetCancel(receiver.Id)
+}
+
+// 设置任务成功
+func (receiver *BuildEO) success() {
+	receiver.logQueue.progress <- "---------------------------------------------------------"
+	receiver.logQueue.progress <- "构建完成。"
+
+	// 包含dockerswarmUpdateVer，才要发布通知
+	if collections.NewList(receiver.WorkflowsAction.Steps...).Where(func(item stepVO) bool {
+		return item.ActionName == "dockerswarmUpdateVer"
+	}).Any() {
+		// 发布事件
+		event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: true}.PublishEvent()
+	}
+	container.Resolve[Repository]().SetSuccess(receiver.Id)
+}
+
 // 得到所有Git
 func (receiver *BuildEO) getGits() []GitEO {
 	var gits []GitEO
@@ -353,4 +343,18 @@ func (receiver *BuildEO) getGits() []GitEO {
 		gits = append(gits, frameworkGits.ToArray()...)
 	}
 	return gits
+}
+
+// GenerateEnv 生成环境变量
+func (receiver *BuildEO) GenerateEnv(projectGitRoot string, dockerHub string, dockerImage string, gitName string) {
+	receiver.Env = EnvVO{
+		BuildId:     receiver.Id,
+		BuildNumber: receiver.BuildNumber,
+		AppName:     receiver.AppName,
+		DockerHub:   dockerHub,
+		DockerImage: dockerImage,
+		AppGitRoot:  projectGitRoot,
+		GitHub:      receiver.appGit.Hub,
+		GitName:     gitName,
+	}
 }

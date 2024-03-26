@@ -326,9 +326,11 @@ func (receiver *BuildEO) success() {
 	if collections.NewList(receiver.WorkflowsAction.Steps...).Where(func(item stepVO) bool {
 		return item.ActionName == "dockerswarmUpdateVer"
 	}).Any() {
+		receiver.logQueue.progress <- "更新部署版本。"
 		// 发布事件
 		event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: true}.PublishEvent()
 	}
+
 	container.Resolve[Repository]().SetSuccess(receiver.Id)
 }
 

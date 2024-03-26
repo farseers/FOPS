@@ -24,6 +24,8 @@ jobs:
   build:
     runs-on: steden88/cicd:2.0      # 工作流运行的容器镜像
     proxy: "192.168.1.123:7890"     # 配置工作环境的代理
+    with:                           # 全局参数
+      a: "可用于steps内，如{{a}}"
     env:
       GO111MODULE: on               # 配置构建容器环境变量
       GOPROXY: https://goproxy.cn   # 配置构建容器环境变量
@@ -117,3 +119,32 @@ fops目前为大家提供了8个常用的action程序：[点这里查看](https:
 如果你需要拉取多个，则定义多次该action即可。
 
 gitPath用于你希望存储到本地相对路径下的哪个目录。用于后续打包时使用。
+
+## 3.5.3 dockerPush：上传镜像
+上传到集群定义的hub，则不用添加任何参数：
+```yaml
+      - name: 上传镜像
+        uses: dockerPush@v1
+```
+期望将镜像传到其它（或多次上传不同docker hub)时，可自定义要上传镜像仓库
+```yaml
+      - name: 上传镜像
+        uses: dockerPush@v1
+        with:
+          dockerImage: xxx:{{appName}}.{{buildNumber}}
+          dockerHub:
+          dockerUserName: username
+          dockerUserPwd: "token"
+```
+同时，如果希望远程更新线上的fops服务。可使用如下参数：
+```yaml
+      - name: 上传镜像
+        uses: dockerPush@v1
+        with:
+          dockerImage: xxx:{{appName}}.{{buildNumber}}
+          dockerHub:
+          dockerUserName: username
+          dockerUserPwd: "token"
+          fopsAddr: https://fops.xxx.com   # 通知要更新的远程fops地址
+          fopsClusterId: 1                 # 远程fops的集群ID，设置后就立即部署。否则仅更新仓库版本
+```

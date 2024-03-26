@@ -91,6 +91,9 @@ func (receiver *BuildEO) StartBuild() {
 		"clusterId":               receiver.ClusterId,
 	}
 
+	// 把fops、fschedule版本写入到系统参数sysWith
+	sysWith["fops.ver"] = container.Resolve[Repository]().ToEntity("fops").DockerVer
+	sysWith["fschedule.ver"] = container.Resolve[Repository]().ToEntity("fschedule").DockerVer
 	// 生成Workflows文件
 	receiver.checkResult(receiver.GenerateWorkflowsContent(sysWith))
 
@@ -304,6 +307,10 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 
 	// 将全局参数 覆盖到 系统参数
 	for k, v := range receiver.WorkflowsAction.With {
+		// 全局参数也可能用到系统参数变量
+		for sysKey, sysVal := range sysWith {
+			v = strings.ReplaceAll(parse.ToString(v), "{{"+sysKey+"}}", parse.ToString(sysVal))
+		}
 		sysWith[k] = v
 	}
 

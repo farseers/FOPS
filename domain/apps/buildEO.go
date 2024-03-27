@@ -171,7 +171,7 @@ func (receiver *BuildEO) StartBuild() {
 				event.GitCloneOrPulledEvent{GitId: receiver.appGit.Id}.PublishEvent()
 			case "dockerPush":
 				// 上传成功后，需要更新项目中的镜像版本属性
-				event.DockerPushedEvent{BuildNumber: receiver.Env.BuildNumber, AppName: receiver.Env.AppName, ImageName: receiver.Env.DockerImage}.PublishEvent()
+				event.DockerPushedEvent{BuildNumber: parse.ToInt(step.With["buildNumber"]), AppName: parse.ToString(step.With["appName"]), ImageName: parse.ToString(step.With["dockerImage"])}.PublishEvent()
 			}
 		}
 

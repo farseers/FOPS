@@ -69,7 +69,7 @@
         <el-table-column label="数据" show-overflow-tooltip>
           <template #default="scope">
             <span>{{friendlyJSONstringify(scope.row.Data)}}</span><br />
-            <el-tag v-if="scope.row.Remark!=''" type="danger"><br />{{scope.row.Remark}}</el-tag>
+            <el-tag v-if="scope.row.Remark!=''" type="danger">{{scope.row.Remark}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="客户端信息" width="180" show-overflow-tooltip>

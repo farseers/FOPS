@@ -66,7 +66,7 @@
             <span>进度: {{scope.row.Progress}}%</span>
           </template>
         </el-table-column>
-        <el-table-column label="数据">
+        <el-table-column label="数据" show-overflow-tooltip>
           <template #default="scope">
             <span>{{friendlyJSONstringify(scope.row.Data)}}</span><br />
             <span>{{scope.row.Remark}}</span>

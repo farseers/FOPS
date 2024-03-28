@@ -75,5 +75,5 @@ jobs:
       - name: 上传镜像
         uses: dockerPush@v1
 
-#      - name: 更新镜像
-#        uses: dockerswarmUpdateVer@v1
+      - name: 更新镜像
+        uses: dockerswarmUpdateVer@v1

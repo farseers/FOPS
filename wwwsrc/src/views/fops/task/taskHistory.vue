@@ -12,7 +12,8 @@
           <el-option label="调度成功" :value="2"></el-option>
           <el-option label="调度失败" :value="3"></el-option>
         </el-select>
-        <el-select v-model="state.executeStatus" placeholder="执行结果" class="ml10" @change="onExecuteStatusChange">
+
+        <el-select v-model="state.executeStatus" placeholder="执行结果" class="ml10" @change="onExecuteStatusChange"  style="margin-left: 5px;">
           <el-option label="全部" :value="-1"></el-option>
           <el-option label="未开始" :value="0"></el-option>
           <el-option label="执行中" :value="1"></el-option>
@@ -27,7 +28,7 @@
 				</el-button>
 			</div>
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%" class="mytable">
-        <el-table-column prop="Id" label="任务ID" width="250">
+        <el-table-column prop="Id" label="任务ID" width="180">
           <template #default="scope">
             <div style="float:left;;">
               <span title="任务ID">{{scope.row.Id}}</span><br>
@@ -35,7 +36,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="任务名称" >
+        <el-table-column label="任务名称" width="400">
           <template #default="scope">
             <div style="float:left;margin: 6px">
               <el-tag size="small" v-if="scope.row.ScheduleStatus==0" type="info">未调度</el-tag>
@@ -65,7 +66,7 @@
             <span>进度: {{scope.row.Progress}}%</span>
           </template>
         </el-table-column>
-        <el-table-column label="数据"  width="450">
+        <el-table-column label="数据">
           <template #default="scope">
             <span>{{friendlyJSONstringify(scope.row.Data)}}</span>
           </template>
@@ -77,7 +78,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="Remark" label="备注" width="180" show-overflow-tooltip />
+        <el-table-column prop="Remark" label="备注" width="120" show-overflow-tooltip style="color: darkred"/>
 			</el-table>
 			<el-pagination
 				@size-change="onHandleSizeChange"

@@ -5,16 +5,21 @@
           <div class="system-user-search mb15">
             <el-input size="default" v-model="state.clientName" placeholder="请输入应用名称" style="max-width: 180px"> </el-input>
             <el-input size="default" v-model="state.taskGroupName" placeholder="请输入任务组名称" style="max-width: 180px"> </el-input>
-            <el-select v-model="state.taskStatus" placeholder="请选择调度状态" class="ml10" @change="onStatusChange">
-              <el-option label="全部" :value="-1"></el-option>
-              <el-option style="color:#7a7a7a" label="未开始" :value="0"></el-option>
-              <el-option label="调度中" :value="1"></el-option>
-              <el-option label="调度失败" :value="2"></el-option>
-              <el-option label="执行中" :value="3"></el-option>
-              <el-option label="失败" :value="4"></el-option>
-              <el-option label="成功" :value="5"></el-option>
-            </el-select>
             <el-input size="default" v-model="state.taskId" placeholder="请输入任务ID" clearable style="max-width: 180px"  class="ml10"> </el-input>
+            <el-select v-model="state.scheduleStatus" placeholder="调度结果" class="ml10" @change="onScheduleStatusChange">
+              <el-option label="全部" :value="-1"></el-option>
+              <el-option label="未调度" :value="0"></el-option>
+              <el-option label="调度中" :value="1"></el-option>
+              <el-option label="调度成功" :value="2"></el-option>
+              <el-option label="调度失败" :value="3"></el-option>
+            </el-select>
+            <el-select v-model="state.executeStatus" placeholder="执行结果" class="ml10" @change="onExecuteStatusChange">
+              <el-option label="全部" :value="-1"></el-option>
+              <el-option label="未开始" :value="0"></el-option>
+              <el-option label="执行中" :value="1"></el-option>
+              <el-option label="成功" :value="2"></el-option>
+              <el-option label="失败" :value="3"></el-option>
+            </el-select>
             <el-button size="default" type="primary" class="ml10" @click="onQuery">
               <el-icon>
                 <ele-Search />
@@ -23,10 +28,23 @@
             </el-button>
           </div>
           <el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%;">
-            <el-table-column prop="Id" label="任务ID" width="180">
+            <el-table-column prop="Id" label="任务ID" width="250">
               <template #default="scope">
-                <span title="任务ID">{{scope.row.Id}}</span><br>
-                <span title="TraceId">{{scope.row.TraceId}}</span>
+                <div style="float:left;margin: 6px">
+                  <el-tag v-if="scope.row.ScheduleStatus==0" style="color:#7a7a7a">未调度</el-tag>
+                  <el-tag v-else-if="scope.row.ScheduleStatus==1">调度中</el-tag>
+                  <el-tag v-else-if="scope.row.ScheduleStatus==2" style="color:green">调度成功</el-tag>
+                  <el-tag v-else-if="scope.row.ScheduleStatus==3" style="color:red">调度失败</el-tag>
+
+                  <el-tag v-if="scope.row.ExecuteStatus==0" style="color:#7a7a7a">未执行</el-tag>
+                  <el-tag v-else-if="scope.row.ExecuteStatus==1">执行中</el-tag>
+                  <el-tag v-else-if="scope.row.ExecuteStatus==2" style="color:green">执行成功</el-tag>
+                  <el-tag v-else-if="scope.row.ExecuteStatus==3" style="color:red">执行失败</el-tag>
+                </div>
+                <div style="float:left;;">
+                  <span title="任务ID">{{scope.row.Id}}</span><br>
+                  <span title="TraceId">{{scope.row.TraceId}}</span>
+                </div>
               </template>
             </el-table-column>
             <el-table-column prop="StartAt" label="时间" width="210" show-overflow-tooltip>
@@ -44,21 +62,6 @@
             <el-table-column label="数据"  width="450">
               <template #default="scope">
                 <span>{{friendlyJSONstringify(scope.row.Data)}}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="客户端信息"  width="180" show-overflow-tooltip>
-              <template #default="scope">
-                <span>{{scope.row.Client.Name}} {{scope.row.Client.Ip}}:{{scope.row.Client.Port}}</span><br>
-              </template>
-            </el-table-column>
-            <el-table-column label="任务状态" width="120" show-overflow-tooltip>
-              <template #default="scope">
-                <el-tag v-if="scope.row.Status==0" style="color:#7a7a7a">未开始</el-tag>
-                <el-tag v-else-if="scope.row.Status==1">调度中</el-tag>
-                <el-tag v-else-if="scope.row.Status==2" style="color:red">调度失败</el-tag>
-                <el-tag v-else-if="scope.row.Status==3">执行中</el-tag>
-                <el-tag v-else-if="scope.row.Status==4">失败</el-tag>
-                <el-tag v-else-if="scope.row.Status==5" style="color:green">成功</el-tag>
               </template>
             </el-table-column>
           </el-table>
@@ -90,11 +93,11 @@ import {friendlyJSONstringify} from "@intlify/shared";
 const serverApi = fopsApi();
 
 // 定义变量内容
-const editDialogRef = ref();
 const state = reactive({
   keyWord:'',
   enable:-1,
-  taskStatus:-1,
+  scheduleStatus:-1,
+  executeStatus:-1,
   taskGroupName:'',
   clientName:'',
   taskId:'',
@@ -107,17 +110,12 @@ const state = reactive({
       pageSize: 10,
     },
   },
-    dialog: {
-      isShowDialog: false,
-      type: '',
-      title: '',
-      submitTxt: '',
-},
-});
-
-// 监听 state.taskStatus 的变化
-watch(() => state.taskStatus, (newValue, oldValue) => {
-  getTableData()
+  dialog: {
+    isShowDialog: false,
+    type: '',
+    title: '',
+    submitTxt: '',
+  },
 });
 
 // 初始化表格数据
@@ -125,9 +123,10 @@ const getTableData = () => {
   state.tableData.loading = true;
 
   const params = new URLSearchParams();
-  params.append('taskStatus', state.taskStatus.toString());
   params.append('clientName', state.clientName);
   params.append('taskGroupName', state.taskGroupName);
+  params.append('scheduleStatus', state.scheduleStatus.toString());
+  params.append('executeStatus', state.executeStatus.toString());
   params.append('taskId', state.taskId);
   params.append('pageSize', state.tableData.param.pageSize.toString());
   params.append('pageIndex', state.tableData.param.pageNum.toString());
@@ -150,9 +149,9 @@ const openDialog = (row: any) => {
   state.dialog.title = row.Name + " " +row.Caption;
   getTableData();
 };
-const openDialogApp = (st:any,appName:string) => {
+const openDialogApp = (executeStatus:any,appName:string) => {
   state.clientName = appName
-  state.taskStatus = st
+  state.executeStatus = executeStatus
   state.dialog.isShowDialog = true;
   getTableData();
 };
@@ -176,17 +175,15 @@ const onHandleCurrentChange = (val: number) => {
   getTableData();
 };
 
-const onStatusChange=(value:number)=>{
-  state.taskStatus=value
+const onScheduleStatusChange=(value:number)=>{
+  state.scheduleStatus = value
+  getTableData()
 }
 
-// 页面加载时
-onMounted(() => {
-  // 等待下一次 DOM 更新后再执行代码
-  // nextTick(() => {
-  //   getTableData();
-  // });
-});
+const onExecuteStatusChange=(value:number)=>{
+  state.executeStatus = value
+  getTableData()
+}
 
 // 暴露变量
 defineExpose({

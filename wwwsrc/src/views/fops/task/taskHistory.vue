@@ -2,8 +2,8 @@
 	<div class="system-user-container layout-padding">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="system-user-search mb15">
-
-				<el-input size="default" v-model="state.keyWord" placeholder="请输入任务组名称" clearable style="max-width: 180px"> </el-input>
+        <el-input size="default" v-model="state.clientName" placeholder="请输入应用名称" style="max-width: 180px"> </el-input>
+				<el-input size="default" v-model="state.taskGroupName" placeholder="请输入任务组名称" clearable style="max-width: 180px"> </el-input>
         <el-input size="default" v-model="state.taskId" placeholder="请输入任务ID" clearable style="max-width: 180px"  class="ml10"> </el-input>
         <el-select v-model="state.scheduleStatus" placeholder="调度结果" class="ml10" @change="onScheduleStatusChange">
           <el-option label="全部" :value="-1"></el-option>
@@ -107,11 +107,12 @@ const serverApi = fopsApi();
 
 // 定义变量内容
 const state = reactive({
-  keyWord:'',
   appName:'',
   enable:-1,
   scheduleStatus:-1,
   executeStatus:-1,
+  taskGroupName:'',
+  clientName:'',
   clientId:'',
   taskId:'',
 	tableData: {
@@ -145,7 +146,8 @@ const getAppData=()=>{
 const getTableData = () => {
 	state.tableData.loading = true;
   const params = new URLSearchParams();
-  params.append('taskGroupName', state.keyWord);
+  params.append('clientName', state.clientName);
+  params.append('taskGroupName', state.taskGroupName);
   params.append('scheduleStatus', state.scheduleStatus.toString());
   params.append('executeStatus', state.executeStatus.toString());
   params.append('taskId', state.taskId);

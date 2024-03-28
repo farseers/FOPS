@@ -4,7 +4,6 @@
         <el-card shadow="hover" class="layout-padding-auto">
           <div class="system-user-search mb15">
             <span>任务组：{{state.dialog.title}}</span>
-<!--            <el-input size="default" v-model="state.taskGroupId" placeholder="请输入任务组ID" style="max-width: 180px"> </el-input>-->
             <el-select v-model="state.logLevel" placeholder="请选择日志等级" clearable class="ml10">
               <el-option label="全部" :value="-1"></el-option>
               <el-option label="Trace" :value="0"></el-option>

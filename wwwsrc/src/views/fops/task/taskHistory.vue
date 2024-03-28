@@ -29,17 +29,6 @@
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%" class="mytable">
         <el-table-column prop="Id" label="任务ID" width="250">
           <template #default="scope">
-            <div style="float:left;margin: 6px">
-              <el-tag size="small" v-if="scope.row.ScheduleStatus==0" type="info">未调度</el-tag>
-              <el-tag size="small" v-else-if="scope.row.ScheduleStatus==1" type="success">调度中</el-tag>
-              <el-tag size="small" v-else-if="scope.row.ScheduleStatus==2" type="success">调度成功</el-tag>
-              <el-tag size="small" v-else-if="scope.row.ScheduleStatus==3" type="danger">调度失败</el-tag>
-
-              <el-tag size="small" v-if="scope.row.ExecuteStatus==0" type="info">未执行</el-tag>
-              <el-tag size="small" v-else-if="scope.row.ExecuteStatus==1" type="success">执行中</el-tag>
-              <el-tag size="small" v-else-if="scope.row.ExecuteStatus==2" type="success" style="color:green">成功</el-tag>
-              <el-tag size="small" v-else-if="scope.row.ExecuteStatus==3" type="danger" title="{{scope.row.Remark}}">失败</el-tag>
-            </div>
             <div style="float:left;;">
               <span title="任务ID">{{scope.row.Id}}</span><br>
               <span title="TraceId">{{scope.row.TraceId}}</span>
@@ -48,6 +37,18 @@
         </el-table-column>
         <el-table-column label="任务名称" >
           <template #default="scope">
+            <div style="float:left;margin: 6px">
+              <el-tag size="small" v-if="scope.row.ScheduleStatus==0" type="info">未调度</el-tag>
+              <el-tag size="small" v-else-if="scope.row.ScheduleStatus==1" type="success" style="color:green">调度中</el-tag>
+              <el-tag size="small" v-else-if="scope.row.ScheduleStatus==2" type="success" style="color:green">调度成功</el-tag>
+              <el-tag size="small" v-else-if="scope.row.ScheduleStatus==3" type="danger">调度失败</el-tag>
+
+              <el-tag size="small" v-if="scope.row.ExecuteStatus==0" type="info">未执行</el-tag>
+              <el-tag size="small" v-else-if="scope.row.ExecuteStatus==1" type="success" style="color:green">执行中</el-tag>
+              <el-tag size="small" v-else-if="scope.row.ExecuteStatus==2" type="success" style="color:green">成功</el-tag>
+              <el-tag size="small" v-else-if="scope.row.ExecuteStatus==3" type="danger">失败</el-tag>
+            </div>
+
             <span>{{scope.row.Caption}}</span><br>
             <span>{{scope.row.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Ver}}</span>）</span>
           </template>
@@ -76,7 +77,7 @@
             </div>
           </template>
         </el-table-column>
-
+        <el-table-column prop="Remark" label="备注" width="180" show-overflow-tooltip />
 			</el-table>
 			<el-pagination
 				@size-change="onHandleSizeChange"

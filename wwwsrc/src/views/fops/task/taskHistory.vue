@@ -38,7 +38,7 @@
               <el-tag size="small" v-if="scope.row.ExecuteStatus==0" type="info">未执行</el-tag>
               <el-tag size="small" v-else-if="scope.row.ExecuteStatus==1" type="success">执行中</el-tag>
               <el-tag size="small" v-else-if="scope.row.ExecuteStatus==2" type="success" style="color:green">成功</el-tag>
-              <el-tag size="small" v-else-if="scope.row.ExecuteStatus==3" type="danger">失败</el-tag>
+              <el-tag size="small" v-else-if="scope.row.ExecuteStatus==3" type="danger" title="{{scope.row.Remark}}">失败</el-tag>
             </div>
             <div style="float:left;;">
               <span title="任务ID">{{scope.row.Id}}</span><br>

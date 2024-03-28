@@ -68,7 +68,8 @@
         </el-table-column>
         <el-table-column label="数据">
           <template #default="scope">
-            <span>{{friendlyJSONstringify(scope.row.Data)}}</span>
+            <span>{{friendlyJSONstringify(scope.row.Data)}}</span><br />
+            <span>{{scope.row.Remark}}</span>
           </template>
         </el-table-column>
         <el-table-column label="客户端信息" width="180" show-overflow-tooltip>
@@ -78,7 +79,6 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="Remark" label="备注" width="120" show-overflow-tooltip style="color: darkred"/>
 			</el-table>
 			<el-pagination
 				@size-change="onHandleSizeChange"

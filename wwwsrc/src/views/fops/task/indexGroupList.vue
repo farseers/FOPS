@@ -14,15 +14,6 @@
           <el-option label="停止" :value="0"></el-option>
           <el-option label="启用" :value="1"></el-option>
         </el-select>
-        <el-select v-model="state.taskStatus" placeholder="请选择调度状态" class="ml10" @change="onStatusChange">
-          <el-option label="全部" :value="-1"></el-option>
-          <el-option label="未开始" :value="0"></el-option>
-          <el-option label="调度中" :value="1"></el-option>
-          <el-option label="调度失败" :value="2"></el-option>
-          <el-option label="执行中" :value="3"></el-option>
-          <el-option label="失败" :value="4"></el-option>
-          <el-option label="成功" :value="5"></el-option>
-        </el-select>
 				<el-button size="default" type="primary" class="ml10" @click="onQuery">
 					<el-icon>
 						<ele-Search />
@@ -39,12 +30,10 @@
 
             </div>
             <div style="float: left;padding-right: 10px;padding-top: 5px">
-              <el-tag size="small" v-if="scope.row.Task.Status==0" type="info">未开始</el-tag>
-              <el-tag size="small" v-if="scope.row.Task.Status==1" type="success">调度中</el-tag>
-              <el-tag size="small" style="color:red" v-if="scope.row.Task.Status==2" type="warning">调度失败</el-tag>
-              <el-tag size="small" v-if="scope.row.Task.Status==3" type="success">执行中</el-tag>
-              <el-tag size="small" v-if="scope.row.Task.Status==4" type="danger">失败</el-tag>
-              <el-tag size="small" style="color:green" v-if="scope.row.Task.Status==5" type="success">成功</el-tag>
+              <el-tag size="small" v-if="scope.row.Task.ExecuteStatus==0" type="info">未开始</el-tag>
+              <el-tag size="small" v-else-if="scope.row.Task.ExecuteStatus==1" type="success">执行中</el-tag>
+              <el-tag size="small" v-else-if="scope.row.Task.ExecuteStatus==2" type="success" style="color:green">成功</el-tag>
+              <el-tag size="small" v-else-if="scope.row.Task.ExecuteStatus==3" type="danger">失败</el-tag>
             </div>
             <div @click="onTaskList(scope.row)" style="float: left">
               <span>{{scope.row.Caption}}</span><br>
@@ -86,7 +75,6 @@
             </el-table-column>
 				<el-table-column label="操作" width="150">
 					<template #default="scope">
-						<el-button size="small" text type="primary" @click="onDetail(scope.row)">信息</el-button>
             <el-button size="small" text type="warning" @click="onEdit('edit',scope.row)">修改</el-button>
             <el-button size="small" text type="danger" @click="onLog(scope.row)">日志</el-button>
             <el-button size="small" text type="info" @click="onDel(scope.row)">删除</el-button>
@@ -108,7 +96,6 @@
 			</el-pagination>
 		</el-card>
     <editDialog ref="editDialogRef" @refresh="getTableData()" />
-    <detailDialog ref="detailDialogRef" @refresh="getTableData()" />
     <taskDialog ref="taskDialogRef" @refresh="getTableData()" />
     <logDialog ref="logDialogRef" @refresh="getTableData()" />
 	</div>
@@ -119,21 +106,18 @@ import {defineAsyncComponent, reactive, onMounted, ref, nextTick, watch} from 'v
 import { ElMessageBox, ElMessage } from 'element-plus';
 import {fopsApi} from "/@/api/fops";
 import {friendlyJSONstringify} from "@intlify/shared";
-import {time} from "echarts/core";
 
 // 引入 api 请求接口
 const serverApi = fopsApi();
 
 // 引入组件
 const editDialog = defineAsyncComponent(() => import('/src/views/fops/task/editGroupDialog.vue'));
-const detailDialog = defineAsyncComponent(() => import('/src/views/fops/task/detailGroupDialog.vue'));
 const taskDialog = defineAsyncComponent(() => import('/src/views/fops/task/taskDialog.vue'));
 const logDialog = defineAsyncComponent(() => import('/src/views/fops/task/logDialog.vue'));
 
 
 // 定义变量内容
 const editDialogRef = ref();
-const detailDialogRef = ref();
 const taskDialogRef = ref();
 const logDialogRef = ref();
 const state = reactive({
@@ -153,11 +137,6 @@ const state = reactive({
 	},
   NowTime:new Date(),
   appData:[],
-});
-
-// 监听 state.taskStatus 的变化
-watch(() => state.taskStatus, (newValue, oldValue) => {
-  getTableData()
 });
 
 // 监听 state.enable 的变化
@@ -206,9 +185,6 @@ const getTableData = () => {
 const compareTime=(nextAt:any)=>{
   var convertedTime = new Date(nextAt)
   return convertedTime.getTime() < new Date().getTime();
-}
-const onDetail=(row: any)=>{
-  detailDialogRef.value.openDialog(row);
 }
 const onQuery=()=>{
   getTableData();
@@ -289,9 +265,6 @@ const onHandleCurrentChange = (val: number) => {
 	state.tableData.param.pageNum = val;
 	getTableData();
 };
-const onStatusChange=(value:number)=>{
-  state.taskStatus=value
-}
 const onEnableChange=(value:number)=>{
   state.enable=value
 }

@@ -213,12 +213,6 @@ export function fopsApi() {
 				url: '/basicapi/log/listByClientName?'+param,
 				method: 'get',
 			});
-		},taskFinishedList: (param: object) => {
-			return requestFSGet({
-				url: '/basicapi/task/list',
-				method: 'get',
-				data:param,
-			});
 		},serverNodeList: (param: object) => {
 			return requestFS({
 				url: '/basicapi/server/list',

@@ -34,13 +34,6 @@
               </template>
             </el-table-column>
             <el-table-column prop="CreateAt" width="170" label="日志时间" show-overflow-tooltip></el-table-column>
-            <!--				<el-table-column label="操作" width="100">-->
-            <!--					<template #default="scope">-->
-            <!--						<el-button size="small" text type="primary" @click="onDetail(scope.row)">详情信息</el-button>-->
-            <!--            <el-button size="small" text type="primary" @click="onEdit('edit',scope.row)">修改</el-button>-->
-            <!--            <el-button size="small" text type="primary" @click="onDel(scope.row)">删除</el-button>-->
-            <!--					</template>-->
-            <!--				</el-table-column>-->
           </el-table>
           <el-pagination
               @size-change="onHandleSizeChange"
@@ -67,11 +60,8 @@ import {fopsApi} from "/@/api/fops";
 
 // 引入 api 请求接口
 const serverApi = fopsApi();
-// 引入组件
-
 
 // 定义变量内容
-const editDialogRef = ref();
 const state = reactive({
   keyWord:'',
   taskGroupName:'',
@@ -116,12 +106,7 @@ const getTableData = () => {
   })
 
 };
-const onDetail=(row: any)=>{
 
-}
-const onEdit=(type: string,row:any)=>{
-  editDialogRef.value.openDialog(type, row);
-}
 const openDialog = (row: any) => {
   state.taskGroupName=row.Name
   state.dialog.isShowDialog = true;

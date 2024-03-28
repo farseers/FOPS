@@ -10,11 +10,11 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="StartAt" label="计划时间" width="190" show-overflow-tooltip>
+        <el-table-column prop="Plan" label="计划时间" width="190" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small" v-if="scope.row.Plan.includes(`等待`)" type="info">{{scope.row.StartAt}}</el-tag>
-            <el-tag size="small" v-else-if="scope.row.Plan.includes(`超时`)" type="danger">{{scope.row.StartAt}}</el-tag>
-            <el-tag size="small" v-else-if="scope.row.Plan.includes(`已执行`)" type="success">{{scope.row.StartAt}}</el-tag>
+            <el-tag size="small" v-if="scope.row.Plan.includes(`等待`)" type="info">{{scope.row.Plan}}</el-tag>
+            <el-tag size="small" v-else-if="scope.row.Plan.includes(`超时`)" type="danger">{{scope.row.Plan}}</el-tag>
+            <el-tag size="small" v-else-if="scope.row.Plan.includes(`已执行`)" type="success">{{scope.row.Plan}}</el-tag>
             <br><span>{{scope.row.SchedulerAt}}</span>
           </template>
         </el-table-column>

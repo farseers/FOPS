@@ -2,7 +2,7 @@
 	<div class="system-user-container layout-padding">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="system-user-search mb15">
-        <el-input size="default" v-model="state.clientName" placeholder="请输入应用名称" style="max-width: 180px"> </el-input>
+        <el-input size="default" v-model="state.clientName" placeholder="请输入应用名称" clearable style="max-width: 180px"> </el-input>
 				<el-input size="default" v-model="state.taskGroupName" placeholder="请输入任务组名称" clearable style="max-width: 180px"> </el-input>
         <el-input size="default" v-model="state.taskId" placeholder="请输入任务ID" clearable style="max-width: 180px"  class="ml10"> </el-input>
         <el-select v-model="state.scheduleStatus" placeholder="调度结果" class="ml10" @change="onScheduleStatusChange">

@@ -36,7 +36,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="任务名称" width="400">
+        <el-table-column label="任务" width="400">
           <template #default="scope">
             <div style="float:left;margin: 6px">
               <el-tag size="small" v-if="scope.row.ExecuteStatus==0" type="info">未执行</el-tag>
@@ -55,10 +55,10 @@
             <span>完成: {{scope.row.RunAt}}</span>
           </template>
         </el-table-column>
-        <el-table-column label="运行情况"  width="130" show-overflow-tooltip>
+        <el-table-column label="运行情况"  width="120" show-overflow-tooltip>
           <template #default="scope">
-            <span>耗时: {{scope.row.RunSpeed}}</span><br>
-            <span>进度: {{scope.row.Progress}}%</span>
+            <span>耗时: <el-tag size="small" type="info">{{scope.row.RunSpeed}}</el-tag></span><br>
+            <span>进度: <el-tag size="small" type="info">{{scope.row.Progress}}%</el-tag></span>
           </template>
         </el-table-column>
         <el-table-column label="数据" show-overflow-tooltip>

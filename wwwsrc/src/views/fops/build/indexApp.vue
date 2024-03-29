@@ -661,9 +661,13 @@ onUnmounted(()=>{
 }
 .el-dialog__body{
   height: 100%!important;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
-
+.layout-container .layout-padding-auto {
+  flex: 1;
+  overflow: auto;
+}
 .el-card__header{
   background-color: #545c64;
 }

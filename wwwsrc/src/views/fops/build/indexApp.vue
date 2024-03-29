@@ -125,11 +125,11 @@
   <appAddDialog ref="appAddDialogRef" @refresh="getTableData()" @showOverlay="onShowOverlay()" @hideOverlay="onHideOverlay()" />
   <logDialog ref="logDialogRef"  />
   <taskDialog ref="taskDialogRef"  />
-  <el-dialog title="构建日志" v-model="state.logDialogIsShow" style="width: 80%;height: 83%;top:20px;margin-bottom: 50px">
+  <el-dialog title="构建日志" v-model="state.logDialogIsShow" style="width: 80%;top:20px;margin-bottom: 50px;">
     <el-checkbox v-model="state.autoLog">自动刷新日志</el-checkbox>
-    <el-card shadow="hover" class="layout-padding-auto" style="background-color:#393d49;height: 95%">
-      <div ref="scrollableDiv"  style="height:70%;overflow-y: scroll;">
-        <pre style="color: #fff;background-color:#393d49;height:900px" v-html="state.logContent"></pre>
+    <el-card class="layout-padding-auto" style="background-color:#393d49;">
+      <div ref="scrollableDiv" style="">
+        <pre style="color: #fff;background-color:#393d49;" v-html="state.logContent"></pre>
       </div>
     </el-card>
   </el-dialog>
@@ -661,6 +661,7 @@ onUnmounted(()=>{
 }
 .el-dialog__body{
   height: 100%!important;
+  overflow: hidden;
 }
 
 .el-card__header{

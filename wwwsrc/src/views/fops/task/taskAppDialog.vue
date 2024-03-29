@@ -43,7 +43,9 @@
                   <el-tag size="small" v-else-if="scope.row.ExecuteStatus==1" type="success" style="color:green">执行中</el-tag>
                   <el-tag size="small" v-else-if="scope.row.ExecuteStatus==2" type="success" style="color:green">成功</el-tag>
                   <el-tag size="small" v-else-if="scope.row.ExecuteStatus==3" type="danger">失败</el-tag>
-                  <span style="color:#4eb8ff">Ver:{{scope.row.Ver}}</span>
+
+                  <span>{{scope.row.Caption}}</span><br>
+                  <span>{{scope.row.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Ver}}</span>）</span>
                 </div>
               </template>
             </el-table-column>

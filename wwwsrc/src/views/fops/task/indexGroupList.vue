@@ -30,6 +30,11 @@
 
             </div>
             <div style="float: left;padding-right: 10px;padding-top: 5px">
+              <el-tag size="small" v-if="scope.row.Task.ScheduleStatus==0" type="info">未调度</el-tag>
+              <el-tag size="small" v-else-if="scope.row.Task.ScheduleStatus==1" type="success" style="color:green">调度中</el-tag>
+              <el-tag size="small" v-else-if="scope.row.Task.ScheduleStatus==2" type="success" style="color:green">调度成功</el-tag>
+              <el-tag size="small" v-else-if="scope.row.Task.ScheduleStatus==3" type="danger">调度失败</el-tag>
+              <br />
               <el-tag size="small" v-if="scope.row.Task.ExecuteStatus==0" type="info">未开始</el-tag>
               <el-tag size="small" v-else-if="scope.row.Task.ExecuteStatus==1" type="success">执行中</el-tag>
               <el-tag size="small" v-else-if="scope.row.Task.ExecuteStatus==2" type="success" style="color:green">成功</el-tag>

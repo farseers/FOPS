@@ -52,24 +52,24 @@
                 </div>
               <div class="appItem" style="margin-bottom: 10px">应用日志
                 <el-tooltip content="警告数量" slot="label">
-                  <el-tag @click="showFsLogLevel(3,v.AppName)" v-if="v.LogWaringCount > 0" type="warning" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogWaringCount }}</el-tag>
-                  <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogWaringCount }}</el-tag>
+                  <el-tag v-if="v.LogWaringCount > 0" @click="showFsLogLevel(3,v.AppName)" type="warning" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogWaringCount }}</el-tag>
+                  <el-tag v-else @click="showFsLogLevel(3,v.AppName)" type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogWaringCount }}</el-tag>
                 </el-tooltip>
                 /
                 <el-tooltip content="异常数量" slot="label">
-                  <el-tag  @click="showFsLogLevel(4,v.AppName)" v-if="v.LogErrorCount > 0" type="danger" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogErrorCount }}</el-tag>
-                  <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogErrorCount }}</el-tag>
+                  <el-tag v-if="v.LogErrorCount > 0" @click="showFsLogLevel(4,v.AppName)" type="danger" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogErrorCount }}</el-tag>
+                  <el-tag v-else @click="showFsLogLevel(4,v.AppName)" type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogErrorCount }}</el-tag>
                 </el-tooltip>
               </div>
               <div class="appItem" style="margin-bottom: 10px">调度任务
                 <el-tooltip content="成功数量" slot="label">
-                  <el-tag @click="showTask(2,v.AppName)" v-if="v.TaskSuccessCount > 0" type="success" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskSuccessCount }}</el-tag>
-                  <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskSuccessCount }}</el-tag>
+                  <el-tag v-if="v.TaskSuccessCount > 0" @click="showTask(2,v.AppName)" type="success" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskSuccessCount }}</el-tag>
+                  <el-tag v-else @click="showTask(2,v.AppName)" type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskSuccessCount }}</el-tag>
                 </el-tooltip>
                 /
                 <el-tooltip content="失败数量" slot="label">
-                  <el-tag  @click="showTask(3,v.AppName)" v-if="v.TaskFailCount > 0" type="danger" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskFailCount }}</el-tag>
-                  <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskFailCount }}</el-tag>
+                  <el-tag v-if="v.TaskFailCount > 0" @click="showTask(3,v.AppName)" type="danger" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskFailCount }}</el-tag>
+                  <el-tag v-else @click="showTask(3,v.AppName)" type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskFailCount }}</el-tag>
                 </el-tooltip>
               </div>
               <el-button v-if="v.AppGit > 0" size="small" @click="onSyncWorkflows(v)" type="info" style="margin-left: 5px;width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>

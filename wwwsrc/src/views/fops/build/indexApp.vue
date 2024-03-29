@@ -207,27 +207,26 @@ const getTableData = () => {
     if (res.Status){
       for (let i = 0; i < res.Data.length; i++) {
         let item = res.Data[i];
+        item.TaskFailCount=0
+        item.TaskSuccessCount=0
         let taskFailCount = state.statTask.filter(t => t.ExecuteStatus == 3 && t.ClientName == item.AppName);
-        let taskSuccessCount = state.statTask.filter(t => t.ExecuteStatus == 2 && t.ClientName == item.AppName);
+
         if(taskFailCount.length>0)
         {
           item.TaskFailCount=taskFailCount[0].Count
-        }else{
-          item.TaskFailCount=0
         }
+
+        let taskSuccessCount = state.statTask.filter(t => t.ExecuteStatus == 2 && t.ClientName == item.AppName);
         if(taskSuccessCount.length>0)
         {
           item.TaskSuccessCount=taskSuccessCount[0].Count
-        }else{
-          item.TaskSuccessCount = 0
         }
+
         data.push(item)
       }
       state.tableData.data =data;
       state.tableData.total = data.length;
       state.tableData.loading = false;
-
-
     }else{
       state.tableData.data=[]
       state.tableData.loading = false;

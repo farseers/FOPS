@@ -206,9 +206,9 @@ const getTableData = () => {
   serverApi.appsList({}).then(function (res){
     if (res.Status){
       for (let i = 0; i < res.Data.length; i++) {
-        var item=res.Data[i]
-        var taskFailCount=state.statTask.filter(t=>t.Status==4&&t.ClientName==item.AppName)
-        var taskSuccessCount=state.statTask.filter(t=>t.Status==5&&t.ClientName==item.AppName)
+        let item = res.Data[i];
+        let taskFailCount = state.statTask.filter(t => t.ExecuteStatus == 3 && t.ClientName == item.AppName);
+        let taskSuccessCount = state.statTask.filter(t => t.ExecuteStatus == 2 && t.ClientName == item.AppName);
         if(taskFailCount.length>0)
         {
           item.TaskFailCount=taskFailCount[0].Count
@@ -219,7 +219,7 @@ const getTableData = () => {
         {
           item.TaskSuccessCount=taskSuccessCount[0].Count
         }else{
-          item.TaskSuccessCount=0
+          item.TaskSuccessCount = 0
         }
         data.push(item)
       }

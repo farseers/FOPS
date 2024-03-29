@@ -55,7 +55,7 @@
                 <span>完成: {{scope.row.RunAt}}</span>
               </template>
             </el-table-column>
-            <el-table-column label="运行情况"  width="120" show-overflow-tooltip>
+            <el-table-column label="运行情况"  width="130" show-overflow-tooltip>
               <template #default="scope">
                 <span>耗时: <el-tag size="small" type="info">{{scope.row.RunSpeed}}</el-tag></span><br>
                 <span>进度: <el-tag size="small" type="info">{{scope.row.Progress}}%</el-tag></span>

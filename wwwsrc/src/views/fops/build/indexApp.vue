@@ -63,12 +63,12 @@
               </div>
               <div class="appItem" style="margin-bottom: 10px">调度任务
                 <el-tooltip content="成功数量" slot="label">
-                  <el-tag @click="showTask(5,v.AppName)" v-if="v.TaskSuccessCount > 0" type="success" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskSuccessCount }}</el-tag>
+                  <el-tag @click="showTask(2,v.AppName)" v-if="v.TaskSuccessCount > 0" type="success" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskSuccessCount }}</el-tag>
                   <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskSuccessCount }}</el-tag>
                 </el-tooltip>
                 /
                 <el-tooltip content="失败数量" slot="label">
-                  <el-tag  @click="showTask(4,v.AppName)" v-if="v.TaskFailCount > 0" type="danger" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskFailCount }}</el-tag>
+                  <el-tag  @click="showTask(3,v.AppName)" v-if="v.TaskFailCount > 0" type="danger" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskFailCount }}</el-tag>
                   <el-tag v-else type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskFailCount }}</el-tag>
                 </el-tooltip>
               </div>

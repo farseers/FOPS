@@ -73,7 +73,7 @@
                 </div>
               </template>
             </el-table-column>
-				<el-table-column label="操作" width="150">
+				<el-table-column label="操作" width="120">
 					<template #default="scope">
             <el-button size="small" text type="warning" @click="onEdit('edit',scope.row)">修改</el-button>
             <el-button size="small" text type="danger" @click="onLog(scope.row)">日志</el-button>

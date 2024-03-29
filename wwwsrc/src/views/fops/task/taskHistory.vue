@@ -39,11 +39,6 @@
         <el-table-column label="任务名称" width="400">
           <template #default="scope">
             <div style="float:left;margin: 6px">
-              <el-tag size="small" v-if="scope.row.ScheduleStatus==0" type="info">未调度</el-tag>
-              <el-tag size="small" v-else-if="scope.row.ScheduleStatus==1" type="success" style="color:green">调度中</el-tag>
-              <el-tag size="small" v-else-if="scope.row.ScheduleStatus==2" type="success" style="color:green">调度成功</el-tag>
-              <el-tag size="small" v-else-if="scope.row.ScheduleStatus==3" type="danger">调度失败</el-tag>
-              <br />
               <el-tag size="small" v-if="scope.row.ExecuteStatus==0" type="info">未执行</el-tag>
               <el-tag size="small" v-else-if="scope.row.ExecuteStatus==1" type="success" style="color:green">执行中</el-tag>
               <el-tag size="small" v-else-if="scope.row.ExecuteStatus==2" type="success" style="color:green">成功</el-tag>
@@ -60,7 +55,7 @@
             <span>完成: {{scope.row.RunAt}}</span>
           </template>
         </el-table-column>
-        <el-table-column label="运行情况"  width="110" show-overflow-tooltip>
+        <el-table-column label="运行情况"  width="130" show-overflow-tooltip>
           <template #default="scope">
             <span>耗时: {{scope.row.RunSpeed}}</span><br>
             <span>进度: {{scope.row.Progress}}%</span>
@@ -74,9 +69,12 @@
         </el-table-column>
         <el-table-column label="客户端信息" width="180" show-overflow-tooltip>
           <template #default="scope">
-            <div>
+              <el-tag size="small" v-if="scope.row.ScheduleStatus==0" type="info">未调度</el-tag>
+              <el-tag size="small" v-else-if="scope.row.ScheduleStatus==1" type="success" style="color:green">调度中</el-tag>
+              <el-tag size="small" v-else-if="scope.row.ScheduleStatus==2" type="success" style="color:green">调度成功</el-tag>
+              <el-tag size="small" v-else-if="scope.row.ScheduleStatus==3" type="danger">调度失败</el-tag>
+              <br />
               <el-tag size="small">{{scope.row.Client.Name}} {{scope.row.Client.Ip}}:{{scope.row.Client.Port}}</el-tag>
-            </div>
           </template>
         </el-table-column>
 			</el-table>

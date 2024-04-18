@@ -26,11 +26,6 @@ func Info(traceId string, linkTraceRepository linkTrace.Repository) response.Lin
 		return response.LinkTraceResponse{}
 	}
 
-	// 先计算总的耗时
-	//l.lstPO.Foreach(func(entryPO *linkTraceCom.TraceContext) {
-	//	l.TotalUse += float64(entryPO.UseTs.Microseconds())
-	//})
-
 	// 当A服务调用B服务时，前后均有可能包含数据库之类的操作。因此需要将lstPO重新组织。按实际的调用顺序重新排序
 	// 前端就可以简单的遍历lst显示到页面即可
 	entryPO := l.lstPO.Where(func(item linkTraceCom.TraceContext) bool {

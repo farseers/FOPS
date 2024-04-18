@@ -131,7 +131,7 @@ const state = reactive({
 		loading: false,
 		param: {
 			pageNum: 1,
-			pageSize: 10,
+      pageSize: 20,
 		},
 	},  appData:[],
 });
@@ -229,8 +229,8 @@ const onQuery=()=>{
 }
 // 页面加载时
 onMounted(() => {
-	getTableData();
   getAppData();
+  //getTableData();
 });
 </script>
 

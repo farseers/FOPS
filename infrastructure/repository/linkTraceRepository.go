@@ -14,6 +14,7 @@ import (
 	linkTraceCom "github.com/farseer-go/linkTrace"
 	"github.com/farseer-go/linkTrace/eumTraceType"
 	"github.com/farseer-go/mapper"
+	"strings"
 	"time"
 )
 
@@ -81,6 +82,19 @@ func (receiver *linkTraceRepository) ToWebApiList(traceId, appName, appIp, reque
 		return mapper.ToPageList[linkTraceCom.TraceContext](lstPO)
 	}
 	return collections.NewPageList[linkTraceCom.TraceContext](collections.NewList[linkTraceCom.TraceContext](), 0)
+}
+
+func (receiver *linkTraceRepository) ToWebApiVisitsList(appName, visitsNode string, startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext] {
+	if linkTrace.Config.Driver == "clickhouse" {
+		ts := context.CHContext.TraceContextView.Select("app_name,use_ts,trace_count,exception,web_domain,web_path").
+			Where("trace_type = ? and parent_app_name = ''", eumTraceType.WebApi).
+			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
+			WhereIf(visitsNode != "", "LOWER(web_path) like ?", "%"+strings.ToLower(visitsNode)+"%").
+			Where("start_ts >= ? and start_ts < ?", startAt.UnixMicro(), endAt.UnixMicro())
+		lstPO := ts.ToList()
+		return mapper.ToList[linkTraceCom.TraceContext](lstPO)
+	}
+	return collections.NewList[linkTraceCom.TraceContext]()
 }
 func (receiver *linkTraceRepository) ToTaskList(traceId, appName, appIp, taskName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {

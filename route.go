@@ -58,5 +58,6 @@ var route = []webapi.Route{
 	{"GET", "/linkTrace/slowMqList", linkTraceApp.SlowMqList, "", []context.IFilter{application.Jwt{}}, []string{"traceId", "appName", "appIp", "server", "exchange", "routingKey", "searchUseTs", "onlyViewException", "startMin", "pageSize", "pageIndex", ""}},
 	{"GET", "/linkTrace/slowRedisList", linkTraceApp.SlowRedisList, "", []context.IFilter{application.Jwt{}}, []string{"traceId", "appName", "appIp", "key", "field", "searchUseTs", "onlyViewException", "startMin", "pageSize", "pageIndex", ""}},
 	{"POST", "/linkTrace/upload", linkTraceApp.Upload, "", []context.IFilter{}, []string{"req", ""}},
+	{"GET", "/linkTrace/webapiVisits", linkTraceApp.WebapiVisits, "", []context.IFilter{}, []string{"request", ""}},
 	{"POST", "/user/passport/Login", login.Login, "", []context.IFilter{}, []string{"req", ""}},
 }

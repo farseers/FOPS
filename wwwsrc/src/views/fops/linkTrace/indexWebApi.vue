@@ -63,14 +63,14 @@
             <br />{{scope.row.WebPath}}
           </template>
         </el-table-column>
-        <el-table-column width="300px" label="异常" show-overflow-tooltip>
+        <el-table-column width="200px" label="异常" show-overflow-tooltip>
           <template #default="scope">
             <el-tag size="small" v-if="scope.row.Exception!=null" type="danger">{{scope.row.Exception.ExceptionCallFile}}:{{scope.row.Exception.ExceptionCallLine}} {{scope.row.Exception.ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.Exception!=null">
             <el-tag size="small" v-if="scope.row.Exception!=null" type="danger">{{scope.row.Exception.ExceptionMessage}}</el-tag>
             <el-tag size="small" v-else type="info">无</el-tag>
           </template>
         </el-table-column>
-        <el-table-column width="180px" prop="TraceCount" label="追踪数量" show-overflow-tooltip></el-table-column>
+        <el-table-column width="100px" prop="TraceCount" label="追踪数量" show-overflow-tooltip></el-table-column>
         <el-table-column width="180px" prop="CreateAt" label="请求时间" show-overflow-tooltip></el-table-column>
 				<el-table-column label="操作" width="100">
 					<template #default="scope">

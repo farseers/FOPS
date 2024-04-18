@@ -56,7 +56,7 @@
         </el-table-column>
         <el-table-column prop="Key" label="监控KEY" show-overflow-tooltip></el-table-column>
         <el-table-column prop="LeaseID" label="LeaseID" show-overflow-tooltip></el-table-column>
-        <el-table-column width="300px" label="异常" show-overflow-tooltip>
+        <el-table-column width="200px" label="异常" show-overflow-tooltip>
           <template #default="scope">
             <el-tag size="small" v-if="scope.row.Exception!=null" type="danger">{{scope.row.Exception.ExceptionCallFile}}:{{scope.row.Exception.ExceptionCallLine}} {{scope.row.Exception.ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.Exception!=null">
             <el-tag size="small" v-if="scope.row.Exception!=null" type="danger">{{scope.row.Exception.ExceptionMessage}}</el-tag>

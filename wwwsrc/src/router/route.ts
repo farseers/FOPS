@@ -278,6 +278,20 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					icon: 'iconfont icon-shuju',
 				},children: [
 					{
+						path: '/linkTrace/visitsWebApi',
+						name: 'visitsWebApi',
+						component: () => import('/@/views/fops/linkTrace/indexVisitsWebApi.vue'),
+						meta: {
+							title: 'message.router.visitsWebApi',
+							isLink: '',
+							isHide: false,
+							isKeepAlive: true,
+							isAffix: true,
+							isIframe: false,
+							roles: ['admin'],
+							icon: 'iconfont icon-zidingyibuju',
+						},
+					},{
 						path: '/linkTrace/webApi',
 						name: 'webApi',
 						component: () => import('/@/views/fops/linkTrace/indexWebApi.vue'),
@@ -286,7 +300,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 							isLink: '',
 							isHide: false,
 							isKeepAlive: true,
-							isAffix: true,
+							isAffix: false,
 							isIframe: false,
 							roles: ['admin'],
 							icon: 'iconfont icon-zidingyibuju',

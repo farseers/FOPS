@@ -203,7 +203,6 @@ const onQuery=()=>{
 }
 // 页面加载时
 onMounted(() => {
-	getTableData();
   getAppData();
 });
 </script>

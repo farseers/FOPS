@@ -35,12 +35,7 @@
           </el-col>
           <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
             <el-form-item label="下次执行时间">
-              <el-date-picker
-                  v-model="state.ruleForm.NextAt"
-                  type="datetime"
-                  placeholder="请选择下次执行时间"
-                  style="width: 100%"
-              ></el-date-picker>
+              <el-date-picker v-model="state.ruleForm.NextAt" type="datetime" placeholder="请选择下次执行时间" style="width: 100%"></el-date-picker>
             </el-form-item>
           </el-col>
           <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">

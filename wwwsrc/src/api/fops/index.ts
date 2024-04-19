@@ -225,6 +225,12 @@ export function fopsApi() {
 				method: 'get',
 				data:param,
 			});
+		},webapiVisitsApi:(param: string) => {
+			return requestGet({
+				url: '/linkTrace/webapiVisits?'+param,
+				method: 'get',
+				//data:param,
+			});
 		},linkTraceWebApi:(param: string) => {
 			return requestGet({
 				url: '/linkTrace/webApiList?'+param,

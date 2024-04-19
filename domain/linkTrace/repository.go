@@ -11,7 +11,7 @@ type Repository interface {
 	// ToEntity 获取列表
 	ToEntity(traceId string) collections.List[linkTraceCom.TraceContext]
 	ToWebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode int, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext]
-	ToWebApiVisitsList(appName, visitsNode string, startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext]
+	ToWebApiListByVisits(startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext]
 	ToTaskList(traceId, appName, appIp, taskName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext]
 	ToFScheduleList(traceId, appName, appIp, taskName string, taskGroupId, taskId, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext]
 	ToConsumerList(traceId, appName, appIp, server, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext]
@@ -24,4 +24,8 @@ type Repository interface {
 	ToSlowMqList(traceId, appName, appIp, server, exchange, routingKey string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailMq]
 	ToSlowRedisList(traceId, appName, appIp, key, field string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailRedis]
 	Save(lstEO collections.List[linkTraceCom.TraceContext]) error
+
+	SaveVisitsWebApi(lst collections.List[WebapiVisitsEO]) (int64, error)
+	GetLastVisitsWebApiAt() (time.Time, error)
+	ToWebApiVisitsList(appName, visitsNode string, startAt, endAt time.Time) collections.List[WebapiVisitsEO]
 }

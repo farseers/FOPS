@@ -128,11 +128,9 @@ const state = reactive({
 });
 // 监听 state.startMin 的变化
 watch(() => state.startMin, (newValue, oldValue) => {
-  console.log(`count 从 ${oldValue} 变为 ${newValue}`);
   getTableData()
 });
 watch(() => state.appName, (newValue, oldValue) => {
-  console.log(`count 从 ${oldValue} 变为 ${newValue}`);
   getTableData()
 });
 // 初始化表格数据
@@ -193,7 +191,6 @@ const onQuery=()=>{
 // 页面加载时
 onMounted(() => {
   getAppData();
-  //getTableData();
 });
 </script>
 

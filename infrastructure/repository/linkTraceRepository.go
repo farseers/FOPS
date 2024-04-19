@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"fops/domain/linkTrace"
@@ -14,12 +15,10 @@ import (
 	linkTraceCom "github.com/farseer-go/linkTrace"
 	"github.com/farseer-go/linkTrace/eumTraceType"
 	"github.com/farseer-go/mapper"
-	"strings"
 	"time"
 )
 
-type linkTraceRepository struct {
-}
+type linkTraceRepository struct{}
 
 func (receiver *linkTraceRepository) ToEntity(traceId string) collections.List[linkTraceCom.TraceContext] {
 	var lstPO collections.List[model.TraceContextPO]
@@ -84,12 +83,10 @@ func (receiver *linkTraceRepository) ToWebApiList(traceId, appName, appIp, reque
 	return collections.NewPageList[linkTraceCom.TraceContext](collections.NewList[linkTraceCom.TraceContext](), 0)
 }
 
-func (receiver *linkTraceRepository) ToWebApiVisitsList(appName, visitsNode string, startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext] {
+func (receiver *linkTraceRepository) ToWebApiListByVisits(startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceContextView.Select("app_name,use_ts,trace_count,exception,web_domain,web_path").
+		ts := context.CHContext.TraceContextView.Select("app_name,use_ts,trace_count,exception,web_domain,web_path,create_at").
 			Where("trace_type = ? and parent_app_name = ''", eumTraceType.WebApi).
-			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
-			WhereIf(visitsNode != "", "LOWER(web_path) like ?", "%"+strings.ToLower(visitsNode)+"%").
 			Where("start_ts >= ? and start_ts < ?", startAt.UnixMicro(), endAt.UnixMicro())
 		lstPO := ts.ToList()
 		return mapper.ToList[linkTraceCom.TraceContext](lstPO)
@@ -420,4 +417,38 @@ func (receiver *linkTraceRepository) saveDetail(lst collections.List[model.Trace
 		}
 	}
 	return nil
+}
+
+func (receiver *linkTraceRepository) SaveVisitsWebApi(lst collections.List[linkTrace.WebapiVisitsEO]) (int64, error) {
+	lstPO := mapper.ToList[model.WebapiVisitsPO](lst)
+	if linkTrace.Config.Driver == "clickhouse" {
+		return context.CHContext.WebapiVisits.InsertList(lstPO, 10000)
+	}
+
+	return 0, fmt.Errorf("不支持的链路追踪驱动：%s", linkTrace.Config.Driver)
+}
+
+func (receiver *linkTraceRepository) GetLastVisitsWebApiAt() (time.Time, error) {
+	if linkTrace.Config.Driver == "clickhouse" {
+		return context.CHContext.WebapiVisits.Desc("create_at").GetTime("create_at"), nil
+	}
+
+	return time.Time{}, fmt.Errorf("不支持的链路追踪驱动：%s", linkTrace.Config.Driver)
+}
+
+func (receiver *linkTraceRepository) ToWebApiVisitsList(appName, visitsNode string, startAt, endAt time.Time) collections.List[linkTrace.WebapiVisitsEO] {
+	if linkTrace.Config.Driver == "clickhouse" {
+		sql := bytes.Buffer{}
+		sql.WriteString("select visits_node,min(min_ms) as min_ms,max(max_ms) as max_ms,avg(avg_ms) as avg_ms,avg(line95_ms) as line95_ms,avg(line99_ms) as line99_ms,sum(error_count) as error_count,sum(total_count) as total_count ,avg(qps) as qps from visits_webapi ")
+		sql.WriteString(fmt.Sprintf("where visits_node_prefix = '%s' and create_at >= '%s' and create_at < '%s' ", visitsNode, startAt.Format(time.DateTime), endAt.Format(time.DateTime)))
+		if appName != "" {
+			sql.WriteString(fmt.Sprintf("and app_name = '%s' ", appName))
+		}
+		sql.WriteString("group by visits_node ")
+		sql.WriteString("order by visits_node asc")
+
+		lstPO := context.CHContext.WebapiVisits.ExecuteSqlToList(sql.String())
+		return mapper.ToList[linkTrace.WebapiVisitsEO](lstPO)
+	}
+	return collections.NewList[linkTrace.WebapiVisitsEO]()
 }

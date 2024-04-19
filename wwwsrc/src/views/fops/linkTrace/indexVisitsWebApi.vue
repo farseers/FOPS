@@ -33,6 +33,7 @@
             <el-tag size="small" v-if="scope.row.MinMs >= 1000" type="danger" style="font-size: 14px;">{{scope.row.MinMs.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.MinMs >= 500" type="warning" style="font-size: 14px;">{{scope.row.MinMs.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.MinMs >= 100" style="font-size: 14px;">{{scope.row.MinMs.toFixed(1)}}</el-tag>
+            <el-tag size="small" v-else-if="scope.row.MinMs >= 50" type="success" style="font-size: 14px;">{{scope.row.MinMs.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else type="info" style="font-size: 14px;">{{scope.row.MinMs.toFixed(1)}}</el-tag>
             ms
           </template>
@@ -42,6 +43,7 @@
             <el-tag size="small" v-if="scope.row.MaxMs >= 1000" type="danger" style="font-size: 14px;">{{scope.row.MaxMs.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.MaxMs >= 500" type="warning" style="font-size: 14px;">{{scope.row.MaxMs.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.MaxMs >= 100" style="font-size: 14px;">{{scope.row.MaxMs.toFixed(1)}}</el-tag>
+            <el-tag size="small" v-else-if="scope.row.MaxMs >= 50" type="success" style="font-size: 14px;">{{scope.row.MaxMs.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else type="info" style="font-size: 14px;">{{scope.row.MaxMs.toFixed(1)}}</el-tag>
             ms
           </template>
@@ -51,6 +53,7 @@
             <el-tag size="small" v-if="scope.row.AvgMs >= 1000" type="danger" style="font-size: 14px;">{{scope.row.AvgMs.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.AvgMs >= 500" type="warning" style="font-size: 14px;">{{scope.row.AvgMs.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.AvgMs >= 100" style="font-size: 14px;">{{scope.row.AvgMs.toFixed(1)}}</el-tag>
+            <el-tag size="small" v-else-if="scope.row.AvgMs >= 50" type="success" style="font-size: 14px;">{{scope.row.AvgMs.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else type="info" style="font-size: 14px;">{{scope.row.AvgMs.toFixed(1)}}</el-tag>
             ms
           </template>
@@ -60,7 +63,8 @@
             <el-tag size="small" v-if="scope.row.Line95Ms >= 1000" type="danger" style="font-size: 14px;">{{scope.row.Line95Ms.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.Line95Ms >= 500" type="warning" style="font-size: 14px;">{{scope.row.Line95Ms.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.Line95Ms >= 100" style="font-size: 14px;">{{scope.row.Line95Ms.toFixed(1)}}</el-tag>
-            <el-tag size="small" v-else type="success" style="font-size: 14px;">{{scope.row.Line95Ms.toFixed(1)}}</el-tag>
+            <el-tag size="small" v-else-if="scope.row.Line95Ms >= 50" type="success" style="font-size: 14px;">{{scope.row.Line95Ms.toFixed(1)}}</el-tag>
+            <el-tag size="small" v-else type="info" style="font-size: 14px;">{{scope.row.Line95Ms.toFixed(1)}}</el-tag>
             ms
           </template>
         </el-table-column>
@@ -69,6 +73,7 @@
             <el-tag size="small" v-if="scope.row.Line99Ms >= 1000" type="danger" style="font-size: 14px;">{{scope.row.Line99Ms.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.Line99Ms >= 500" type="warning" style="font-size: 14px;">{{scope.row.Line99Ms.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.Line99Ms >= 100" style="font-size: 14px;">{{scope.row.Line99Ms.toFixed(1)}}</el-tag>
+            <el-tag size="small" v-else-if="scope.row.Line99Ms >= 50" type="success" style="font-size: 14px;">{{scope.row.Line99Ms.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else type="info" style="font-size: 14px;">{{scope.row.Line99Ms.toFixed(1)}}</el-tag>
             ms
           </template>

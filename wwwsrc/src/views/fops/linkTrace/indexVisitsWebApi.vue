@@ -14,10 +14,11 @@
         <label class="ml10">结束时间</label>
         <el-date-picker class="ml5" size="default" v-model="state.endAt" type="datetime" :shortcuts="shortcuts" placeholder="结束时间" style="width: 200px"></el-date-picker>
         <el-button size="default" type="primary" class="ml5" @click="onQuery">
-          <el-icon>
-            <ele-Search />
-          </el-icon>
+          <el-icon><ele-Search /></el-icon>
           查询
+        </el-button>
+        <el-button size="default" type="info" class="ml5" @click="onBack">
+          回退
         </el-button>
       </div>
       <el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
@@ -200,6 +201,20 @@ const getAppData=()=>{
 const onVisitsNode=(row: any)=>{
   state.visitsNode = row
 }
+const onBack=()=>{
+  if (state.visitsNode == '') {
+    return
+  }
+  if (state.visitsNode.endsWith('/')) {
+    state.visitsNode = state.visitsNode.substring(0,state.visitsNode.length - 1)
+  }
+  state.visitsNode = state.visitsNode.substring(0, state.visitsNode.lastIndexOf('/')+1)
+
+  if (state.visitsNode.endsWith("//")) {
+    state.visitsNode = ""
+  }
+}
+
 const onQuery=()=>{
   getTableData();
 }
@@ -207,6 +222,12 @@ const onQuery=()=>{
 onMounted(() => {
   getAppData();
   getTableData();
+
+  // 跳转到登录界面之后，不让其回退。就直接添加下面这段代码即可实现
+  window.addEventListener("popstate", function () {
+    onBack()
+    history.pushState(null, null, document.URL);
+  });
 });
 
 const formatDate =(date, fmt) => {

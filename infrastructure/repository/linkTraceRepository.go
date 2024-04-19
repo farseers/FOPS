@@ -439,7 +439,7 @@ func (receiver *linkTraceRepository) GetLastVisitsWebApiAt() (time.Time, error) 
 func (receiver *linkTraceRepository) ToWebApiVisitsList(appName, visitsNode string, startAt, endAt time.Time) collections.List[linkTrace.WebapiVisitsEO] {
 	if linkTrace.Config.Driver == "clickhouse" {
 		sql := bytes.Buffer{}
-		sql.WriteString("select visits_node,min(min_ms) as min_ms,max(max_ms) as max_ms,avg(avg_ms) as avg_ms,avg(line95_ms) as line95_ms,avg(line99_ms) as line99_ms,sum(error_count) as error_count,sum(total_count) as total_count ,avg(qps) as qps from visits_webapi ")
+		sql.WriteString("select visits_node,max(min_ms) as min_ms,max(max_ms) as max_ms,max(avg_ms) as avg_ms,max(line95_ms) as line95_ms,max(line99_ms) as line99_ms,sum(error_count) as error_count,sum(total_count) as total_count ,max(qps) as qps from visits_webapi ")
 		sql.WriteString(fmt.Sprintf("where visits_node_prefix = '%s' and create_at >= '%s' and create_at < '%s' ", visitsNode, startAt.Format(time.DateTime), endAt.Format(time.DateTime)))
 		if appName != "" {
 			sql.WriteString(fmt.Sprintf("and app_name = '%s' ", appName))

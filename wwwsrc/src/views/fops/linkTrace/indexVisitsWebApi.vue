@@ -28,7 +28,7 @@
             <el-tag size="small" type="info" v-else  style="font-size: 14px;">{{scope.row.VisitsNode}}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column width="140px" label="min" show-overflow-tooltip style="text-align: right">
+        <el-table-column width="140px" label="min" show-overflow-tooltip align="right">
           <template #default="scope">
             <el-tag size="small" v-if="scope.row.MinMs >= 1000" type="danger" style="font-size: 14px;">{{scope.row.MinMs.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.MinMs >= 500" type="warning" style="font-size: 14px;">{{scope.row.MinMs.toFixed(1)}}</el-tag>
@@ -37,7 +37,7 @@
             ms
           </template>
         </el-table-column>
-        <el-table-column width="140px" label="max" show-overflow-tooltip>
+        <el-table-column width="140px" label="max" show-overflow-tooltip align="right">
           <template #default="scope">
             <el-tag size="small" v-if="scope.row.MaxMs >= 1000" type="danger" style="font-size: 14px;">{{scope.row.MaxMs.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.MaxMs >= 500" type="warning" style="font-size: 14px;">{{scope.row.MaxMs.toFixed(1)}}</el-tag>
@@ -46,7 +46,7 @@
             ms
           </template>
         </el-table-column>
-        <el-table-column width="140px" label="avg" show-overflow-tooltip>
+        <el-table-column width="140px" label="avg" show-overflow-tooltip align="right">
           <template #default="scope">
             <el-tag size="small" v-if="scope.row.AvgMs >= 1000" type="danger" style="font-size: 14px;">{{scope.row.AvgMs.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.AvgMs >= 500" type="warning" style="font-size: 14px;">{{scope.row.AvgMs.toFixed(1)}}</el-tag>
@@ -55,7 +55,7 @@
             ms
           </template>
         </el-table-column>
-        <el-table-column width="140px" label="95line" show-overflow-tooltip>
+        <el-table-column width="140px" label="95line" show-overflow-tooltip align="right">
           <template #default="scope">
             <el-tag size="small" v-if="scope.row.Line95Ms >= 1000" type="danger" style="font-size: 14px;">{{scope.row.Line95Ms.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.Line95Ms >= 500" type="warning" style="font-size: 14px;">{{scope.row.Line95Ms.toFixed(1)}}</el-tag>
@@ -64,7 +64,7 @@
             ms
           </template>
         </el-table-column>
-        <el-table-column width="140px" label="99line" show-overflow-tooltip>
+        <el-table-column width="140px" label="99line" show-overflow-tooltip align="right">
           <template #default="scope">
             <el-tag size="small" v-if="scope.row.Line99Ms >= 1000" type="danger" style="font-size: 14px;">{{scope.row.Line99Ms.toFixed(1)}}</el-tag>
             <el-tag size="small" v-else-if="scope.row.Line99Ms >= 500" type="warning" style="font-size: 14px;">{{scope.row.Line99Ms.toFixed(1)}}</el-tag>
@@ -73,14 +73,14 @@
             ms
           </template>
         </el-table-column>
-        <el-table-column width="140px" label="错误量" show-overflow-tooltip>
+        <el-table-column width="140px" label="错误量" show-overflow-tooltip align="right">
           <template #default="scope">
             <el-tag size="small" v-if="scope.row.ErrorCount >= 1" type="danger" style="font-size: 14px;">{{scope.row.ErrorCount}}</el-tag>
             <el-tag size="small" v-else type="info" style="font-size: 14px;">{{scope.row.ErrorCount}}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column width="100px" prop="TotalCount" label="访问次数" show-overflow-tooltip style="font-size: 14px;"></el-table-column>
-        <el-table-column width="140px" label="QPS" show-overflow-tooltip style="font-size: 14px;">
+        <el-table-column width="100px" prop="TotalCount" label="访问次数" show-overflow-tooltip style="font-size: 14px;" align="right"></el-table-column>
+        <el-table-column width="140px" label="QPS" show-overflow-tooltip style="font-size: 14px;" align="right">
           <template #default="scope">
             {{scope.row.QPS.toFixed(1)}} /s
           </template>
@@ -224,6 +224,7 @@ onMounted(() => {
   getTableData();
 
   // 跳转到登录界面之后，不让其回退。就直接添加下面这段代码即可实现
+  history.pushState(null, null, document.URL);
   window.addEventListener("popstate", function () {
     onBack()
     history.pushState(null, null, document.URL);

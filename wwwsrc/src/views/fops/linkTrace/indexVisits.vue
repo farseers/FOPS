@@ -21,7 +21,7 @@
           回退
         </el-button>
       </div>
-      <el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
+      <el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%" :cell-style="{padding:'2px 0'}">
         <el-table-column label="访问节点" show-overflow-tooltip>
           <template #default="scope">
             <el-tag size="small" v-if="scope.row.VisitsNode.endsWith('/')" @click="onVisitsNode(scope.row.VisitsNode)" style="font-size: 14px;cursor:pointer">{{scope.row.VisitsNode}}</el-tag>
@@ -272,5 +272,11 @@ const formatDate =(date, fmt) => {
       flex: 1;
     }
   }
+}
+.cell {
+  padding: 0 0;
+}
+.el-table--large .el-table__cell {
+  padding: 0 0;
 }
 </style>

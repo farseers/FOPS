@@ -33,11 +33,14 @@ func StatVisitsWebapiJob(*tasks.TaskContext) {
 	}
 
 	// 截止到当前时间的0秒
-	endAt := time.Now()
-	endAt = time.Date(endAt.Year(), endAt.Month(), endAt.Day(), endAt.Hour(), endAt.Minute(), 0, 0, time.Local)
+	endAt := lastVisitsWebApiAt.Add(time.Hour)
 
 	// 获取webapi链路集合
 	lst := repository.ToTraceListByVisits(lastVisitsWebApiAt, endAt)
+	//lst = lst.OrderBy(func(item linkTraceCom.TraceContext) any {
+	//	return item.UseTs.Milliseconds()
+	//}).ToList()
+
 	// 按链路类型分组
 	var traceTypeGroupBy map[int][]linkTraceCom.TraceContext
 	lst.GroupBy(&traceTypeGroupBy, func(item linkTraceCom.TraceContext) any {
@@ -130,17 +133,6 @@ func StatVisitsWebapiJob(*tasks.TaskContext) {
 				visitsNodePrefix := v[0].(string)
 				items := v[1].(collections.List[linkTraceCom.TraceContext])
 
-				switch eumTraceType.Enum(traceType) {
-				case eumTraceType.WebApi:
-					items = lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
-						return strings.HasPrefix(item.WebPath, visitsNode)
-					}).ToList()
-				}
-
-				items.OrderBy(func(item linkTraceCom.TraceContext) any {
-					return item.UseTs.Milliseconds()
-				}).ToList()
-
 				totalCount := items.Count()
 				index95 := parse.ToInt(float64(totalCount) * 0.95)
 				index99 := parse.ToInt(float64(totalCount) * 0.99)
@@ -170,7 +162,9 @@ func StatVisitsWebapiJob(*tasks.TaskContext) {
 	_, err := repository.SaveVisitsWebApi(lstEO)
 	flog.ErrorIfExists(err)
 	if err == nil {
-		lastVisitsWebApiAt = endAt
+		lastVisitsWebApiAt = lstEO.OrderByDescending(func(item linkTrace.VisitsEO) any {
+			return item.CreateAt.UnixMilli()
+		}).First().CreateAt
 	}
 }
 

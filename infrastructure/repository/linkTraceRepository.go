@@ -85,9 +85,9 @@ func (receiver *linkTraceRepository) ToWebApiList(traceId, appName, appIp, reque
 
 func (receiver *linkTraceRepository) ToTraceListByVisits(startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceContextView.Select("app_name,use_ts,trace_count,exception,web_domain,web_path,create_at").
+		ts := context.CHContext.TraceContextView.
 			Where("parent_app_name = '' and start_ts >= ? and start_ts < ?", startAt.UnixMicro(), endAt.UnixMicro())
-		lstPO := ts.ToList()
+		lstPO := ts.Asc("use_ts").ToList()
 		return mapper.ToList[linkTraceCom.TraceContext](lstPO)
 	}
 	return collections.NewList[linkTraceCom.TraceContext]()

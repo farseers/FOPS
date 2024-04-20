@@ -419,10 +419,10 @@ func (receiver *linkTraceRepository) saveDetail(lst collections.List[model.Trace
 	return nil
 }
 
-func (receiver *linkTraceRepository) SaveVisitsWebApi(lst collections.List[linkTrace.WebapiVisitsEO]) (int64, error) {
-	lstPO := mapper.ToList[model.WebapiVisitsPO](lst)
+func (receiver *linkTraceRepository) SaveVisitsWebApi(lst collections.List[linkTrace.VisitsEO]) (int64, error) {
+	lstPO := mapper.ToList[model.VisitsPO](lst)
 	if linkTrace.Config.Driver == "clickhouse" {
-		return context.CHContext.WebapiVisits.InsertList(lstPO, 10000)
+		return context.CHContext.Visits.InsertList(lstPO, 10000)
 	}
 
 	return 0, fmt.Errorf("不支持的链路追踪驱动：%s", linkTrace.Config.Driver)
@@ -430,13 +430,13 @@ func (receiver *linkTraceRepository) SaveVisitsWebApi(lst collections.List[linkT
 
 func (receiver *linkTraceRepository) GetLastVisitsWebApiAt() (time.Time, error) {
 	if linkTrace.Config.Driver == "clickhouse" {
-		return context.CHContext.WebapiVisits.Desc("create_at").GetTime("create_at"), nil
+		return context.CHContext.Visits.Desc("create_at").GetTime("create_at"), nil
 	}
 
 	return time.Time{}, fmt.Errorf("不支持的链路追踪驱动：%s", linkTrace.Config.Driver)
 }
 
-func (receiver *linkTraceRepository) ToWebApiVisitsList(appName, visitsNode string, startAt, endAt time.Time) collections.List[linkTrace.WebapiVisitsEO] {
+func (receiver *linkTraceRepository) ToVisitsList(appName, visitsNode string, startAt, endAt time.Time) collections.List[linkTrace.VisitsEO] {
 	if linkTrace.Config.Driver == "clickhouse" {
 		sql := bytes.Buffer{}
 		sql.WriteString("select visits_node,min(min_ms) as min_ms,max(max_ms) as max_ms,avg(avg_ms) as avg_ms,avg(line95_ms) as line95_ms,avg(line99_ms) as line99_ms,sum(error_count) as error_count,sum(total_count) as total_count ,max(qps) as qps from visits_webapi ")
@@ -447,8 +447,8 @@ func (receiver *linkTraceRepository) ToWebApiVisitsList(appName, visitsNode stri
 		sql.WriteString("group by visits_node ")
 		sql.WriteString("order by visits_node asc")
 
-		lstPO := context.CHContext.WebapiVisits.ExecuteSqlToList(sql.String())
-		return mapper.ToList[linkTrace.WebapiVisitsEO](lstPO)
+		lstPO := context.CHContext.Visits.ExecuteSqlToList(sql.String())
+		return mapper.ToList[linkTrace.VisitsEO](lstPO)
 	}
-	return collections.NewList[linkTrace.WebapiVisitsEO]()
+	return collections.NewList[linkTrace.VisitsEO]()
 }

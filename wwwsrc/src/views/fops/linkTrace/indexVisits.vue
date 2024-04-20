@@ -182,7 +182,7 @@ const getTableData = () => {
   }
   const params = new URLSearchParams(data).toString();
   // 请求接口
-  serverApi.webapiVisitsApi(params).then(function (res) {
+  serverApi.visitsApi(params).then(function (res) {
     if (res.Status){
       state.tableData.data = res.Data;
       state.tableData.loading = false;

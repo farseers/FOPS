@@ -22,7 +22,7 @@ type chContext struct {
 	TraceDetailMq       data.TableSet[model.TraceDetailMqPO]       `data:"name=trace_detail_mq;migrate=ReplacingMergeTree() ORDER BY (app_name,parent_app_name,app_ip,app_id,trace_id,server,exchange,routing_key,start_ts) PARTITION BY toYYYYMM(create_at)"`
 	TraceDetailRedis    data.TableSet[model.TraceDetailRedisPO]    `data:"name=trace_detail_redis;migrate=ReplacingMergeTree() ORDER BY (app_name,parent_app_name,app_ip,app_id,trace_id,key,field,start_ts) PARTITION BY toYYYYMM(create_at)"`
 	LogData             data.TableSet[model.LogDataPO]             `data:"name=log_data;migrate=ReplacingMergeTree() ORDER BY (app_name,component,log_level,app_ip,app_id,trace_id,create_at,log_id) PARTITION BY toYYYYMM(create_at)"`
-	WebapiVisits        data.TableSet[model.WebapiVisitsPO]        `data:"name=visits_webapi;migrate=ReplacingMergeTree() ORDER BY (create_at,app_name,visits_node_prefix,visits_node) PARTITION BY toYYYYMM(create_at)"`
+	Visits              data.TableSet[model.VisitsPO]              `data:"name=visits;migrate=ReplacingMergeTree() ORDER BY (create_at,app_name,visits_node_prefix,visits_node,trace_type) PARTITION BY toYYYYMM(create_at)"`
 }
 
 // InitChContextContext 初始化上下文

@@ -44,7 +44,7 @@ func StatVisitsWebapiJob(*tasks.TaskContext) {
 	})
 
 	// 根据前缀树，开始遍历统计
-	lstEO := collections.NewList[linkTrace.WebapiVisitsEO]()
+	lstEO := collections.NewList[linkTrace.VisitsEO]()
 
 	// 按分钟统计
 	for createAt, arrTrace := range groupBy {
@@ -92,7 +92,7 @@ func StatVisitsWebapiJob(*tasks.TaskContext) {
 			if strings.HasSuffix(visitsNodePrefix, "//") {
 				visitsNodePrefix = ""
 			}
-			lstEO.Add(linkTrace.WebapiVisitsEO{
+			lstEO.Add(linkTrace.VisitsEO{
 				AppName:          items.First().AppName,
 				CreateAt:         createAt,
 				VisitsNodePrefix: visitsNodePrefix,
@@ -109,7 +109,7 @@ func StatVisitsWebapiJob(*tasks.TaskContext) {
 		}
 	}
 
-	lstEO = lstEO.OrderBy(func(item linkTrace.WebapiVisitsEO) any {
+	lstEO = lstEO.OrderBy(func(item linkTrace.VisitsEO) any {
 		return item.CreateAt.UnixMilli()
 	}).ToList()
 	_, err := repository.SaveVisitsWebApi(lstEO)

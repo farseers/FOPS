@@ -10,8 +10,8 @@ import (
 type name struct {
 }
 
-// WebapiVisits WebApi访问统计
-// @get webapiVisits
-func WebapiVisits(request request.WebapiVisitsRequest, linkTraceRepository linkTrace.Repository) collections.List[linkTrace.WebapiVisitsEO] {
-	return linkTraceRepository.ToWebApiVisitsList(request.AppName, request.VisitsNode, request.StartAt, request.EndAt)
+// Visits 访问统计
+// @get visits
+func Visits(request request.VisitsRequest, linkTraceRepository linkTrace.Repository) collections.List[linkTrace.VisitsEO] {
+	return linkTraceRepository.ToVisitsList(request.AppName, request.VisitsNode, request.StartAt, request.EndAt)
 }

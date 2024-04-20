@@ -280,7 +280,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					{
 						path: '/linkTrace/visitsWebApi',
 						name: 'visitsWebApi',
-						component: () => import('/@/views/fops/linkTrace/indexVisitsWebApi.vue'),
+						component: () => import('/wwwsrc/src/views/fops/linkTrace/indexVisits.vue'),
 						meta: {
 							title: 'message.router.visitsWebApi',
 							isLink: '',

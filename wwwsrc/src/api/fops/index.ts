@@ -225,9 +225,9 @@ export function fopsApi() {
 				method: 'get',
 				data:param,
 			});
-		},webapiVisitsApi:(param: string) => {
+		},visitsApi:(param: string) => {
 			return requestGet({
-				url: '/linkTrace/webapiVisits?'+param,
+				url: '/linkTrace/visits?'+param,
 				method: 'get',
 				//data:param,
 			});
@@ -311,12 +311,6 @@ export function fopsApi() {
 		},logInfo:(param: string) => {
 			return requestGet({
 				url: '/flog/info-'+param,
-				method: 'get',
-				//data:param,
-			});
-		},logStatCount:(param: string) => {
-			return requestGet({
-				url: '/flog/StatCount?'+param,
 				method: 'get',
 				//data:param,
 			});

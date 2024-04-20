@@ -34,6 +34,9 @@ func StatVisitsJob(*tasks.TaskContext) {
 
 	// 截止到当前时间的0秒
 	endAt := lastVisitsAt.Add(time.Hour)
+	if endAt.After(time.Now()) {
+		endAt = time.Now()
+	}
 
 	// 获取webapi链路集合
 	lst := repository.ToTraceListByVisits(lastVisitsAt, endAt)

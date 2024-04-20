@@ -83,11 +83,10 @@ func (receiver *linkTraceRepository) ToWebApiList(traceId, appName, appIp, reque
 	return collections.NewPageList[linkTraceCom.TraceContext](collections.NewList[linkTraceCom.TraceContext](), 0)
 }
 
-func (receiver *linkTraceRepository) ToWebApiListByVisits(startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext] {
+func (receiver *linkTraceRepository) ToTraceListByVisits(startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
 		ts := context.CHContext.TraceContextView.Select("app_name,use_ts,trace_count,exception,web_domain,web_path,create_at").
-			Where("trace_type = ? and parent_app_name = ''", eumTraceType.WebApi).
-			Where("start_ts >= ? and start_ts < ?", startAt.UnixMicro(), endAt.UnixMicro())
+			Where("parent_app_name = '' and start_ts >= ? and start_ts < ?", startAt.UnixMicro(), endAt.UnixMicro())
 		lstPO := ts.ToList()
 		return mapper.ToList[linkTraceCom.TraceContext](lstPO)
 	}

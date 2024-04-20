@@ -11,7 +11,7 @@ type Repository interface {
 	// ToEntity 获取列表
 	ToEntity(traceId string) collections.List[linkTraceCom.TraceContext]
 	ToWebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode int, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext]
-	ToWebApiListByVisits(startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext]
+	ToTraceListByVisits(startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext]
 	ToTaskList(traceId, appName, appIp, taskName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext]
 	ToFScheduleList(traceId, appName, appIp, taskName string, taskGroupId, taskId, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext]
 	ToConsumerList(traceId, appName, appIp, server, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext]

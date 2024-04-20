@@ -65,60 +65,61 @@ func StatVisitsJob(*tasks.TaskContext) {
 			case eumTraceType.WebApi:
 				mPathPrefix = getWebapiPrefix(lstTrace)
 			case eumTraceType.MqConsumer:
-				mPathPrefix["MQ"] = []any{"", lstTrace}
+				mPathPrefix["MQ/"] = []any{"", lstTrace}
 				for _, traceContext := range arrTrace {
-					if _, exists := mPathPrefix[traceContext.ConsumerServer]; !exists {
-						mPathPrefix[traceContext.ConsumerServer] = []any{"MQ", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+					if _, exists := mPathPrefix["MQ/"+traceContext.ConsumerServer+"/"]; !exists {
+						mPathPrefix["MQ/"+traceContext.ConsumerServer+"/"] = []any{"MQ/", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
 							return item.ConsumerServer == traceContext.ConsumerServer
 						}).ToList()}
 					}
-					if _, exists := mPathPrefix[traceContext.ConsumerQueueName]; !exists {
-						mPathPrefix[traceContext.ConsumerQueueName] = []any{traceContext.ConsumerServer, lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+					if _, exists := mPathPrefix["MQ/"+traceContext.ConsumerServer+"/"+traceContext.ConsumerQueueName]; !exists {
+						mPathPrefix["MQ/"+traceContext.ConsumerServer+"/"+traceContext.ConsumerQueueName] = []any{"MQ/" + traceContext.ConsumerServer + "/", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
 							return item.ConsumerQueueName == traceContext.ConsumerQueueName && item.ConsumerServer == traceContext.ConsumerServer
 						}).ToList()}
 					}
 				}
 			case eumTraceType.QueueConsumer:
-				mPathPrefix["Queue"] = []any{"", lstTrace}
+				mPathPrefix["Queue/"] = []any{"", lstTrace}
 				for _, traceContext := range arrTrace {
-					if _, exists := mPathPrefix[traceContext.ConsumerQueueName]; !exists {
-						mPathPrefix[traceContext.ConsumerQueueName] = []any{"Queue", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+					qn := strings.ReplaceAll(traceContext.ConsumerQueueName, "/", "_")
+					if _, exists := mPathPrefix["Queue/"+qn]; !exists {
+						mPathPrefix["Queue/"+qn] = []any{"Queue/", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
 							return item.ConsumerQueueName == traceContext.ConsumerQueueName
 						}).ToList()}
 					}
 				}
 			case eumTraceType.FSchedule:
-				mPathPrefix["FSchedule"] = []any{"", lstTrace}
+				mPathPrefix["FSchedule/"] = []any{"", lstTrace}
 				for _, traceContext := range arrTrace {
-					if _, exists := mPathPrefix[traceContext.TaskGroupName]; !exists {
-						mPathPrefix[traceContext.TaskGroupName] = []any{"FSchedule", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+					if _, exists := mPathPrefix["FSchedule/"+traceContext.TaskGroupName]; !exists {
+						mPathPrefix["FSchedule/"+traceContext.TaskGroupName] = []any{"FSchedule/", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
 							return item.TaskGroupName == traceContext.TaskGroupName
 						}).ToList()}
 					}
 				}
 			case eumTraceType.Task:
-				mPathPrefix["Task"] = []any{"", lstTrace}
+				mPathPrefix["Task/"] = []any{"", lstTrace}
 				for _, traceContext := range arrTrace {
-					if _, exists := mPathPrefix[traceContext.TaskName]; !exists {
-						mPathPrefix[traceContext.TaskName] = []any{"Task", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+					if _, exists := mPathPrefix["Task/"+traceContext.TaskName]; !exists {
+						mPathPrefix["Task/"+traceContext.TaskName] = []any{"Task/", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
 							return item.TaskName == traceContext.TaskName
 						}).ToList()}
 					}
 				}
 			case eumTraceType.WatchKey:
-				mPathPrefix["Etcd"] = []any{"", lstTrace}
+				mPathPrefix["Etcd/"] = []any{"", lstTrace}
 				for _, traceContext := range arrTrace {
-					if _, exists := mPathPrefix[traceContext.WatchKey]; !exists {
-						mPathPrefix[traceContext.WatchKey] = []any{"Etcd", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+					if _, exists := mPathPrefix["Etcd/"+traceContext.WatchKey]; !exists {
+						mPathPrefix["Etcd/"+traceContext.WatchKey] = []any{"Etcd/", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
 							return item.WatchKey == traceContext.WatchKey
 						}).ToList()}
 					}
 				}
 			case eumTraceType.EventConsumer:
-				mPathPrefix["Event"] = []any{"", lstTrace}
+				mPathPrefix["Event/"] = []any{"", lstTrace}
 				for _, traceContext := range arrTrace {
-					if _, exists := mPathPrefix[traceContext.ConsumerQueueName]; !exists {
-						mPathPrefix[traceContext.ConsumerQueueName] = []any{"Event", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+					if _, exists := mPathPrefix["Event/"+traceContext.ConsumerQueueName]; !exists {
+						mPathPrefix["Event/"+traceContext.ConsumerQueueName] = []any{"Event/", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
 							return item.ConsumerQueueName == traceContext.ConsumerQueueName
 						}).ToList()}
 					}

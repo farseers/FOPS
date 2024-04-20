@@ -14,32 +14,29 @@ import (
 	"time"
 )
 
-var lastVisitsWebApiAt time.Time
+var lastVisitsAt time.Time
 
-// StatVisitsWebapiJob 统计webapi访问
-func StatVisitsWebapiJob(*tasks.TaskContext) {
+// StatVisitsJob 统计webapi访问
+func StatVisitsJob(*tasks.TaskContext) {
 	// 缓存起来，不用每次执行都获取一次（仅在启动时获取）
 	repository := container.Resolve[linkTrace.Repository]()
-	if lastVisitsWebApiAt.Year() == 1 {
-		lastVisitsWebApiAt, _ = repository.GetLastVisitsWebApiAt()
+	if lastVisitsAt.Year() == 1 {
+		lastVisitsAt, _ = repository.GetLastVisitsAt()
 	}
 
 	// 还是为1，说明从来没有执行过统计，则默认时间为昨天
-	if lastVisitsWebApiAt.Year() == 1 {
-		lastVisitsWebApiAt = time.Now()
-		lastVisitsWebApiAt = time.Date(lastVisitsWebApiAt.Year(), lastVisitsWebApiAt.Month(), lastVisitsWebApiAt.Day(), lastVisitsWebApiAt.Hour(), lastVisitsWebApiAt.Minute(), 0, 0, time.Local)
+	if lastVisitsAt.Year() == 1 {
+		lastVisitsAt = time.Now()
+		lastVisitsAt = time.Date(lastVisitsAt.Year(), lastVisitsAt.Month(), lastVisitsAt.Day(), lastVisitsAt.Hour(), lastVisitsAt.Minute(), 0, 0, time.Local)
 		// 抹去秒（只要分钟）
-		lastVisitsWebApiAt = lastVisitsWebApiAt.Add(-24 * time.Hour)
+		lastVisitsAt = lastVisitsAt.Add(-24 * time.Hour)
 	}
 
 	// 截止到当前时间的0秒
-	endAt := lastVisitsWebApiAt.Add(time.Hour)
+	endAt := lastVisitsAt.Add(time.Hour)
 
 	// 获取webapi链路集合
-	lst := repository.ToTraceListByVisits(lastVisitsWebApiAt, endAt)
-	//lst = lst.OrderBy(func(item linkTraceCom.TraceContext) any {
-	//	return item.UseTs.Milliseconds()
-	//}).ToList()
+	lst := repository.ToTraceListByVisits(lastVisitsAt, endAt)
 
 	// 按链路类型分组
 	var traceTypeGroupBy map[int][]linkTraceCom.TraceContext
@@ -159,10 +156,10 @@ func StatVisitsWebapiJob(*tasks.TaskContext) {
 	lstEO = lstEO.OrderBy(func(item linkTrace.VisitsEO) any {
 		return item.CreateAt.UnixMilli()
 	}).ToList()
-	_, err := repository.SaveVisitsWebApi(lstEO)
+	_, err := repository.SaveVisits(lstEO)
 	flog.ErrorIfExists(err)
 	if err == nil {
-		lastVisitsWebApiAt = lstEO.OrderByDescending(func(item linkTrace.VisitsEO) any {
+		lastVisitsAt = lstEO.OrderByDescending(func(item linkTrace.VisitsEO) any {
 			return item.CreateAt.UnixMilli()
 		}).First().CreateAt
 	}

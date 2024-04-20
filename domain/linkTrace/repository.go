@@ -25,7 +25,7 @@ type Repository interface {
 	ToSlowRedisList(traceId, appName, appIp, key, field string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailRedis]
 	Save(lstEO collections.List[linkTraceCom.TraceContext]) error
 
-	SaveVisitsWebApi(lst collections.List[VisitsEO]) (int64, error)
-	GetLastVisitsWebApiAt() (time.Time, error)
+	SaveVisits(lst collections.List[VisitsEO]) (int64, error)
+	GetLastVisitsAt() (time.Time, error)
 	ToVisitsList(appName, visitsNode string, startAt, endAt time.Time) collections.List[VisitsEO]
 }

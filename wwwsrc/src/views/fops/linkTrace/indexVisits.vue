@@ -96,7 +96,7 @@
   </div>
 </template>
 
-<script setup lang="ts" name="indexVisitsWebApi">
+<script setup lang="ts" name="indexVisits">
 
 import {reactive, onMounted, ref, watch} from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';

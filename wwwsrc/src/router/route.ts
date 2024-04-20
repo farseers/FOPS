@@ -278,11 +278,11 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					icon: 'iconfont icon-shuju',
 				},children: [
 					{
-						path: '/linkTrace/visitsWebApi',
-						name: 'visitsWebApi',
-						component: () => import('/wwwsrc/src/views/fops/linkTrace/indexVisits.vue'),
+						path: '/linkTrace/visits',
+						name: 'visits',
+						component: () => import('/@/views/fops/linkTrace/indexVisits.vue'),
 						meta: {
-							title: 'message.router.visitsWebApi',
+							title: 'message.router.visits',
 							isLink: '',
 							isHide: false,
 							isKeepAlive: true,

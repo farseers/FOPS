@@ -418,7 +418,7 @@ func (receiver *linkTraceRepository) saveDetail(lst collections.List[model.Trace
 	return nil
 }
 
-func (receiver *linkTraceRepository) SaveVisitsWebApi(lst collections.List[linkTrace.VisitsEO]) (int64, error) {
+func (receiver *linkTraceRepository) SaveVisits(lst collections.List[linkTrace.VisitsEO]) (int64, error) {
 	lstPO := mapper.ToList[model.VisitsPO](lst)
 	if linkTrace.Config.Driver == "clickhouse" {
 		return context.CHContext.Visits.InsertList(lstPO, 10000)
@@ -427,7 +427,7 @@ func (receiver *linkTraceRepository) SaveVisitsWebApi(lst collections.List[linkT
 	return 0, fmt.Errorf("不支持的链路追踪驱动：%s", linkTrace.Config.Driver)
 }
 
-func (receiver *linkTraceRepository) GetLastVisitsWebApiAt() (time.Time, error) {
+func (receiver *linkTraceRepository) GetLastVisitsAt() (time.Time, error) {
 	if linkTrace.Config.Driver == "clickhouse" {
 		return context.CHContext.Visits.Desc("create_at").GetTime("create_at"), nil
 	}

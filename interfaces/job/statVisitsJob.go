@@ -164,9 +164,8 @@ func StatVisitsJob(*tasks.TaskContext) {
 	_, err := repository.SaveVisits(lstEO)
 	flog.ErrorIfExists(err)
 	if err == nil {
-		lastVisitsAt = lstEO.OrderByDescending(func(item linkTrace.VisitsEO) any {
-			return item.CreateAt.UnixMilli()
-		}).First().CreateAt
+		lastVisitsAt = lstEO.Last().CreateAt
+		flog.Debugf("同步成功，下一次同步的开始时间为：%s", lastVisitsAt.Format(time.DateTime))
 	}
 }
 

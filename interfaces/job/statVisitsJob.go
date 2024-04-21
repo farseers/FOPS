@@ -35,11 +35,16 @@ func StatVisitsJob(*tasks.TaskContext) {
 	// 截止到当前时间的0秒
 	endAt := lastVisitsAt.Add(time.Hour)
 	if endAt.After(time.Now()) {
-		endAt = time.Now()
+		endAt = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), time.Now().Hour(), time.Now().Minute(), 0, 0, time.Local)
 	}
 
 	// 获取webapi链路集合
 	lst := repository.ToTraceListByVisits(lastVisitsAt, endAt)
+	// 没有同步到数据
+	if lst.Count() == 0 {
+		lastVisitsAt = endAt.Add(-time.Minute)
+		return
+	}
 	flog.Debugf("开始同步%s - %s 的数据，共检索到%d条记录", lastVisitsAt.Format(time.DateTime), endAt.Format(time.DateTime), lst.Count())
 
 	// 按链路类型分组
@@ -165,6 +170,7 @@ func StatVisitsJob(*tasks.TaskContext) {
 	flog.ErrorIfExists(err)
 	if err == nil {
 		lastVisitsAt = lstEO.Last().CreateAt
+		lastVisitsAt = lastVisitsAt.Add(time.Minute)
 		flog.Debugf("同步成功，下一次同步的开始时间为：%s", lastVisitsAt.Format(time.DateTime))
 	}
 }

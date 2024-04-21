@@ -39,8 +39,8 @@ func StatVisitsJob(*tasks.TaskContext) {
 	}
 
 	// 获取webapi链路集合
-	flog.Debugf("开始同步%s - %s 的数据", lastVisitsAt.Format(time.DateTime), endAt.Format(time.DateTime))
 	lst := repository.ToTraceListByVisits(lastVisitsAt, endAt)
+	flog.Debugf("开始同步%s - %s 的数据，共检索到%d条记录", lastVisitsAt.Format(time.DateTime), endAt.Format(time.DateTime), lst.Count())
 
 	// 按链路类型分组
 	var traceTypeGroupBy map[int][]linkTraceCom.TraceContext

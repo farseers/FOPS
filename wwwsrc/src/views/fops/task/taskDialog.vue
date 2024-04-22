@@ -26,8 +26,14 @@
             </el-button>
           </div>
           <el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%;">
-            <el-table-column prop="Id" label="任务ID" width="180">
+            <el-table-column prop="Id" label="任务ID" width="240">
               <template #default="scope">
+                <div style="float:left;margin: 6px">
+                  <el-tag size="small" v-if="scope.row.ExecuteStatus==0" type="info">未执行</el-tag>
+                  <el-tag size="small" v-else-if="scope.row.ExecuteStatus==1" type="success" style="color:green">执行中</el-tag>
+                  <el-tag size="small" v-else-if="scope.row.ExecuteStatus==2" type="success" style="color:green">成功</el-tag>
+                  <el-tag size="small" v-else-if="scope.row.ExecuteStatus==3" type="danger">失败</el-tag>
+                </div>
                 <span title="任务ID">{{scope.row.Id}}</span><br>
                 <span title="TraceId">{{scope.row.TraceId}}</span>
               </template>
@@ -38,30 +44,26 @@
                 <span>完成: {{scope.row.RunAt}}</span>
               </template>
             </el-table-column>
-            <el-table-column label="运行情况"  width="110" show-overflow-tooltip>
+            <el-table-column label="运行情况"  width="150" show-overflow-tooltip>
               <template #default="scope">
-                <span>耗时: {{scope.row.RunSpeed}}</span><br>
-                <span>进度: {{scope.row.Progress}}%</span>
+                <span>耗时: <el-tag size="small" type="info">{{scope.row.RunSpeed}}</el-tag></span><br>
+                <span>进度: <el-tag size="small" type="info">{{scope.row.Progress}}%</el-tag></span>
               </template>
             </el-table-column>
-            <el-table-column label="数据"  width="450">
+            <el-table-column label="数据" show-overflow-tooltip>
               <template #default="scope">
-                <span>{{friendlyJSONstringify(scope.row.Data)}}</span>
+                <span>{{friendlyJSONstringify(scope.row.Data)}}</span><br />
+                <el-tag size="small" v-if="scope.row.Remark!=''" type="danger">{{scope.row.Remark}}</el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="客户端信息"  width="180" show-overflow-tooltip>
+            <el-table-column label="客户端信息" width="180" show-overflow-tooltip>
               <template #default="scope">
-                <span>{{scope.row.Client.Name}} {{scope.row.Client.Ip}}:{{scope.row.Client.Port}}</span><br>
-              </template>
-            </el-table-column>
-            <el-table-column label="任务状态" width="120" show-overflow-tooltip>
-              <template #default="scope">
-                <el-tag v-if="scope.row.Status==0" style="color:#7a7a7a">未开始</el-tag>
-                <el-tag v-else-if="scope.row.Status==1">调度中</el-tag>
-                <el-tag v-else-if="scope.row.Status==2" style="color:red">调度失败</el-tag>
-                <el-tag v-else-if="scope.row.Status==3">执行中</el-tag>
-                <el-tag v-else-if="scope.row.Status==4">失败</el-tag>
-                <el-tag v-else-if="scope.row.Status==5" style="color:green">成功</el-tag>
+                <el-tag size="small" v-if="scope.row.ScheduleStatus==0" type="info">未调度</el-tag>
+                <el-tag size="small" v-else-if="scope.row.ScheduleStatus==1" type="success" style="color:green">调度中</el-tag>
+                <el-tag size="small" v-else-if="scope.row.ScheduleStatus==2" type="success" style="color:green">调度成功</el-tag>
+                <el-tag size="small" v-else-if="scope.row.ScheduleStatus==3" type="danger">调度失败</el-tag>
+                <br />
+                <el-tag size="small">{{scope.row.Client.Name}} {{scope.row.Client.Ip}}:{{scope.row.Client.Port}}</el-tag>
               </template>
             </el-table-column>
           </el-table>
@@ -106,7 +108,7 @@ const state = reactive({
     loading: false,
     param: {
       pageNum: 1,
-      pageSize: 10,
+      pageSize: 15,
     },
   },
     dialog: {

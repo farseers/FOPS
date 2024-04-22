@@ -25,23 +25,20 @@
 				<el-table-column label="名称" style="line-height: 45px;height: 45px">
           <template #default="scope">
             <div style="float: left;padding-right: 10px;padding-top: 5px">
-              <el-tag size="small" cursor="cursor" @click="onIsEnable(scope.row)" v-if="scope.row.IsEnable">启用</el-tag>
-              <el-tag size="small" cursor="cursor" @click="onIsEnable(scope.row)" v-else type="info">停用</el-tag>
-
-            </div>
-            <div style="float: left;padding-right: 10px;padding-top: 5px">
               <el-tag size="small" v-if="scope.row.Task.ScheduleStatus==0" type="info">未调度</el-tag>
-              <el-tag size="small" v-else-if="scope.row.Task.ScheduleStatus==1" type="success" style="color:green">调度中</el-tag>
+              <el-tag size="small" v-else-if="scope.row.Task.ScheduleStatus==1">调度中</el-tag>
               <el-tag size="small" v-else-if="scope.row.Task.ScheduleStatus==2" type="success" style="color:green">调度成功</el-tag>
               <el-tag size="small" v-else-if="scope.row.Task.ScheduleStatus==3" type="danger">调度失败</el-tag>
               <br />
               <el-tag size="small" v-if="scope.row.Task.ExecuteStatus==0" type="info">未开始</el-tag>
-              <el-tag size="small" v-else-if="scope.row.Task.ExecuteStatus==1" type="success">执行中</el-tag>
+              <el-tag size="small" v-else-if="scope.row.Task.ExecuteStatus==1">执行中</el-tag>
               <el-tag size="small" v-else-if="scope.row.Task.ExecuteStatus==2" type="success" style="color:green">成功</el-tag>
               <el-tag size="small" v-else-if="scope.row.Task.ExecuteStatus==3" type="danger">失败</el-tag>
             </div>
             <div style="float: left">
-              <span>{{scope.row.Caption}}</span><br>
+              <el-tag size="small" cursor="cursor" @click="onIsEnable(scope.row)" v-if="scope.row.IsEnable">启用</el-tag>
+              <el-tag size="small" cursor="cursor" @click="onIsEnable(scope.row)" v-else type="info">停用</el-tag>
+              <span style="margin-left: 5px">{{scope.row.Caption}}</span><br>
               <span>{{scope.row.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Ver}}</span>）</span>
             </div>
           </template>
@@ -59,29 +56,25 @@
                 <span title="下次运行时间" v-else> {{scope.row.NextAt}}</span>
               </template>
             </el-table-column>
-            <el-table-column label="运行情况" width="170" show-overflow-tooltip>
+            <el-table-column label="运行情况" width="140" show-overflow-tooltip>
               <template #default="scope">
-                <span>平均耗时: {{scope.row.RunSpeedAvg}} ms</span><br>
-                <span>运行次数: {{scope.row.RunCount}} 次</span>
+                <span>耗时: {{scope.row.RunSpeedAvg}} ms</span><br>
+                <span>运行: {{scope.row.RunCount}} 次</span>
               </template>
             </el-table-column>
             <el-table-column label="数据">
               <template #default="scope">
-                <span>{{friendlyJSONstringify(scope.row.Data)}}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="客户端信息" width="180" show-overflow-tooltip>
-              <template #default="scope">
+                <div>{{friendlyJSONstringify(scope.row.Data)}}</div>
                 <div v-for="(item, index) in scope.row.Clients.slice(0, 3)" :key="index">
                   <el-tag size="small">{{item.Name}} {{item.Ip}}:{{item.Port}}</el-tag>
                   <span v-if="scope.row.Clients.length>3">更多</span>
                 </div>
               </template>
             </el-table-column>
-				<el-table-column label="操作" width="120">
+				<el-table-column label="操作" width="100">
 					<template #default="scope">
             <el-button size="small" text type="danger" @click="onTaskList(scope.row)">历史</el-button>
-            <el-button size="small" text type="danger" @click="onLog(scope.row)">日志</el-button>
+            <el-button size="small" text type="danger" @click="onLog(scope.row)">日志</el-button><br />
             <el-button size="small" text type="warning" @click="onEdit('edit',scope.row)">修改</el-button>
             <el-button size="small" text type="info" @click="onDel(scope.row)">删除</el-button>
 					</template>

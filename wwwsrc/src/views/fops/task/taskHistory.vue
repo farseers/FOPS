@@ -5,14 +5,14 @@
         <el-input size="default" v-model="state.clientName" placeholder="请输入应用名称" clearable style="max-width: 180px"> </el-input>
 				<el-input size="default" v-model="state.taskGroupName" placeholder="请输入任务组名称" clearable style="max-width: 180px"> </el-input>
         <el-input size="default" v-model="state.taskId" placeholder="请输入任务ID" clearable style="max-width: 180px"  class="ml10"> </el-input>
-        <el-select v-model="state.scheduleStatus" placeholder="调度结果" class="ml10" @change="onScheduleStatusChange">
+        <el-select v-model="state.scheduleStatus" placeholder="调度结果" class="ml10">
           <el-option label="全部" :value="-1"></el-option>
           <el-option label="未调度" :value="0"></el-option>
           <el-option label="调度中" :value="1"></el-option>
           <el-option label="调度成功" :value="2"></el-option>
           <el-option label="调度失败" :value="3"></el-option>
         </el-select>
-        <el-select v-model="state.executeStatus" placeholder="执行结果" class="ml10" @change="onExecuteStatusChange"  style="margin-left: 5px;">
+        <el-select v-model="state.executeStatus" placeholder="执行结果" class="ml10" style="margin-left: 5px;">
           <el-option label="全部" :value="-1"></el-option>
           <el-option label="未开始" :value="0"></el-option>
           <el-option label="执行中" :value="1"></el-option>
@@ -43,7 +43,6 @@
               <el-tag size="small" v-else-if="scope.row.ExecuteStatus==2" type="success" style="color:green">成功</el-tag>
               <el-tag size="small" v-else-if="scope.row.ExecuteStatus==3" type="danger">失败</el-tag>
             </div>
-
             <span>{{scope.row.Caption}}</span><br>
             <span>{{scope.row.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Ver}}</span>）</span>
           </template>

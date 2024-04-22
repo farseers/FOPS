@@ -27,7 +27,7 @@
         <el-table-column label="客户端信息" width="180" show-overflow-tooltip>
           <template #default="scope">
             <div>
-              <el-tag v-if="scope.row.Status >=1 && scope.row.Status <=3" size="small">{{scope.row.Client.Name}} {{scope.row.Client.Ip}}:{{scope.row.Client.Port}}</el-tag>
+              <el-tag v-if="scope.row.Client.Name != ''" size="small">{{scope.row.Client.Name}} {{scope.row.Client.Ip}}:{{scope.row.Client.Port}}</el-tag>
             </div>
           </template>
         </el-table-column>

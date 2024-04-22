@@ -10,9 +10,9 @@
         <label class="ml10">访问节点</label>
         <el-input class="ml5" size="default" v-model="state.visitsNode" clearable style="max-width: 400px;"> </el-input>
         <label class="ml10">开始时间</label>
-        <el-date-picker class="ml5" size="default" v-model="state.startAt" type="datetime" :shortcuts="shortcuts" placeholder="开始时间" style="width: 200px"></el-date-picker>
+        <el-date-picker class="ml5" size="default" v-model="state.startAt" type="datetime" :shortcuts="shortcuts" placeholder="开始时间" clearable style="width: 200px"></el-date-picker>
         <label class="ml10">结束时间</label>
-        <el-date-picker class="ml5" size="default" v-model="state.endAt" type="datetime" :shortcuts="shortcuts" placeholder="结束时间" style="width: 200px"></el-date-picker>
+        <el-date-picker class="ml5" size="default" v-model="state.endAt" type="datetime" :shortcuts="shortcuts" placeholder="结束时间" clearable style="width: 200px"></el-date-picker>
         <el-button size="default" type="primary" class="ml5" @click="onQuery">
           <el-icon><ele-Search /></el-icon>
           查询

@@ -13,7 +13,7 @@
         <label class="ml10">执行端IP</label>
         <el-input class="ml5" size="default" v-model="state.appIp" placeholder="执行端IP" style="max-width: 120px;"></el-input>
         <label class="ml10">日志内容</label>
-        <el-input size="default" v-model="state.logContent" placeholder="日志内容" style="max-width: 250px;padding-left: 5px"> </el-input>
+        <el-input size="default" v-model="state.logContent" placeholder="日志内容" clearable style="max-width: 250px;padding-left: 5px"> </el-input>
         <label class="ml10">日志类型</label>
         <el-select v-model="state.logLevel" placeholder="日志类型" class="ml10" style="max-width: 110px;" size="small">
           <el-option label="全部" :value="-1"></el-option>

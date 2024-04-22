@@ -3,14 +3,14 @@
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="system-user-search mb15">
         <label>TraceId</label>
-        <el-input class="ml5" size="default" v-model="state.traceId" placeholder="链路ID" style="max-width: 165px;"> </el-input>
+        <el-input class="ml5" size="default" v-model="state.traceId" placeholder="链路ID" clearable style="max-width: 165px;"> </el-input>
         <label class="ml5">应用</label>
         <el-select class="ml5" style="max-width: 110px;" size="small" v-model="state.appName">
           <el-option label="全部" value=""></el-option>
           <el-option v-for="item in state.appData" :label="item.AppName" :value="item.AppName" ></el-option>
         </el-select>
         <label class="ml10">执行端IP</label>
-        <el-input class="ml5" size="default" v-model="state.appIp" placeholder="执行端IP" style="max-width: 120px;"></el-input>
+        <el-input class="ml5" size="default" v-model="state.appIp" placeholder="执行端IP" clearable style="max-width: 120px;"></el-input>
         <label class="ml10">请求方法</label>
         <el-select class="ml5" v-model="state.method" placeholder="请求方法" style="max-width: 110px;" size="small">
           <el-option label="全部" value=""></el-option>
@@ -20,7 +20,7 @@
           <el-option label="DELETE" value="DELETE"></el-option>
         </el-select>
         <label class="ml10">请求地址</label>
-        <el-input class="ml5" size="default" v-model="state.url" placeholder="请求地址" style="max-width: 180px;"> </el-input>
+        <el-input class="ml5" size="default" v-model="state.url" placeholder="请求地址" clearable style="max-width: 180px;"> </el-input>
         <label class="ml10">耗时最高</label>
         <el-select class="ml5" v-model="state.startMin" placeholder="往前推N分钟的数据" style="max-width: 120px;" size="default">
           <el-option label="全部" :value="0"></el-option>

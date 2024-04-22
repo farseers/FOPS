@@ -3,16 +3,16 @@
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="system-user-search mb15">
         <label>TraceId</label>
-        <el-input size="default" v-model="state.traceId" placeholder="链路ID" style="max-width: 180px;padding-left: 5px"> </el-input>
+        <el-input size="default" v-model="state.traceId" placeholder="链路ID" clearable style="max-width: 180px;padding-left: 5px"> </el-input>
         <label class="ml10">应用名称</label>
         <el-select class="ml5" style="max-width: 110px;" size="small" v-model="state.appName">
           <el-option label="全部" value=""></el-option>
           <el-option v-for="item in state.appData" :label="item.AppName" :value="item.AppName" ></el-option>
         </el-select>
         <label class="ml10">执行端IP</label>
-        <el-input class="ml5" size="default" v-model="state.appIp" placeholder="执行端IP" style="max-width: 120px;"></el-input>
+        <el-input class="ml5" size="default" v-model="state.appIp" placeholder="执行端IP" clearable style="max-width: 120px;"></el-input>
         <label class="ml10">日志内容</label>
-        <el-input size="default" v-model="state.logContent" placeholder="日志内容" style="max-width: 250px;padding-left: 5px"> </el-input>
+        <el-input size="default" v-model="state.logContent" placeholder="日志内容" clearable style="max-width: 250px;padding-left: 5px"> </el-input>
         <label class="ml10">日志类型</label>
         <el-select v-model="state.logLevel" placeholder="日志类型" class="ml10" style="max-width: 110px;" size="small">
           <el-option label="全部" :value="-1"></el-option>

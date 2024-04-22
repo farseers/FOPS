@@ -3,8 +3,8 @@
       <div class="system-user-container layout-padding" style="width: 100%;">
         <el-card shadow="hover" class="layout-padding-auto">
           <div class="system-user-search mb15">
-            <el-input size="default" v-model="state.clientName" placeholder="请输入应用名称" style="max-width: 180px"> </el-input>
-            <el-input size="default" v-model="state.taskGroupName" placeholder="请输入任务组名称" style="max-width: 180px"> </el-input>
+            <el-input size="default" v-model="state.clientName" placeholder="请输入应用名称" clearable style="max-width: 180px"> </el-input>
+            <el-input size="default" v-model="state.taskGroupName" placeholder="请输入任务组名称" clearable style="max-width: 180px"> </el-input>
             <el-select v-model="state.logLevel" placeholder="请选择日志等级" clearable class="ml10">
               <el-option label="全部" :value="-1"></el-option>
               <el-option label="Trace" :value="0"></el-option>

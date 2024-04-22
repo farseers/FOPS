@@ -3,7 +3,7 @@
 		<el-card shadow="hover" class="layout-padding-auto">
 			<div class="system-user-search mb15">
         <label>TraceId</label>
-        <el-input class="ml5" size="default" v-model="state.traceId" placeholder="链路ID" style="max-width: 165px;"> </el-input>
+        <el-input class="ml5" size="default" v-model="state.traceId" placeholder="链路ID" clearable style="max-width: 165px;"> </el-input>
         <label class="ml5">应用</label>
         <el-select class="ml5" style="max-width: 110px;" size="small" v-model="state.appName">
           <el-option label="全部" value=""></el-option>

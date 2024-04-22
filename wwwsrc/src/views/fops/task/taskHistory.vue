@@ -12,7 +12,6 @@
           <el-option label="调度成功" :value="2"></el-option>
           <el-option label="调度失败" :value="3"></el-option>
         </el-select>
-
         <el-select v-model="state.executeStatus" placeholder="执行结果" class="ml10" @change="onExecuteStatusChange"  style="margin-left: 5px;">
           <el-option label="全部" :value="-1"></el-option>
           <el-option label="未开始" :value="0"></el-option>
@@ -180,15 +179,14 @@ const onHandleCurrentChange = (val: number) => {
 	state.tableData.param.pageNum = val;
 	getTableData();
 };
-const onScheduleStatusChange=(value:number)=>{
-  state.scheduleStatus = value
-  getTableData()
-}
 
-const onExecuteStatusChange=(value:number)=>{
-  state.executeStatus = value
+watch(() => state.scheduleStatus, (newValue, oldValue) => {
   getTableData()
-}
+});
+
+watch(() => state.executeStatus, (newValue, oldValue) => {
+  getTableData()
+});
 
 // 页面加载时
 onMounted(() => {

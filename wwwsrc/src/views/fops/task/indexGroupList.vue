@@ -40,7 +40,7 @@
               <el-tag size="small" v-else-if="scope.row.Task.ExecuteStatus==2" type="success" style="color:green">成功</el-tag>
               <el-tag size="small" v-else-if="scope.row.Task.ExecuteStatus==3" type="danger">失败</el-tag>
             </div>
-            <div @click="onTaskList(scope.row)" style="float: left">
+            <div style="float: left">
               <span>{{scope.row.Caption}}</span><br>
               <span>{{scope.row.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Ver}}</span>）</span>
             </div>
@@ -80,8 +80,9 @@
             </el-table-column>
 				<el-table-column label="操作" width="120">
 					<template #default="scope">
-            <el-button size="small" text type="warning" @click="onEdit('edit',scope.row)">修改</el-button>
+            <el-button size="small" text type="danger" @click="onTaskList(scope.row)">历史</el-button>
             <el-button size="small" text type="danger" @click="onLog(scope.row)">日志</el-button>
+            <el-button size="small" text type="warning" @click="onEdit('edit',scope.row)">修改</el-button>
             <el-button size="small" text type="info" @click="onDel(scope.row)">删除</el-button>
 					</template>
 				</el-table-column>

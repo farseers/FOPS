@@ -4,14 +4,19 @@
         <el-card shadow="hover" class="layout-padding-auto">
           <div class="system-user-search mb15">
             <span>任务组名称：{{state.dialog.title}}</span>
-            <el-select v-model="state.taskStatus" placeholder="请选择调度状态" class="ml10" @change="onStatusChange">
+            <el-select v-model="state.scheduleStatus" placeholder="调度结果" class="ml10">
               <el-option label="全部" :value="-1"></el-option>
-              <el-option style="color:#7a7a7a" label="未开始" :value="0"></el-option>
+              <el-option label="未调度" :value="0"></el-option>
               <el-option label="调度中" :value="1"></el-option>
-              <el-option label="调度失败" :value="2"></el-option>
-              <el-option label="执行中" :value="3"></el-option>
-              <el-option label="失败" :value="4"></el-option>
-              <el-option label="成功" :value="5"></el-option>
+              <el-option label="调度成功" :value="2"></el-option>
+              <el-option label="调度失败" :value="3"></el-option>
+            </el-select>
+            <el-select v-model="state.executeStatus" placeholder="执行结果" class="ml10"  style="margin-left: 5px;">
+              <el-option label="全部" :value="-1"></el-option>
+              <el-option label="未开始" :value="0"></el-option>
+              <el-option label="执行中" :value="1"></el-option>
+              <el-option label="成功" :value="2"></el-option>
+              <el-option label="失败" :value="3"></el-option>
             </el-select>
             <el-button size="default" type="primary" class="ml10" @click="onQuery">
               <el-icon>
@@ -88,11 +93,11 @@ import {friendlyJSONstringify} from "@intlify/shared";
 const serverApi = fopsApi();
 
 // 定义变量内容
-const editDialogRef = ref();
 const state = reactive({
   keyWord:'',
   enable:-1,
-  taskStatus:-1,
+  scheduleStatus:-1,
+  executeStatus:-1,
   taskGroupName:'',
   clientName:'',
   tableData: {
@@ -112,8 +117,11 @@ const state = reactive({
 },
 });
 
-// 监听 state.taskStatus 的变化
-watch(() => state.taskStatus, (newValue, oldValue) => {
+watch(() => state.scheduleStatus, (newValue, oldValue) => {
+  getTableData()
+});
+
+watch(() => state.executeStatus, (newValue, oldValue) => {
   getTableData()
 });
 
@@ -122,7 +130,8 @@ const getTableData = () => {
   state.tableData.loading = true;
 
   const params = new URLSearchParams();
-  params.append('taskStatus', state.taskStatus.toString());
+  params.append('scheduleStatus', state.scheduleStatus.toString());
+  params.append('executeStatus', state.executeStatus.toString());
   params.append('clientName', state.clientName);
   params.append('taskGroupName', state.taskGroupName);
   params.append('pageSize', state.tableData.param.pageSize.toString());
@@ -165,10 +174,6 @@ const onHandleCurrentChange = (val: number) => {
   state.tableData.param.pageNum = val;
   getTableData();
 };
-
-const onStatusChange=(value:number)=>{
-  state.taskStatus=value
-}
 
 // 页面加载时
 onMounted(() => {

@@ -129,6 +129,14 @@ const state = reactive({
 
 const shortcuts = [
   {
+    text: '15分钟前',
+    value: () => {
+      const date = new Date()
+      date.setTime(date.getTime() - 900 * 1000)
+      return date
+    },
+  },
+  {
     text: '半小时前',
     value: () => {
       const date = new Date()
@@ -141,6 +149,14 @@ const shortcuts = [
     value: () => {
       const date = new Date()
       date.setTime(date.getTime() - 3600 * 1000 * 1)
+      return date
+    },
+  },
+  {
+    text: '2小时前',
+    value: () => {
+      const date = new Date()
+      date.setTime(date.getTime() - 3600 * 1000 * 2)
       return date
     },
   },

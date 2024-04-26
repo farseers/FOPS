@@ -62,7 +62,7 @@ jobs:
           - go work init ./
           - go work edit -replace github.com/farseer-go/fs=../farseer-go/fs
           - go mod download
-          - GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./app-server -ldflags="-w -s" .
+          - GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./fops -ldflags="-w -s" .
 
       - name: 安装npm
         uses: setup-npm@v1

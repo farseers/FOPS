@@ -37,7 +37,7 @@ type IDockerSwarmDevice interface {
 	// DeleteService 删除容器服务
 	DeleteService(appName string, progress chan string) bool
 	// SetImages 更新镜像版本
-	SetImages(cluster cluster.DomainObject, appName string, dockerImages string, progress chan string, ctx context.Context) bool
+	SetImages(cluster cluster.DomainObject, appName string, dockerImages string, dockerReplicas int, progress chan string) bool
 	// SetReplicas 更新副本数量
 	SetReplicas(cluster cluster.DomainObject, appName string, dockerReplicas int, progress chan string) bool
 	// Restart 重启容器

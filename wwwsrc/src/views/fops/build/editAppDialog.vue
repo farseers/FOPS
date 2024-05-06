@@ -14,9 +14,9 @@
             <el-tag v-else size="small">未构建</el-tag>
           </el-form-item>
           <el-form-item label="集群版本">
-            <el-tag v-if="state.ruleForm.ClusterVer.DockerImage!=''" size="small" style="margin-right: 5px;">{{state.ruleForm.ClusterVer.DockerImage}}</el-tag>
+            <el-input v-if="state.ruleForm.ClusterVer.DockerImage!=''" v-model="state.ruleForm.ClusterVer.DockerImage" placeholder="镜像名称" style="max-width: 200px;margin-right: 5px"></el-input>
             <el-tag v-else size="small">未发布</el-tag>
-            上次成功部署：
+            部署时间：
             <el-tag v-if="state.ruleForm.ClusterVer.DockerImage!=''" size="small" style="margin-right: 5px;">{{state.ruleForm.ClusterVer.DeploySuccessAt}}</el-tag>
             <el-tag v-else size="small" style="margin-right: 5px;">未发布</el-tag>
 
@@ -104,6 +104,7 @@ const gitDialogFormRef = ref();
 const multipleTableRef = ref<InstanceType<typeof ElTable>>();
 const state = reactive({
 	ruleForm: {
+    ClusterId:0, // 集群ID
     AppName:'', //应用名称
     DockerVer: '', // 镜像版本
     ClusterVer: '', // 集群版本
@@ -176,23 +177,6 @@ const openDialog = (type: string, row: any) => {
         loadGit(row.FrameworkGits)
       }
     })
-	} else {
-		state.dialog.title = '新增应用';
-		state.dialog.submitTxt = '新 增';
-		// 清空表单，此项需加表单验证才能使用
-    state.ruleForm.AppName=""
-    state.ruleForm.DockerVer=""
-    state.ruleForm.ClusterVer=""
-    state.ruleForm.AppGit=0
-    state.ruleForm.AppGitName=''
-    state.ruleForm.FrameworkGits=[]
-    state.ruleForm.DockerfilePath=""
-    state.ruleForm.DockerReplicas=0
-    state.ruleForm.DockerNodeRole=''
-    state.ruleForm.AdditionalScripts=''
-    state.ruleForm.WorkflowsYmlPath=''
-    state.SelectItem=[] // 清空
-    state.tableData.data=[]
 	}
 	state.dialog.isShowDialog = true;
 };
@@ -287,6 +271,8 @@ const onSubmit = () => {
   }
   // 提交数据
   var param={
+    "ClusterId":state.ruleForm.ClusterVer.ClusterId,
+    "ClusterDockerImage":state.ruleForm.ClusterVer.DockerImage,
     "AppName":state.ruleForm.AppName,
     "AppGit":parseInt(state.ruleForm.AppGit),
     "FrameworkGits":state.ruleForm.FrameworkGits,

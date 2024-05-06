@@ -83,11 +83,11 @@ func (dockerSwarmDevice) CreateService(appName, dockerNodeRole, additionalScript
 	return true
 }
 
-func (dockerSwarmDevice) SetImages(cluster cluster.DomainObject, appName string, dockerImages string, progress chan string, ctx context.Context) bool {
+func (dockerSwarmDevice) SetImages(cluster cluster.DomainObject, appName string, dockerImages string, dockerReplicas int, progress chan string) bool {
 	progress <- "---------------------------------------------------------"
 	progress <- "开始更新Docker Swarm的镜像版本。"
 
-	var exitCode = exec.RunShellContext(ctx, fmt.Sprintf("docker service update --with-registry-auth --image %s --update-delay 10s %s", dockerImages, appName), progress, nil, "", false)
+	var exitCode = exec.RunShell(fmt.Sprintf("docker service update --with-registry-auth --image %s --replicas %v --update-delay 10s %s", dockerImages, dockerReplicas, appName), progress, nil, "", false)
 	if exitCode != 0 {
 		progress <- "Docker Swarm更新镜像失败。"
 		return false

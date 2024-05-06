@@ -33,7 +33,7 @@ func SyncDockerImage(clusterId int64, appName string, appsIDockerSwarmDevice app
 	// 首次创建还是更新镜像
 	if appsIDockerSwarmDevice.ExistsDocker(appName) {
 		// 更新镜像
-		if !appsIDockerSwarmDevice.SetImages(clusterDO, appName, do.DockerImage, c, context.Background()) {
+		if !appsIDockerSwarmDevice.SetImages(clusterDO, appName, do.DockerImage, do.DockerReplicas, c) {
 			lstLog := collections.NewListFromChan(c)
 			exception.ThrowWebExceptionf(403, "同步仓库版本失败:<br />%s", lstLog.ToString("<br />"))
 		}

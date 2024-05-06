@@ -32,6 +32,8 @@ func StatVisitsJob(*tasks.TaskContext) {
 		lastVisitsAt = lastVisitsAt.Add(-24 * time.Hour)
 	}
 
+	lastVisitsAt = lastVisitsAt.Add(-30 * time.Minute)
+
 	// 截止到当前时间的0秒
 	endAt := lastVisitsAt.Add(time.Hour)
 	if endAt.After(time.Now()) {

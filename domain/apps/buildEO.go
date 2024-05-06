@@ -215,18 +215,18 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 		return false
 	}
 
-	if gitAgent := configure.GetString("Fops.GitAgent"); gitAgent != "" {
-		receiver.WorkflowsAction.Steps = append([]stepVO{
-			{
-				Name:              "开启Git代理",
-				ActionName:        "gitProxy",
-				ActionVer:         "v1",
-				ActionDownloadUrl: "https://github.com/farseers/FOPS-Actions/releases/download/v1/gitProxy",
-				RepositoryName:    "farseers/FOPS-Actions",
-				With:              map[string]any{"proxy": gitAgent},
-			},
-		}, receiver.WorkflowsAction.Steps...)
-	}
+	//if gitAgent := configure.GetString("Fops.GitAgent"); gitAgent != "" {
+	//	receiver.WorkflowsAction.Steps = append([]stepVO{
+	//		{
+	//			Name:              "开启Git代理",
+	//			ActionName:        "gitProxy",
+	//			ActionVer:         "v1",
+	//			ActionDownloadUrl: "https://github.com/farseers/FOPS-Actions/releases/download/v1/gitProxy",
+	//			RepositoryName:    "farseers/FOPS-Actions",
+	//			With:              map[string]any{"proxy": gitAgent},
+	//		},
+	//	}, receiver.WorkflowsAction.Steps...)
+	//}
 
 	receiver.WorkflowsAction.Steps = append([]stepVO{
 		{

@@ -72,6 +72,9 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, appsIDock
 
 	err := appsRepository.UpdateApp(do)
 	exception.ThrowWebExceptionError(403, err)
+
+	_, err = appsRepository.UpdateClusterVer(do.AppName, do.ClusterVer)
+	exception.ThrowWebExceptionError(403, err)
 }
 
 // Delete 删除应用

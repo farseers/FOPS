@@ -6,6 +6,7 @@ import (
 	"fops/infrastructure/repository/context"
 	"fops/infrastructure/repository/model"
 	"github.com/farseer-go/data"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/mapper"
 )
 
@@ -18,7 +19,7 @@ type appsRepository struct {
 
 func (receiver *appsRepository) UpdateApp(do apps.DomainObject) error {
 	po := mapper.Single[model.AppsPO](do)
-	_, err := context.MysqlContext.Apps.Where("LOWER(app_name) = ?", po.AppName).Omit("app_name", "docker_ver", "docker_image", "active_instance").Update(po)
+	_, err := context.MysqlContext.Apps.Where("LOWER(app_name) = ?", po.AppName).Omit("app_name", "docker_ver", "docker_image", "active_instance", "cluster_ver").Update(po)
 	return err
 }
 
@@ -31,6 +32,7 @@ func (receiver *appsRepository) UpdateDockerVer(appName string, dockerVer int, i
 // UpdateClusterVer 修改集群的镜像版本
 func (receiver *appsRepository) UpdateClusterVer(appName string, dicClusterVer map[int64]*apps.ClusterVerVO) (int64, error) {
 	marshal, _ := json.Marshal(dicClusterVer)
+	flog.Info(string(marshal))
 	return context.MysqlContext.Apps.Where("LOWER(app_name) = ?", appName).UpdateValue("cluster_ver", string(marshal))
 }
 

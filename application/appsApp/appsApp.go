@@ -71,6 +71,9 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, appsIDock
 	if newDO.ClusterVer[req.ClusterId] != nil && req.ClusterDockerImage != "" {
 		newDO.ClusterVer[req.ClusterId].DockerImage = req.ClusterDockerImage
 		newDO.ClusterVer[req.ClusterId].DeploySuccessAt = dateTime.Now()
+		if strings.Contains(req.ClusterDockerImage, ":") {
+			newDO.ClusterVer[req.ClusterId].DockerVer = parse.ToInt(strings.Split(req.ClusterDockerImage, ":")[1])
+		}
 	}
 
 	err := appsRepository.UpdateApp(newDO)

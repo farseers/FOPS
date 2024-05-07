@@ -36,7 +36,7 @@
                   </div>
                 </div>
                 <div class="appItem" style="margin-bottom: 10px">部署版本
-                  <el-button v-if="v.DockerVer != v.ClusterVer.DockerVer" size="small" @click="onSyncDockerVer(v)" type="info" style="float:left;position: absolute;margin:-2px 0 0 5px;">同步镜像</el-button>
+                  <el-button v-if="v.DockerImage != v.ClusterVer.DockerImage" size="small" @click="onSyncDockerVer(v)" type="info" style="float:left;position: absolute;margin:-2px 0 0 5px;">同步镜像</el-button>
                   <div class="appItem">
                     <el-tag v-if="v.ClusterVer.DockerImage !=''" size="small">{{ v.ClusterVer.DockerImage }}</el-tag>
                     <el-tag v-else size="small">未发布</el-tag>

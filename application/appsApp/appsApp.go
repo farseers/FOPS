@@ -5,7 +5,6 @@ import (
 	"fops/application/appsApp/request"
 	"fops/application/appsApp/response"
 	"fops/domain/apps"
-	"fops/domain/cluster"
 	"fops/domain/logData"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/core/eumLogLevel"
@@ -41,39 +40,39 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, appsIDock
 	do := appsRepository.ToEntity(req.AppName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 
-	// 更新镜像
-	if req.ClusterDockerImage != "" && do.ClusterVer[req.ClusterId] != nil && req.ClusterDockerImage != do.ClusterVer[req.ClusterId].DockerImage {
-		c := make(chan string, 100)
-		if !appsIDockerSwarmDevice.SetImages(cluster.DomainObject{}, req.AppName, req.ClusterDockerImage, req.DockerReplicas, c) {
-			lstLog := collections.NewListFromChan(c)
-			exception.ThrowWebExceptionf(403, "更新副本失败:<br />%s", lstLog.ToString("<br />"))
-		}
-	} else if do.DockerReplicas != req.DockerReplicas {
-		// 更新副本数量
-		c := make(chan string, 100)
-		if !appsIDockerSwarmDevice.SetReplicas(cluster.DomainObject{}, req.AppName, req.DockerReplicas, c) {
-			lstLog := collections.NewListFromChan(c)
-			exception.ThrowWebExceptionf(403, "更新副本失败:<br />%s", lstLog.ToString("<br />"))
-		}
-	}
+	//// 更新镜像
+	//if req.ClusterDockerImage != "" && do.ClusterVer[req.ClusterId] != nil && req.ClusterDockerImage != do.ClusterVer[req.ClusterId].DockerImage {
+	//	c := make(chan string, 100)
+	//	if !appsIDockerSwarmDevice.SetImages(cluster.DomainObject{}, req.AppName, req.ClusterDockerImage, req.DockerReplicas, c) {
+	//		lstLog := collections.NewListFromChan(c)
+	//		exception.ThrowWebExceptionf(403, "更新副本失败:<br />%s", lstLog.ToString("<br />"))
+	//	}
+	//} else if do.DockerReplicas != req.DockerReplicas {
+	//	// 更新副本数量
+	//	c := make(chan string, 100)
+	//	if !appsIDockerSwarmDevice.SetReplicas(cluster.DomainObject{}, req.AppName, req.DockerReplicas, c) {
+	//		lstLog := collections.NewListFromChan(c)
+	//		exception.ThrowWebExceptionf(403, "更新副本失败:<br />%s", lstLog.ToString("<br />"))
+	//	}
+	//}
 
 	// 更新应用信息
-	do = mapper.Single[apps.DomainObject](req)
+	newDO := mapper.Single[apps.DomainObject](req, func(newVal *apps.DomainObject) {
+		newVal.ClusterVer = do.ClusterVer
+	})
+
 	// 删除末尾的/
-	if strings.HasSuffix(do.AdditionalScripts, "\\") {
-		do.AdditionalScripts = do.AdditionalScripts[:len(do.AdditionalScripts)-1]
+	if strings.HasSuffix(newDO.AdditionalScripts, "\\") {
+		newDO.AdditionalScripts = newDO.AdditionalScripts[:len(newDO.AdditionalScripts)-1]
 	}
 
 	// 更新部署的镜像
-	if do.ClusterVer[req.ClusterId] != nil && req.ClusterDockerImage != "" {
-		do.ClusterVer[req.ClusterId].DockerImage = req.ClusterDockerImage
-		do.ClusterVer[req.ClusterId].DeploySuccessAt = dateTime.Now()
+	if newDO.ClusterVer[req.ClusterId] != nil && req.ClusterDockerImage != "" {
+		newDO.ClusterVer[req.ClusterId].DockerImage = req.ClusterDockerImage
+		newDO.ClusterVer[req.ClusterId].DeploySuccessAt = dateTime.Now()
 	}
 
-	err := appsRepository.UpdateApp(do)
-	exception.ThrowWebExceptionError(403, err)
-
-	_, err = appsRepository.UpdateClusterVer(do.AppName, do.ClusterVer)
+	err := appsRepository.UpdateApp(newDO)
 	exception.ThrowWebExceptionError(403, err)
 }
 

@@ -6,7 +6,6 @@ type ClusterPO struct {
 	Name           string `gorm:"size:32;not null;comment:集群名称"`
 	Ip             string `gorm:"size:64;not null;comment:集群地址"`
 	FScheduleAddr  string `gorm:"size:64;not null;comment:调度中心地址"`
-	DockerName     string `gorm:"size:64;not null;comment:仓库名称"`
 	DockerHub      string `gorm:"size:256;not null;comment:托管地址"`
 	DockerUserName string `gorm:"size:32;not null;comment:账户名称"`
 	DockerUserPwd  string `gorm:"size:64;not null;comment:账户密码"`

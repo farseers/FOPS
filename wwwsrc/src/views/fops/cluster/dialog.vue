@@ -23,11 +23,6 @@
               <el-input v-model="state.ruleForm.DockerNetwork" placeholder="请输入Docker网络名称" clearable></el-input>
             </el-form-item>
           </el-col>
-					<el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-						<el-form-item label="DockerHub名称">
-							<el-input v-model="state.ruleForm.DockerName" placeholder="请输入仓库名称" clearable></el-input>
-						</el-form-item>
-					</el-col>
           <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
             <el-form-item label="DockerHub地址">
               <el-input v-model="state.ruleForm.DockerHub" placeholder="请输入托管地址" clearable></el-input>
@@ -38,7 +33,7 @@
               <el-input v-model="state.ruleForm.DockerUserName" placeholder="请输入账户名称" clearable></el-input>
             </el-form-item>
           </el-col>
-          <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
+          <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
             <el-form-item label="账户密码">
               <el-input v-model="state.ruleForm.DockerUserPwd" placeholder="请输入账户密码" clearable></el-input>
             </el-form-item>
@@ -73,7 +68,6 @@ const state = reactive({
     Ip: '', // 集群地址
     FScheduleAddr: '', // K8s连接配置
     DockerNetwork: '', // Docker网络
-    DockerName: '', // 仓库名称
     DockerHub: '', // 托管地址
     DockerUserName: '', // 账户名称
     DockerUserPwd: '', // 账户密码
@@ -99,7 +93,6 @@ const openDialog = (type: string, row: any) => {
     state.ruleForm.Ip=row.Ip
     state.ruleForm.FScheduleAddr=row.FScheduleAddr
     state.ruleForm.DockerNetwork=row.DockerNetwork
-    state.ruleForm.DockerName=row.DockerName
     state.ruleForm.DockerHub=row.DockerHub
     state.ruleForm.DockerUserName=row.DockerUserName
     state.ruleForm.DockerUserPwd=row.DockerUserPwd
@@ -113,14 +106,9 @@ const openDialog = (type: string, row: any) => {
     state.ruleForm.Ip=""
     state.ruleForm.FScheduleAddr=""
     state.ruleForm.DockerNetwork=""
-    state.ruleForm.DockerName=""
     state.ruleForm.DockerHub=""
     state.ruleForm.DockerUserName=""
     state.ruleForm.DockerUserPwd=""
-		// 清空表单，此项需加表单验证才能使用
-		// nextTick(() => {
-		// 	gitDialogFormRef.value.resetFields();
-		// });
 	}
 	state.dialog.isShowDialog = true;
 	getMenuData();
@@ -142,7 +130,6 @@ const onSubmit = () => {
     "Ip":state.ruleForm.Ip,
     "FScheduleAddr":state.ruleForm.FScheduleAddr,
     "DockerNetwork":state.ruleForm.DockerNetwork,
-    "DockerName":state.ruleForm.DockerName,
     "DockerHub":state.ruleForm.DockerHub,
     "DockerUserName":state.ruleForm.DockerUserName,
     "DockerUserPwd":state.ruleForm.DockerUserPwd

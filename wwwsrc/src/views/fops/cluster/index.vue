@@ -26,19 +26,6 @@
 					</template>
 				</el-table-column>
 			</el-table>
-<!--			<el-pagination-->
-<!--				@size-change="onHandleSizeChange"-->
-<!--				@current-change="onHandleCurrentChange"-->
-<!--				class="mt15"-->
-<!--				:pager-count="5"-->
-<!--				:page-sizes="[10, 20, 30]"-->
-<!--				v-model:current-page="state.tableData.param.pageNum"-->
-<!--				background-->
-<!--				v-model:page-size="state.tableData.param.pageSize"-->
-<!--				layout="total, sizes, prev, pager, next, jumper"-->
-<!--				:total="state.tableData.total"-->
-<!--			>-->
-<!--			</el-pagination>-->
 		</el-card>
 		<clusterDialog ref="clusterDialogRef" @refresh="getTableData()" />
 	</div>
@@ -72,7 +59,6 @@ const state = reactive({
 // 初始化表格数据
 const getTableData = () => {
 	state.tableData.loading = true;
-	const data = [];
   // 请求接口
   serverApi.clusterList({}).then(function (res){
     if (res.Status){
@@ -83,10 +69,9 @@ const getTableData = () => {
       state.tableData.data=[]
         state.tableData.loading = false;
     }
-
   })
-
 };
+
 // 打开新增用户弹窗
 const onOpenAdd = (type: string) => {
   clusterDialogRef.value.openDialog(type);
@@ -115,16 +100,7 @@ const onRowDel = (row: any) => {
 		})
 		.catch(() => {});
 };
-// 分页改变
-const onHandleSizeChange = (val: number) => {
-	state.tableData.param.pageSize = val;
-	getTableData();
-};
-// 分页改变
-const onHandleCurrentChange = (val: number) => {
-	state.tableData.param.pageNum = val;
-	getTableData();
-};
+
 // 页面加载时
 onMounted(() => {
 	getTableData();

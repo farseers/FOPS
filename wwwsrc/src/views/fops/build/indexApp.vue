@@ -264,7 +264,7 @@ const getTableClusterData = () => {
         if (i==0){
           state.clusterId=item.Id;
         }
-        item.Name=item.Name+" - "+item.DockerName
+        item.Name=item.Name+" - "+item.Ip
         lst.push(item)
       }
       state.clusterData = lst;

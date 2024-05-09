@@ -150,3 +150,9 @@ func View(buildId int64) action.IResult {
 func Stop(dockerDevice apps.IDockerDevice) {
 	dockerDevice.Kill("FOPS-Build")
 }
+
+/*
+hub.fsgit.cc/hub		:amdata.67
+lb188/hub			:lbl.135
+
+*/

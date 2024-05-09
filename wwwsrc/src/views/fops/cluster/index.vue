@@ -12,7 +12,7 @@
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
 				<el-table-column prop="Id" label="序号" width="60" />
 				<el-table-column prop="Name" label="集群名称" show-overflow-tooltip></el-table-column>
-				<el-table-column prop="Ip" label="集群地址" show-overflow-tooltip></el-table-column>
+				<el-table-column prop="FopsAddr" label="集群地址" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="FScheduleAddr" label="调度中心" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="DockerNetwork" label="Docker网络" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="DockerHub" label="DockerHub地址" show-overflow-tooltip></el-table-column>

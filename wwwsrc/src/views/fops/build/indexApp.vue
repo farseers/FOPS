@@ -254,7 +254,6 @@ const getTableLogData = () => {
 };
 const getTableClusterData = () => {
   state.tableData.loading = true;
-  const data = [];
   // 请求接口
   serverApi.clusterList({}).then(function (res){
     if (res.Status){
@@ -264,7 +263,7 @@ const getTableClusterData = () => {
         if (i==0){
           state.clusterId=item.Id;
         }
-        item.Name=item.Name+" - "+item.Ip
+        item.Name=item.Name+" - "+item.FopsAddr
         lst.push(item)
       }
       state.clusterData = lst;

@@ -4,7 +4,7 @@ package model
 type ClusterPO struct {
 	Id             int64  `gorm:"primaryKey;comment:主键"`
 	Name           string `gorm:"size:32;not null;comment:集群名称"`
-	Ip             string `gorm:"size:64;not null;comment:集群地址"`
+	FopsAddr       string `gorm:"size:64;not null;comment:集群地址"`
 	FScheduleAddr  string `gorm:"size:64;not null;comment:调度中心地址"`
 	DockerHub      string `gorm:"size:256;not null;comment:托管地址"`
 	DockerUserName string `gorm:"size:32;not null;comment:账户名称"`

@@ -4,7 +4,7 @@ package cluster
 type DomainObject struct {
 	Id             int64  // 集群Id
 	Name           string // 集群名称
-	Ip             string // 集群地址
+	FopsAddr       string // 集群地址
 	FScheduleAddr  string // 调度中心地址
 	DockerHub      string // 托管地址
 	DockerUserName string // 账户名称

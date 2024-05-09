@@ -2,7 +2,7 @@
   <div class="layout-padding" style="position: relative;">
     <el-card shadow="hover">
       <el-header style="padding: 0">
-        <el-select v-model="state.clusterId" placeholder="请选择集群" class="ml10" @change="onClusterChange">
+        <el-select v-model="state.clusterId" placeholder="请选择集群" class="ml10" @change="onClusterChange" style="width: 250px;">
           <el-option v-for="item in state.clusterData" :key="item.Id" :label="item.Name" :value="item.Id"></el-option>
         </el-select>
         <el-button size="default" type="success" class="ml10" @click="onOpenAdd('add')"><el-icon><ele-FolderAdd /></el-icon>新增应用</el-button>

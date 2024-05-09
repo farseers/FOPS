@@ -31,7 +31,7 @@ func (dockerSwarmDevice) SetReplicas(cluster cluster.DomainObject, appName strin
 	progress <- "---------------------------------------------------------"
 	progress <- "开始更新Docker Swarm的副本数量。"
 
-	var exitCode = exec.RunShell(fmt.Sprintf("docker service update --with-registry-auth --replicas %v %s", dockerReplicas, appName), progress, nil, "", false)
+	var exitCode = exec.RunShell(fmt.Sprintf("docker service update --replicas %v --with-registry-auth %s", dockerReplicas, appName), progress, nil, "", false)
 	if exitCode != 0 {
 		progress <- "Docker Swarm的副本数量更新失败。"
 		return false
@@ -87,7 +87,7 @@ func (dockerSwarmDevice) SetImages(cluster cluster.DomainObject, appName string,
 	progress <- "---------------------------------------------------------"
 	progress <- "开始更新Docker Swarm的镜像版本。"
 
-	var exitCode = exec.RunShell(fmt.Sprintf("docker service update --with-registry-auth --image %s --replicas %v --update-delay 10s %s", dockerImages, dockerReplicas, appName), progress, nil, "", false)
+	var exitCode = exec.RunShell(fmt.Sprintf("docker service update --image %s --replicas %v --update-delay 10s --with-registry-auth %s", dockerImages, dockerReplicas, appName), progress, nil, "", false)
 	if exitCode != 0 {
 		progress <- "Docker Swarm更新镜像失败。"
 		return false

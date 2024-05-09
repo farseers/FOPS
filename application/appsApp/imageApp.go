@@ -26,6 +26,15 @@ func SyncDockerImage(clusterId int64, appName string, appsIDockerSwarmDevice app
 		exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "版本一致，不需要同步")
 	}
 
+	// 先登陆仓库
+	if clusterDO.DockerUserName != "" && clusterDO.DockerUserPwd != "" {
+		c := make(chan string, 100)
+		if !appsIDockerDevice.Login(clusterDO.DockerHub, clusterDO.DockerUserName, clusterDO.DockerUserPwd, c) {
+			lstLog := collections.NewListFromChan(c)
+			exception.ThrowWebExceptionf(403, "镜像登陆失败:<br />%s", lstLog.ToString("<br />"))
+		}
+	}
+
 	c := make(chan string, 100)
 	// 先拉取镜像
 	appsIDockerDevice.Pull(do.DockerImage, c)
@@ -65,7 +74,7 @@ func DeleteService(appName string, appsRepository apps.Repository, appsIDockerSw
 
 // UpdateDockerImage 更新仓库版本
 // @post updateDockerImage
-func UpdateDockerImage(appName string, dockerImage string, buildNumber int, clusterId int64, dockerHub, dockerUserName, dockerUserPwd string, appsIDockerDevice apps.IDockerDevice, appsIDockerSwarmDevice apps.IDockerSwarmDevice, appsRepository apps.Repository, clusterRepository cluster.Repository) {
+func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buildNumber int, dockerHub, dockerUserName, dockerUserPwd string, appsIDockerDevice apps.IDockerDevice, appsIDockerSwarmDevice apps.IDockerSwarmDevice, appsRepository apps.Repository, clusterRepository cluster.Repository) {
 	// 更新仓库版本
 	event.DockerPushedEvent{BuildNumber: buildNumber, AppName: appName, ImageName: dockerImage}.PublishEvent()
 

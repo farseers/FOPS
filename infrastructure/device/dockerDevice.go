@@ -31,7 +31,7 @@ func (dockerDevice) GetDockerHub(dockerHubAddress string) string {
 }
 
 func (device dockerDevice) GetDockerImage(dockerHubAddress string, appName string, buildNumber int) string {
-	return device.GetDockerHub(dockerHubAddress) + "/" + appName + ":" + strconv.Itoa(buildNumber)
+	return device.GetDockerHub(dockerHubAddress) + ":" + appName + "." + strconv.Itoa(buildNumber)
 }
 
 func (dockerDevice) Run(dockerName string, network string, dockerImage string, args []string, useRm bool, env apps.EnvVO, progress chan string, ctx context.Context) bool {

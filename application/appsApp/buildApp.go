@@ -137,10 +137,6 @@ func View(buildId int64) action.IResult {
 		}
 		logContent[i] = dateTimePart + " " + logPart
 	}
-	//for i := 0; i < 5; i++ {
-	//	globalStr = append(globalStr, fmt.Sprintf("%s 测试数据显示 %d", time.Now(), i+1))
-	//}
-	//logContent = globalStr
 	return action.Content(strings.Join(logContent, "\n"))
 }
 
@@ -150,9 +146,3 @@ func View(buildId int64) action.IResult {
 func Stop(dockerDevice apps.IDockerDevice) {
 	dockerDevice.Kill("FOPS-Build")
 }
-
-/*
-hub.fsgit.cc/hub		:amdata.67
-lb188/hub			:lbl.135
-
-*/

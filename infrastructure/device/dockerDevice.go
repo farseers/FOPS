@@ -12,6 +12,7 @@ import (
 	"path"
 	"regexp"
 	"strconv"
+	"strings"
 )
 
 func RegisterDockerDevice() {
@@ -140,6 +141,10 @@ func (dockerDevice) GetVersion() string {
 
 func (dockerDevice) Login(dockerHub string, loginName string, loginPwd string, progress chan string) bool {
 	if loginName != "" && loginPwd != "" {
+		// 不包含域名的，意味着是登陆docker官网，不需要额外设置登陆的URL
+		if !strings.Contains(dockerHub, ".") {
+			dockerHub = ""
+		}
 		var result = exec.RunShell("docker login "+dockerHub+" -u "+loginName+" -p "+loginPwd, progress, nil, "", true)
 		if result != 0 {
 			progress <- "镜像仓库登陆失败。"

@@ -27,6 +27,31 @@ func (dockerSwarmDevice) DeleteService(appName string, progress chan string) boo
 	return true
 }
 
+func (dockerSwarmDevice) SetImagesAndReplicas(cluster cluster.DomainObject, appName string, dockerImages string, dockerReplicas int, progress chan string) bool {
+	progress <- "---------------------------------------------------------"
+	progress <- "开始更新Docker Swarm的镜像版本。"
+
+	var exitCode = exec.RunShell(fmt.Sprintf("docker service update --image %s --replicas %v --update-delay 10s --with-registry-auth %s", dockerImages, dockerReplicas, appName), progress, nil, "", false)
+	if exitCode != 0 {
+		progress <- "Docker Swarm更新镜像失败。"
+		return false
+	}
+	progress <- "Docker Swarm更新镜像版本完成。"
+	return true
+}
+func (dockerSwarmDevice) SetImages(cluster cluster.DomainObject, appName string, dockerImages string, progress chan string) bool {
+	progress <- "---------------------------------------------------------"
+	progress <- "开始更新Docker Swarm的镜像版本。"
+
+	var exitCode = exec.RunShell(fmt.Sprintf("docker service update --image %s --update-delay 10s --with-registry-auth %s", dockerImages, appName), progress, nil, "", false)
+	if exitCode != 0 {
+		progress <- "Docker Swarm更新镜像失败。"
+		return false
+	}
+	progress <- "Docker Swarm更新镜像版本完成。"
+	return true
+}
+
 func (dockerSwarmDevice) SetReplicas(cluster cluster.DomainObject, appName string, dockerReplicas int, progress chan string) bool {
 	progress <- "---------------------------------------------------------"
 	progress <- "开始更新Docker Swarm的副本数量。"
@@ -80,18 +105,5 @@ func (dockerSwarmDevice) CreateService(appName, dockerNodeRole, additionalScript
 		progress <- "创建Docker Swarm容器失败了。"
 		return false
 	}
-	return true
-}
-
-func (dockerSwarmDevice) SetImages(cluster cluster.DomainObject, appName string, dockerImages string, dockerReplicas int, progress chan string) bool {
-	progress <- "---------------------------------------------------------"
-	progress <- "开始更新Docker Swarm的镜像版本。"
-
-	var exitCode = exec.RunShell(fmt.Sprintf("docker service update --image %s --replicas %v --update-delay 10s --with-registry-auth %s", dockerImages, dockerReplicas, appName), progress, nil, "", false)
-	if exitCode != 0 {
-		progress <- "Docker Swarm更新镜像失败。"
-		return false
-	}
-	progress <- "Docker Swarm更新镜像版本完成。"
 	return true
 }

@@ -39,6 +39,7 @@ func (dockerSwarmDevice) SetImagesAndReplicas(cluster cluster.DomainObject, appN
 	progress <- "Docker Swarm更新镜像版本完成。"
 	return true
 }
+
 func (dockerSwarmDevice) SetImages(cluster cluster.DomainObject, appName string, dockerImages string, progress chan string) bool {
 	progress <- "---------------------------------------------------------"
 	progress <- "开始更新Docker Swarm的镜像版本。"

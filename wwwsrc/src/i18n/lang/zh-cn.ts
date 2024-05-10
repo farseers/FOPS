@@ -79,7 +79,7 @@ export default {
 		ServerNode:'服务器节点',
 		AppCenter:'应用中心',
 		BuildDeployment:'构建部署',
-		ClusterAdd:'添加集群',
+		ClusterAdd:'集群管理',
 		AppAdd:'添加应用',
 		GitAdd:'Git管理',
 		DispatchCenter:'调度中心',

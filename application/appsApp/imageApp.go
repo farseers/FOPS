@@ -100,13 +100,13 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 		// 更新镜像
 		if !appsIDockerSwarmDevice.SetImages(clusterDO, appName, do.DockerImage, c) {
 			lstLog := collections.NewListFromChan(c)
-			exception.ThrowWebExceptionf(403, "同步仓库版本失败:<br />%s", lstLog.ToString("<br />"))
+			exception.ThrowWebExceptionf(403, "更新镜像失败:<br />%s", lstLog.ToString("<br />"))
 		}
 	} else {
 		// 创建容器服务
 		if !appsIDockerSwarmDevice.CreateService(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, do.DockerImage, c, context.Background()) {
 			lstLog := collections.NewListFromChan(c)
-			exception.ThrowWebExceptionf(403, "同步仓库版本失败:<br />%s", lstLog.ToString("<br />"))
+			exception.ThrowWebExceptionf(403, "创建容器服务失败:<br />%s", lstLog.ToString("<br />"))
 		}
 	}
 
@@ -126,14 +126,25 @@ func ClearDockerImage(device apps.IDockerDevice) {
 // RestartDocker 重启容器
 // @post build/restartDocker
 // @filter application.Jwt
-func RestartDocker(clusterId int64, appName string, appsIDockerSwarmDevice apps.IDockerSwarmDevice, clusterRepository cluster.Repository) {
+func RestartDocker(clusterId int64, appName string, appsIDockerSwarmDevice apps.IDockerSwarmDevice, clusterRepository cluster.Repository, appsRepository apps.Repository) {
 	clusterDO := clusterRepository.ToEntity(clusterId)
 	exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "集群不存在")
 
 	c := make(chan string, 100)
 	if !appsIDockerSwarmDevice.Restart(clusterDO, appName, c) {
-		lstLog := collections.NewListFromChan(c)
-		exception.ThrowWebExceptionf(403, "容器重启失败:<br />%s", lstLog.ToString("<br />"))
+		// 重启失败时，判断容器是否存在
+		if !appsIDockerSwarmDevice.ExistsDocker(appName) {
+			c = make(chan string, 100)
+			// 创建容器服务
+			do := appsRepository.ToEntity(appName)
+			if !appsIDockerSwarmDevice.CreateService(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, do.DockerImage, c, context.Background()) {
+				lstLog := collections.NewListFromChan(c)
+				exception.ThrowWebExceptionf(403, "创建容器服务失败:<br />%s", lstLog.ToString("<br />"))
+			}
+		} else {
+			lstLog := collections.NewListFromChan(c)
+			exception.ThrowWebExceptionf(403, "容器重启失败:<br />%s", lstLog.ToString("<br />"))
+		}
 	}
 }
 

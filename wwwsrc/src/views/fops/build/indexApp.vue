@@ -73,8 +73,8 @@
                 </el-tooltip>
               </div>
               <el-button v-if="v.AppGit > 0" size="small" @click="onSyncWorkflows(v)" type="info" style="margin-left: 5px;width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>
-              <div class="appItem" style="margin-bottom: 10px">构建应用
-                <el-button v-if="v.AppGit > 0" v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v,item)" type="danger" style="margin-left: 5px;margin-bottom: 5px;"><el-icon><ele-SwitchButton /></el-icon>{{item}}</el-button>
+              <div class="appItem" style="margin-bottom: 10px">构建
+                <el-button v-if="v.AppGit > 0" v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v,item)" type="danger" style="margin-left: 5px;margin-bottom: 5px;">{{item}}</el-button>
               </div>
             </el-card>
           </el-space>

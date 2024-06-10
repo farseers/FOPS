@@ -85,7 +85,7 @@ func SlowHandList(traceId, appName, appIp, name string, searchUseTs int64, onlyV
 // SlowHttpList 慢Http列表
 // @get slowHttpList
 // @filter application.Jwt
-func SlowHttpList(traceId, appName, appIp, method, url, requestBody, responseBody string, statusCode int, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailHttp] {
+func SlowHttpList(traceId, appName, appIp, method, url, body string, statusCode int, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailHttp] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -97,10 +97,9 @@ func SlowHttpList(traceId, appName, appIp, method, url, requestBody, responseBod
 	appIp = strings.TrimSpace(appIp)
 	method = strings.TrimSpace(method)
 	url = strings.TrimSpace(url)
-	requestBody = strings.TrimSpace(requestBody)
-	responseBody = strings.TrimSpace(responseBody)
+	body = strings.TrimSpace(body)
 
-	return linkTraceRepository.ToSlowHttpList(traceId, appName, appIp, method, url, requestBody, responseBody, statusCode, searchUseTs, onlyViewException, startMin, pageSize, pageIndex)
+	return linkTraceRepository.ToSlowHttpList(traceId, appName, appIp, method, url, body, statusCode, searchUseTs, onlyViewException, startMin, pageSize, pageIndex)
 }
 
 // SlowMqList 慢Mq列表

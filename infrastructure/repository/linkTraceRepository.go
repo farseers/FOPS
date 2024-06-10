@@ -220,7 +220,7 @@ func (receiver *linkTraceRepository) ToSlowHandList(traceId, appName, appIp, nam
 	}
 	return collections.NewPageList[linkTraceCom.TraceDetailHand](collections.NewList[linkTraceCom.TraceDetailHand](), 0)
 }
-func (receiver *linkTraceRepository) ToSlowHttpList(traceId, appName, appIp, method, url, requestBody, responseBody string, statusCode int, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailHttp] {
+func (receiver *linkTraceRepository) ToSlowHttpList(traceId, appName, appIp, method, url, body string, statusCode int, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailHttp] {
 	if linkTrace.Config.Driver == "clickhouse" {
 		ts := context.CHContext.TraceDetailHttp.
 			WhereIf(traceId != "", "trace_id = ?", traceId).
@@ -229,8 +229,7 @@ func (receiver *linkTraceRepository) ToSlowHttpList(traceId, appName, appIp, met
 			WhereIf(searchUseTs > 0, "use_ts >= ?", searchUseTs*int64(time.Microsecond)).
 			WhereIf(method != "", "method like ?", "%"+method+"%").
 			WhereIf(url != "", "url like ?", "%"+url+"%").
-			WhereIf(requestBody != "", "request_body like ?", "%"+requestBody+"%").
-			WhereIf(responseBody != "", "response_body like ?", "%"+responseBody+"%").
+			WhereIf(body != "", "(request_body like ? or response_body like ?)", "%"+body+"%", "%"+body+"%").
 			WhereIf(statusCode > 0, "status_code >= ?", statusCode).
 			WhereIf(onlyViewException, "exception <> ''").
 			WhereIf(startMin > 0, "start_ts >= ?", dateTime.Now().AddMinutes(-startMin).UnixMicro())

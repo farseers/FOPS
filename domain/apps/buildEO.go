@@ -184,12 +184,12 @@ func (receiver *BuildEO) StartBuild() {
 			shellScript.Add("cd " + DistRoot + receiver.appGit.GetRelativePath())
 			shellScript.AddArray(step.Run)
 			shellScript.Add("")
-			shellPath := fmt.Sprintf("%s%d-%d.sh", ShellRoot, receiver.Env.BuildNumber, index+1)
 			script := shellScript.ToString("\n")
 			// 支持参数化脚本
 			for k, v := range step.With {
 				script = strings.ReplaceAll(script, "{{"+k+"}}", parse.ToString(v))
 			}
+			shellPath := fmt.Sprintf("%s%d-%d.sh", ShellRoot, receiver.Env.BuildNumber, index+1)
 			file.WriteString(shellPath, script)
 			receiver.dockerDevice.Copy(dockerName, shellPath, shellPath, receiver.Env, make(chan string, 100), receiver.ctx)
 

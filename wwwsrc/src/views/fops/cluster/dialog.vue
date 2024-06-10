@@ -29,12 +29,12 @@
             </el-form-item>
           </el-col>
           <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
-            <el-form-item label="账户名称">
+            <el-form-item label="DockerHub账户">
               <el-input v-model="state.ruleForm.DockerUserName" placeholder="请输入账户名称" clearable></el-input>
             </el-form-item>
           </el-col>
           <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
-            <el-form-item label="账户密码">
+            <el-form-item label="DockerHub密码">
               <el-input v-model="state.ruleForm.DockerUserPwd" placeholder="请输入账户密码" clearable></el-input>
             </el-form-item>
           </el-col>

@@ -8,6 +8,7 @@ import (
 	"fops/domain/cluster"
 	"fops/domain/logData"
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/core/eumLogLevel"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
@@ -118,10 +119,25 @@ func List(clusterId int64, appsRepository apps.Repository, logDataRepository log
 		}).First().LogCount
 
 		// 获取工作流文件名称
-		appsResponse.WorkflowsNames = file.GetFiles(item.GetWorkflowsDir(), "*.yml", true)
-		for i, v := range appsResponse.WorkflowsNames {
-			v = filepath.Base(v)
-			appsResponse.WorkflowsNames[i] = v[:strings.Index(v, ".yml")]
+		workflowsNames := file.GetFiles(item.GetWorkflowsDir(), "*.yml", true)
+		for _, workflowsYmlPath := range workflowsNames {
+			// 读取工作流内容
+			workflowsYml := configure.NewYamlConfig("")
+			_ = workflowsYml.LoadContent([]byte(file.ReadString(workflowsYmlPath)))
+
+			// 取出集群ID
+			clusterIds, _ := workflowsYml.GetArray("jobs.clusterId")
+			if len(clusterIds) == 0 {
+				clusterIds = []any{clusterId}
+			}
+
+			// 只筛选出对应集群Id的工作流
+			for _, cId := range clusterIds {
+				if clusterId == parse.ToInt64(cId) {
+					workflowsYmlPath = filepath.Base(workflowsYmlPath)
+					appsResponse.WorkflowsNames = append(appsResponse.WorkflowsNames, workflowsYmlPath[:strings.Index(workflowsYmlPath, ".yml")])
+				}
+			}
 		}
 		lst.Add(appsResponse)
 	})

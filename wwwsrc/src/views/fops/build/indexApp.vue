@@ -202,8 +202,11 @@ const state = reactive({
 const getTableData = () => {
 	state.tableData.loading = true;
 	const data = [];
+  var param={
+    "ClusterId" : state.clusterId,
+  }
   // 请求接口
-  serverApi.appsList({}).then(function (res){
+  serverApi.appsList(param).then(function (res){
     if (res.Status){
       for (let i = 0; i < res.Data.length; i++) {
         let item = res.Data[i];
@@ -211,14 +214,12 @@ const getTableData = () => {
         item.TaskSuccessCount=0
         let taskFailCount = state.statTask.filter(t => t.ExecuteStatus == 3 && t.ClientName == item.AppName);
 
-        if(taskFailCount.length>0)
-        {
+        if(taskFailCount.length > 0) {
           item.TaskFailCount=taskFailCount[0].Count
         }
 
         let taskSuccessCount = state.statTask.filter(t => t.ExecuteStatus == 2 && t.ClientName == item.AppName);
-        if(taskSuccessCount.length>0)
-        {
+        if(taskSuccessCount.length > 0) {
           item.TaskSuccessCount=taskSuccessCount[0].Count
         }
 
@@ -322,12 +323,7 @@ const onHandleSizeLogChange = (val: number) => {
   state.tableLogData.param.pageSize = val;
   getTableLogData();
 };
-const onShowBuildList=(row: any)=>{
-  state.appName=row.AppName
-  state.tableLogData.param.pageNum=1
-  state.tableLogData.param.pageSize=10
-  getTableLogData();
-}
+
 // 分页改变
 const onHandleCurrentLogChange = (val: number) => {
   state.tableLogData.param.pageNum = val;

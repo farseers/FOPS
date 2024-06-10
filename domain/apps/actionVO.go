@@ -23,12 +23,13 @@ func (receiver *stepVO) GetActionPath() string {
 }
 
 type ActionVO struct {
-	Name   string // 工作流名称
-	RunsOn string // 基础镜像系统
-	Proxy  string // 代理
-	Env    map[string]string
-	With   map[string]any // 全局参数
-	Steps  []stepVO       // 步骤
+	Name       string  // 工作流名称
+	ClusterIds []int64 // 归属集群Id
+	RunsOn     string  // 基础镜像系统
+	Proxy      string  // 代理
+	Env        map[string]string
+	With       map[string]any // 全局参数
+	Steps      []stepVO       // 步骤
 }
 
 func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysWith map[string]any) (ActionVO, error) {
@@ -40,8 +41,8 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 	// 替换项目名称
 	workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "${app_name}", appName)
 	workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "${git_name}", gitName)
-	workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "{{fops.ver}}", parse.ToString(sysWith["fops.ver"]))
-	workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "{{fschedule.ver}}", parse.ToString(sysWith["fschedule.ver"]))
+	//workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "{{fops.ver}}", parse.ToString(sysWith["fops.ver"]))
+	//workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "{{fschedule.ver}}", parse.ToString(sysWith["fschedule.ver"]))
 
 	workflowsYml := configure.NewYamlConfig("")
 	err := workflowsYml.LoadContent([]byte(workflowsYmlContent))
@@ -50,6 +51,7 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 	}
 
 	name, _ := workflowsYml.Get("name")
+	clusterIds, _ := workflowsYml.GetArray("jobs.clusterId")
 	proxy, _ := workflowsYml.Get("jobs.build.proxy")
 	sysImage, _ := workflowsYml.Get("jobs.build.runs-on")
 	env, _ := workflowsYml.GetSubNodes("jobs.build.env")
@@ -62,6 +64,10 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 		With:   with,
 		Env:    make(map[string]string),
 	}
+	for _, clusterId := range clusterIds {
+		act.ClusterIds = append(act.ClusterIds, parse.ToInt64(clusterId))
+	}
+
 	for k, v := range env {
 		act.Env[k] = parse.ToString(v)
 	}

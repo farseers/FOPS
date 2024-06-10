@@ -80,4 +80,3 @@ jobs:
         uses: dockerswarmUpdateVer@v1
         with:
           remoteClusterId: 1
-          

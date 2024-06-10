@@ -89,6 +89,8 @@ func (receiver *BuildEO) StartBuild() {
 		"dockerReplicas":          receiver.apps.DockerReplicas,
 		"dockerAdditionalScripts": receiver.apps.AdditionalScripts,
 		"clusterId":               receiver.ClusterId,
+		"fopsAddr":                clusterDO.FopsAddr,
+		"fScheduleAddr":           clusterDO.FScheduleAddr,
 	}
 
 	// 把fops、fschedule版本写入到系统参数sysWith

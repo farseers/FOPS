@@ -92,8 +92,8 @@ func (receiver *BuildEO) StartBuild() {
 	}
 
 	// 把fops、fschedule版本写入到系统参数sysWith
-	sysWith["fops.ver"] = container.Resolve[Repository]().ToEntity("fops").DockerVer
-	sysWith["fschedule.ver"] = container.Resolve[Repository]().ToEntity("fschedule").DockerVer
+	//sysWith["fops.ver"] = container.Resolve[Repository]().ToEntity("fops").DockerVer
+	//sysWith["fschedule.ver"] = container.Resolve[Repository]().ToEntity("fschedule").DockerVer
 
 	// 生成Workflows文件
 	receiver.checkResult(receiver.GenerateWorkflowsContent(sysWith))

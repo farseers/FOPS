@@ -55,9 +55,7 @@ jobs:
 
       - name: 安装npm
         uses: setup-npm@v1
-
-      - name: 安装cnpm
-        run:
+        run: # 安装cnpm
           - npm install -g cnpm --registry=https://registry.npmmirror.com/
 
       - name: 编译前端

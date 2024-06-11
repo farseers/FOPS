@@ -40,7 +40,7 @@ func StatVisitsJob(*tasks.TaskContext) {
 		endAt = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), time.Now().Hour(), time.Now().Minute(), 0, 0, time.Local)
 	}
 
-	// 获取webapi链路集合
+	// 获取链路集合
 	lst := repository.ToTraceListByVisits(lastVisitsAt, endAt)
 	// 没有同步到数据
 	if lst.Count() == 0 {

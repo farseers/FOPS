@@ -537,9 +537,9 @@ let intervalAppId = null;
 let statCountAppId = null;
 // 页面加载时
 onMounted(() => {
+  getTableClusterData();
 	getTableData();
   getTableLogData();
-  getTableClusterData();
   taskLogStat();
   intervalAppId = setInterval(getTableData, 3000);
   intervalLogId = setInterval(getTableLogData, 3000);

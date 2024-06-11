@@ -261,8 +261,9 @@ const getTableClusterData = () => {
       var lst=[]
       for (let i = 0; i < res.Data.length; i++) {
         var item=res.Data[i]
-        if (i==0){
+        if (i==0) {
           state.clusterId=item.Id;
+          getTableData();
         }
         item.Name=item.Name+" - "+item.FopsAddr
         lst.push(item)
@@ -538,7 +539,6 @@ let statCountAppId = null;
 // 页面加载时
 onMounted(() => {
   getTableClusterData();
-	getTableData();
   getTableLogData();
   taskLogStat();
   intervalAppId = setInterval(getTableData, 3000);

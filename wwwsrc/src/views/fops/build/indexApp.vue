@@ -285,6 +285,7 @@ const showTask=(st:any,appName:any)=>{
 
 const onClusterChange=(value:number)=>{
   state.clusterId=value
+  getTableData()
 }
 // 打开新增用户弹窗
 const onOpenAdd = (type: string) => {
@@ -333,7 +334,6 @@ const onHandleCurrentLogChange = (val: number) => {
 let intervalId = null;
 // 使用 watch 监听 state 中 count 属性的变化
 watch(() => state.logDialogIsShow, (newValue, oldValue) => {
-  //console.log(`count 从 ${oldValue} 变为 ${newValue}`);
   if(!newValue){
     clearInterval(intervalId);
   }else {
@@ -541,8 +541,8 @@ onMounted(() => {
   getTableLogData();
   getTableClusterData();
   taskLogStat();
-  intervalLogId = setInterval(getTableLogData, 3000);
   intervalAppId = setInterval(getTableData, 3000);
+  intervalLogId = setInterval(getTableLogData, 3000);
   statCountAppId = setInterval(taskLogStat, 10000);
 });
 // 页面注销的时候

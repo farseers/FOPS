@@ -122,31 +122,62 @@ fops目前为大家提供了8个常用的action程序：[点这里查看](https:
 
 gitPath用于你希望存储到本地相对路径下的哪个目录。用于后续打包时使用。
 
-## 3.5.3 dockerPush：上传镜像
-上传到集群定义的hub，则不用添加任何参数：
+## 3.5.4 setup-go：安装go
 ```yaml
-      - name: 上传镜像
-        uses: dockerPush@v1
-```
-期望将镜像传到其它（或多次上传不同docker hub)时，可自定义要上传镜像仓库
-```yaml
-      - name: 上传镜像
-        uses: dockerPush@v1
+      - name: 安装go
+        uses: setup-go@v1
         with:
-          dockerImage: xxx:{{appName}}.{{buildNumber}}
-          dockerHub:
-          dockerUserName: username
-          dockerUserPwd: "token"
+          goVersion: go1.22.0 #指定版本
+          goDownload: # 自定义下载链接，可不填
 ```
-同时，如果希望远程更新线上的fops服务。可使用如下参数：
+
+## 3.5.5 run：运行shell
+通过run配置，可自定义要执行的shell脚本，
+```yaml
+      - name: 编译
+        run:
+          - rm -rf ./go.work
+          - go mod download
+          - GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./fops -ldflags="-w -s" .
+```
+
+## 3.5.6 setup-npm：安装npm
+也可搭配run，在执行完setup-npm后，运行run定义的shell脚本
+```yaml
+      - name: 安装npm
+        uses: setup-npm@v1
+        run: # 安装cnpm
+          - npm install -g cnpm --registry=https://registry.npmmirror.com/
+```
+## 3.5.7 dockerBuild：打包镜像
+将根据集群中定义的docker配置，对编译完的程序进行打包。
+> 默认情况下，Dockerfile文件定义在应用的仓库根目录中
+> 如需更改路径，请到应用中心修改
+```yaml
+      - name: 打包镜像
+        uses: dockerBuild@v1
+```
+
+## 3.5.8 dockerPush：上传镜像
+上传到集群定义的镜像hub，将在镜像打包成功后上传。
+> 可以配置docker官网hub或私有hub，配置请到集群中修改
 ```yaml
       - name: 上传镜像
         uses: dockerPush@v1
-        with:
-          dockerImage: xxx:{{appName}}.{{buildNumber}}
-          dockerHub:
-          dockerUserName: username
-          dockerUserPwd: "token"
-          fopsAddr: https://fops.xxx.com   # 通知要更新的远程fops地址
-          fopsClusterId: 1                 # 远程fops的集群ID，设置后就立即部署。否则仅更新仓库版本
 ```
+
+## 3.5.9 dockerswarmUpdateVer：更新镜像
+将镜像部署到当前集群
+```yaml
+      - name: 更新镜像
+        uses: dockerswarmUpdateVer@v1
+```
+
+如果需要更新到远程集群，可以使用remoteClusterId参数：
+```yaml
+      - name: 更新镜像
+        uses: dockerswarmUpdateVer@v1
+        with:
+          remoteClusterId: 1
+```
+fops是如何知道远程集群的地址，这需要在远程集群中安装好fops。同时在本地的集群配置中设置好远程fops地址。

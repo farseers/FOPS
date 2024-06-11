@@ -1,6 +1,7 @@
 package domainEvent
 
 import (
+	"encoding/json"
 	"fops/domain/apps"
 	"fops/domain/apps/event"
 	"github.com/farseer-go/fs/container"
@@ -19,6 +20,7 @@ func BuildFinishedConsumer(message any, _ core.EventArgs) {
 	appsDO := appsRepository.ToEntity(buildFinishedEvent.AppName)
 	appsDO.UpdateBuildVer(buildFinishedEvent.IsSuccess, buildFinishedEvent.ClusterId, buildFinishedEvent.BuildId)
 
-	flog.Infof("更新后的集群map=%+v", appsDO.ClusterVer)
+	marshal, _ := json.Marshal(appsDO.ClusterVer)
+	flog.Infof("更新后的集群map=%s", string(marshal))
 	_, _ = appsRepository.UpdateClusterVer(buildFinishedEvent.AppName, appsDO.ClusterVer)
 }

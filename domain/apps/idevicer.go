@@ -4,6 +4,7 @@ import (
 	"context"
 	"fops/domain/_/eumK8SControllers"
 	"fops/domain/cluster"
+	"github.com/farseer-go/collections"
 )
 
 type IDockerDevice interface {
@@ -31,6 +32,8 @@ type IDockerDevice interface {
 	Login(dockerHub string, loginName string, loginPwd string, progress chan string) bool
 	// Pull 拉取镜像
 	Pull(image string, progress chan string)
+	// Logs 获取日志
+	Logs(appName string, tailCount int) collections.List[string]
 }
 
 type IDockerSwarmDevice interface {
@@ -45,7 +48,10 @@ type IDockerSwarmDevice interface {
 	// Restart 重启容器
 	Restart(cluster cluster.DomainObject, appName string, progress chan string) bool
 	ExistsDocker(appName string) bool
+	// CreateService 创建服务
 	CreateService(appName, dockerNodeRole, additionalScripts, dockerNetwork string, dockerReplicas int, dockerImages string, progress chan string, ctx context.Context) bool
+	// Logs 获取日志
+	Logs(appName string, tailCount int) collections.List[string]
 }
 
 type IKubectlDevice interface {

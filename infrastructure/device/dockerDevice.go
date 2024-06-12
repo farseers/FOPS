@@ -159,3 +159,14 @@ func (dockerDevice) Login(dockerHub string, loginName string, loginPwd string, p
 func (dockerDevice) Pull(image string, progress chan string) {
 	exec.RunShell(fmt.Sprintf("docker pull %s", image), progress, nil, "", true)
 }
+
+func (dockerDevice) Logs(appName string, tailCount int) collections.List[string] {
+	progress := make(chan string, 1000)
+	// docker service logs fops
+	var exitCode = exec.RunShell(fmt.Sprintf("docker logs %s --tail %d", appName, tailCount), progress, nil, "", true)
+	lst := collections.NewListFromChan(progress)
+	if exitCode != 0 {
+		lst.Insert(0, "获取日志失败。")
+	}
+	return lst
+}

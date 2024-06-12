@@ -7,7 +7,7 @@ import (
 )
 
 // DockerSwarm 获取容器日志
-// @get logs/dockerSwarm
+// @post logs/dockerSwarm
 // @filter application.Jwt
 func DockerSwarm(appName string, tailCount int, appsIDockerSwarmDevice apps.IDockerSwarmDevice) collections.List[string] {
 	return appsIDockerSwarmDevice.Logs(appName, tailCount)

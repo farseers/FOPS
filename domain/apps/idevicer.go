@@ -53,7 +53,9 @@ type IDockerSwarmDevice interface {
 	// Logs 获取日志
 	Logs(appName string, tailCount int) collections.List[string]
 	// ServiceList 获取所有Service
-	ServiceList() collections.List[DockerName]
+	ServiceList() collections.List[DockerServiceVO]
+	// PS 获取容器运行的实例信息
+	PS(appName string) collections.List[DockerInstanceVO]
 }
 
 type IKubectlDevice interface {
@@ -74,9 +76,21 @@ type IGitDevice interface {
 	PullWorkflows(gitPath, branch string, gitRemote string, progress chan string) bool
 }
 
-type DockerName struct {
+// DockerServiceVO 容器的名称 实例数量 副本数量 镜像（docker service ls）
+type DockerServiceVO struct {
 	Name      string // 容器名称
 	Instances int    // 实例数量
 	Replicas  int    // 副本数量
 	Image     string // 镜像
+}
+
+// DockerInstanceVO 容器的实例信息 docker service ps fops
+type DockerInstanceVO struct {
+	Id        string // 容器ID
+	Name      string // 容器名称
+	Image     string // 镜像
+	Node      string // 节点
+	State     string // 状态   Shutdown Running
+	StateInfo string // 状态
+	Error     string // 错误信息
 }

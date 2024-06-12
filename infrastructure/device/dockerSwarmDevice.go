@@ -122,12 +122,12 @@ func (dockerSwarmDevice) Logs(appName string, tailCount int) collections.List[st
 	return lst
 }
 
-func (dockerSwarmDevice) ServiceList() collections.List[apps.DockerName] {
+func (dockerSwarmDevice) ServiceList() collections.List[apps.DockerServiceVO] {
 	progress := make(chan string, 1000)
 	// docker service ls
 	var exitCode = exec.RunShell("docker service ls", progress, nil, "", false)
 	serviceList := collections.NewListFromChan(progress)
-	lstDockerName := collections.NewList[apps.DockerName]()
+	lstDockerName := collections.NewList[apps.DockerServiceVO]()
 	if exitCode != 0 || serviceList.Count() == 0 {
 		return lstDockerName
 	}
@@ -149,7 +149,7 @@ func (dockerSwarmDevice) ServiceList() collections.List[apps.DockerName] {
 		if sers.Count() != 4 {
 			return
 		}
-		lstDockerName.Add(apps.DockerName{
+		lstDockerName.Add(apps.DockerServiceVO{
 			Name:      sers.Index(0),
 			Instances: parse.ToInt(strings.Split(sers.Index(2), "/")[0]),
 			Replicas:  parse.ToInt(strings.Split(sers.Index(2), "/")[1]),
@@ -157,4 +157,45 @@ func (dockerSwarmDevice) ServiceList() collections.List[apps.DockerName] {
 		})
 	})
 	return lstDockerName
+}
+
+func (dockerSwarmDevice) PS(appName string) collections.List[apps.DockerInstanceVO] {
+	progress := make(chan string, 1000)
+	// docker service ps fops
+	var exitCode = exec.RunShell(fmt.Sprintf("docker service ps %s", appName), progress, nil, "", false)
+	serviceList := collections.NewListFromChan(progress)
+	lstDockerInstance := collections.NewList[apps.DockerInstanceVO]()
+	if exitCode != 0 || serviceList.Count() == 0 {
+		return lstDockerInstance
+	}
+
+	// 移除标题
+	serviceList.RemoveAt(0)
+	serviceList.Foreach(func(service *string) {
+		// 移除空格
+		*service = strings.Replace(*service, "\t", "", -1)
+		sers := collections.NewList(strings.Split(*service, " ")...)
+		sers.RemoveAll(func(item string) bool {
+			return item == ""
+		})
+
+		// k0d7jnwrr8st|fops.1|hub.fsgit.cc/hub:fops.551|test|Running|Running 4 minutes ago
+		// 满足长度格式才继续
+		if sers.Count() < 6 {
+			return
+		}
+		vo := apps.DockerInstanceVO{
+			Id:        sers.Index(0),
+			Name:      sers.Index(1),
+			Image:     sers.Index(2),
+			Node:      sers.Index(3),
+			State:     sers.Index(4),
+			StateInfo: sers.Index(5),
+		}
+		if sers.Count() > 6 {
+			vo.Error = sers.Index(6)
+		}
+		lstDockerInstance.Add(vo)
+	})
+	return lstDockerInstance
 }

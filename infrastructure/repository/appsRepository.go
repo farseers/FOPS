@@ -38,13 +38,13 @@ func (receiver *appsRepository) UpdateClusterVer(appName string, dicClusterVer m
 }
 
 // UpdateInsReplicas 更新从集群中获取到的实例、副本数量
-func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.DockerName]) (int64, error) {
+func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.DockerServiceVO]) (int64, error) {
 	sql := bytes.Buffer{}
 	sql.WriteString("UPDATE apps SET \n")
 
 	// Instances
 	sql.WriteString("docker_instances = case\n")
-	lst.Foreach(func(item *apps.DockerName) {
+	lst.Foreach(func(item *apps.DockerServiceVO) {
 		sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.Name, item.Instances))
 	})
 	sql.WriteString("else docker_instances\n")
@@ -52,7 +52,7 @@ func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.Dock
 
 	// Replicas
 	sql.WriteString(",docker_replicas = case\n")
-	lst.Foreach(func(item *apps.DockerName) {
+	lst.Foreach(func(item *apps.DockerServiceVO) {
 		sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.Name, item.Replicas))
 	})
 	sql.WriteString("else docker_replicas\n")

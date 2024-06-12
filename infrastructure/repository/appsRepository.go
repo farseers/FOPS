@@ -1,12 +1,16 @@
 package repository
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
 	"fops/domain/apps"
 	"fops/infrastructure/repository/context"
 	"fops/infrastructure/repository/model"
+	"github.com/farseer-go/collections"
 	"github.com/farseer-go/data"
 	"github.com/farseer-go/mapper"
+	"strings"
 )
 
 type appsRepository struct {
@@ -32,4 +36,35 @@ func (receiver *appsRepository) UpdateDockerVer(appName string, dockerVer int, i
 func (receiver *appsRepository) UpdateClusterVer(appName string, dicClusterVer map[int64]*apps.ClusterVerVO) (int64, error) {
 	marshal, _ := json.Marshal(dicClusterVer)
 	return context.MysqlContext.Apps.Where("LOWER(app_name) = ?", appName).UpdateValue("cluster_ver", string(marshal))
+}
+
+// UpdateInsReplicas 更新从集群中获取到的实例、副本数量
+func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.DockerName]) (int64, error) {
+	var appNames []string
+	lst.Select(&appNames, func(item apps.DockerName) any {
+		return item.Name
+	})
+
+	sql := bytes.Buffer{}
+	sql.WriteString("UPDATE apps SET \n")
+
+	// Instances
+	sql.WriteString("docker_instances = case\n")
+	lst.Foreach(func(item *apps.DockerName) {
+		sql.WriteString(fmt.Sprintf("when app_name = '%s' then docker_instances = %d\n", item.Name, item.Instances))
+	})
+	sql.WriteString("else docker_instances\n")
+	sql.WriteString("end \n")
+
+	// Replicas
+	sql.WriteString("replicas = case\n")
+	lst.Foreach(func(item *apps.DockerName) {
+		sql.WriteString(fmt.Sprintf("when app_name = '%s' then docker_replicas = %d\n", item.Name, item.Replicas))
+	})
+	sql.WriteString("else docker_replicas\n")
+	sql.WriteString("end \n")
+
+	// where
+	sql.WriteString(fmt.Sprintf("WHERE app_name in ('%s');\n", strings.Join(appNames, "','")))
+	return context.MysqlContext.ExecuteSql(sql.String())
 }

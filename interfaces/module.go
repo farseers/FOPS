@@ -25,6 +25,9 @@ func (module Module) PostInitialize() {
 	if dockerVer != "" {
 		tasks.Run("开启构建", time.Second*1, job.BuildingJob, context.Background())
 		flog.Info("Docker version：" + flog.Blue(dockerVer))
+
+		// 3秒收集一次Docker集群信息
+		tasks.Run("收集Docker集群信息", time.Second*3, job.CollectsClusterJob, context.Background())
 	}
 
 	tasks.RunNow("统计访问", time.Minute*1, job.StatVisitsJob, context.Background())

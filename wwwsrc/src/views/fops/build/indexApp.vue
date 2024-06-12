@@ -21,7 +21,7 @@
                   <el-button size="small" type="warning" @click="onRestartDocker(v)" style="float:right;position: relative;"><el-icon><ele-SwitchButton /></el-icon>重启</el-button>
                   <el-tooltip content="实例数量/副本数量" slot="label">
                     <el-tag v-if="v.IsHealth" size="small" style="margin-left: 5px">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
-                    <el-tag v-else size="small" type="warning" style="margin-left: 5px">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
+                    <el-tag v-else size="small" type="danger" style="margin-left: 5px">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                   </el-tooltip>
                 </div>
               </template>

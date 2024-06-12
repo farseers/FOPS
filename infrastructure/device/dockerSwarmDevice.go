@@ -119,3 +119,14 @@ func (dockerSwarmDevice) Logs(appName string, tailCount int) collections.List[st
 	}
 	return lst
 }
+
+func (dockerSwarmDevice) ServiceList() collections.List[string] {
+	progress := make(chan string, 1000)
+	// docker service logs fops
+	var exitCode = exec.RunShell("docker service ls", progress, nil, "", false)
+	lst := collections.NewListFromChan(progress)
+	if exitCode != 0 {
+		lst.Insert(0, "获取日志失败。")
+	}
+	return lst
+}

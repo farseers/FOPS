@@ -52,6 +52,8 @@ type IDockerSwarmDevice interface {
 	CreateService(appName, dockerNodeRole, additionalScripts, dockerNetwork string, dockerReplicas int, dockerImages string, progress chan string, ctx context.Context) bool
 	// Logs 获取日志
 	Logs(appName string, tailCount int) collections.List[string]
+	// ServiceList 获取所有Service
+	ServiceList() collections.List[string]
 }
 
 type IKubectlDevice interface {

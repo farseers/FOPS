@@ -183,7 +183,7 @@ func doToAppsResponse(clusterId int64, do apps.DomainObject) response.AppsRespon
 	}
 	return response.AppsResponse{
 		AppName:           do.AppName,
-		ActiveInstance:    do.ActiveInstance,
+		DockerInstances:   do.DockerInstances,
 		DockerVer:         do.DockerVer,
 		DockerImage:       do.DockerImage,
 		ClusterVer:        *vo,
@@ -193,6 +193,6 @@ func doToAppsResponse(clusterId int64, do apps.DomainObject) response.AppsRespon
 		DockerNodeRole:    do.DockerNodeRole,
 		DockerReplicas:    do.DockerReplicas,
 		AdditionalScripts: do.AdditionalScripts,
-		IsHealth:          len(do.ActiveInstance) >= do.DockerReplicas,
+		IsHealth:          do.DockerInstances >= do.DockerReplicas,
 	}
 }

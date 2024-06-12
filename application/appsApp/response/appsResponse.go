@@ -14,8 +14,8 @@ type AppsResponse struct {
 	AppGitName        string                  // 应用的git仓库名称
 	FrameworkGits     collections.List[int64] // 依赖的框架源代码
 	DockerfilePath    string                  // Dockerfile路径
-	ActiveInstance    []apps.ActiveInstanceEO // 正在运行的实例
 	IsHealth          bool                    // 应用是否健康
+	DockerInstances   int                     // 运行的实例数量
 	DockerReplicas    int                     // 副本数量
 	DockerNodeRole    string                  // 容器节点角色 manager or worker
 	AdditionalScripts string                  // 首次创建应用时附加脚本

@@ -33,8 +33,3 @@ func (receiver *appsRepository) UpdateClusterVer(appName string, dicClusterVer m
 	marshal, _ := json.Marshal(dicClusterVer)
 	return context.MysqlContext.Apps.Where("LOWER(app_name) = ?", appName).UpdateValue("cluster_ver", string(marshal))
 }
-
-func (receiver *appsRepository) UpdateActiveInstance(appName string, eo []apps.ActiveInstanceEO) (int64, error) {
-	marshal, _ := json.Marshal(eo)
-	return context.MysqlContext.Apps.Where("LOWER(app_name) = ?", appName).UpdateValue("active_instance", string(marshal))
-}

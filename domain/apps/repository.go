@@ -13,7 +13,6 @@ type Repository interface {
 	UpdateApp(do DomainObject) error
 	UpdateDockerVer(appName string, dockerVer int, imageName string) (int64, error)        // UpdateDockerVer 修改镜像版本
 	UpdateClusterVer(appName string, dicClusterVer map[int64]*ClusterVerVO) (int64, error) // UpdateClusterVer 修改集群的镜像版本
-	UpdateActiveInstance(appName string, eo []ActiveInstanceEO) (int64, error)
 	buildRepository
 	gitRepository
 }

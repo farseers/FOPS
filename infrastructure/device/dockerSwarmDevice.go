@@ -128,7 +128,7 @@ func (dockerSwarmDevice) ServiceList() collections.List[apps.DockerName] {
 	var exitCode = exec.RunShell("docker service ls", progress, nil, "", false)
 	serviceList := collections.NewListFromChan(progress)
 	lstDockerName := collections.NewList[apps.DockerName]()
-	if exitCode != 0 {
+	if exitCode != 0 || serviceList.Count() == 0 {
 		return lstDockerName
 	}
 

@@ -31,7 +31,6 @@ var route = []webapi.Route{
 	{"POST", "/apps/build/restartDocker", appsApp.RestartDocker, "", []context.IFilter{application.Jwt{}}, []string{"clusterId", "appName", "", "", ""}},
 	{"POST", "/apps/deleteService", appsApp.DeleteService, "", []context.IFilter{application.Jwt{}}, []string{"appName", "", ""}},
 	{"POST", "/apps/logs/dockerSwarm", appsApp.DockerSwarm, "", []context.IFilter{application.Jwt{}}, []string{"appName", "tailCount", ""}},
-	{"POST", "/apps/register", appsApp.Register, "", []context.IFilter{}, []string{"req", ""}},
 	{"POST", "/cluster/add", clusterApp.Add, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
 	{"POST", "/cluster/update", clusterApp.Update, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
 	{"POST", "/cluster/list", clusterApp.List, "", []context.IFilter{application.Jwt{}}, []string{""}},

@@ -27,7 +27,5 @@ func (module Module) PostInitialize() {
 		flog.Info("Docker version：" + flog.Blue(dockerVer))
 	}
 
-	tasks.Run("统计应用的在线实例", time.Second*20, job.StatAppOnlineJob, context.Background())
-	tasks.Run("清除历史注册信息", time.Hour*1, job.ClearHistoryRegisterAppJob, context.Background())
 	tasks.RunNow("统计访问", time.Minute*1, job.StatVisitsJob, context.Background())
 }

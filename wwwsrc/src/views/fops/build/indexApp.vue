@@ -20,10 +20,9 @@
                   <el-tag size="default" @click="onOpenEdit('edit', v)" style="cursor: pointer;">{{ v.AppName }}</el-tag>
                   <el-button size="small" type="warning" @click="onRestartDocker(v)" style="float:right;position: relative;"><el-icon><ele-SwitchButton /></el-icon>重启</el-button>
                   <el-tag v-if="v.IsHealth" size="small" type="success" style="margin-left: 5px">健康</el-tag>
-                  <el-tag v-else-if="v.ActiveInstance!=null && v.ActiveInstance.length > 0" size="small" type="warning" style="margin-left: 5px">不健康</el-tag>
-                  <el-tag v-else size="small" type="warning" style="margin-left: 5px">未知</el-tag>
+                  <el-tag v-else size="small" type="warning" style="margin-left: 5px">不健康</el-tag>
                   <el-tooltip content="实例数量/副本数量" slot="label">
-                    <el-tag size="small" style="margin-left: 5px">{{v.ActiveInstance.length}}/{{ v.DockerReplicas }}</el-tag>
+                    <el-tag size="small" style="margin-left: 5px">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                   </el-tooltip>
                 </div>
               </template>

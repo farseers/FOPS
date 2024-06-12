@@ -5,7 +5,6 @@ import (
 	"fops/domain/apps"
 	"fops/domain/cluster"
 	"fops/domain/configure"
-	"fops/domain/register"
 	"fops/infrastructure/repository/model"
 	"github.com/farseer-go/data"
 	"github.com/farseer-go/fs/core"
@@ -28,8 +27,6 @@ type mysqlContext struct {
 	Build data.DomainSet[model.BuildPO, apps.BuildEO] `data:"name=build;migrate;"`
 	// Git
 	Git data.DomainSet[model.GitPO, apps.GitEO] `data:"name=git;migrate;"`
-	// 注册
-	Register data.DomainSet[model.RegisterPO, register.DomainObject] `data:"name=register;migrate;"`
 	// 配置中心
 	Configure data.DomainSet[model.ConfigurePO, configure.DomainObject] `data:"name=configure;migrate;"`
 	// 登录帐号

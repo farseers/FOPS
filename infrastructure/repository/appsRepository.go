@@ -57,7 +57,7 @@ func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.Dock
 	sql.WriteString("end \n")
 
 	// Replicas
-	sql.WriteString("replicas = case\n")
+	sql.WriteString("docker_replicas = case\n")
 	lst.Foreach(func(item *apps.DockerName) {
 		sql.WriteString(fmt.Sprintf("when app_name = '%s' then docker_replicas = %d\n", item.Name, item.Replicas))
 	})

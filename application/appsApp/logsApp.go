@@ -6,9 +6,9 @@ import (
 	"github.com/farseer-go/collections"
 )
 
-// dockerSwarm 获取容器日志
+// DockerSwarm 获取容器日志
 // @get logs/dockerSwarm
 // @filter application.Jwt
-func dockerSwarm(appName string, tailCount int, appsIDockerSwarmDevice apps.IDockerSwarmDevice) collections.List[string] {
+func DockerSwarm(appName string, tailCount int, appsIDockerSwarmDevice apps.IDockerSwarmDevice) collections.List[string] {
 	return appsIDockerSwarmDevice.Logs(appName, tailCount)
 }

@@ -127,11 +127,11 @@
   <taskDialog ref="taskDialogRef"  />
   <el-dialog title="构建日志" v-model="state.logDialogIsShow" style="width: 80%;top:20px;margin-bottom: 50px;">
     <el-checkbox v-model="state.autoLog">自动刷新日志</el-checkbox>
-    <el-card class="layout-padding-auto" style="background-color:#393d49;">
-      <div ref="scrollableDiv" style="">
+    <div class="layout-padding-auto" style="background-color:#393d49;">
+      <div ref="scrollableDiv" style="height: 100%;overflow-y: auto;">
         <pre style="color: #fff;background-color:#393d49;" v-html="state.logContent"></pre>
       </div>
-    </el-card>
+    </div>
   </el-dialog>
   <div v-if="state.showOverlay" class="overlay">
     <div class="overlay-content">
@@ -171,6 +171,7 @@ const scrollableDiv=ref();
 const state = reactive({
   logDialogIsShow:false,
   logContent:'',
+  logContents:'',
 	tableData: {
 		data: [],
 		total: 0,
@@ -197,6 +198,7 @@ const state = reactive({
   statTask:[],
   autoLog:true,
 });
+
 
 // 初始化表格数据
 const getTableData = () => {
@@ -347,20 +349,22 @@ const showLog=(row:any)=>{
   serverApi.buildLog(state.logId.toString()).then(function (res){
     state.logContent=res
     state.logDialogIsShow=true
-    //scrollableDiv.value.scrollTop=scrollableDiv.value.scrollHeight;
+    // scrollableDiv.value.scrollTop = scrollableDiv.value.scrollHeight;
   })
 }
 const onShowLog=()=>{
   serverApi.buildLog(state.logId.toString()).then(function (res) {
     // 如果从接口获取到的内容与本地内容一样时，则不用滚动
-    let isChange= state.logContent != res;
+    let isChange= state.logContents != res;
     state.logContent = res;
+    state.logContents = res;
     // 自动刷新日志
     if (state.autoLog && isChange) {
       scrollableDiv.value.scrollTop = scrollableDiv.value.scrollHeight;
     }
   })
 }
+
 const onShowOverlay=()=>{
   state.showOverlay=true
 }

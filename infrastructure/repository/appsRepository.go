@@ -10,7 +10,6 @@ import (
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/data"
 	"github.com/farseer-go/mapper"
-	"strings"
 )
 
 type appsRepository struct {
@@ -40,11 +39,6 @@ func (receiver *appsRepository) UpdateClusterVer(appName string, dicClusterVer m
 
 // UpdateInsReplicas 更新从集群中获取到的实例、副本数量
 func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.DockerName]) (int64, error) {
-	var appNames []string
-	lst.Select(&appNames, func(item apps.DockerName) any {
-		return item.Name
-	})
-
 	sql := bytes.Buffer{}
 	sql.WriteString("UPDATE apps SET \n")
 
@@ -65,6 +59,6 @@ func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.Dock
 	sql.WriteString("end \n")
 
 	// where
-	sql.WriteString(fmt.Sprintf("WHERE app_name in ('%s');\n", strings.Join(appNames, "','")))
+	sql.WriteString("WHERE 1=1;\n")
 	return context.MysqlContext.ExecuteSql(sql.String())
 }

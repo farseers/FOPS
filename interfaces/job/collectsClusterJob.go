@@ -3,6 +3,7 @@ package job
 import (
 	"fmt"
 	"fops/domain/apps"
+	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/tasks"
 	"strings"
@@ -18,8 +19,10 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		// 移除容器ID
 		*service = strings.TrimSpace((*service)[12:])
 		*service = strings.Replace(*service, "\t", "", -1)
-		sers := strings.Split(*service, " ")
-		fmt.Println(len(sers))
-		fmt.Println(strings.Join(sers, "|"))
+		sers := collections.NewList(strings.Split(*service, " ")...)
+		sers.RemoveAll(func(item string) bool {
+			return item == ""
+		})
+		fmt.Println(sers.ToString("|"))
 	})
 }

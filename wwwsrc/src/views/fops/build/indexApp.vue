@@ -17,18 +17,19 @@
             <el-card shadow="hover" v-for="(v, k) in state.tableData.data" :key="k" style="width: 280px;">
               <template #header>
                 <div class="card-header" style="height: 20px;">
-                  <el-tag size="default">{{ v.AppName }}</el-tag>
+                  <el-tag size="default" @click="onOpenEdit('edit', v)" style="cursor: pointer;">{{ v.AppName }}</el-tag>
+                  <el-button size="small" type="warning" @click="onRestartDocker(v)" style="float:right;position: relative;"><el-icon><ele-SwitchButton /></el-icon>重启</el-button>
                   <el-tag v-if="v.IsHealth" size="small" type="success" style="margin-left: 5px">健康</el-tag>
                   <el-tag v-else-if="v.ActiveInstance!=null && v.ActiveInstance.length > 0" size="small" type="warning" style="margin-left: 5px">不健康</el-tag>
-                  <el-tag v-else size="small" type="danger" style="margin-left: 5px">未运行</el-tag>
+                  <el-tag v-else size="small" type="warning" style="margin-left: 5px">未知</el-tag>
                   <el-tooltip content="实例数量/副本数量" slot="label">
                     <el-tag size="small" style="margin-left: 5px">{{v.ActiveInstance.length}}/{{ v.DockerReplicas }}</el-tag>
                   </el-tooltip>
-                  <el-button class="button" size="small" @click="onOpenEdit('edit', v)" type="warning" style="float:right;position: relative;">修改</el-button>
                 </div>
               </template>
-                <el-button size="small" type="success"  @click="showFsLogLevel(2,v.AppName)" style="float:right;position: relative;margin-left: 5px">日志</el-button>
-                <el-button size="small" @click="onRestartDocker(v)" type="warning" style="float:right;position: relative;"><el-icon><ele-SwitchButton /></el-icon>重启</el-button>
+                <el-button size="small" type="success" @click="showFsLogLevel(2,v.AppName)" style="float:right;position: relative;margin-left: 5px">应用日志</el-button>
+                <el-button size="small" type="primary" @click="showDockerLog(v.AppName)" style="float:right;position: relative;margin-left: 5px">容器日志</el-button>
+
                 <div class="appItem" style="margin-bottom: 10px">仓库版本
                   <div class="appItem">
                     <el-tag v-if="v.DockerImage !=''" size="small">{{ v.DockerImage }}</el-tag>
@@ -97,7 +98,7 @@
                 </el-table-column>
                 <el-table-column label="操作" width="80">
                   <template #default="scope">
-                    <el-button v-if="scope.row.Status!=0" size="small" type="success" @click="showLog(scope.row)">日志</el-button>
+                    <el-button v-if="scope.row.Status!=0" size="small" type="success" @click="showBuildLog(scope.row)">日志</el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -125,11 +126,18 @@
   <appAddDialog ref="appAddDialogRef" @refresh="getTableData()" @showOverlay="onShowOverlay()" @hideOverlay="onHideOverlay()" />
   <logDialog ref="logDialogRef"  />
   <taskDialog ref="taskDialogRef"  />
-  <el-dialog title="构建日志" v-model="state.logDialogIsShow" style="width: 80%;top:20px;margin-bottom: 50px;">
+  <el-dialog title="构建日志" v-model="state.isShowBuildLogDialog" style="width: 80%;top:20px;margin-bottom: 50px;">
     <el-checkbox v-model="state.autoLog">自动刷新日志</el-checkbox>
     <div class="layout-padding-auto" style="background-color:#393d49;">
-      <div ref="scrollableDiv" style="height: 100%;overflow-y: auto;">
-        <pre style="color: #fff;background-color:#393d49;" v-html="state.logContent"></pre>
+      <div ref="scrollableBuildLog" style="height: 100%;overflow-y: auto;">
+        <pre style="color: #fff;background-color:#393d49;padding: 5px 0 5px 5px;" v-html="state.buildLogContent"></pre>
+      </div>
+    </div>
+  </el-dialog>
+  <el-dialog title="容器日志" v-model="state.isShowDockerLogDialog" style="width: 80%;top:20px;margin-bottom: 50px;">
+    <div class="layout-padding-auto" style="background-color:#393d49;">
+      <div ref="scrollableDockerLog" style="height: 100%;overflow-y: auto;">
+        <pre style="color: #fff;background-color:#393d49;padding: 5px 0 5px 5px;" v-html="state.dockerLogContent"></pre>
       </div>
     </div>
   </el-dialog>
@@ -162,16 +170,20 @@ const appAddDialog = defineAsyncComponent(() => import('/src/views/fops/build/ad
 const taskDialog= defineAsyncComponent(() => import('/src/views/fops/task/taskAppDialog.vue'));
 // 日志
 const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logV2Dialog.vue'));
+
 const logDialogRef = ref();
 // 定义变量内容
 const appDialogRef = ref();
 const appAddDialogRef = ref();
-const taskDialogRef=ref();
-const scrollableDiv=ref();
+const taskDialogRef = ref();
+const scrollableBuildLog = ref();
+const scrollableDockerLog = ref();
 const state = reactive({
-  logDialogIsShow:false,
-  logContent:'',
-  logContents:'',
+  isShowBuildLogDialog: false,
+  isShowDockerLogDialog: false,
+  dockerLogContent: '',
+  buildLogContent: '',
+  buildLogContents: '',
 	tableData: {
 		data: [],
 		total: 0,
@@ -191,7 +203,7 @@ const state = reactive({
 
   },
   appName:"",
-  logId:0,
+  buildLogId:0,
   clusterId:0,
   clusterData:[],
   showOverlay:false,
@@ -207,7 +219,7 @@ const getTableData = () => {
   var param={
     "ClusterId" : state.clusterId,
   }
-  // 请求接口
+  // 获取应用列表
   serverApi.appsList(param).then(function (res){
     if (res.Status){
       for (let i = 0; i < res.Data.length; i++) {
@@ -336,31 +348,41 @@ const onHandleCurrentLogChange = (val: number) => {
 // 定义定时器
 let intervalId = null;
 // 使用 watch 监听 state 中 count 属性的变化
-watch(() => state.logDialogIsShow, (newValue, oldValue) => {
+watch(() => state.isShowBuildLogDialog, (newValue, oldValue) => {
   if(!newValue){
     clearInterval(intervalId);
   }else {
-    intervalId = setInterval(onShowLog, 1000);
+    intervalId = setInterval(onShowLog, 500);
   }
 });
 
-const showLog=(row:any)=>{
-  state.logId=row.Id
-  serverApi.buildLog(state.logId.toString()).then(function (res){
-    state.logContent=res
-    state.logDialogIsShow=true
-    // scrollableDiv.value.scrollTop = scrollableDiv.value.scrollHeight;
+// 显示构建日志
+const showBuildLog=(row:any)=>{
+  state.buildLogId=row.Id
+  serverApi.buildLog(state.buildLogId.toString()).then(function (res){
+    state.buildLogContent = res
+    state.isShowBuildLogDialog=true
   })
 }
+
+// 显示容器日志
+const showDockerLog=(appName:string)=>{
+  serverApi.dockerLog({ "AppName": appName, "tailCount": 100 }).then(function (res){
+    state.dockerLogContent = res.Data
+    state.isShowDockerLogDialog = true
+      scrollableDockerLog.value.scrollTop = scrollableDockerLog.value.scrollHeight;
+  })
+}
+
 const onShowLog=()=>{
-  serverApi.buildLog(state.logId.toString()).then(function (res) {
+  serverApi.buildLog(state.buildLogId.toString()).then(function (res) {
     // 如果从接口获取到的内容与本地内容一样时，则不用滚动
-    let isChange= state.logContents != res;
-    state.logContent = res;
-    state.logContents = res;
+    let isChange= state.buildLogContents != res;
+    state.buildLogContent = res;
+    state.buildLogContents = res;
     // 自动刷新日志
     if (state.autoLog && isChange) {
-      scrollableDiv.value.scrollTop = scrollableDiv.value.scrollHeight;
+        scrollableBuildLog.value.scrollTop = scrollableBuildLog.value.scrollHeight;
     }
   })
 }
@@ -513,8 +535,7 @@ const onStopBuild=()=>{
   })
       .then(() => {
         // 提交数据
-        var param={
-        }
+        var param={ }
         serverApi.buildStop(param).then(async function(res){
           if(res.Status){
             ElMessage.success("成功停止")

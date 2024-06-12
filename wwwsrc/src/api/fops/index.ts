@@ -154,6 +154,12 @@ export function fopsApi() {
 				method: 'get',
 				data:{},
 			});
+		},dockerLog: (param: object) => {
+			return requestGet({
+				url: '/apps/logs/dockerSwarm',
+				method: 'post',
+				data: param,
+			});
 		},dockerClearImage: () => {
 			return request({
 				url: '/apps/build/clearDockerImage',

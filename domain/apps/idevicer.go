@@ -53,7 +53,7 @@ type IDockerSwarmDevice interface {
 	// Logs 获取日志
 	Logs(appName string, tailCount int) collections.List[string]
 	// ServiceList 获取所有Service
-	ServiceList() collections.List[string]
+	ServiceList() collections.List[DockerName]
 }
 
 type IKubectlDevice interface {
@@ -72,4 +72,11 @@ type IKubectlDevice interface {
 type IGitDevice interface {
 	// PullWorkflows 拉取工作流
 	PullWorkflows(gitPath, branch string, gitRemote string, progress chan string) bool
+}
+
+type DockerName struct {
+	Name      string // 容器名称
+	Instances int    // 实例数量
+	Replicas  int    // 副本数量
+	Image     string // 镜像
 }

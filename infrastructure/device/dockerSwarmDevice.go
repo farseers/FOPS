@@ -7,7 +7,9 @@ import (
 	"fops/domain/cluster"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/container"
+	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/utils/exec"
+	"strings"
 )
 
 func RegisterDockerSwarmDevice() {
@@ -120,13 +122,39 @@ func (dockerSwarmDevice) Logs(appName string, tailCount int) collections.List[st
 	return lst
 }
 
-func (dockerSwarmDevice) ServiceList() collections.List[string] {
+func (dockerSwarmDevice) ServiceList() collections.List[apps.DockerName] {
 	progress := make(chan string, 1000)
 	// docker service ls
 	var exitCode = exec.RunShell("docker service ls", progress, nil, "", false)
-	lst := collections.NewListFromChan(progress)
+	serviceList := collections.NewListFromChan(progress)
+	lstDockerName := collections.NewList[apps.DockerName]()
 	if exitCode != 0 {
-		lst.Insert(0, "获取失败")
+		return lstDockerName
 	}
-	return lst
+
+	// 移除标题
+	serviceList.RemoveAt(0)
+	serviceList.Foreach(func(service *string) {
+		// 移除容器ID
+		*service = strings.TrimSpace((*service)[12:])
+		// 移除空格
+		*service = strings.Replace(*service, "\t", "", -1)
+		sers := collections.NewList(strings.Split(*service, " ")...)
+		sers.RemoveAll(func(item string) bool {
+			return item == ""
+		})
+
+		// redis|replicated|1/1|redis:latest
+		// 满足长度格式才继续
+		if sers.Count() != 4 {
+			return
+		}
+		lstDockerName.Add(apps.DockerName{
+			Name:      sers.Index(0),
+			Instances: parse.ToInt(strings.Split(sers.Index(2), "/")[0]),
+			Replicas:  parse.ToInt(strings.Split(sers.Index(2), "/")[1]),
+			Image:     sers.Index(3),
+		})
+	})
+	return lstDockerName
 }

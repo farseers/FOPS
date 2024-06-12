@@ -11,8 +11,8 @@ import (
 func CollectsClusterJob(*tasks.TaskContext) {
 	dockerSwarmDevice := container.Resolve[apps.IDockerSwarmDevice]()
 	serviceList := dockerSwarmDevice.ServiceList()
-
-	serviceList.Foreach(func(service *string) {
-		fmt.Println(service)
-	})
+	if serviceList.Count() == 0 {
+		fmt.Println("没有获取到任何服务")
+	}
+	fmt.Println(serviceList.ToString("\r\n"))
 }

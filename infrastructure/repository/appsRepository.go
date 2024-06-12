@@ -51,7 +51,7 @@ func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.Dock
 	// Instances
 	sql.WriteString("docker_instances = case\n")
 	lst.Foreach(func(item *apps.DockerName) {
-		sql.WriteString(fmt.Sprintf("when app_name = '%s' then docker_instances = %d\n", item.Name, item.Instances))
+		sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.Name, item.Instances))
 	})
 	sql.WriteString("else docker_instances\n")
 	sql.WriteString("end \n")
@@ -59,7 +59,7 @@ func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.Dock
 	// Replicas
 	sql.WriteString(",docker_replicas = case\n")
 	lst.Foreach(func(item *apps.DockerName) {
-		sql.WriteString(fmt.Sprintf("when app_name = '%s' then docker_replicas = %d\n", item.Name, item.Replicas))
+		sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.Name, item.Replicas))
 	})
 	sql.WriteString("else docker_replicas\n")
 	sql.WriteString("end \n")

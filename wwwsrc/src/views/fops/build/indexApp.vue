@@ -125,7 +125,7 @@
   <logDialog ref="logDialogRef"  />
   <taskDialog ref="taskDialogRef"  />
   <el-dialog title="构建日志" v-model="state.isShowBuildLogDialog" style="width: 80%;top:20px;margin-bottom: 50px;">
-    <el-checkbox v-model="state.autoLog">自动刷新日志</el-checkbox>
+    <el-checkbox v-model="state.autoLog" style="margin-bottom: 5px;">自动刷新日志</el-checkbox>
     <div class="layout-padding-auto" style="background-color:#393d49;">
       <div ref="scrollableBuildLog" style="height: 100%;overflow-y: auto;">
         <pre style="color: #fff;background-color:#393d49;padding: 5px 0 5px 5px;" v-html="state.buildLogContent"></pre>

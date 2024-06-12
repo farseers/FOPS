@@ -124,8 +124,8 @@ func (dockerSwarmDevice) Logs(appName string, tailCount int) collections.List[st
 
 func (dockerSwarmDevice) ServiceList() collections.List[apps.DockerServiceVO] {
 	progress := make(chan string, 1000)
-	// docker service ls
-	var exitCode = exec.RunShell("docker service ls", progress, nil, "", false)
+	// docker service ls --format "table {{.ID}}|{{.Name}}|{{.Mode}}|{{.Replicas}}|{{.Image}}|{{.Ports}}"
+	var exitCode = exec.RunShell("docker service ls --format \"table {{.ID}}|{{.Name}}|{{.Replicas}}|{{.Image}}\"", progress, nil, "", false)
 	serviceList := collections.NewListFromChan(progress)
 	lstDockerName := collections.NewList[apps.DockerServiceVO]()
 	if exitCode != 0 || serviceList.Count() == 0 {
@@ -135,25 +135,17 @@ func (dockerSwarmDevice) ServiceList() collections.List[apps.DockerServiceVO] {
 	// 移除标题
 	serviceList.RemoveAt(0)
 	serviceList.Foreach(func(service *string) {
-		// 移除容器ID
-		*service = strings.TrimSpace((*service)[12:])
-		// 移除空格
-		*service = strings.Replace(*service, "\t", "", -1)
-		sers := collections.NewList(strings.Split(*service, " ")...)
-		sers.RemoveAll(func(item string) bool {
-			return item == ""
-		})
-
-		// redis|replicated|1/1|redis:latest
-		// 满足长度格式才继续
-		if sers.Count() != 4 {
+		// vwceboa7gtmu|redis|1/1|redis:latest
+		sers := strings.Split(*service, "|")
+		if len(sers) < 4 {
 			return
 		}
 		lstDockerName.Add(apps.DockerServiceVO{
-			Name:      sers.Index(0),
-			Instances: parse.ToInt(strings.Split(sers.Index(2), "/")[0]),
-			Replicas:  parse.ToInt(strings.Split(sers.Index(2), "/")[1]),
-			Image:     sers.Index(3),
+			Id:        sers[0],
+			Name:      sers[1],
+			Instances: parse.ToInt(strings.Split(sers[2], "/")[0]),
+			Replicas:  parse.ToInt(strings.Split(sers[2], "/")[1]),
+			Image:     sers[3],
 		})
 	})
 	return lstDockerName
@@ -161,8 +153,8 @@ func (dockerSwarmDevice) ServiceList() collections.List[apps.DockerServiceVO] {
 
 func (dockerSwarmDevice) PS(appName string) collections.List[apps.DockerInstanceVO] {
 	progress := make(chan string, 1000)
-	// docker service ps fops
-	var exitCode = exec.RunShell(fmt.Sprintf("docker service ps %s", appName), progress, nil, "", false)
+	// docker service ps fops --format "table {{.ID}}|{{.Name}}|{{.Image}}|{{.Node}}|{{.DesiredState}}|{{.CurrentState}}|{{.Error}}"
+	var exitCode = exec.RunShell(fmt.Sprintf("docker service ps %s --format \"table {{.ID}}|{{.Name}}|{{.Image}}|{{.Node}}|{{.DesiredState}}|{{.CurrentState}}|{{.Error}}\"", appName), progress, nil, "", false)
 	serviceList := collections.NewListFromChan(progress)
 	lstDockerInstance := collections.NewList[apps.DockerInstanceVO]()
 	if exitCode != 0 || serviceList.Count() == 0 {
@@ -172,30 +164,20 @@ func (dockerSwarmDevice) PS(appName string) collections.List[apps.DockerInstance
 	// 移除标题
 	serviceList.RemoveAt(0)
 	serviceList.Foreach(func(service *string) {
-		// 移除空格
-		*service = strings.Replace(*service, "\t", "", -1)
-		sers := collections.NewList(strings.Split(*service, " ")...)
-		sers.RemoveAll(func(item string) bool {
-			return item == ""
-		})
-
-		// k0d7jnwrr8st|fops.1|hub.fsgit.cc/hub:fops.551|test|Running|Running 4 minutes ago
-		// 满足长度格式才继续
-		if sers.Count() < 6 {
+		// whw9erkpysrj|fops|fops.552|test|Running|Running 17 minutes ago|
+		sers := strings.Split(*service, "|")
+		if len(sers) < 7 {
 			return
 		}
-		vo := apps.DockerInstanceVO{
-			Id:        sers.Index(0),
-			Name:      sers.Index(1),
-			Image:     sers.Index(2),
-			Node:      sers.Index(3),
-			State:     sers.Index(4),
-			StateInfo: sers.Index(5),
-		}
-		if sers.Count() > 6 {
-			vo.Error = sers.Index(6)
-		}
-		lstDockerInstance.Add(vo)
+		lstDockerInstance.Add(apps.DockerInstanceVO{
+			Id:        sers[0],
+			Name:      sers[1],
+			Image:     sers[2],
+			Node:      sers[3],
+			State:     sers[4],
+			StateInfo: sers[5],
+			Error:     sers[6],
+		})
 	})
 	return lstDockerInstance
 }

@@ -78,6 +78,7 @@ type IGitDevice interface {
 
 // DockerServiceVO 容器的名称 实例数量 副本数量 镜像（docker service ls）
 type DockerServiceVO struct {
+	Id        string // 容器ID
 	Name      string // 容器名称
 	Instances int    // 实例数量
 	Replicas  int    // 副本数量

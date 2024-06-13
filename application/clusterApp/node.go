@@ -10,5 +10,9 @@ import (
 // @get nodeList
 // filter application.Jwt
 func NodeList(appsRepository apps.Repository) collections.List[apps.DockerNodeVO] {
-	return appsRepository.GetClusterNodeList()
+	lst := appsRepository.GetClusterNodeList()
+	lst.Foreach(func(item *apps.DockerNodeVO) {
+		item.IsHealth = item.Status == "Ready" && item.Availability == "Active"
+	})
+	return lst
 }

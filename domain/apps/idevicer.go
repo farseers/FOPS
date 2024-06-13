@@ -106,6 +106,7 @@ type DockerNodeVO struct {
 	Status        string                          // 主机状态   Ready
 	Availability  string                          // 节点状态
 	IsMaster      bool                            // 是否为主节点
+	IsHealth      bool                            // 应用是否健康
 	EngineVersion string                          // 引擎版本
 	IP            string                          // 节点IP
 	OS            string                          // 操作系统

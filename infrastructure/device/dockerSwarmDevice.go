@@ -120,7 +120,7 @@ func (dockerSwarmDevice) Logs(appName string, tailCount int) collections.List[st
 		lst.Insert(0, "获取日志失败。")
 	}
 	lst.Foreach(func(item *string) {
-		if strings.HasPrefix(*item, "|") {
+		if strings.Contains(*item, "|") {
 			*item = strings.TrimSpace(strings.SplitN(*item, "|", 2)[1])
 		}
 	})

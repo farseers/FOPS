@@ -56,6 +56,10 @@ type IDockerSwarmDevice interface {
 	ServiceList() collections.List[DockerServiceVO]
 	// PS 获取容器运行的实例信息
 	PS(appName string) collections.List[DockerInstanceVO]
+	// NodeList 获取主机节点列表
+	NodeList() collections.List[DockerNodeVO]
+	// NodeInfo 获取节点详情
+	NodeInfo(nodeName string) DockerNodeVO
 }
 
 type IKubectlDevice interface {
@@ -94,4 +98,25 @@ type DockerInstanceVO struct {
 	State     string // 状态   Shutdown Running
 	StateInfo string // 状态
 	Error     string // 错误信息
+}
+
+// DockerNodeVO 集群节点信息 docker node ls
+type DockerNodeVO struct {
+	NodeName      string                          // 节点名称
+	Status        string                          // 主机状态   Ready
+	Availability  string                          // 节点状态
+	IsMaster      bool                            // 是否为主节点
+	EngineVersion string                          // 引擎版本
+	IP            string                          // 节点IP
+	OS            string                          // 操作系统
+	Architecture  string                          // 架构
+	CPUs          string                          // CPU核心数
+	Memory        string                          // 内存
+	Label         collections.List[DockerLabelVO] // 标签
+}
+
+// DockerLabelVO 标签
+type DockerLabelVO struct {
+	Name  string // 标签名称
+	Value string // 标签值
 }

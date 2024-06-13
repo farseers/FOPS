@@ -23,6 +23,8 @@ type mysqlContext struct {
 	Apps data.DomainSet[model.AppsPO, apps.DomainObject] `data:"name=apps;migrate;"`
 	// cluster表
 	Cluster data.DomainSet[model.ClusterPO, cluster.DomainObject] `data:"name=cluster;migrate;"`
+	// 节点信息
+	ClusterNode data.DomainSet[model.ClusterNodePO, apps.DockerNodeVO] `data:"name=cluster_node;migrate;"`
 	// build表
 	Build data.DomainSet[model.BuildPO, apps.BuildEO] `data:"name=build;migrate;"`
 	// Git

@@ -9,6 +9,7 @@ import (
 	"fops/infrastructure/repository/model"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/data"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/mapper"
 )
 
@@ -61,4 +62,18 @@ func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.Dock
 	// where
 	sql.WriteString("WHERE 1=1;\n")
 	return context.MysqlContext.ExecuteSql(sql.String())
+}
+
+// UpdateClusterNode 更新集群节点信息
+func (receiver *appsRepository) UpdateClusterNode(lst collections.List[apps.DockerNodeVO]) {
+	lstPO := mapper.ToList[model.ClusterNodePO](lst)
+	lstPO.Foreach(func(item *model.ClusterNodePO) {
+		count, err := context.MysqlContext.ClusterNode.Update(*item)
+		flog.ErrorIfExists(err)
+
+		if count == 0 {
+			err = context.MysqlContext.ClusterNode.InsertIgnore(item)
+			flog.ErrorIfExists(err)
+		}
+	})
 }

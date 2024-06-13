@@ -121,7 +121,7 @@ func (dockerSwarmDevice) Logs(appName string, tailCount int) collections.List[st
 	}
 	lst.Foreach(func(item *string) {
 		if strings.HasPrefix(*item, "|") {
-			*item = strings.SplitN(*item, "|", 2)[1]
+			*item = strings.TrimSpace(strings.SplitN(*item, "|", 2)[1])
 		}
 	})
 	return lst

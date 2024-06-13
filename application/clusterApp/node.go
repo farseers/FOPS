@@ -8,7 +8,7 @@ import (
 
 // NodeList 集群节点列表
 // @get nodeList
-// filter application.Jwt
+// @filter application.Jwt
 func NodeList(appsRepository apps.Repository) collections.List[apps.DockerNodeVO] {
 	lst := appsRepository.GetClusterNodeList()
 	lst.Foreach(func(item *apps.DockerNodeVO) {

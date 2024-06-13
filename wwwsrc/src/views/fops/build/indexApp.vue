@@ -133,9 +133,28 @@
     </div>
   </el-dialog>
   <el-dialog title="容器日志" v-model="state.isShowDockerLogDialog" style="width: 80%;top:20px;margin-bottom: 50px;">
+      <div>
+        <el-tag size="default" :type="item.Id==state.dockerLog.Id?'':'info'"
+        @click="clickDockerLog(item)"
+        v-for="item in state.dockerLogContent" 
+        :key="item.Id" 
+        style="cursor: pointer;margin:0 15px 5px 0">
+        {{ item.Id }}
+      </el-tag>
+      </div>
+      <div style="margin: 5px 0;">
+            <div> 
+            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Name }} </span>
+            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Node }} </span>
+            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.State }}</span>
+            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.StateInfo }}</span>
+            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Image }}</span>
+          </div>
+          <div style="color: #f56c6c;">{{ state.dockerLog.Error }}</div>
+      </div>
     <div class="layout-padding-auto" style="background-color:#393d49;">
       <div ref="scrollableDockerLog" style="height: 100%;overflow-y: auto;">
-        <pre style="color: #fff;background-color:#393d49;padding: 5px 0 5px 5px;" v-html="state.dockerLogContent"></pre>
+        <pre v-html="state.dockerLog.Log" style="color: #fff;background-color:#393d49;padding: 5px 0 5px 5px;" ></pre>
       </div>
     </div>
   </el-dialog>
@@ -179,7 +198,11 @@ const scrollableDockerLog = ref();
 const state = reactive({
   isShowBuildLogDialog: false,
   isShowDockerLogDialog: false,
-  dockerLogContent: '',
+  dockerLogContent: [],//容器日志
+  dockerLog:{
+    Id:'',
+    Name:'',  Node:'',  State:'',  StateInfo:'',  Error:'',  Image:'',
+  },//容器日志选中
   buildLogContent: '',
   buildLogContents: '',
 	tableData: {
@@ -362,13 +385,21 @@ const showBuildLog=(row:any)=>{
     state.isShowBuildLogDialog=true
   })
 }
-
+//点击容器日志选项
+const clickDockerLog = (item:any)=>{
+  state.dockerLog = item
+}
 // 显示容器日志
 const showDockerLog=(appName:string)=>{
   serverApi.dockerLog({ "AppName": appName, "tailCount": 100 }).then(function (res){
-    state.dockerLogContent = res.Data
+    state.dockerLogContent = res.Data;
+    if(state.dockerLogContent && state.dockerLogContent.length>0){
+      clickDockerLog(state.dockerLogContent[0])
+    }
     state.isShowDockerLogDialog = true
+    setTimeout(()=>{   //自动跳到底部 
       scrollableDockerLog.value.scrollTop = scrollableDockerLog.value.scrollHeight;
+    },500)
   })
 }
 

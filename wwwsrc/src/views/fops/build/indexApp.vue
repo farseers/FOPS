@@ -139,16 +139,19 @@
         v-for="item in state.dockerLogContent" 
         :key="item.Id" 
         style="cursor: pointer;margin:0 15px 5px 0">
-        {{ item.Id }}
+        {{ item.Name }}（{{ item.Node }}）
       </el-tag>
       </div>
       <div style="margin: 5px 0;">
             <div> 
-            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Name }} </span>
-            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Node }} </span>
-            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.State }}</span>
-            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.StateInfo }}</span>
-            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Image }}</span>
+<!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Name }} </span>-->
+<!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Node }} </span>-->
+              <el-tag size="default">{{ state.dockerLog.State }}</el-tag>
+              <el-tag size="default">{{ state.dockerLog.StateInfo }}</el-tag>
+              <el-tag size="default">{{ state.dockerLog.Image }}</el-tag>
+<!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.State }}</span>-->
+<!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.StateInfo }}</span>-->
+<!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Image }}</span>-->
           </div>
           <div style="color: #f56c6c;">{{ state.dockerLog.Error }}</div>
       </div>

@@ -119,6 +119,11 @@ func (dockerSwarmDevice) Logs(appName string, tailCount int) collections.List[st
 	if exitCode != 0 {
 		lst.Insert(0, "获取日志失败。")
 	}
+	lst.Foreach(func(item *string) {
+		if strings.HasPrefix(*item, "|") {
+			*item = strings.SplitN(*item, "|", 2)[1]
+		}
+	})
 	return lst
 }
 

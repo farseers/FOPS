@@ -146,9 +146,9 @@
             <div> 
 <!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Name }} </span>-->
 <!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Node }} </span>-->
-              <el-tag size="default">{{ state.dockerLog.State }}</el-tag>
-              <el-tag size="default">{{ state.dockerLog.StateInfo }}</el-tag>
-              <el-tag size="default">{{ state.dockerLog.Image }}</el-tag>
+              <el-tag size="small">{{ state.dockerLog.State }}</el-tag>
+              <el-tag size="small">{{ state.dockerLog.StateInfo }}</el-tag>
+              <el-tag size="small">{{ state.dockerLog.Image }}</el-tag>
 <!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.State }}</span>-->
 <!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.StateInfo }}</span>-->
 <!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Image }}</span>-->

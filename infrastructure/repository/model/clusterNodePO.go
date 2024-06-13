@@ -3,6 +3,7 @@ package model
 import (
 	"fops/domain/apps"
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/dateTime"
 )
 
 type ClusterNodePO struct {
@@ -17,4 +18,5 @@ type ClusterNodePO struct {
 	CPUs          string                               `gorm:"size:64;not null;comment:CPU核心数"`
 	Memory        string                               `gorm:"size:64;not null;comment:内存"`
 	Label         collections.List[apps.DockerLabelVO] `gorm:"size:2048;json;not null;comment:标签"`
+	UpdateAt      dateTime.DateTime                    `gorm:"type:timestamp;size:6;not null;default:CURRENT_TIMESTAMP;comment:更新时间"`
 }

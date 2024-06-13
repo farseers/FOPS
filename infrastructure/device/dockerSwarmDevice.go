@@ -185,7 +185,7 @@ func (dockerSwarmDevice) PS(appName string) collections.List[apps.DockerInstance
 func (dockerSwarmDevice) NodeList() collections.List[apps.DockerNodeVO] {
 	progress := make(chan string, 1000)
 	// docker node ls --format "table {{.Hostname}}|{{.Status}}|{{.Availability}}|{{.ManagerStatus}}|{{.EngineVersion}}"
-	var exitCode = exec.RunShell("", progress, nil, "", false)
+	var exitCode = exec.RunShell("docker node ls --format \"table {{.Hostname}}|{{.Status}}|{{.Availability}}|{{.ManagerStatus}}|{{.EngineVersion}}\"", progress, nil, "", false)
 	serviceList := collections.NewListFromChan(progress)
 	lstDockerInstance := collections.NewList[apps.DockerNodeVO]()
 	if exitCode != 0 || serviceList.Count() == 0 {

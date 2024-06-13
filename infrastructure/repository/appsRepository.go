@@ -71,7 +71,7 @@ func (receiver *appsRepository) UpdateClusterNode(lst collections.List[apps.Dock
 	lstPO.Foreach(func(item *model.ClusterNodePO) {
 		item.UpdateAt = dateTime.Now()
 		// 更新数据
-		count, err := context.MysqlContext.ClusterNode.Update(*item)
+		count, err := context.MysqlContext.ClusterNode.Where("node_name", item.NodeName).Update(*item)
 		flog.ErrorIfExists(err)
 
 		// 没有更新到数据时，则插入

@@ -83,6 +83,6 @@ func (receiver *appsRepository) UpdateClusterNode(lst collections.List[apps.Dock
 }
 
 func (receiver *appsRepository) GetClusterNodeList() collections.List[apps.DockerNodeVO] {
-	lstPO := context.MysqlContext.ClusterNode.ToList()
+	lstPO := context.MysqlContext.ClusterNode.Desc("is_master").ToList()
 	return mapper.ToList[apps.DockerNodeVO](lstPO)
 }

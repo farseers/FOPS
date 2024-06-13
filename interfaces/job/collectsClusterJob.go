@@ -28,6 +28,8 @@ func CollectsClusterJob(*tasks.TaskContext) {
 
 		// 收集所有服务的运行情况
 		serviceList := dockerSwarmDevice.ServiceList()
-		_, _ = appsRepository.UpdateInsReplicas(serviceList)
+		if serviceList.Count() > 0 {
+			_, _ = appsRepository.UpdateInsReplicas(serviceList)
+		}
 	})
 }

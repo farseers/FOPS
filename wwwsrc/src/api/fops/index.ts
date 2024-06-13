@@ -225,6 +225,12 @@ export function fopsApi() {
 				method: 'get',
 				data:param,
 			});
+		},ColonyNodeList: (param: object) => { //集群节点
+			return requestGet({
+				url: '/cluster/nodeList',
+				method: 'get',
+				// data:param,
+			});
 		},clientList: (param: object) => {
 			return requestFS({
 				url: '/basicapi/client/list',

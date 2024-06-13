@@ -77,6 +77,7 @@ export default {
 		Market:'大盘',
 		MonitoringCenter:'监控中心',
 		ServerNode:'服务器节点',
+		ColonyNode:'集群信息',
 		AppCenter:'应用中心',
 		BuildDeployment:'构建部署',
 		ClusterAdd:'集群管理',

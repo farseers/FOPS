@@ -326,21 +326,9 @@ export function fopsApi() {
 				method: 'get',
 				//data:param,
 			});
-		},taskCount: (param: object) => {
+		},statInfo: (param: object) => {
 			return requestFS({
-				url: '/basicapi/stat/count',
-				method: 'get',
-				data:param,
-			});
-		},taskNoRunCount: (param: object) => {
-			return requestFS({
-				url: '/basicapi/stat/unRunCount',
-				method: 'get',
-				data:param,
-			});
-		},taskTodayFailCount: (param: object) => {
-			return requestFS({
-				url: '/basicapi/stat/todayFailCount',
+				url: '/basicapi/stat/info',
 				method: 'get',
 				data:param,
 			});

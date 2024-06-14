@@ -521,23 +521,16 @@ const initEchartsResize = () => {
 };
 // 当前数值
 const initCount=()=>{
-  // 任务组数量
-  serverApi.taskCount({}).then(function (res){
-    state.topCardItemList[0].titleNum=res.Data
+  // 调度中心的数量统计
+  serverApi.statInfo({}).then(function (res){
+    state.topCardItemList[0].titleNum = res.Data.TaskGroupCount
+    state.topCardItemList[1].titleNum = res.Data.TaskGroupUnRunCount
+    state.topCardItemList[2].titleNum = res.Data.TodayFailCount
     nextTick(() => {
-        new CountUp(document.querySelector('#'+state.topCardItemList[0].id) as HTMLDivElement, res.Data).start();
-        //new CountUp(v.querySelector('.countup-card-item-tip-num') as HTMLDivElement, Math.random() * 1000).start();
+      new CountUp(document.querySelector('#'+state.topCardItemList[0].id) as HTMLDivElement, res.Data).start();
+      new CountUp(document.querySelector('#'+state.topCardItemList[1].id) as HTMLDivElement, res.Data).start();
+      new CountUp(document.querySelector('#'+state.topCardItemList[2].id) as HTMLDivElement, res.Data).start();
     });
-  })
-  // 超时未运行的任务数量
-  serverApi.taskNoRunCount({}).then(function (res){
-    state.topCardItemList[1].titleNum=res.Data
-    new CountUp(document.querySelector('#'+state.topCardItemList[1].id) as HTMLDivElement, res.Data).start();
-  })
-  // 今天失败数量
-  serverApi.taskTodayFailCount({}).then(function (res){
-    state.topCardItemList[2].titleNum=res.Data
-    new CountUp(document.querySelector('#'+state.topCardItemList[2].id) as HTMLDivElement, res.Data).start();
   })
 }
 
@@ -563,30 +556,6 @@ watch(
 		initEchartsResizeFun();
 	}
 );
-// 监听 pinia 中是否开启深色主题
-// watch(
-// 	() => themeConfig.value.isIsDark,
-// 	(isIsDark) => {
-// 		nextTick(() => {
-// 			state.charts.theme = isIsDark ? 'dark' : '';
-// 			state.charts.bgColor = isIsDark ? 'transparent' : '';
-// 			state.charts.color = isIsDark ? '#dadada' : '#303133';
-// 			setTimeout(() => {
-// 				initLineChart();
-// 			}, 500);
-// 			setTimeout(() => {
-// 				initPieChart();
-// 			}, 700);
-// 			setTimeout(() => {
-// 				initBarChart();
-// 			}, 1000);
-// 		});
-// 	},
-// 	{
-// 		deep: true,
-// 		immediate: true,
-// 	}
-// );
 </script>
 
 <style scoped lang="scss">

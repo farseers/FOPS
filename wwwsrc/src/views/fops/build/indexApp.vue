@@ -318,7 +318,6 @@ const onOpenEdit = (type: string, row: any) => {
   appDialogRef.value.openDialog(type, row);
 };
 
-
 // 清除镜像
 const onClearDockerImage = () => {
   ElMessageBox.confirm(`此操作将永久清除：“None镜像”，是否继续?`, '提示', {

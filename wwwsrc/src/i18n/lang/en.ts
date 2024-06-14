@@ -91,6 +91,7 @@ export default {
 		dropdownLarge: 'large',
 		dropdownDefault: 'default',
 		dropdownSmall: 'small',
+		dropdownMini: 'mini',
 		dropdown1: 'home page',
 		dropdown2: 'Personal Center',
 		dropdown3: '404',

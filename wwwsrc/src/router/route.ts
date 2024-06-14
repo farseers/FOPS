@@ -50,7 +50,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 			{
 				path: '/market',
 				name: 'market',
-				component: () => import('/@/views/fops/market/index.vue'),
+				component: () => import('/@/views/fops/task/indexColonyNode.vue'),
 				meta: {
 					title: 'message.router.Market',
 					isLink: '',
@@ -61,21 +61,21 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					roles: ['admin', 'common'],
 					icon: 'iconfont icon-putong',
 				},children: [
-					{
-						path: '/market/monitorCenter',
-						name: 'marketMonitorCenter',
-						component: () => import('/@/views/fops/market/index.vue'),
-						meta: {
-							title: 'message.router.MonitoringCenter',
-							isLink: '',
-							isHide: false,
-							isKeepAlive: true,
-							isAffix: false,
-							isIframe: false,
-							roles: ['admin'],
-							icon: 'iconfont icon-ico_shuju',
-						},
-					},
+					// {
+					// 	path: '/market/monitorCenter',
+					// 	name: 'marketMonitorCenter',
+					// 	component: () => import('/@/views/fops/market/index.vue'),
+					// 	meta: {
+					// 		title: 'message.router.MonitoringCenter',
+					// 		isLink: '',
+					// 		isHide: false,
+					// 		isKeepAlive: true,
+					// 		isAffix: false,
+					// 		isIframe: false,
+					// 		roles: ['admin'],
+					// 		icon: 'iconfont icon-ico_shuju',
+					// 	},
+					// },
 					{
 						path: '/market/colonyNode',
 						name: 'marketColonyNode',
@@ -88,7 +88,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 							isAffix: true,
 							isIframe: false,
 							roles: ['admin'], 
-							icon: 'iconfont icon-zidingyibuju',
+							icon: 'iconfont icon-ico_shuju',
 						},
 					},
 					// {

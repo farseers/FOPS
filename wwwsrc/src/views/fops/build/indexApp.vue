@@ -132,35 +132,7 @@
       </div>
     </div>
   </el-dialog>
-  <el-dialog title="容器日志" v-model="state.isShowDockerLogDialog" style="width: 80%;top:20px;margin-bottom: 50px;">
-      <div>
-        <el-tag size="default" :type="item.Id==state.dockerLog.Id?'':'info'"
-        @click="clickDockerLog(item)"
-        v-for="item in state.dockerLogContent" 
-        :key="item.Id" 
-        style="cursor: pointer;margin:0 15px 5px 0">
-        {{ item.Name }}（{{ item.Node }}）
-      </el-tag>
-      </div>
-      <div style="margin: 5px 0;">
-            <div> 
-<!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Name }} </span>-->
-<!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Node }} </span>-->
-              <el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.State }}</el-tag>
-              <el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.StateInfo }}</el-tag>
-              <el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.Image }}</el-tag>
-<!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.State }}</span>-->
-<!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.StateInfo }}</span>-->
-<!--            <span style="display: inline-block;margin-right:10px">{{ state.dockerLog.Image }}</span>-->
-          </div>
-          <div style="color: #f56c6c;">{{ state.dockerLog.Error }}</div>
-      </div>
-    <div class="layout-padding-auto" style="background-color:#393d49;">
-      <div ref="scrollableDockerLog" style="height: 100%;overflow-y: auto;">
-        <pre v-html="state.dockerLog.Log" style="color: #fff;background-color:#393d49;padding: 5px 0 5px 5px;" ></pre>
-      </div>
-    </div>
-  </el-dialog>
+  <dockerDialog ref="dockerDialogRef"/>
   <div v-if="state.showOverlay" class="overlay">
     <div class="overlay-content">
       <img :src="Image" style="width: 200px" alt="Image">
@@ -190,7 +162,7 @@ const appAddDialog = defineAsyncComponent(() => import('/src/views/fops/build/ad
 const taskDialog= defineAsyncComponent(() => import('/src/views/fops/task/taskAppDialog.vue'));
 // 日志
 const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logV2Dialog.vue'));
-
+const dockerDialog = defineAsyncComponent(() => import('/src/views/fops/task/dockerDialog.vue'));
 const logDialogRef = ref();
 // 定义变量内容
 const appDialogRef = ref();
@@ -198,14 +170,9 @@ const appAddDialogRef = ref();
 const taskDialogRef = ref();
 const scrollableBuildLog = ref();
 const scrollableDockerLog = ref();
+const dockerDialogRef = ref();
 const state = reactive({
   isShowBuildLogDialog: false,
-  isShowDockerLogDialog: false,
-  dockerLogContent: [],//容器日志
-  dockerLog:{
-    Id:'',
-    Name:'',  Node:'',  State:'',  StateInfo:'',  Error:'',  Image:'',
-  },//容器日志选中
   buildLogContent: '',
   buildLogContents: '',
 	tableData: {
@@ -235,7 +202,9 @@ const state = reactive({
   autoLog:true,
 });
 
-
+const showDockerLog = (AppName) => {
+    dockerDialogRef.value.openDockerLog(AppName);
+}
 // 初始化表格数据
 const getTableData = () => {
 	state.tableData.loading = true;
@@ -369,23 +338,7 @@ const showBuildLog=(row:any)=>{
     state.isShowBuildLogDialog=true
   })
 }
-//点击容器日志选项
-const clickDockerLog = (item:any)=>{
-  state.dockerLog = item
-}
-// 显示容器日志
-const showDockerLog=(appName:string)=>{
-  serverApi.dockerLog({ "AppName": appName, "tailCount": 100 }).then(function (res){
-    state.dockerLogContent = res.Data;
-    if(state.dockerLogContent && state.dockerLogContent.length>0){
-      clickDockerLog(state.dockerLogContent[0])
-    }
-    state.isShowDockerLogDialog = true
-    setTimeout(()=>{   //自动跳到底部 
-      scrollableDockerLog.value.scrollTop = scrollableDockerLog.value.scrollHeight;
-    },500)
-  })
-}
+
 
 const onShowLog=()=>{
   serverApi.buildLog(state.buildLogId.toString()).then(function (res) {
@@ -578,7 +531,7 @@ onUnmounted(()=>{
 })
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .system-user-container {
 	:deep(.el-card__body) {
 		display: flex;

@@ -179,17 +179,18 @@ const openDialog = (type: string, row: any) => {
 	state.dialog.isShowDialog = true;
 };
 
-const loadGit=(lst:any)=>{
-  state.gitList=[]
-  for (let i = 0; i < lst.length; i++) {
-    serverApi.gitInfo({"gitId":lst[i]}).then(function (res){
-      if (res.Status){
-        state.gitList.push(res.Data)
-      }else{
-        state.gitList=[]
-      }
-    })
-  }
+const loadGit=()=>{
+  serverApi.gitList({isApp:1}).then(function (res){
+    // console.log(11111111)
+    if (res.Status){
+      // state.tableData.data = res.Data;
+      // state.tableData.total = res.Data.length;
+      state.gitList= res.Data;
+      // console.log(state.gitList)
+    }else{
+      state.gitList=[]
+    }
+  })
 }
 const loadGitInfo=(id:any)=>{
     serverApi.gitInfo({"gitId":id}).then(function (res){
@@ -305,6 +306,7 @@ const getTableData = (type:any) => {
   }
   // 请求接口
   serverApi.gitList({isApp:state.isApp}).then(function (res){
+    console.log(11111111)
     if (res.Status){
       state.tableData.data = res.Data;
       state.tableData.total = res.Data.length;

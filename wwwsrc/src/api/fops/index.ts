@@ -332,11 +332,6 @@ export function fopsApi() {
 				method: 'get',
 				data:param,
 			});
-		},taskStatList: (param: string) => {
-			return requestFSGet({
-				url: '/basicapi/stat/statList?'+param,
-				method: 'get',
-			});
 		}
 	};
 }

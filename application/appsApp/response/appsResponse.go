@@ -21,5 +21,7 @@ type AppsResponse struct {
 	AdditionalScripts string                  // 首次创建应用时附加脚本
 	LogErrorCount     int                     // 日志错误数量
 	LogWaringCount    int                     // 日志警告数量
+	TaskFailCount     int                     // 任务失败数量
+	TaskSuccessCount  int                     // 任务成功数量
 	WorkflowsNames    []string                // 工作流名称
 }

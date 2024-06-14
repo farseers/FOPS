@@ -2,9 +2,11 @@ package infrastructure
 
 import (
 	"fops/domain/apps/event"
+	"fops/domain/fSchedule"
 	"fops/domain/linkTrace"
 	"fops/infrastructure/device"
 	"fops/infrastructure/domainEvent"
+	"fops/infrastructure/http"
 	"fops/infrastructure/localQueue"
 	"fops/infrastructure/repository"
 	"fops/infrastructure/repository/context"
@@ -12,6 +14,7 @@ import (
 	"github.com/farseer-go/data/driver/clickhouse"
 	"github.com/farseer-go/eventBus"
 	"github.com/farseer-go/fs/configure"
+	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/modules"
 	linkTraceModule "github.com/farseer-go/linkTrace"
 	"github.com/farseer-go/queue"
@@ -27,6 +30,8 @@ func (module Module) DependsModule() []modules.FarseerModule {
 }
 
 func (module Module) PostInitialize() {
+	container.Register(func() fSchedule.Http { return &http.FScheduleHttp{} })
+
 	// 初始化数据库上下文
 	context.InitMysqlContext()
 	// 初始化仓储

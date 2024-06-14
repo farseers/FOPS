@@ -239,32 +239,14 @@ const state = reactive({
 // 初始化表格数据
 const getTableData = () => {
 	state.tableData.loading = true;
-	const data = [];
   var param={
     "ClusterId" : state.clusterId,
   }
   // 获取应用列表
   serverApi.appsList(param).then(function (res){
-    if (res.Status){
-      for (let i = 0; i < res.Data.length; i++) {
-        let item = res.Data[i];
-        item.TaskFailCount=0
-        item.TaskSuccessCount=0
-        let taskFailCount = state.statTask.filter(t => t.ExecuteStatus == 3 && t.ClientName == item.AppName);
-
-        if(taskFailCount.length > 0) {
-          item.TaskFailCount=taskFailCount[0].Count
-        }
-
-        let taskSuccessCount = state.statTask.filter(t => t.ExecuteStatus == 2 && t.ClientName == item.AppName);
-        if(taskSuccessCount.length > 0) {
-          item.TaskSuccessCount=taskSuccessCount[0].Count
-        }
-
-        data.push(item)
-      }
-      state.tableData.data =data;
-      state.tableData.total = data.length;
+    if (res.Status) {
+      state.tableData.data = res.Data;
+      state.tableData.total = res.Data.length;
       state.tableData.loading = false;
     }else{
       state.tableData.data=[]
@@ -581,32 +563,19 @@ const onStopBuild=()=>{
       .catch(() => {});
 }
 
-// 任务日志统计列表
-const taskLogStat=()=>{
-  serverApi.taskStatList("").then(function (res){
-    if (res.Status){
-      state.statTask=res.Data
-    }
-  })
-}
-
 let intervalLogId = null;
 let intervalAppId = null;
-let statCountAppId = null;
 // 页面加载时
 onMounted(() => {
   getTableClusterData();
   getTableLogData();
-  taskLogStat();
   intervalAppId = setInterval(getTableData, 3000);
   intervalLogId = setInterval(getTableLogData, 3000);
-  statCountAppId = setInterval(taskLogStat, 10000);
 });
 // 页面注销的时候
 onUnmounted(()=>{
   clearInterval(intervalLogId);
   clearInterval(intervalAppId);
-  clearInterval(statCountAppId);
 })
 </script>
 

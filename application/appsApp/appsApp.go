@@ -6,6 +6,7 @@ import (
 	"fops/application/appsApp/response"
 	"fops/domain/apps"
 	"fops/domain/cluster"
+	"fops/domain/fSchedule"
 	"fops/domain/logData"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/configure"
@@ -98,25 +99,44 @@ func Delete(appName string, appsRepository apps.Repository, appsIDockerSwarmDevi
 // List 应用列表
 // @post list
 // @filter application.Jwt
-func List(clusterId int64, appsRepository apps.Repository, logDataRepository logData.Repository) collections.List[response.AppsResponse] {
-	lstDO := appsRepository.ToList()
+func List(clusterId int64, appsRepository apps.Repository, logDataRepository logData.Repository, clusterRepository cluster.Repository, fScheduleHttp fSchedule.Http) collections.List[response.AppsResponse] {
 	lstGit := appsRepository.ToGitListAll(-1)
 	countList := logDataRepository.StatCount()
+	clusterDO := clusterRepository.ToEntity(clusterId)
+	var taskGroupStatList collections.List[fSchedule.StatTaskEO]
+
+	// 获取任务组的数据统计
+	if clusterDO.FScheduleAddr != "" {
+		taskGroupStatList = fScheduleHttp.StatList(clusterDO.FScheduleAddr)
+	}
 
 	lst := collections.NewList[response.AppsResponse]()
-	lstDO.Foreach(func(item *apps.DomainObject) {
+	appsRepository.ToList().Foreach(func(item *apps.DomainObject) {
 		appsResponse := doToAppsResponse(clusterId, *item)
+		// Git名称
 		appsResponse.AppGitName = lstGit.Where(func(gitItem apps.GitEO) bool {
 			return item.AppGit == parse.ToInt64(gitItem.Id)
 		}).First().Name
 
+		// 日志异常数量
 		appsResponse.LogErrorCount = countList.Where(func(logItem logData.LogCountEO) bool {
 			return item.AppName == logItem.AppName && logItem.LogLevel == eumLogLevel.Error
 		}).First().LogCount
 
+		// 日志警告数量
 		appsResponse.LogWaringCount = countList.Where(func(logItem logData.LogCountEO) bool {
 			return item.AppName == logItem.AppName && logItem.LogLevel == eumLogLevel.Warning
 		}).First().LogCount
+
+		// 任务组执行失败数量
+		appsResponse.TaskFailCount = taskGroupStatList.Where(func(statTaskEO fSchedule.StatTaskEO) bool {
+			return statTaskEO.ClientName == item.AppName && statTaskEO.ExecuteStatus == 3
+		}).First().Count
+
+		// 任务组执行成功数量
+		appsResponse.TaskSuccessCount = taskGroupStatList.Where(func(statTaskEO fSchedule.StatTaskEO) bool {
+			return statTaskEO.ClientName == item.AppName && statTaskEO.ExecuteStatus == 2
+		}).First().Count
 
 		// 获取工作流文件名称
 		workflowsNames := file.GetFiles(item.GetWorkflowsDir(), "*.yml", true)
@@ -139,6 +159,7 @@ func List(clusterId int64, appsRepository apps.Repository, logDataRepository log
 				}
 			}
 		}
+
 		lst.Add(appsResponse)
 	})
 	return lst

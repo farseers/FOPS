@@ -531,7 +531,7 @@ onUnmounted(()=>{
 })
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .system-user-container {
 	:deep(.el-card__body) {
 		display: flex;

@@ -5,9 +5,15 @@
 				<AsyncCount ref="childCount" />
 			</div>
 			<div class="main">
-				<div class="aside">
+				<div class="aside bg2">
+					<div class="bg1">
+						<h3 class="con_ts">应用</h3>
 					<AsyncEcfy ref="childEcfy" />
+					</div>
+					<div>
+						<h3 class="con_ts">集群节点</h3>
 					<AsyncConly ref="childConly" />
+					</div>
 				</div>
 				<div class="argid">
 					<AsyncQueTab ref="childQueTab" />
@@ -40,6 +46,8 @@ const init = () => {
 	let time2 = 0;
 	state.timer = setInterval(() => {
 		time++
+		time1++
+		time2++
 		if (childQueTab.value) {
 			childQueTab.value.getData()
 		}
@@ -58,7 +66,6 @@ const init = () => {
 			}
 			time2 = 0
 		}
-
 	}, 1000)
 }
 onUnmounted(() => {
@@ -66,12 +73,27 @@ onUnmounted(() => {
 })
 // 页面加载时
 onMounted(() => {
-	// init();
+	init();
 });
 </script>
 
 <style lang="scss">
 .mtor_main {
+	.bg1{
+		background: var(--el-color-primary-light-9);
+	}
+	.bg2{
+		background: var(--el-color-success-light-9);
+	}
+	.bg1{
+		background: var(--el-color-primary-light-9);
+	}
+	.bg2{
+		background: var(--el-color-success-light-9);
+	}
+	.con_ts{
+		padding: 5px 5px 0 5px;
+	}
 	.content {
 		padding: 0;
 		flex: 1;
@@ -91,7 +113,6 @@ onMounted(() => {
 		display: flex;
 		overflow: hidden;
 	}
-
 	.argid {
 		flex: 1;
 		height: 100%;

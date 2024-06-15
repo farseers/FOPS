@@ -4,8 +4,9 @@
         <div v-if="state.tableData.length > 0" class="dsv">
             <el-table :data="state.tableData" v-loading="state.loading" 
             :height = "state.screenHeight"
+            size="small"
             style="width: 100%;">
-                <el-table-column label="名称" style="line-height: 45px;height: 45px">
+                <el-table-column label="名称" >
                     <template #default="scope">
                         <div style="float: left">
                             <span>{{ scope.row.Caption }}</span><br>

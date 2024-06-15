@@ -136,11 +136,9 @@ defineExpose({
 }
 
 .conlyCol {
-    width: 25%;
-    padding: 5px;
+     padding: 5px;
     box-sizing: border-box;
-    min-width: 180px;
-
+    width: 180px;
 }
 
 

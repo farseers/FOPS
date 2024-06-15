@@ -57,8 +57,8 @@ func BuildList(appName string, pageSize int, pageIndex int, appsRepository apps.
 	lst := appsRepository.ToBuildList(appName, pageSize, pageIndex)
 	return mapper.ToPageList[response.BuildListResponse](lst, func(r *response.BuildListResponse, a any) {
 		buildEO := a.(apps.BuildEO)
-		r.CreateAt = buildEO.CreateAt.ToString("yy-MM-dd HH:mm:ss")
-		r.FinishAt = buildEO.FinishAt.ToString("yy-MM-dd HH:mm:ss")
+		r.CreateAt = buildEO.CreateAt.ToString("MM-dd HH:mm:ss")
+		r.FinishAt = buildEO.FinishAt.ToString("MM-dd HH:mm:ss")
 	})
 }
 

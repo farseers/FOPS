@@ -78,12 +78,12 @@
             </el-card>
           </el-space>
         </el-main>
-        <el-aside width="450px">
+        <el-aside width="480px">
           <el-card>
             <h3 style="padding: 5px;">构建队列</h3>
             <template v-if="state.tableLogData.data.length > 0">
               <el-table  :data="state.tableLogData.data" v-loading="state.tableLogData.loading" style="width: 100%;background: #ffffff;" :cell-style="{padding:'2px 0'}">
-                <el-table-column prop="FinishAt" width="170" label="构建时间"></el-table-column>
+                <el-table-column prop="FinishAt" width="140" label="构建时间"></el-table-column>
                 <el-table-column label="应用名称" show-overflow-tooltip>
                   <template #default="scope">
                     <el-tag v-if="scope.row.Status==0" size="small" type="info">未开始</el-tag>

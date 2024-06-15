@@ -14,7 +14,7 @@
       <el-container>
         <el-main style="padding: 0;overflow: hidden;">
           <el-space wrap style="align-items: unset;">
-            <el-card shadow="hover" v-for="(v, k) in state.tableData.data" :key="k" style="width: 280px;">
+            <el-card shadow="hover" v-for="(v, k) in state.tableData.data" :key="k" style="width: 270px;">
               <template #header>
                 <div class="card-header" style="height: 20px;">
                   <el-tag size="default" @click="onOpenEdit('edit', v)" style="cursor: pointer;">{{ v.AppName }}</el-tag>
@@ -72,7 +72,7 @@
                 </el-tooltip>
               </div>
               <el-button v-if="v.AppGit > 0" size="small" @click="onSyncWorkflows(v)" type="info" style="margin-left: 5px;width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>
-              <div class="appItem" style="margin-bottom: 10px">构建
+              <div class="appItem">构建
                 <el-button v-if="v.AppGit > 0" v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v,item)" type="danger" style="margin-left: 5px;margin-bottom: 5px;">{{item}}</el-button>
               </div>
             </el-card>

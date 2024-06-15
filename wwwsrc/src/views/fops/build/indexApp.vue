@@ -78,7 +78,7 @@
             </el-card>
           </el-space>
         </el-main>
-        <el-aside width="550px">
+        <el-aside width="450px">
           <el-card>
             <h3 style="padding: 5px;">构建队列</h3>
             <template v-if="state.tableLogData.data.length > 0">

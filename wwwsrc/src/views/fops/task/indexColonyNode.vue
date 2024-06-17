@@ -5,15 +5,18 @@
 				<AsyncCount ref="childCount" />
 			</div>
 			<div class="main">
-				<div class="aside bg2">
-					<div class="bg1">
+				<div class="aside">
+					<div>
 						<h3 class="con_ts">应用</h3>
-					<AsyncEcfy ref="childEcfy" />
+					   <AsyncEcfy ref="childEcfy" />
 					</div>
 					<div>
 						<h3 class="con_ts">集群节点</h3>
-					<AsyncConly ref="childConly" />
+					    <AsyncConly ref="childConly" />
 					</div>
+				</div>
+				<div class="argid">
+					<AsyncLation ref="childLation" />
 				</div>
 				<div class="argid">
 					<AsyncQueTab ref="childQueTab" />
@@ -29,6 +32,7 @@ import { ref, defineAsyncComponent, reactive, onMounted, onUnmounted } from 'vue
 const AsyncConly = defineAsyncComponent(() => import('./components/Conly.vue'))
 const AsyncCount = defineAsyncComponent(() => import('./components/Counts.vue'))
 const AsyncQueTab = defineAsyncComponent(() => import('./components/QueTab.vue'))
+const AsyncLation = defineAsyncComponent(() => import('./components/Lication.vue'))
 const AsyncEcfy = defineAsyncComponent(() => import('./components/Ecfy.vue'))
 // 定义变量内容
 const state = reactive({
@@ -39,6 +43,7 @@ const state = reactive({
 const childConly = ref(null);
 const childCount = ref(null);
 const childQueTab = ref(null);
+const childLation = ref(null);
 const childEcfy = ref(null);
 const init = () => {
 	let time = 0;
@@ -51,6 +56,7 @@ const init = () => {
 		if (childQueTab.value) {
 			childQueTab.value.getData()
 		}
+		
 		if (time1 >= 3) { //调用3秒一次的
 			time1 = 0;
 			if (childConly.value) {
@@ -59,6 +65,9 @@ const init = () => {
 			if (childEcfy.value) {
 				childEcfy.value.getData()
 			}
+			if(childLation.value){
+			  childLation.value.getData()
+		    }
 		}
 		if (time2 >= 10) {
 			if (childCount.value) {
@@ -114,13 +123,14 @@ onMounted(() => {
 		overflow: hidden;
 	}
 	.argid {
-		flex: 1;
+		
 		height: 100%;
-		width: 40%;
+		width: 350px;
 	}
 
 	.aside {
-		width: 60%;
+		// width: 60%;
+		flex: 1;
 		display: flex;
 		flex-flow: column;
 		height: 100%;

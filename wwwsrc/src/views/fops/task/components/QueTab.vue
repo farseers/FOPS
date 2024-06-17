@@ -10,11 +10,11 @@
                     <template #default="scope">
                         <div style="float: left">
                             <span>{{ scope.row.Caption }}</span><br>
-                            <span>{{ scope.row.Name }}（<span style="color:#4eb8ff">Ver:{{ scope.row.Ver }}</span>）</span>
+                            <span>{{ scope.row.Name }}</span>
                         </div>
                     </template>
                 </el-table-column>
-                <el-table-column prop="Plan" label="计划时间" width="190" show-overflow-tooltip>
+                <el-table-column prop="Plan" label="计划时间" width="110" show-overflow-tooltip>
                     <template #default="scope">
                         <el-tag size="small" v-if="scope.row.Plan.includes(`等待调度`)">{{ scope.row.Plan }}</el-tag>
                         <el-tag size="small" v-else-if="scope.row.Plan.includes(`等待`)"
@@ -23,7 +23,7 @@
                             type="danger">{{ scope.row.Plan }}</el-tag>
                         <el-tag size="small" v-else-if="scope.row.Plan.includes(`已执行`)"
                             type="success">{{ scope.row.Plan }}</el-tag>
-                        <br><span>{{ scope.row.SchedulerAt }}</span>
+
                     </template>
                 </el-table-column>
 

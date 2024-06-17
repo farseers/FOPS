@@ -12,7 +12,7 @@ import (
 // List 日志列表
 // @get list
 // @filter application.Jwt
-func List(traceId, appName, appIp, logContent string, logLevel eumLogLevel.Enum, pageSize, pageIndex int, logDataRepository logData.Repository) collections.PageList[flog.LogData] {
+func List(traceId, appName, appIp, logContent string, minute int, logLevel eumLogLevel.Enum, pageSize, pageIndex int, logDataRepository logData.Repository) collections.PageList[flog.LogData] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -24,7 +24,7 @@ func List(traceId, appName, appIp, logContent string, logLevel eumLogLevel.Enum,
 	appIp = strings.TrimSpace(appIp)
 	logContent = strings.TrimSpace(logContent)
 
-	lst := logDataRepository.ToList(traceId, appName, appIp, logContent, logLevel, pageSize, pageIndex)
+	lst := logDataRepository.ToList(traceId, appName, appIp, logContent, minute, logLevel, pageSize, pageIndex)
 	lst.List = lst.List.OrderBy(func(item flog.LogData) any {
 		return item.CreateAt.UnixNano()
 	}).ToList()

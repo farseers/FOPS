@@ -79,7 +79,7 @@ defineExpose({
 
 .conlyCard {
     background: var(--el-color-success-light-9);
-    border: 1px dotted var(--el-color-primary);
+    //border: 1px dotted var(--el-color-primary);
     :deep(.el-card__body) {
         padding: 10px 5px;
 	}

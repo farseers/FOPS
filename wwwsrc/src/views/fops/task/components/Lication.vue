@@ -4,16 +4,17 @@
         <div v-if="!state.empty" class="dsv">
             <div v-for="row,index in state.tableData" :key="index">
                 <p class="cl1" >
-                    <span style="color: #9caf62;margin-right: 3px;">{{ row.CreateAt }}</span>
-                    {{ row.TraceId }}
-                </p>
-                <p class="cl1">
-                    <el-tag :type="type_set(row)" size="small">{{ row.LogLevel }}</el-tag>
+                    <span style="color: #9caf62;margin-right: 3px;">{{ row.CreateAt.split(" ")[1] }}</span>
                     <el-tag size="small" style="margin: 2px 5px;">{{ row.AppName }} {{ row.AppIp }}</el-tag>
+                  <el-tag :type="type_set(row)" size="small">{{ row.LogLevel }}</el-tag>
                 </p>
                 <p class="cl1">
-                    {{ row.Content }}
+
                 </p>
+                <p class="cl1">
+                   {{ row.Content }}
+                </p>
+              <hr />
             </div>
         </div>
         <el-empty v-else description="暂无数据"></el-empty>
@@ -38,7 +39,8 @@ const getData = () => {
         appIp: '',
         traceId: '',
         logContent: '',
-        logLevel: '-1',
+        minute: 60,
+        logLevel: '3',
         pageSize: '19',
         pageIndex: '1',
     }
@@ -81,7 +83,7 @@ defineExpose({
 
     .dsv {
         flex: 1;
-        overflow: auto;color: #fff;background-color:#393d49;padding: 5px;font-size: 12px;
+        overflow: auto;color: #fff;background-color:#393d49;padding: 5px;font-size: 14px;
         p{
             display: flex;
             align-items: center;

@@ -37,7 +37,7 @@ var route = []webapi.Route{
 	{"POST", "/cluster/delete", clusterApp.Delete, "", []context.IFilter{application.Jwt{}}, []string{"clusterId", ""}},
 	{"GET", "/cluster/nodeList", clusterApp.NodeList, "", []context.IFilter{application.Jwt{}}, []string{""}},
 	{"POST", "/configure/list", configureApp.List, "", []context.IFilter{}, []string{"appName", ""}},
-	{"GET", "/flog/list", flogApp.List, "", []context.IFilter{application.Jwt{}}, []string{"traceId", "appName", "appIp", "logContent", "logLevel", "pageSize", "pageIndex", ""}},
+	{"GET", "/flog/list", flogApp.List, "", []context.IFilter{application.Jwt{}}, []string{"traceId", "appName", "appIp", "logContent", "minute", "logLevel", "pageSize", "pageIndex", ""}},
 	{"GET", "/flog/info-{id}", flogApp.Info, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
 	{"GET", "/flog/StatCount", flogApp.StatCount, "", []context.IFilter{application.Jwt{}}, []string{"appName", ""}},
 	{"POST", "/flog/upload", flogApp.Upload, "", []context.IFilter{}, []string{"req", ""}},

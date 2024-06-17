@@ -154,6 +154,12 @@ export function fopsApi() {
 				method: 'get',
 				data:{},
 			});
+		},dockerLog: (param: object) => {
+			return requestGet({
+				url: '/apps/logs/dockerSwarm',
+				method: 'post',
+				data: param,
+			});
 		},dockerClearImage: () => {
 			return request({
 				url: '/apps/build/clearDockerImage',
@@ -218,6 +224,12 @@ export function fopsApi() {
 				url: '/basicapi/server/list',
 				method: 'get',
 				data:param,
+			});
+		},ColonyNodeList: (param: object) => { //集群节点
+			return requestGet({
+				url: '/cluster/nodeList',
+				method: 'get',
+				// data:param,
 			});
 		},clientList: (param: object) => {
 			return requestFS({
@@ -314,28 +326,11 @@ export function fopsApi() {
 				method: 'get',
 				//data:param,
 			});
-		},taskCount: (param: object) => {
+		},statInfo: (param: object) => {
 			return requestFS({
-				url: '/basicapi/stat/count',
+				url: '/basicapi/stat/info',
 				method: 'get',
 				data:param,
-			});
-		},taskNoRunCount: (param: object) => {
-			return requestFS({
-				url: '/basicapi/stat/unRunCount',
-				method: 'get',
-				data:param,
-			});
-		},taskTodayFailCount: (param: object) => {
-			return requestFS({
-				url: '/basicapi/stat/todayFailCount',
-				method: 'get',
-				data:param,
-			});
-		},taskStatList: (param: string) => {
-			return requestFSGet({
-				url: '/basicapi/stat/statList?'+param,
-				method: 'get',
 			});
 		}
 	};

@@ -3,12 +3,14 @@ package appsApp
 
 import (
 	"fmt"
+	"fops/application/appsApp/response"
 	"fops/domain/apps"
 	"fops/domain/cluster"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
+	"github.com/farseer-go/mapper"
 	"github.com/farseer-go/webapi/action"
 	"regexp"
 	"strings"
@@ -45,14 +47,19 @@ func BuildAdd(appName string, clusterId int64, workflowsName string, appsReposit
 // BuildList 构建列表
 // @post build/list
 // @filter application.Jwt
-func BuildList(appName string, pageSize int, pageIndex int, appsRepository apps.Repository) collections.PageList[apps.BuildEO] {
+func BuildList(appName string, pageSize int, pageIndex int, appsRepository apps.Repository) collections.PageList[response.BuildListResponse] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
 	if pageIndex < 1 {
 		pageIndex = 1
 	}
-	return appsRepository.ToBuildList(appName, pageSize, pageIndex)
+	lst := appsRepository.ToBuildList(appName, pageSize, pageIndex)
+	return mapper.ToPageList[response.BuildListResponse](lst, func(r *response.BuildListResponse, a any) {
+		buildEO := a.(apps.BuildEO)
+		r.CreateAt = buildEO.CreateAt.ToString("MM-dd HH:mm:ss")
+		r.FinishAt = buildEO.FinishAt.ToString("MM-dd HH:mm:ss")
+	})
 }
 
 // 语法高亮

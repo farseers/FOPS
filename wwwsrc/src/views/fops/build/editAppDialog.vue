@@ -145,53 +145,52 @@ const state = reactive({
 // 打开弹窗
 const openDialog = (type: string, row: any) => {
   state.dialog.type=type
-	if (type === 'edit') {
-    state.ruleForm = row;
-    state.dialog.title = '修改应用';
-    state.dialog.submitTxt = '修 改';
-    // 请求数据
-    serverApi.appsDetail({AppName:row.AppName}).then(function (res){
-      if (res.Status){
-        row=res.Data
-        // 绑定数据
-        state.ruleForm.AppName=row.AppName
-        state.ruleForm.DockerVer=row.DockerVer
-        state.ruleForm.ClusterVer=row.ClusterVer
-        state.ruleForm.AppGit=row.AppGit
-        state.ruleForm.FrameworkGits=row.FrameworkGits
-        state.ruleForm.DockerfilePath=row.DockerfilePath
-        state.SelectItem=row.FrameworkGits
-        state.ruleForm.IsHealth=row.IsHealth
-        state.ruleForm.DockerReplicas=row.DockerReplicas
-        state.ruleForm.DockerNodeRole=row.DockerNodeRole
-        state.ruleForm.AdditionalScripts=row.AdditionalScripts
-        state.ruleForm.WorkflowsYmlPath=row.WorkflowsYmlPath
-        if(state.ruleForm.DockerNodeRole=="manager"){
-          state.ruleForm.DockerNodeRoleInt=0
-        }else {
-          state.ruleForm.DockerNodeRoleInt=1
-        }
-        state.ruleForm.AppGitName=row.AppGitName
-        //loadGitInfo(row.AppGit)
-        // 加载git数据
-        loadGit(row.FrameworkGits)
+  state.ruleForm = row;
+  state.dialog.title = '修改应用';
+  state.dialog.submitTxt = '修 改';
+  // 请求数据
+  serverApi.appsDetail({AppName:row.AppName}).then(function (res){
+    if (res.Status) {
+      row = res.Data
+      // 绑定数据
+      state.ruleForm.AppName=row.AppName
+      state.ruleForm.DockerVer=row.DockerVer
+      state.ruleForm.ClusterVer=row.ClusterVer
+      state.ruleForm.AppGit=row.AppGit
+      state.ruleForm.FrameworkGits=row.FrameworkGits
+      state.ruleForm.DockerfilePath=row.DockerfilePath
+      state.SelectItem=row.FrameworkGits
+      state.ruleForm.IsHealth=row.IsHealth
+      state.ruleForm.DockerReplicas=row.DockerReplicas
+      state.ruleForm.DockerNodeRole=row.DockerNodeRole
+      state.ruleForm.AdditionalScripts=row.AdditionalScripts
+      state.ruleForm.WorkflowsYmlPath=row.WorkflowsYmlPath
+      if (state.ruleForm.DockerNodeRole == "manager") {
+        state.ruleForm.DockerNodeRoleInt=0
+      } else {
+        state.ruleForm.DockerNodeRoleInt=1
       }
-    })
-	}
+      state.ruleForm.AppGitName = row.AppGitName
+      //loadGitInfo(row.AppGit)
+      // 加载git数据
+      loadGit(row.FrameworkGits)
+    }
+  })
 	state.dialog.isShowDialog = true;
 };
 
-const loadGit=(lst:any)=>{
-  state.gitList=[]
-  for (let i = 0; i < lst.length; i++) {
-    serverApi.gitInfo({"gitId":lst[i]}).then(function (res){
-      if (res.Status){
-        state.gitList.push(res.Data)
-      }else{
-        state.gitList=[]
-      }
-    })
-  }
+const loadGit=()=>{
+  serverApi.gitList({isApp:1}).then(function (res){
+    // console.log(11111111)
+    if (res.Status){
+      // state.tableData.data = res.Data;
+      // state.tableData.total = res.Data.length;
+      state.gitList= res.Data;
+      // console.log(state.gitList)
+    }else{
+      state.gitList=[]
+    }
+  })
 }
 const loadGitInfo=(id:any)=>{
     serverApi.gitInfo({"gitId":id}).then(function (res){
@@ -283,37 +282,20 @@ const onSubmit = () => {
     "WorkflowsYmlPath":state.ruleForm.WorkflowsYmlPath,
   }
   emit('showOverlay');
-	if (state.dialog.type === 'add') {
-    var json=JSON.stringify(param)
-    serverApi.appsAdd(json).then(function (res){
-      emit('hideOverlay');
-      if(res.Status){
-        ElMessage.success("添加成功")
-        closeDialog();
-        emit('refresh');
-      }else{
-        ElMessage.error(res.StatusMessage)
-      }
-    })
-
-  }else if (state.dialog.type=='edit'){
-    serverApi.appsEdit(param).then(function (res){
-      if(res.Status){
-        ElMessage.success("修改成功")
-        closeDialog();
-        emit('refresh');
-      }else{
-        ElMessage.error(res.StatusMessage)
-      }
-      emit('hideOverlay');
-    })
-
-  }
+  serverApi.appsEdit(param).then(function (res){
+    if(res.Status){
+      ElMessage.success("修改成功")
+      closeDialog();
+      emit('refresh');
+    }else{
+      ElMessage.error(res.StatusMessage)
+    }
+    emit('hideOverlay');
+  })
 };
 
 const getTableData = (type:any) => {
-
-  if (type==1){
+  if (type==1) {
     state.isApp=0
     state.SelectItem=state.ruleForm.FrameworkGits // 清空
   }else{
@@ -324,6 +306,7 @@ const getTableData = (type:any) => {
   }
   // 请求接口
   serverApi.gitList({isApp:state.isApp}).then(function (res){
+    console.log(11111111)
     if (res.Status){
       state.tableData.data = res.Data;
       state.tableData.total = res.Data.length;

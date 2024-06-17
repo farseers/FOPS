@@ -1,7 +1,8 @@
 <template>
 	<div class="system-user-container layout-padding">
     <el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="80%">
-		<el-card shadow="hover" class="layout-padding-auto">
+      <div style="display: flex;flex-flow: column;max-height: calc(90vh - 151px) !important;">
+        <el-card shadow="hover" class="layout-padding-auto">
 			<div class="system-user-search mb15">
         <label>TraceId</label>
         <el-input size="default" v-model="state.traceId" placeholder="链路ID" style="max-width: 180px"> </el-input>
@@ -58,6 +59,7 @@
 			</el-pagination>
 		</el-card>
     <detailDialog ref="detailDialogRef" @refresh="getTableData()" />
+      </div>
     </el-dialog>
 	</div>
 </template>
@@ -150,8 +152,9 @@ const openDialogAppName = (row: any) => {
   getTableData()
   getAppData();
 }
-const openDialogLogLevel = (level: any,appName:any) => {
+const openDialogLogLevel = (level: any,appName:any,title:any) => {
   state.dialog.isShowDialog = true;
+  state.dialog.title = title || ''
   state.logLevel=level
   state.appName=appName
   getTableData()

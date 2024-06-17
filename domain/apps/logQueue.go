@@ -1,6 +1,7 @@
 package apps
 
 import (
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/str"
@@ -30,6 +31,7 @@ func (receiver *LogQueue) startPush() {
 	logfile := receiver.GenerateFilename()
 	var prevContent string
 	for log := range receiver.progress {
+		log = flog.ClearColor(log)
 		// 如果内容与前面一样，则不记录
 		if prevContent == log {
 			continue

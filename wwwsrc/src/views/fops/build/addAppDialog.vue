@@ -125,56 +125,22 @@ const state = reactive({
 // 打开弹窗
 const openDialog = (type: string, row: any) => {
   state.dialog.type=type
-	if (type === 'edit') {
-    state.ruleForm = row;
-    state.dialog.title = '修改应用';
-    state.dialog.submitTxt = '修 改';
-    // 请求数据
-    serverApi.appsDetail({AppName:row.AppName}).then(function (res){
-      if (res.Status){
-        row=res.Data
-        // 绑定数据
-        state.ruleForm.AppName=row.AppName
-        state.ruleForm.DockerVer=row.DockerVer
-        state.ruleForm.ClusterVer=row.ClusterVer
-        state.ruleForm.AppGit=row.AppGit
-        state.ruleForm.FrameworkGits=row.FrameworkGits
-        state.ruleForm.DockerfilePath=row.DockerfilePath
-        state.SelectItem=row.FrameworkGits
-        state.ruleForm.IsHealth=row.IsHealth
-        state.ruleForm.DockerReplicas=row.DockerReplicas
-        state.ruleForm.DockerNodeRole=row.DockerNodeRole
-        state.ruleForm.AdditionalScripts=row.AdditionalScripts
-        state.ruleForm.WorkflowsYmlPath=row.WorkflowsYmlPath
-        if(state.ruleForm.DockerNodeRole=="manager"){
-          state.ruleForm.DockerNodeRoleInt=0
-        }else {
-          state.ruleForm.DockerNodeRoleInt=1
-        }
-        state.ruleForm.AppGitName=row.AppGitName
-        //loadGitInfo(row.AppGit)
-        // 加载git数据
-        loadGit(row.FrameworkGits)
-      }
-    })
-	} else {
-		state.dialog.title = '新增应用';
-		state.dialog.submitTxt = '新 增';
-		// 清空表单，此项需加表单验证才能使用
-    state.ruleForm.AppName=""
-    state.ruleForm.DockerVer=""
-    state.ruleForm.ClusterVer=""
-    state.ruleForm.AppGit=0
-    state.ruleForm.AppGitName=''
-    state.ruleForm.FrameworkGits=[]
-    state.ruleForm.DockerfilePath=""
-    state.ruleForm.DockerReplicas=1
-    state.ruleForm.DockerNodeRole=''
-    state.ruleForm.AdditionalScripts=''
-    state.ruleForm.WorkflowsYmlPath=''
-    state.SelectItem=[] // 清空
-    state.tableData.data=[]
-	}
+  state.dialog.title = '新增应用';
+  state.dialog.submitTxt = '新 增';
+  // 清空表单，此项需加表单验证才能使用
+  state.ruleForm.AppName=""
+  state.ruleForm.DockerVer=""
+  state.ruleForm.ClusterVer=""
+  state.ruleForm.AppGit=0
+  state.ruleForm.AppGitName=''
+  state.ruleForm.FrameworkGits=[]
+  state.ruleForm.DockerfilePath=""
+  state.ruleForm.DockerReplicas=1
+  state.ruleForm.DockerNodeRole=''
+  state.ruleForm.AdditionalScripts=''
+  state.ruleForm.WorkflowsYmlPath=''
+  state.SelectItem=[] // 清空
+  state.tableData.data=[]
 	state.dialog.isShowDialog = true;
 };
 
@@ -213,27 +179,6 @@ const onCancel = () => {
 	closeDialog();
 };
 
-// 删除
-const onDelete = () => {
-  ElMessageBox.confirm(`此操作将永久删除应用：“${state.ruleForm.AppName}”，是否继续?`, '提示', {
-    confirmButtonText: '确认',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-      .then(() => {
-        // 删除逻辑
-        serverApi.appsDel({"appName":state.ruleForm.AppName}).then(function (res){
-          if (res.Status){
-            closeDialog();
-            ElMessage.success('删除成功');
-            emit('refresh');
-          }else{
-            ElMessage.error(res.StatusMessage)
-          }
-        })
-      })
-      .catch(() => {});
-};
 // 提交
 const onSubmit = () => {
   if(state.ruleForm.DockerNodeRoleInt==0){
@@ -282,8 +227,7 @@ const onSubmit = () => {
 };
 
 const getTableData = (type:any) => {
-
-  if (type==1){
+  if (type==1) {
     state.isApp=0
     state.SelectItem=state.ruleForm.FrameworkGits // 清空
   }else{

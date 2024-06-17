@@ -14,6 +14,7 @@ import (
 // @filter application.Jwt
 func Add(req request.AddRequest, clusterRepository cluster.Repository) {
 	do := mapper.Single[cluster.DomainObject](req)
+
 	// 添加
 	err := clusterRepository.Add(do)
 	exception.ThrowWebExceptionError(403, err)

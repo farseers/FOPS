@@ -1,5 +1,10 @@
 package request
 
+import (
+	"github.com/farseer-go/fs/exception"
+	"strings"
+)
+
 type UpdateRequest struct {
 	Id             int64  // 集群Id
 	Name           string // 集群名称
@@ -9,4 +14,11 @@ type UpdateRequest struct {
 	DockerUserName string // 账户名称
 	DockerUserPwd  string // 账户密码
 	DockerNetwork  string // Docker网络
+}
+
+func (receiver *UpdateRequest) Check() {
+	if receiver.FScheduleAddr != "" {
+		exception.ThrowWebExceptionBool(!strings.HasPrefix(strings.ToLower(receiver.FScheduleAddr), "http"), 403, "调度中心地址必须是http开头")
+		receiver.FScheduleAddr = strings.TrimSuffix(receiver.FScheduleAddr, "/")
+	}
 }

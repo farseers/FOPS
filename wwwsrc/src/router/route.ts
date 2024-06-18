@@ -351,7 +351,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 						},
 					},{
 						path: '/linkTrace/queueApi',
-						name: 'customerApi',
+						name: 'queueApi',
 						component: () => import('/@/views/fops/linkTrace/indexQueueApi.vue'),
 						meta: {
 							title: 'message.router.queueApi',
@@ -365,7 +365,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 						},
 					},{
 						path: '/linkTrace/eventApi',
-						name: 'customerApi',
+						name: 'eventApi',
 						component: () => import('/@/views/fops/linkTrace/indexEventApi.vue'),
 						meta: {
 							title: 'message.router.eventApi',

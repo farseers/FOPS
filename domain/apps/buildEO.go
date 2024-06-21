@@ -135,7 +135,7 @@ func (receiver *BuildEO) StartBuild() {
 				// 先创建目录
 				file.CreateDir766(path.Dir(step.GetActionPath()))
 				// 下载文件
-				if err := http.Download(step.ActionDownloadUrl, step.GetActionPath(), 0, configure.GetString("Fops.GitAgent")); err != nil {
+				if _, err := http.Download(step.ActionDownloadUrl, step.GetActionPath(), nil, 0, configure.GetString("Fops.GitAgent")); err != nil {
 					receiver.logQueue.progress <- fmt.Sprintf("下载action %s 时发生错误：%s", step.ActionDownloadUrl, err.Error())
 					receiver.checkResult(false)
 				}
@@ -316,7 +316,8 @@ func (receiver *BuildEO) fail() {
 	// 发布事件
 	event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: false}.PublishEvent()
 
-	container.Resolve[Repository]().SetCancel(receiver.Id)
+	// 更新本次构建状态 = 失败
+	container.Resolve[Repository]().SetCancel(receiver.Id, receiver.Env, receiver.logQueue.View())
 }
 
 // 设置任务成功
@@ -333,7 +334,8 @@ func (receiver *BuildEO) success() {
 		event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: true}.PublishEvent()
 	}
 
-	container.Resolve[Repository]().SetSuccess(receiver.Id)
+	// 更新本次构建状态 = 成功
+	container.Resolve[Repository]().SetSuccess(receiver.Id, receiver.Env, receiver.logQueue.View())
 }
 
 // 得到所有Git

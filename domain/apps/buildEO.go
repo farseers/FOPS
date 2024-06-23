@@ -111,8 +111,8 @@ func (receiver *BuildEO) StartBuild() {
 
 	// 设置镜像的代理
 	if receiver.WorkflowsAction.Proxy != "" {
-		receiver.WorkflowsAction.Env["HTTP_PROXY"] = "http://" + receiver.WorkflowsAction.Proxy
-		receiver.WorkflowsAction.Env["HTTPS_PROXY"] = "http://" + receiver.WorkflowsAction.Proxy
+		receiver.WorkflowsAction.Env["HTTP_PROXY"] = receiver.WorkflowsAction.Proxy
+		receiver.WorkflowsAction.Env["HTTPS_PROXY"] = receiver.WorkflowsAction.Proxy
 	}
 
 	// 加载环境变量提示
@@ -124,6 +124,7 @@ func (receiver *BuildEO) StartBuild() {
 	}
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 
+	gits := receiver.getGits()
 	// 运行step
 	for index, step := range receiver.WorkflowsAction.Steps {
 		receiver.logQueue.progress <- fmt.Sprintf("执行 %d %s: %s", index+1, step.ActionName, step.Name)
@@ -146,7 +147,6 @@ func (receiver *BuildEO) StartBuild() {
 			// 将action文件复制到容器
 			receiver.dockerDevice.Copy(dockerName, step.GetActionPath(), step.GetActionPath(), receiver.Env, make(chan string, 100), receiver.ctx)
 
-			gits := receiver.getGits()
 			// 支持checkout默认拉取应用
 			if parse.ToString(step.With["gitHub"]) != "" {
 				gits = append(gits, GitEO{

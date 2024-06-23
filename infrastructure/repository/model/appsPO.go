@@ -14,8 +14,8 @@ type AppsPO struct {
 	FrameworkGits     collections.List[int64]      `gorm:"size:64;json;not null;comment:依赖的框架源代码"`
 	DockerImage       string                       `gorm:"type:text;not null;comment:仓库镜像名称"`
 	DockerfilePath    string                       `gorm:"size:256;not null;comment:Dockerfile路径"`
-	DockerInstances   int                          `gorm:"type:int;not null;comment:运行的实例数量"`
-	DockerReplicas    int                          `gorm:"type:int;not null;comment:副本数量"`
+	DockerInstances   int                          `gorm:"type:int;default:0;not null;comment:运行的实例数量"`
+	DockerReplicas    int                          `gorm:"type:int;default:0;not null;comment:副本数量"`
 	DockerNodeRole    string                       `gorm:"size:256;not null;comment:容器节点角色"`
 	AdditionalScripts string                       `gorm:"type:text;not null;comment:首次创建应用时附加脚本"`
 }

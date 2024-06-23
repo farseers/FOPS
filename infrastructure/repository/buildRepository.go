@@ -77,3 +77,13 @@ func (repository *buildRepository) SetCancel(id int64, env apps.EnvVO, log []str
 func (repository *buildRepository) GetStatus(id int64) eumBuildStatus.Enum {
 	return eumBuildStatus.Enum(context.MysqlContext.Build.Where("id = ?", id).GetInt("status"))
 }
+
+// UpdateFailDockerImage 更新构建中状态的构建记录
+func (repository *buildRepository) UpdateFailDockerImage(appName string, dockerImage string) (int64, error) {
+	return context.MysqlContext.Build.Select("status", "is_success", "finish_at").Where("app_name = ? and status = ? and docker_image = ?", appName, eumBuildStatus.Building, dockerImage).
+		Update(model.BuildPO{
+			Status:    eumBuildStatus.Finish,
+			IsSuccess: true,
+			FinishAt:  time.Now(),
+		})
+}

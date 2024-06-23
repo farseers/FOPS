@@ -29,6 +29,7 @@ type buildRepository interface {
 	SetSuccess(id int64, env EnvVO, logs []string)                                         // Success 任务完成
 	SetCancel(id int64, env EnvVO, logs []string)                                          // Cancel 主动取消任务
 	GetStatus(id int64) eumBuildStatus.Enum                                                // GetStatus 获取构建状态
+	UpdateFailDockerImage(appName string, dockerImage string) (int64, error)               // UpdateFailDockerImage 更新构建中状态的构建记录
 }
 
 type gitRepository interface {

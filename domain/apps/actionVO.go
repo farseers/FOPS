@@ -56,6 +56,9 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 	sysImage, _ := workflowsYml.Get("jobs.build.runs-on")
 	env, _ := workflowsYml.GetSubNodes("jobs.build.env")
 	with, _ := workflowsYml.GetSubNodes("jobs.build.with")
+	if with == nil {
+		with = make(map[string]any)
+	}
 	act := ActionVO{
 		Name:   strings.TrimSpace(parse.ToString(name)),
 		Proxy:  strings.TrimSpace(parse.ToString(proxy)),

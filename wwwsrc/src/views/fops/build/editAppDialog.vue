@@ -146,6 +146,7 @@ const state = reactive({
 const openDialog = (type: string, row: any, clusterId: number) => {
   state.dialog.type=type
   state.ruleForm = row;
+  state.ruleForm.ClusterId = clusterId;
   state.dialog.title = '修改应用';
   state.dialog.submitTxt = '修 改';
   // 请求数据
@@ -300,7 +301,7 @@ const getTableData = (type:any) => {
     state.isApp=1
     var select=[]
     select.push(state.ruleForm.AppGit)
-    state.SelectItem=select // 清空
+    state.SelectItem = select // 清空
   }
   // 请求接口
   serverApi.gitList({isApp:state.isApp}).then(function (res){

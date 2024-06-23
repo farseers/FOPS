@@ -143,13 +143,13 @@ const state = reactive({
 });
 
 // 打开弹窗
-const openDialog = (type: string, row: any) => {
+const openDialog = (type: string, row: any, clusterId: number) => {
   state.dialog.type=type
   state.ruleForm = row;
   state.dialog.title = '修改应用';
   state.dialog.submitTxt = '修 改';
   // 请求数据
-  serverApi.appsDetail({AppName:row.AppName}).then(function (res){
+  serverApi.appsDetail({AppName:row.AppName,clusterId:clusterId}).then(function (res){
     if (res.Status) {
       row = res.Data
       // 绑定数据
@@ -258,8 +258,6 @@ const onDeleteService = () => {
       })
       .catch(() => {});
 };
-
-
 
 // 提交
 const onSubmit = () => {

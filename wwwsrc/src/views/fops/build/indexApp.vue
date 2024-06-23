@@ -284,7 +284,7 @@ const onOpenAdd = (type: string) => {
 
 // 打开修改用户弹窗
 const onOpenEdit = (type: string, row: any) => {
-  appDialogRef.value.openDialog(type, row);
+  appDialogRef.value.openDialog(type, row, state.clusterId);
 };
 
 // 清除镜像
@@ -332,7 +332,7 @@ watch(() => state.isShowBuildLogDialog, (newValue, oldValue) => {
 
 // 显示构建日志
 const showBuildLog=(row:any)=>{
-  state.buildLogId=row.Id
+  state.buildLogId = row.Id
   serverApi.buildLog(state.buildLogId.toString()).then(function (res){
     state.buildLogContent = res
     state.isShowBuildLogDialog=true

@@ -33,6 +33,7 @@ type BuildEO struct {
 	Env             EnvVO               // 环境变量
 	AppName         string              // 应用名称
 	WorkflowsName   string              // 工作流名称（文件的名称）
+	DockerImage     string              // Docker镜像
 	WorkflowsAction ActionVO            // 工作流定义的内容（通过读取WorkflowsYmlPath）
 	dockerDevice    IDockerDevice
 	gitDevice       IGitDevice

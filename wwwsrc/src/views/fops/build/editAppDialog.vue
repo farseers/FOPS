@@ -153,10 +153,10 @@ const openDialog = (type: string, row: any, clusterId: number) => {
     if (res.Status) {
       row = res.Data
       // 绑定数据
-      state.ruleForm.AppName=row.AppName
-      state.ruleForm.DockerVer=row.DockerVer
-      state.ruleForm.ClusterVer=row.ClusterVer
-      state.ruleForm.AppGit=row.AppGit
+      state.ruleForm.AppName = row.AppName
+      state.ruleForm.DockerVer = row.DockerVer
+      state.ruleForm.ClusterVer = row.ClusterVer
+      state.ruleForm.AppGit = row.AppGit
       state.ruleForm.FrameworkGits=row.FrameworkGits
       state.ruleForm.DockerfilePath=row.DockerfilePath
       state.SelectItem=row.FrameworkGits

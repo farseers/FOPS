@@ -61,6 +61,15 @@ func (repository *buildRepository) SetSuccess(id int64, env apps.EnvVO, log []st
 	})
 }
 
+// SetSuccessForFops 任务完成
+func (repository *buildRepository) SetSuccessForFops(id int64) {
+	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at").Update(model.BuildPO{
+		Status:    eumBuildStatus.Finish,
+		IsSuccess: true,
+		FinishAt:  time.Now(),
+	})
+}
+
 // SetCancel 主动取消任务
 func (repository *buildRepository) SetCancel(id int64, env apps.EnvVO, log []string) {
 	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at", "env", "log", "docker_image").Update(model.BuildPO{
@@ -86,4 +95,9 @@ func (repository *buildRepository) UpdateFailDockerImage(appName string, dockerI
 			IsSuccess: true,
 			FinishAt:  time.Now(),
 		})
+}
+
+func (repository *buildRepository) GetLastBuild() apps.BuildEO {
+	po := context.MysqlContext.Build.Desc("id").ToEntity()
+	return mapper.Single[apps.BuildEO](po)
 }

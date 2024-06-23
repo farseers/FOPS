@@ -3,7 +3,9 @@ package interfaces
 import (
 	"context"
 	"fops/application"
+	"fops/domain/_/eumBuildStatus"
 	"fops/domain/apps"
+	"fops/domain/apps/event"
 	"fops/interfaces/job"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
@@ -31,4 +33,13 @@ func (module Module) PostInitialize() {
 	}
 
 	tasks.RunNow("统计访问", time.Minute*1, job.StatVisitsJob, context.Background())
+
+	// 如果最后一次构建是fops，且状态=构建中，同时fops的仓库=最后一次构建的镜像，则强制做一次同步操作
+	buildEO := container.Resolve[apps.Repository]().GetLastBuild()
+	appEO := container.Resolve[apps.Repository]().ToEntity("fops")
+	if buildEO.AppName == "fops" && buildEO.Status == eumBuildStatus.Building && appEO.DockerImage == buildEO.DockerImage {
+		// 发布事件
+		event.BuildFinishedEvent{AppName: appEO.AppName, BuildId: buildEO.Id, ClusterId: buildEO.ClusterId, IsSuccess: true}.PublishEvent()
+		container.Resolve[apps.Repository]().SetSuccessForFops(buildEO.Id)
+	}
 }

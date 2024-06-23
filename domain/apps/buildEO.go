@@ -100,15 +100,6 @@ func (receiver *BuildEO) StartBuild() {
 	// 生成Workflows文件
 	receiver.checkResult(receiver.GenerateWorkflowsContent(sysWith))
 
-	// 启动构建系统
-	dockerName := "FOPS-Build"
-	if !receiver.dockerDevice.ExistsDocker(dockerName) {
-		receiver.logQueue.progress <- "启动构建系统：" + receiver.WorkflowsAction.RunsOn
-		args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
-		receiver.checkResult(receiver.dockerDevice.Run(dockerName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env, receiver.logQueue.progress, receiver.ctx)) // , "-v /var/lib/fops:/var/lib/fops"
-	}
-	//defer receiver.dockerDevice.Kill(dockerName)
-
 	// 设置镜像的代理
 	if receiver.WorkflowsAction.Proxy != "" {
 		receiver.WorkflowsAction.Env["HTTP_PROXY"] = receiver.WorkflowsAction.Proxy
@@ -122,6 +113,16 @@ func (receiver *BuildEO) StartBuild() {
 			receiver.logQueue.progress <- fmt.Sprintf("%s=%s", k, v)
 		}
 	}
+
+	// 启动构建系统
+	dockerName := "FOPS-Build"
+	if !receiver.dockerDevice.ExistsDocker(dockerName) {
+		receiver.logQueue.progress <- "启动构建系统：" + receiver.WorkflowsAction.RunsOn
+		args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
+		receiver.checkResult(receiver.dockerDevice.Run(dockerName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env, receiver.logQueue.progress, receiver.ctx)) // , "-v /var/lib/fops:/var/lib/fops"
+	}
+	//defer receiver.dockerDevice.Kill(dockerName)
+
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 
 	gits := receiver.getGits()
@@ -181,7 +182,6 @@ func (receiver *BuildEO) StartBuild() {
 		if len(step.Run) > 0 {
 			shellScript := collections.NewList[string]()
 			shellScript.Add("source /etc/profile")
-			//shellScript.Add("go env -w GO111MODULE=on && go env -w GOPROXY=https://goproxy.cn,direct")
 			shellScript.Add("mkdir -p " + DistRoot + receiver.appGit.GetRelativePath())
 			shellScript.Add("cd " + DistRoot + receiver.appGit.GetRelativePath())
 			shellScript.AddArray(step.Run)
@@ -196,7 +196,6 @@ func (receiver *BuildEO) StartBuild() {
 			receiver.dockerDevice.Copy(dockerName, shellPath, shellPath, receiver.Env, make(chan string, 100), receiver.ctx)
 
 			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, "/bin/sh -x "+shellPath, receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx))
-			//receiver.checkResult(exec.RunShell("docker exec "+dockerName+" /bin/sh -x "+shellPath, receiver.logQueue.progress, receiver.Env.ToMap(), DistRoot, false) == 0)
 		}
 		receiver.logQueue.progress <- "---------------------------------------------------------"
 	}

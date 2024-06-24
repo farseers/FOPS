@@ -168,10 +168,10 @@ func List(clusterId int64, appsRepository apps.Repository, logDataRepository log
 // Info 查询应用
 // @post info
 // @filter application.Jwt
-func Info(appName string, appsRepository apps.Repository) response.AppsResponse {
+func Info(clusterId int64, appName string, appsRepository apps.Repository) response.AppsResponse {
 	do := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
-	rsp := doToAppsResponse(0, do)
+	rsp := doToAppsResponse(clusterId, do)
 	rsp.AppGitName = appsRepository.ToGitEntity(do.AppGit).Name
 	return rsp
 }

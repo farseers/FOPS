@@ -1,5 +1,5 @@
 <template>
-    <div v-loading="state.loading" class="w100">
+    <div class="w100">
         <div  class="conlyRow">
             <div v-for="item, index in state.tableData" :key="index.toString() + 'conly1'" class="conlyCol">
                 <el-card :class="item.IsHealth ? 'conlyCard' : 'conlyCard conly_w'">
@@ -41,12 +41,10 @@ import linux from '/@/assets/linux.png';
 const serverApi = fopsApi();
 // 定义变量内容
 const state = reactive({
-    loading: false,
     tableData: []
 });
 // 初始化表格数据
 const getData = () => {
-    state.loading = true;
     var param = {
     }
     // 请求接口
@@ -56,9 +54,6 @@ const getData = () => {
         } else {
             ElMessage.warning(res.StatusMessage);
         }
-        state.loading = false;
-    }).catch(() => {
-        state.loading = false;
     })
 };
 onMounted(() => {
@@ -83,8 +78,8 @@ defineExpose({
 }
 
 .conlyCard {
-    background-color: #f9f9e3;
-    border: 1px dotted var(--el-color-primary);
+    background: var(--el-color-success-light-9);
+    //border: 1px dotted var(--el-color-primary);
     :deep(.el-card__body) {
         padding: 10px 5px;
 	}
@@ -133,7 +128,7 @@ defineExpose({
 }
 
 .conly_w {
-    background: var(--el-color-danger-light-9);
+    background: var(--el-color-danger-light-8);
     border: 1px dotted var(--el-color-danger);
 }
 </style>

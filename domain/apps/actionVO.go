@@ -56,7 +56,9 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 	sysImage, _ := workflowsYml.Get("jobs.build.runs-on")
 	env, _ := workflowsYml.GetSubNodes("jobs.build.env")
 	with, _ := workflowsYml.GetSubNodes("jobs.build.with")
-
+	if with == nil {
+		with = make(map[string]any)
+	}
 	act := ActionVO{
 		Name:   strings.TrimSpace(parse.ToString(name)),
 		Proxy:  strings.TrimSpace(parse.ToString(proxy)),
@@ -64,6 +66,7 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 		With:   with,
 		Env:    make(map[string]string),
 	}
+
 	for _, clusterId := range clusterIds {
 		act.ClusterIds = append(act.ClusterIds, parse.ToInt64(clusterId))
 	}
@@ -73,9 +76,10 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 	}
 
 	// 移除前缀//
-	if index := strings.Index(act.Proxy, "//"); index > -1 {
-		act.Proxy = act.Proxy[index+2:]
-	}
+	//if index := strings.Index(act.Proxy, "//"); index > -1 {
+	//	act.Proxy = act.Proxy[index+2:]
+	//}
+	act.With["proxy"] = act.Proxy
 
 	// 运行steps
 	if steps, existsSteps := workflowsYml.Get("jobs.build.steps"); existsSteps {

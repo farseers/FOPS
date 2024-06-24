@@ -261,6 +261,18 @@ export function fopsApi() {
 				method: 'get',
 				//data:param,
 			});
+		},linkTraceQueueList:(param: string) => {
+			return requestGet({
+				url: '/linkTrace/queueList?'+param,
+				method: 'get',
+				//data:param,
+			});
+		},linkTraceEventList:(param: string) => {
+			return requestGet({
+				url: '/linkTrace/eventList?'+param,
+				method: 'get',
+				//data:param,
+			});
 		},linkTraceFScheduleList:(param: string) => {
 			return requestGet({
 				url: '/linkTrace/fScheduleList?'+param,

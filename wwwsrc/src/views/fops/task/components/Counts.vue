@@ -24,14 +24,27 @@ const getData = () => {
   // 任务组数量
   serverApi.statInfo({}).then(function(res){
     if(res.Status){
-        state.TaskGroupCount = res.Data.TaskGroupCount;
-        state.TaskGroupUnRunCount= res.Data.TaskGroupUnRunCount;
-        state.TodayFailCount = res.Data.TodayFailCount;
-        nextTick(()=>{
-            new CountUp(document.querySelector('#c1') as HTMLDivElement, state.TaskGroupCount).start();
-            new CountUp(document.querySelector('#c2') as HTMLDivElement, state.TaskGroupUnRunCount).start();
-            new CountUp(document.querySelector('#c3') as HTMLDivElement, state.TodayFailCount).start();
-        })
+        if( state.TaskGroupCount != res.Data.TaskGroupCount){
+                state.TaskGroupCount = res.Data.TaskGroupCount;
+                nextTick(()=>{
+                    new CountUp(document.querySelector('#c1') as HTMLDivElement, state.TaskGroupCount).start();
+               })
+                
+            }
+            if( state.TaskGroupUnRunCount != res.Data.TaskGroupUnRunCount){
+                state.TaskGroupUnRunCount = res.Data.TaskGroupUnRunCount;
+                nextTick(()=>{
+                    new CountUp(document.querySelector('#c2') as HTMLDivElement, state.TaskGroupUnRunCount).start();
+               })
+                
+            }
+            if( state.TodayFailCount != res.Data.TodayFailCount){
+                state.TodayFailCount = res.Data.TodayFailCount;
+                nextTick(()=>{
+                    new CountUp(document.querySelector('#c3') as HTMLDivElement, state.TodayFailCount).start();
+               })
+                
+            }
     }
 })
 };

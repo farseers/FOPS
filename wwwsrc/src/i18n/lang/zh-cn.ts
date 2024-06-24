@@ -104,6 +104,8 @@ export default {
 		visits:'访问统计',
 		taskApi:'task列表',
 		customerApi:'consumer列表',
+		queueApi:'本地队列',
+		eventApi:'本地事件',
 		fscheduleApi:'FSchedule列表',
 		Etcd:'Etcd',
 		Hand:'手动埋点',

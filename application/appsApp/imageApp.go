@@ -59,6 +59,9 @@ func SyncDockerImage(clusterId int64, appName string, appsIDockerSwarmDevice app
 	// 更新集群版本信息
 	do.UpdateBuildVer(true, clusterId, 0)
 	_, _ = appsRepository.UpdateClusterVer(appName, do.ClusterVer)
+
+	// 更新构建中状态的构建记录
+	_, _ = appsRepository.UpdateFailDockerImage(appName, do.DockerImage)
 }
 
 // UpdateDockerImage 更新仓库版本

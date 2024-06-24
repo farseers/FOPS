@@ -130,12 +130,48 @@ func (receiver *linkTraceRepository) ToFScheduleList(traceId, appName, appIp, ta
 func (receiver *linkTraceRepository) ToConsumerList(traceId, appName, appIp, server, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
 		ts := context.CHContext.TraceContextView.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,consumer_server,consumer_queue_name,consumer_routing_key").
-			Where("(trace_type = ? or trace_type = ? or trace_type = ?)", eumTraceType.EventConsumer, eumTraceType.MqConsumer, eumTraceType.QueueConsumer).
+			Where("trace_type = ?", eumTraceType.MqConsumer).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
 			WhereIf(appIp != "", "app_ip = ?", appIp).
 			WhereIf(searchUseTs > 0, "use_ts >= ?", searchUseTs*int64(time.Millisecond)).
 			WhereIf(server != "", "consumer_server like ?", "%"+server+"%").
+			WhereIf(queueName != "", "consumer_queue_name like ?", "%"+queueName+"%").
+			WhereIf(routingKey != "", "consumer_routing_key like ?", "%"+routingKey+"%").
+			WhereIf(onlyViewException, "exception <> ''").
+			WhereIf(startMin > 0, "start_ts >= ?", dateTime.Now().AddMinutes(-startMin).UnixMicro())
+
+		lstPO := ts.DescIfElse(startMin > 0, "use_ts", "start_ts").ToPageList(pageSize, pageIndex)
+		return mapper.ToPageList[linkTraceCom.TraceContext](lstPO)
+	}
+	return collections.NewPageList[linkTraceCom.TraceContext](collections.NewList[linkTraceCom.TraceContext](), 0)
+}
+func (receiver *linkTraceRepository) ToEventList(traceId, appName, appIp, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
+	if linkTrace.Config.Driver == "clickhouse" {
+		ts := context.CHContext.TraceContextView.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,consumer_server,consumer_queue_name,consumer_routing_key").
+			Where("trace_type = ?", eumTraceType.EventConsumer).
+			WhereIf(traceId != "", "trace_id = ?", traceId).
+			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
+			WhereIf(appIp != "", "app_ip = ?", appIp).
+			WhereIf(searchUseTs > 0, "use_ts >= ?", searchUseTs*int64(time.Millisecond)).
+			WhereIf(queueName != "", "consumer_queue_name like ?", "%"+queueName+"%").
+			WhereIf(routingKey != "", "consumer_routing_key like ?", "%"+routingKey+"%").
+			WhereIf(onlyViewException, "exception <> ''").
+			WhereIf(startMin > 0, "start_ts >= ?", dateTime.Now().AddMinutes(-startMin).UnixMicro())
+
+		lstPO := ts.DescIfElse(startMin > 0, "use_ts", "start_ts").ToPageList(pageSize, pageIndex)
+		return mapper.ToPageList[linkTraceCom.TraceContext](lstPO)
+	}
+	return collections.NewPageList[linkTraceCom.TraceContext](collections.NewList[linkTraceCom.TraceContext](), 0)
+}
+func (receiver *linkTraceRepository) ToQueueList(traceId, appName, appIp, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
+	if linkTrace.Config.Driver == "clickhouse" {
+		ts := context.CHContext.TraceContextView.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,consumer_server,consumer_queue_name,consumer_routing_key").
+			Where("trace_type = ?", eumTraceType.QueueConsumer).
+			WhereIf(traceId != "", "trace_id = ?", traceId).
+			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
+			WhereIf(appIp != "", "app_ip = ?", appIp).
+			WhereIf(searchUseTs > 0, "use_ts >= ?", searchUseTs*int64(time.Millisecond)).
 			WhereIf(queueName != "", "consumer_queue_name like ?", "%"+queueName+"%").
 			WhereIf(routingKey != "", "consumer_routing_key like ?", "%"+routingKey+"%").
 			WhereIf(onlyViewException, "exception <> ''").

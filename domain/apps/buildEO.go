@@ -33,6 +33,7 @@ type BuildEO struct {
 	Env             EnvVO               // 环境变量
 	AppName         string              // 应用名称
 	WorkflowsName   string              // 工作流名称（文件的名称）
+	DockerImage     string              // Docker镜像
 	WorkflowsAction ActionVO            // 工作流定义的内容（通过读取WorkflowsYmlPath）
 	dockerDevice    IDockerDevice
 	gitDevice       IGitDevice
@@ -100,19 +101,10 @@ func (receiver *BuildEO) StartBuild() {
 	// 生成Workflows文件
 	receiver.checkResult(receiver.GenerateWorkflowsContent(sysWith))
 
-	// 启动构建系统
-	dockerName := "FOPS-Build"
-	if !receiver.dockerDevice.ExistsDocker(dockerName) {
-		receiver.logQueue.progress <- "启动构建系统：" + receiver.WorkflowsAction.RunsOn
-		args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
-		receiver.checkResult(receiver.dockerDevice.Run(dockerName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env, receiver.logQueue.progress, receiver.ctx)) // , "-v /var/lib/fops:/var/lib/fops"
-	}
-	//defer receiver.dockerDevice.Kill(dockerName)
-
 	// 设置镜像的代理
 	if receiver.WorkflowsAction.Proxy != "" {
-		receiver.WorkflowsAction.Env["HTTP_PROXY"] = "http://" + receiver.WorkflowsAction.Proxy
-		receiver.WorkflowsAction.Env["HTTPS_PROXY"] = "http://" + receiver.WorkflowsAction.Proxy
+		receiver.WorkflowsAction.Env["HTTP_PROXY"] = receiver.WorkflowsAction.Proxy
+		receiver.WorkflowsAction.Env["HTTPS_PROXY"] = receiver.WorkflowsAction.Proxy
 	}
 
 	// 加载环境变量提示
@@ -122,8 +114,19 @@ func (receiver *BuildEO) StartBuild() {
 			receiver.logQueue.progress <- fmt.Sprintf("%s=%s", k, v)
 		}
 	}
+
+	// 启动构建系统
+	dockerName := "FOPS-Build"
+	if !receiver.dockerDevice.ExistsDocker(dockerName) {
+		receiver.logQueue.progress <- "启动构建系统：" + receiver.WorkflowsAction.RunsOn
+		args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
+		receiver.checkResult(receiver.dockerDevice.Run(dockerName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env, receiver.logQueue.progress, receiver.ctx)) // , "-v /var/lib/fops:/var/lib/fops"
+	}
+	//defer receiver.dockerDevice.Kill(dockerName)
+
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 
+	gits := receiver.getGits()
 	// 运行step
 	for index, step := range receiver.WorkflowsAction.Steps {
 		receiver.logQueue.progress <- fmt.Sprintf("执行 %d %s: %s", index+1, step.ActionName, step.Name)
@@ -135,7 +138,7 @@ func (receiver *BuildEO) StartBuild() {
 				// 先创建目录
 				file.CreateDir766(path.Dir(step.GetActionPath()))
 				// 下载文件
-				if err := http.Download(step.ActionDownloadUrl, step.GetActionPath(), 0, configure.GetString("Fops.GitAgent")); err != nil {
+				if _, err := http.Download(step.ActionDownloadUrl, step.GetActionPath(), nil, 0, configure.GetString("Fops.GitAgent")); err != nil {
 					receiver.logQueue.progress <- fmt.Sprintf("下载action %s 时发生错误：%s", step.ActionDownloadUrl, err.Error())
 					receiver.checkResult(false)
 				}
@@ -146,7 +149,6 @@ func (receiver *BuildEO) StartBuild() {
 			// 将action文件复制到容器
 			receiver.dockerDevice.Copy(dockerName, step.GetActionPath(), step.GetActionPath(), receiver.Env, make(chan string, 100), receiver.ctx)
 
-			gits := receiver.getGits()
 			// 支持checkout默认拉取应用
 			if parse.ToString(step.With["gitHub"]) != "" {
 				gits = append(gits, GitEO{
@@ -181,7 +183,6 @@ func (receiver *BuildEO) StartBuild() {
 		if len(step.Run) > 0 {
 			shellScript := collections.NewList[string]()
 			shellScript.Add("source /etc/profile")
-			//shellScript.Add("go env -w GO111MODULE=on && go env -w GOPROXY=https://goproxy.cn,direct")
 			shellScript.Add("mkdir -p " + DistRoot + receiver.appGit.GetRelativePath())
 			shellScript.Add("cd " + DistRoot + receiver.appGit.GetRelativePath())
 			shellScript.AddArray(step.Run)
@@ -196,7 +197,6 @@ func (receiver *BuildEO) StartBuild() {
 			receiver.dockerDevice.Copy(dockerName, shellPath, shellPath, receiver.Env, make(chan string, 100), receiver.ctx)
 
 			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, "/bin/sh -x "+shellPath, receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx))
-			//receiver.checkResult(exec.RunShell("docker exec "+dockerName+" /bin/sh -x "+shellPath, receiver.logQueue.progress, receiver.Env.ToMap(), DistRoot, false) == 0)
 		}
 		receiver.logQueue.progress <- "---------------------------------------------------------"
 	}
@@ -316,7 +316,8 @@ func (receiver *BuildEO) fail() {
 	// 发布事件
 	event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: false}.PublishEvent()
 
-	container.Resolve[Repository]().SetCancel(receiver.Id)
+	// 更新本次构建状态 = 失败
+	container.Resolve[Repository]().SetCancel(receiver.Id, receiver.Env, receiver.logQueue.View())
 }
 
 // 设置任务成功
@@ -333,7 +334,8 @@ func (receiver *BuildEO) success() {
 		event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: true}.PublishEvent()
 	}
 
-	container.Resolve[Repository]().SetSuccess(receiver.Id)
+	// 更新本次构建状态 = 成功
+	container.Resolve[Repository]().SetSuccess(receiver.Id, receiver.Env, receiver.logQueue.View())
 }
 
 // 得到所有Git

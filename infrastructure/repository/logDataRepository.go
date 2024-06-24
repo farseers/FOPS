@@ -29,7 +29,7 @@ func (receiver *logDataRepository) Save(lstEO collections.List[flog.LogData]) er
 	return nil
 }
 
-func (receiver *logDataRepository) ToList(traceId, appName, appIp, logContent string, logLevel eumLogLevel.Enum, pageSize, pageIndex int) collections.PageList[flog.LogData] {
+func (receiver *logDataRepository) ToList(traceId, appName, appIp, logContent string, minute int, logLevel eumLogLevel.Enum, pageSize, pageIndex int) collections.PageList[flog.LogData] {
 	var lst collections.PageList[flog.LogData]
 	if linkTrace.Config.Driver == "clickhouse" {
 		lstPO := context.CHContext.LogData.
@@ -37,6 +37,7 @@ func (receiver *logDataRepository) ToList(traceId, appName, appIp, logContent st
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
 			WhereIf(appIp != "", "app_ip = ?", appIp).
 			WhereIf(logLevel > -1, "log_level >= ?", logLevel).
+			WhereIf(minute > 0, "create_at >= (NOW() - INTERVAL ? MINUTE)", minute).
 			WhereIf(logContent != "", "content like ?", "%"+logContent+"%").
 			Desc("create_at").
 			ToPageList(pageSize, pageIndex)

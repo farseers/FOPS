@@ -1,5 +1,5 @@
 <template>
-    <div v-loading="state.loading" class="w100">
+    <div class="w100">
         <div class="conlyRow">
             <div v-for="item, index in state.tableData" :key="index.toString() + 'ecfy'" class="conlyCol">
                 <el-card :class="item.IsHealth ? 'conlyCard' : 'conlyCard conly_w'">
@@ -72,7 +72,6 @@ const dockerDialogRef = ref();
 // 定义变量内容
 const state = reactive({
     tableData: [],
-    loading: false,
     statTask: [],
     isShowDockerLogDialog: false, //容器日志
 	dockerLogContent: [],//容器日志
@@ -98,7 +97,6 @@ const getData = () => {
     var param = {
         "ClusterId": 0,
     }
-    state.loading = true
     // 获取应用列表
     serverApi.appsList(param).then(function (res) {
         if (res.Status) {
@@ -106,9 +104,6 @@ const getData = () => {
         } else {
             ElMessage.warning(res.StatusMessage);
         }
-        state.loading = false
-    }).catch(() => {
-        state.loading = false
     })
 }
 onMounted(() => {
@@ -144,7 +139,7 @@ defineExpose({
 
 .conlyCard {
     background-color: #f9f9e3;
-    border: 1px dotted var(--el-color-primary);
+    //border: 1px dotted var(--el-color-primary);
     :deep(.el-card__body) {
         padding: 10px 5px;
 	}
@@ -159,7 +154,7 @@ defineExpose({
 }
 
 .conly_w {
-    background: var(--el-color-danger-light-9);
+    background: var(--el-color-danger-light-8);
     border: 1px dotted var(--el-color-danger);
 }
 

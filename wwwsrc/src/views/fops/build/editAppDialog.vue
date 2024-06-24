@@ -143,20 +143,21 @@ const state = reactive({
 });
 
 // 打开弹窗
-const openDialog = (type: string, row: any) => {
+const openDialog = (type: string, row: any, clusterId: number) => {
   state.dialog.type=type
   state.ruleForm = row;
+  state.ruleForm.ClusterId = clusterId;
   state.dialog.title = '修改应用';
   state.dialog.submitTxt = '修 改';
   // 请求数据
-  serverApi.appsDetail({AppName:row.AppName}).then(function (res){
+  serverApi.appsDetail({AppName:row.AppName,clusterId:clusterId}).then(function (res){
     if (res.Status) {
       row = res.Data
       // 绑定数据
-      state.ruleForm.AppName=row.AppName
-      state.ruleForm.DockerVer=row.DockerVer
-      state.ruleForm.ClusterVer=row.ClusterVer
-      state.ruleForm.AppGit=row.AppGit
+      state.ruleForm.AppName = row.AppName
+      state.ruleForm.DockerVer = row.DockerVer
+      state.ruleForm.ClusterVer = row.ClusterVer
+      state.ruleForm.AppGit = row.AppGit
       state.ruleForm.FrameworkGits=row.FrameworkGits
       state.ruleForm.DockerfilePath=row.DockerfilePath
       state.SelectItem=row.FrameworkGits
@@ -259,8 +260,6 @@ const onDeleteService = () => {
       .catch(() => {});
 };
 
-
-
 // 提交
 const onSubmit = () => {
   if(state.ruleForm.DockerNodeRoleInt==0){
@@ -302,7 +301,7 @@ const getTableData = (type:any) => {
     state.isApp=1
     var select=[]
     select.push(state.ruleForm.AppGit)
-    state.SelectItem=select // 清空
+    state.SelectItem = select // 清空
   }
   // 请求接口
   serverApi.gitList({isApp:state.isApp}).then(function (res){

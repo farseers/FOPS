@@ -50,7 +50,19 @@ func (repository *buildRepository) SetBuilding(id int64) {
 }
 
 // SetSuccess 任务完成
-func (repository *buildRepository) SetSuccess(id int64) {
+func (repository *buildRepository) SetSuccess(id int64, env apps.EnvVO, log []string) {
+	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at", "env", "log", "docker_image").Update(model.BuildPO{
+		Status:      eumBuildStatus.Finish,
+		IsSuccess:   true,
+		FinishAt:    time.Now(),
+		Env:         env,
+		Log:         log,
+		DockerImage: env.DockerImage,
+	})
+}
+
+// SetSuccessForFops 任务完成
+func (repository *buildRepository) SetSuccessForFops(id int64) {
 	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at").Update(model.BuildPO{
 		Status:    eumBuildStatus.Finish,
 		IsSuccess: true,
@@ -59,15 +71,33 @@ func (repository *buildRepository) SetSuccess(id int64) {
 }
 
 // SetCancel 主动取消任务
-func (repository *buildRepository) SetCancel(id int64) {
-	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at").Update(model.BuildPO{
-		Status:    eumBuildStatus.Finish,
-		IsSuccess: false,
-		FinishAt:  time.Now(),
+func (repository *buildRepository) SetCancel(id int64, env apps.EnvVO, log []string) {
+	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at", "env", "log", "docker_image").Update(model.BuildPO{
+		Status:      eumBuildStatus.Finish,
+		IsSuccess:   false,
+		FinishAt:    time.Now(),
+		Env:         env,
+		Log:         log,
+		DockerImage: env.DockerImage,
 	})
 }
 
 // GetStatus 获取构建状态
 func (repository *buildRepository) GetStatus(id int64) eumBuildStatus.Enum {
 	return eumBuildStatus.Enum(context.MysqlContext.Build.Where("id = ?", id).GetInt("status"))
+}
+
+// UpdateFailDockerImage 更新构建中状态的构建记录
+func (repository *buildRepository) UpdateFailDockerImage(appName string, dockerImage string) (int64, error) {
+	return context.MysqlContext.Build.Select("status", "is_success", "finish_at").Where("app_name = ? and status = ? and docker_image = ?", appName, eumBuildStatus.Building, dockerImage).
+		Update(model.BuildPO{
+			Status:    eumBuildStatus.Finish,
+			IsSuccess: true,
+			FinishAt:  time.Now(),
+		})
+}
+
+func (repository *buildRepository) GetLastBuild() apps.BuildEO {
+	po := context.MysqlContext.Build.Desc("id").ToEntity()
+	return mapper.Single[apps.BuildEO](po)
 }

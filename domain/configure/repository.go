@@ -11,4 +11,6 @@ type Repository interface {
 	data.IRepository[DomainObject]
 	// ToListByAppName 获取应用的配置列表
 	ToListByAppName(appName string) collections.List[DomainObject]
+	// Rollback 回滚版本
+	Rollback(appName string) (int64, error)
 }

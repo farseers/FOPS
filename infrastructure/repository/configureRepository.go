@@ -15,7 +15,23 @@ type configureRepository struct {
 }
 
 func (receiver *configureRepository) ToListByAppName(appName string) collections.List[configure.DomainObject] {
-	sql := "SELECT * FROM configure cp INNER JOIN (SELECT app_name, `key`, MAX(`ver`) AS ver FROM configure where app_name = ? or app_name = 'global' GROUP BY app_name, `key`) AS max_cp ON cp.app_name = max_cp.app_name AND cp.`key` = max_cp.`key` AND cp.Ver = max_cp.ver;"
+	sql := "SELECT cp.app_name as app_name, cp.`key` as `key`, cp.value as value, cp.ver as ver FROM configure cp INNER JOIN (SELECT app_name, `key`, MAX(`ver`) AS ver FROM configure where app_name = ? or app_name = 'global' GROUP BY app_name, `key`) AS max_cp ON cp.app_name = max_cp.app_name AND cp.`key` = max_cp.`key` AND cp.Ver = max_cp.ver;"
 	lst := context.MysqlContext.Configure.ExecuteSqlToList(sql, appName).ToList()
 	return mapper.ToList[configure.DomainObject](lst)
+}
+
+func (receiver *configureRepository) ToList() collections.List[configure.DomainObject] {
+	sql := "SELECT cp.app_name as app_name, cp.`key` as `key`, cp.value as value, cp.ver as ver FROM configure cp INNER JOIN (SELECT app_name, `key`, MAX(`ver`) AS ver FROM configure GROUP BY app_name, `key`) AS max_cp ON cp.app_name = max_cp.app_name AND cp.`key` = max_cp.`key` AND cp.Ver = max_cp.ver;"
+	lst := context.MysqlContext.Configure.ExecuteSqlToList(sql).ToList()
+	return mapper.ToList[configure.DomainObject](lst)
+}
+
+func (receiver *configureRepository) ToEntity(appName any) configure.DomainObject {
+	po := context.MysqlContext.Configure.Where("app_name = ?", appName).Desc("ver").ToEntity()
+	return mapper.Single[configure.DomainObject](po)
+}
+
+func (receiver *configureRepository) Rollback(appName string) (int64, error) {
+	ver := context.MysqlContext.Configure.Where("app_name = ?", appName).Desc("ver").GetInt("ver")
+	return context.MysqlContext.Configure.Where("app_name = ? and ver = ?", appName, ver).Delete()
 }

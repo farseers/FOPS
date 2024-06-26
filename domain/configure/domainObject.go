@@ -7,3 +7,7 @@ type DomainObject struct {
 	Ver     int    // 版本
 	Value   string // 配置VALUE
 }
+
+func (receiver DomainObject) IsNil() bool {
+	return receiver.AppName == ""
+}

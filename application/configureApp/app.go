@@ -42,6 +42,11 @@ func Update(req request.UpdateRequest, configureRepository configure.Repository)
 	oldDO := configureRepository.ToEntityByKey(do.AppName, do.Key)
 	exception.ThrowRefuseExceptionBool(oldDO.IsNil(), "配置不存在")
 
+	// 值相等，不用保存
+	if req.Value == oldDO.Value {
+		return
+	}
+
 	var newDO = configure.DomainObject{
 		AppName: req.AppName,
 		Key:     req.Key,

@@ -37,7 +37,7 @@ var route = []webapi.Route{
 	{"POST", "/cluster/delete", clusterApp.Delete, "", []context.IFilter{application.Jwt{}}, []string{"clusterId", ""}},
 	{"GET", "/cluster/nodeList", clusterApp.NodeList, "", []context.IFilter{application.Jwt{}}, []string{""}},
 	{"POST", "/configure/list", configureApp.List, "", []context.IFilter{}, []string{"appName", ""}},
-	{"POST", "/configure/allList", configureApp.AllList, "", []context.IFilter{application.Jwt{}}, []string{"appName", ""}},
+	{"GET", "/configure/allList", configureApp.AllList, "", []context.IFilter{application.Jwt{}}, []string{"appName", ""}},
 	{"POST", "/configure/add", configureApp.Add, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
 	{"POST", "/configure/update", configureApp.Update, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
 	{"POST", "/configure/rollback", configureApp.Rollback, "", []context.IFilter{application.Jwt{}}, []string{"appName", ""}},

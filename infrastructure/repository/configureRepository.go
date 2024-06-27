@@ -31,6 +31,11 @@ func (receiver *configureRepository) ToEntity(appName any) configure.DomainObjec
 	return mapper.Single[configure.DomainObject](po)
 }
 
+func (receiver *configureRepository) ToEntityByKey(appName, key string) configure.DomainObject {
+	po := context.MysqlContext.Configure.Where("app_name = ? and `key` = ?", appName, key).Desc("ver").ToEntity()
+	return mapper.Single[configure.DomainObject](po)
+}
+
 func (receiver *configureRepository) GetLastVer(appName, key string) int {
 	return context.MysqlContext.Configure.Where("app_name = ? and `key` = ?", appName, key).Desc("ver").GetInt("ver")
 }

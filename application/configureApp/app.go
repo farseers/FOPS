@@ -39,7 +39,7 @@ func Add(req request.AddRequest, configureRepository configure.Repository) {
 // @filter application.Jwt
 func Update(req request.UpdateRequest, configureRepository configure.Repository) {
 	do := mapper.Single[configure.DomainObject](req)
-	oldDO := configureRepository.ToEntity(do.AppName)
+	oldDO := configureRepository.ToEntityByKey(do.AppName, do.Key)
 	exception.ThrowRefuseExceptionBool(oldDO.IsNil(), "配置不存在")
 
 	var newDO = configure.DomainObject{

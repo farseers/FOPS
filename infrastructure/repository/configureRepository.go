@@ -31,8 +31,11 @@ func (receiver *configureRepository) ToEntity(appName any) configure.DomainObjec
 	return mapper.Single[configure.DomainObject](po)
 }
 
-func (receiver *configureRepository) Rollback(appName, key string) (int64, error) {
-	ver := context.MysqlContext.Configure.Where("app_name = ? and `key` = ?", appName, key).Desc("ver").GetInt("ver")
+func (receiver *configureRepository) GetLastVer(appName, key string) int {
+	return context.MysqlContext.Configure.Where("app_name = ? and `key` = ?", appName, key).Desc("ver").GetInt("ver")
+}
+
+func (receiver *configureRepository) Rollback(appName, key string, ver int) (int64, error) {
 	return context.MysqlContext.Configure.Where("app_name = ? and `key` = ? and ver = ?", appName, key, ver).Delete()
 }
 

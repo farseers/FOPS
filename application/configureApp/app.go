@@ -27,6 +27,8 @@ func AllList(configureRepository configure.Repository) collections.List[configur
 // @filter application.Jwt
 func Add(req request.AddRequest, configureRepository configure.Repository) {
 	do := mapper.Single[configure.DomainObject](req)
+	do.Ver = 1
+
 	// 添加
 	err := configureRepository.Add(do)
 	exception.ThrowWebExceptionError(403, err)
@@ -54,7 +56,10 @@ func Update(req request.UpdateRequest, configureRepository configure.Repository)
 // @post rollback
 // @filter application.Jwt
 func Rollback(appName, key string, configureRepository configure.Repository) {
-	_, err := configureRepository.Rollback(appName, key)
+	lastVer := configureRepository.GetLastVer(appName, key)
+	exception.ThrowWebExceptionfBool(lastVer < 2, 403, "没有可回滚的版本")
+
+	_, err := configureRepository.Rollback(appName, key, lastVer)
 	exception.ThrowWebExceptionError(403, err)
 }
 

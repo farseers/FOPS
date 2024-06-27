@@ -32,10 +32,10 @@ func (receiver *configureRepository) ToEntity(appName any) configure.DomainObjec
 }
 
 func (receiver *configureRepository) Rollback(appName, key string) (int64, error) {
-	ver := context.MysqlContext.Configure.Where("app_name = ? and key = ?", appName, key).Desc("ver").GetInt("ver")
-	return context.MysqlContext.Configure.Where("app_name = ? and key = ? and ver = ?", appName, key, ver).Delete()
+	ver := context.MysqlContext.Configure.Where("app_name = ? and `key` = ?", appName, key).Desc("ver").GetInt("ver")
+	return context.MysqlContext.Configure.Where("app_name = ? and `key` = ? and ver = ?", appName, key, ver).Delete()
 }
 
 func (receiver *configureRepository) DeleteKey(appName, key string) (int64, error) {
-	return context.MysqlContext.Configure.Where("app_name = ? and key = ?", appName, key).Delete()
+	return context.MysqlContext.Configure.Where("app_name = ? and `key` = ?", appName, key).Delete()
 }

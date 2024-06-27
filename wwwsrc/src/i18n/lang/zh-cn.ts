@@ -83,6 +83,7 @@ export default {
 		ClusterAdd:'集群管理',
 		AppAdd:'添加应用',
 		GitAdd:'Git管理',
+		Configuration:'配置管理',
 		DispatchCenter:'调度中心',
 		TaskGroup:'任务组管理',
 		TaskPlan:'执行计划',

@@ -344,6 +344,43 @@ export function fopsApi() {
 				method: 'get',
 				data:param,
 			});
-		}
+		},configureAllList
+		: () => { 
+			return request({
+				url: '/configure/allList',
+				method: 'get',
+				// data:param,
+			});
+		},configureDelete
+		: (param: object) => { 
+			return request({
+				url: '/configure/delete',
+				method: 'post',
+				data:param,
+			});
+		},configureAdd
+		: (param: object) => { 
+			return request({
+				url: '/configure/add',
+				method: 'post',
+				data:param,
+			});
+		},configureUpdate
+		: (param: object) => { 
+			return request({
+				url: '/configure/update',
+				method: 'post',
+				data:param,
+			});
+		},configureRollback
+		: (param: object) => { 
+			return request({
+				url: '/configure/rollback',
+				method: 'post',
+				data:param,
+			});
+		},
+		//
+		
 	};
 }

@@ -178,6 +178,22 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 							icon: 'iconfont icon-zujian',
 						},
 					},
+					{
+						path: '/app/Configuration',
+						name: 'Configuration',
+						component: () => import('/@/views/fops/configu/index.vue'),
+						meta: {
+							title: 'message.router.Configuration',
+							isLink: '',
+							isHide: false,
+							isKeepAlive: true,
+							isAffix: false,
+							isIframe: false,
+							roles: ['admin'],
+							icon: 'iconfont icon-caidan',
+						},
+					},
+					//
 				]
 			},{
 				path: '/dispatch',

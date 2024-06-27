@@ -18,7 +18,7 @@ func List(appName string, configureRepository configure.Repository) collections.
 // AllList 获取所有应用的配置列表
 // @get allList
 // @filter application.Jwt
-func AllList(appName string, configureRepository configure.Repository) collections.List[configure.DomainObject] {
+func AllList(configureRepository configure.Repository) collections.List[configure.DomainObject] {
 	return configureRepository.ToList()
 }
 

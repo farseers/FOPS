@@ -12,5 +12,7 @@ type Repository interface {
 	// ToListByAppName 获取应用的配置列表
 	ToListByAppName(appName string) collections.List[DomainObject]
 	// Rollback 回滚版本
-	Rollback(appName string) (int64, error)
+	Rollback(appName, key string) (int64, error)
+	// DeleteKey 删除Key
+	DeleteKey(appName, key string) (int64, error)
 }

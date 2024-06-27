@@ -53,16 +53,17 @@ func Update(req request.UpdateRequest, configureRepository configure.Repository)
 // Rollback 回滚配置
 // @post rollback
 // @filter application.Jwt
-func Rollback(appName string, configureRepository configure.Repository) {
-	_, err := configureRepository.Rollback(appName)
+func Rollback(appName, key string, configureRepository configure.Repository) {
+	_, err := configureRepository.Rollback(appName, key)
 	exception.ThrowWebExceptionError(403, err)
 }
 
 // Delete 删除配置
 // @post delete
 // @filter application.Jwt
-func Delete(appName string, configureRepository configure.Repository) {
+func Delete(appName, key string, configureRepository configure.Repository) {
 	exception.ThrowWebExceptionBool(appName == "", 403, "应用名称没有填")
-	_, err := configureRepository.Delete(appName)
+	exception.ThrowWebExceptionBool(key == "", 403, "Key没有填")
+	_, err := configureRepository.DeleteKey(appName, key)
 	exception.ThrowWebExceptionError(403, err)
 }

@@ -18,7 +18,7 @@ func List(appName string, configureRepository configure.Repository) collections.
 // AllList 获取所有应用的配置列表
 // @get allList
 // @filter application.Jwt
-func AllList(appName string, configureRepository configure.Repository) collections.List[configure.DomainObject] {
+func AllList(configureRepository configure.Repository) collections.List[configure.DomainObject] {
 	return configureRepository.ToList()
 }
 
@@ -27,6 +27,8 @@ func AllList(appName string, configureRepository configure.Repository) collectio
 // @filter application.Jwt
 func Add(req request.AddRequest, configureRepository configure.Repository) {
 	do := mapper.Single[configure.DomainObject](req)
+	do.Ver = 1
+
 	// 添加
 	err := configureRepository.Add(do)
 	exception.ThrowWebExceptionError(403, err)
@@ -37,8 +39,13 @@ func Add(req request.AddRequest, configureRepository configure.Repository) {
 // @filter application.Jwt
 func Update(req request.UpdateRequest, configureRepository configure.Repository) {
 	do := mapper.Single[configure.DomainObject](req)
-	oldDO := configureRepository.ToEntity(do.AppName)
+	oldDO := configureRepository.ToEntityByKey(do.AppName, do.Key)
 	exception.ThrowRefuseExceptionBool(oldDO.IsNil(), "配置不存在")
+
+	// 值相等，不用保存
+	if req.Value == oldDO.Value {
+		return
+	}
 
 	var newDO = configure.DomainObject{
 		AppName: req.AppName,
@@ -53,16 +60,20 @@ func Update(req request.UpdateRequest, configureRepository configure.Repository)
 // Rollback 回滚配置
 // @post rollback
 // @filter application.Jwt
-func Rollback(appName string, configureRepository configure.Repository) {
-	_, err := configureRepository.Rollback(appName)
+func Rollback(appName, key string, configureRepository configure.Repository) {
+	lastVer := configureRepository.GetLastVer(appName, key)
+	exception.ThrowWebExceptionfBool(lastVer < 2, 403, "没有可回滚的版本")
+
+	_, err := configureRepository.Rollback(appName, key, lastVer)
 	exception.ThrowWebExceptionError(403, err)
 }
 
 // Delete 删除配置
 // @post delete
 // @filter application.Jwt
-func Delete(appName string, configureRepository configure.Repository) {
+func Delete(appName, key string, configureRepository configure.Repository) {
 	exception.ThrowWebExceptionBool(appName == "", 403, "应用名称没有填")
-	_, err := configureRepository.Delete(appName)
+	exception.ThrowWebExceptionBool(key == "", 403, "Key没有填")
+	_, err := configureRepository.DeleteKey(appName, key)
 	exception.ThrowWebExceptionError(403, err)
 }

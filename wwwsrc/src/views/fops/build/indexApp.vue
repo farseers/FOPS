@@ -124,7 +124,7 @@
   <appAddDialog ref="appAddDialogRef" @refresh="getTableData()" @showOverlay="onShowOverlay()" @hideOverlay="onHideOverlay()" />
   <logDialog ref="logDialogRef"  />
   <taskDialog ref="taskDialogRef"  />
-  <el-dialog title="构建日志" v-model="state.isShowBuildLogDialog" style="width: 80%;top:20px;margin-bottom: 50px;">
+  <el-dialog title="构建日志" v-model="state.isShowBuildLogDialog" style="width: 80%;top:20px;margin-bottom: 50px;" class='initdialog__body'>
     <el-checkbox v-model="state.autoLog" style="margin-bottom: 5px;">自动刷新日志</el-checkbox>
     <div class="layout-padding-auto" style="background-color:#393d49;">
       <div ref="scrollableBuildLog" style="height: 100%;overflow-y: auto;">
@@ -142,7 +142,6 @@
 </template>
 
 <script setup lang="ts" name="fopsApp">
-
 import {defineAsyncComponent, reactive, onMounted, ref, nextTick, watch, onUnmounted} from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import {fopsApi} from "/@/api/fops";
@@ -343,12 +342,16 @@ const showBuildLog=(row:any)=>{
 const onShowLog=()=>{
   serverApi.buildLog(state.buildLogId.toString()).then(function (res) {
     // 如果从接口获取到的内容与本地内容一样时，则不用滚动
-    let isChange= state.buildLogContents != res;
+    // let isChange= state.buildLogContents != res;
     state.buildLogContent = res;
     state.buildLogContents = res;
     // 自动刷新日志
-    if (state.autoLog && isChange) {
+    // console.log(state.autoLog)
+    if (state.autoLog ) {
+      setTimeout(() => {   //自动跳到底部 
         scrollableBuildLog.value.scrollTop = scrollableBuildLog.value.scrollHeight;
+        }, 500)
+       
     }
   })
 }
@@ -530,8 +533,13 @@ onUnmounted(()=>{
   clearInterval(intervalAppId);
 })
 </script>
-
 <style lang="scss">
+.initdialog__body {
+    :deep(.el-dialog__body) {
+    display: flex;
+    flex-flow: column;
+   }
+  }
 .system-user-container {
 	:deep(.el-card__body) {
 		display: flex;

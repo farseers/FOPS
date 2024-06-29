@@ -310,21 +310,18 @@ func (receiver *BuildEO) checkResult(result bool) {
 
 // 设置任务失败
 func (receiver *BuildEO) fail() {
-	receiver.logQueue.progress <- "---------------------------------------------------------"
-	receiver.logQueue.progress <- "执行失败，退出构建。"
-
 	// 发布事件
 	event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: false}.PublishEvent()
 
 	// 更新本次构建状态 = 失败
 	container.Resolve[Repository]().SetCancel(receiver.Id, receiver.Env, receiver.logQueue.View())
+
+	receiver.logQueue.progress <- "---------------------------------------------------------"
+	receiver.logQueue.progress <- "执行失败，退出构建。"
 }
 
 // 设置任务成功
 func (receiver *BuildEO) success() {
-	receiver.logQueue.progress <- "---------------------------------------------------------"
-	receiver.logQueue.progress <- "构建完成。"
-
 	// 包含dockerswarmUpdateVer，才要发布通知
 	if collections.NewList(receiver.WorkflowsAction.Steps...).Where(func(item stepVO) bool {
 		return item.ActionName == "dockerswarmUpdateVer"
@@ -336,6 +333,9 @@ func (receiver *BuildEO) success() {
 
 	// 更新本次构建状态 = 成功
 	container.Resolve[Repository]().SetSuccess(receiver.Id, receiver.Env, receiver.logQueue.View())
+
+	receiver.logQueue.progress <- "---------------------------------------------------------"
+	receiver.logQueue.progress <- "构建完成。"
 }
 
 // 得到所有Git

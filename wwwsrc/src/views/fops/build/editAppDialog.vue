@@ -294,7 +294,7 @@ const onSubmit = () => {
     "DockerNodeRole":state.ruleForm.DockerNodeRole,
     "AdditionalScripts":state.ruleForm.AdditionalScripts,
     "WorkflowsYmlPath":state.ruleForm.WorkflowsYmlPath,
-    "LimitCpus":state.ruleForm.LimitCpus,
+    "LimitCpus":parseFloat(state.ruleForm.LimitCpus),
     "LimitMemory":state.ruleForm.LimitMemory,
   }
   emit('showOverlay');

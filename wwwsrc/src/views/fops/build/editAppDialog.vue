@@ -181,13 +181,15 @@ const openDialog = (type: string, row: any, clusterId: number) => {
 };
 
 const loadGit=()=>{
-  serverApi.gitList({isApp:1}).then(function (res){
-    // console.log(11111111)
+  serverApi.gitList({isApp:0}).then(function (res){
+    console.log(state.ruleForm.FrameworkGits)
     if (res.Status){
       // state.tableData.data = res.Data;
       // state.tableData.total = res.Data.length;
-      state.gitList= res.Data;
-      // console.log(state.gitList)
+      const SelectItem = state.ruleForm.FrameworkGits;
+      const arr = res.Data.filter(item => SelectItem.includes(item.Id));
+      state.gitList= arr;
+      // console.log(state.gitList,state.SelectItem)
     }else{
       state.gitList=[]
     }

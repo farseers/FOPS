@@ -314,26 +314,30 @@ func (receiver *linkTraceRepository) ToSlowRedisList(traceId, appName, appIp, ke
 }
 
 func (receiver *linkTraceRepository) Save(lstEO collections.List[linkTraceCom.TraceContext]) error {
-	lst := mapper.ToList[model.TraceContextPO](lstEO)
-	lst.Foreach(func(item *model.TraceContextPO) {
-		item.UseDesc = item.UseTs.String()
-		item.CreateAt = dateTime.NewUnixMicro(item.StartTs)
-		item.TraceCount = len(item.List)
+	lst := collections.NewList[model.TraceContextPO]()
+	lstEO.Foreach(func(item *linkTraceCom.TraceContext) {
+		items := item.List
+		item.List = nil
 
-		for index, detail := range item.List {
+		po := mapper.Single[model.TraceContextPO](item)
+		po.List = items
+		po.UseDesc = po.UseTs.String()
+		po.CreateAt = dateTime.NewUnixMicro(po.StartTs)
+		po.TraceCount = len(items)
+		for index, detail := range items {
 			m := detail.(map[string]any)
 			baseDetailPO := mapper.Single[model.BaseTraceDetailPO](m)
 			m["UseDesc"] = baseDetailPO.UseTs.String()
 			m["CreateAt"] = dateTime.NewUnixMicro(baseDetailPO.StartTs)
-			item.List[index] = m
+			po.List[index] = m
 		}
+		lst.Add(po)
 	})
 
 	if linkTrace.Config.Driver == "clickhouse" {
 		// 写入上下文
 		if _, err := context.CHContext.TraceContext.InsertList(lst, 2000); err != nil {
-			b, _ := json.Marshal(lst)
-			_ = flog.Errorf("TraceContext写入ch失败,%s %s", err.Error(), string(b))
+			_ = flog.Errorf("TraceContext写入ch失败,%s", err.Error())
 		}
 	} else {
 		return fmt.Errorf("不支持的链路追踪驱动：%s", linkTrace.Config.Driver)

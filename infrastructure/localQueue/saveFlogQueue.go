@@ -12,7 +12,7 @@ func SaveFlogQueue(subscribeName string, lstMessage collections.ListAny, remaini
 	if traceContext := trace.CurTraceContext.Get(); traceContext != nil {
 		traceContext.Ignore()
 	}
-
+	return
 	lst := collections.NewList[flog.LogData]()
 	for _, item := range lstMessage.ToArray() {
 		data := item.(*flog.LogData)

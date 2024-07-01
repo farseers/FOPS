@@ -7,6 +7,7 @@ import (
 	"fops/infrastructure/device"
 	"fops/infrastructure/domainEvent"
 	"fops/infrastructure/http"
+	"fops/infrastructure/localQueue"
 	"fops/infrastructure/repository"
 	"fops/infrastructure/repository/context"
 	"github.com/farseer-go/data"
@@ -16,6 +17,8 @@ import (
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/modules"
 	linkTraceModule "github.com/farseer-go/linkTrace"
+	"github.com/farseer-go/queue"
+	"time"
 )
 
 type Module struct {
@@ -52,8 +55,8 @@ func (module Module) PostInitialize() {
 	}
 
 	// 日志消费
-	//queue.Subscribe("flog", "saveFlogDataToCh", 1000, 5*time.Second, localQueue.SaveFlogQueue)
+	queue.Subscribe("flog", "saveFlogDataToCh", 1000, 5*time.Second, localQueue.SaveFlogQueue)
 
 	// 链路追踪日志消费
-	//queue.Subscribe("linkTrace", "saveLinkTraceLogToCh", 1000, 5*time.Second, localQueue.SaveLinkTraceQueue)
+	queue.Subscribe("linkTrace", "saveLinkTraceLogToCh", 1000, 5*time.Second, localQueue.SaveLinkTraceQueue)
 }

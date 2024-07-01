@@ -16,7 +16,6 @@ import (
 	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/modules"
-	linkTraceModule "github.com/farseer-go/linkTrace"
 	"github.com/farseer-go/queue"
 	"time"
 )
@@ -26,7 +25,7 @@ type Module struct {
 
 func (module Module) DependsModule() []modules.FarseerModule {
 	// 这些模块都是farseer-go内置的模块
-	return []modules.FarseerModule{data.Module{}, eventBus.Module{}, linkTraceModule.Module{}}
+	return []modules.FarseerModule{data.Module{}, eventBus.Module{}}
 }
 
 func (module Module) PostInitialize() {

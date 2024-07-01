@@ -15,5 +15,6 @@ func main() {
 	webapi.UseValidate()    // 使用DTO验证
 	webapi.UseStaticFiles() // 使用静态文件 在根目录./wwwroot中的文件
 	webapi.UseHealthCheck() // 开启健康检查
+	webapi.UsePprof()       // 开启pprof
 	webapi.Run()            // 运行web服务，端口配置在：farseer.yaml Webapi.Url 配置节点
 }

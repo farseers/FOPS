@@ -15,9 +15,10 @@ func SaveLinkTraceQueue(subscribeName string, lstMessage collections.ListAny, re
 	}
 
 	lst := collections.NewList[linkTraceCom.TraceContext]()
-	lstMessage.Foreach(func(item *any) {
-		lst.Add((*item).(linkTraceCom.TraceContext))
-	})
+	for _, item := range lstMessage.ToArray() {
+		data := item.(*linkTraceCom.TraceContext)
+		lst.Add(*data)
+	}
 
 	err := container.Resolve[linkTrace.Repository]().Save(lst)
 	flog.ErrorIfExists(err)

@@ -14,9 +14,10 @@ func SaveFlogQueue(subscribeName string, lstMessage collections.ListAny, remaini
 	}
 
 	lst := collections.NewList[flog.LogData]()
-	lstMessage.Foreach(func(item *any) {
-		lst.Add((*item).(flog.LogData))
-	})
+	for _, item := range lstMessage.ToArray() {
+		data := item.(*flog.LogData)
+		lst.Add(*data)
+	}
 
 	err := container.Resolve[logData.Repository]().Save(lst)
 	flog.ErrorIfExists(err)

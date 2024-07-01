@@ -13,6 +13,7 @@ import (
 func Upload(req request.UploadRequest, logDataRepository logData.Repository) {
 	// 写入到本地队列
 	req.List.Foreach(func(item *flog.LogData) {
-		queue.Push("flog", *item)
+		queue.Push("flog", item)
 	})
+	req.List.Clear()
 }

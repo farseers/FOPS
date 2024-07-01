@@ -215,5 +215,7 @@ func doToAppsResponse(clusterId int64, do apps.DomainObject) response.AppsRespon
 		DockerReplicas:    do.DockerReplicas,
 		AdditionalScripts: do.AdditionalScripts,
 		IsHealth:          do.DockerInstances >= do.DockerReplicas,
+		LimitCpus:         do.LimitCpus,
+		LimitMemory:       do.LimitMemory,
 	}
 }

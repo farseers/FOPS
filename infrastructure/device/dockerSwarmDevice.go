@@ -1,6 +1,7 @@
 package device
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"fops/domain/apps"
@@ -99,11 +100,21 @@ func (dockerSwarmDevice) ExistsDocker(appName string) bool {
 	return lst.ContainsAny(fmt.Sprintf("\"Name\": \"%s\"", appName))
 }
 
-func (dockerSwarmDevice) CreateService(appName, dockerNodeRole, additionalScripts, dockerNetwork string, dockerReplicas int, dockerImages string, progress chan string, ctx context.Context) bool {
+func (dockerSwarmDevice) CreateService(appName, dockerNodeRole, additionalScripts, dockerNetwork string, dockerReplicas int, dockerImages string, limitCpus float64, limitMemory float64, progress chan string, ctx context.Context) bool {
 	progress <- "开始创建Docker Swarm容器服务。"
 
-	shell := fmt.Sprintf("docker service create --with-registry-auth --name %s --replicas %v -d --network=%s --constraint node.role==%s --mount type=bind,src=/etc/localtime,dst=/etc/localtime %s %s", appName, dockerReplicas, dockerNetwork, dockerNodeRole, additionalScripts, dockerImages)
-	var exitCode = exec.RunShellContext(ctx, shell, progress, nil, "", true)
+	var sb bytes.Buffer
+	sb.WriteString("docker service create --with-registry-auth --mount type=bind,src=/etc/localtime,dst=/etc/localtime")
+	sb.WriteString(fmt.Sprintf(" --name %s --replicas %v -d --network=%s --constraint node.role==%s", appName, dockerReplicas, dockerNetwork, dockerNodeRole))
+	if limitCpus > 0 {
+		sb.WriteString(fmt.Sprintf(" --limit-cpu %f", limitCpus))
+	}
+	if limitMemory > 0 {
+		sb.WriteString(fmt.Sprintf(" --limit-memory %f", limitMemory))
+	}
+	sb.WriteString(fmt.Sprintf(" %s %s", additionalScripts, dockerImages))
+
+	var exitCode = exec.RunShellContext(ctx, sb.String(), progress, nil, "", true)
 	if exitCode != 0 {
 		progress <- "创建Docker Swarm容器失败了。"
 		return false

@@ -19,7 +19,6 @@ require (
 	github.com/farseer-go/tasks v0.14.0
 	github.com/farseer-go/utils v0.14.0
 	github.com/farseer-go/webapi v0.14.0
-	github.com/shopspring/decimal v1.4.0
 )
 
 require (

@@ -18,4 +18,6 @@ type AppsPO struct {
 	DockerReplicas    int                          `gorm:"type:int;default:0;not null;comment:副本数量"`
 	DockerNodeRole    string                       `gorm:"size:256;not null;comment:容器节点角色"`
 	AdditionalScripts string                       `gorm:"type:text;not null;comment:首次创建应用时附加脚本"`
+	LimitCpus         float64                      `gorm:"type:Float64(6,3);not null;comment:Cpu核数限制"`
+	LimitMemory       float64                      `gorm:"type:Float64(6,3);not null;comment:内存限制"`
 }

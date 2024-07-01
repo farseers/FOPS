@@ -50,7 +50,7 @@ func SyncDockerImage(clusterId int64, appName string, appsIDockerSwarmDevice app
 		}
 	} else {
 		// 创建容器服务
-		if !appsIDockerSwarmDevice.CreateService(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, do.DockerImage, c, context.Background()) {
+		if !appsIDockerSwarmDevice.CreateService(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, do.DockerImage, do.LimitCpus, do.LimitMemory, c, context.Background()) {
 			lstLog := collections.NewListFromChan(c)
 			exception.ThrowWebExceptionf(403, "同步仓库版本失败:<br />%s", lstLog.ToString("<br />"))
 		}
@@ -116,7 +116,7 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 	} else {
 		// 创建容器服务
 		container.Resolve[trace.IManager]().TraceHand("创建容器服务").Run(func() {
-			if !appsIDockerSwarmDevice.CreateService(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, do.DockerImage, c, context.Background()) {
+			if !appsIDockerSwarmDevice.CreateService(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, do.DockerImage, do.LimitCpus, do.LimitMemory, c, context.Background()) {
 				lstLog := collections.NewListFromChan(c)
 				exception.ThrowWebExceptionf(403, "创建容器服务失败:<br />%s", lstLog.ToString("<br />"))
 			}
@@ -150,7 +150,7 @@ func RestartDocker(clusterId int64, appName string, appsIDockerSwarmDevice apps.
 			c = make(chan string, 100)
 			// 创建容器服务
 			do := appsRepository.ToEntity(appName)
-			if !appsIDockerSwarmDevice.CreateService(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, do.DockerImage, c, context.Background()) {
+			if !appsIDockerSwarmDevice.CreateService(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, do.DockerImage, do.LimitCpus, do.LimitMemory, c, context.Background()) {
 				lstLog := collections.NewListFromChan(c)
 				exception.ThrowWebExceptionf(403, "创建容器服务失败:<br />%s", lstLog.ToString("<br />"))
 			}

@@ -24,4 +24,6 @@ type AppsResponse struct {
 	TaskFailCount     int                     // 任务失败数量
 	TaskSuccessCount  int                     // 任务成功数量
 	WorkflowsNames    []string                // 工作流名称
+	LimitCpus         float64                 // Cpu核数限制
+	LimitMemory       float64                 // 内存限制
 }

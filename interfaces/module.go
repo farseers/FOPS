@@ -32,7 +32,7 @@ func (module Module) PostInitialize() {
 		tasks.RunNow("收集Docker集群信息", time.Second*3, job.CollectsClusterJob, context.Background())
 	}
 
-	tasks.RunNow("统计访问", time.Minute*1, job.StatVisitsJob, context.Background())
+	//tasks.RunNow("统计访问", time.Minute*1, job.StatVisitsJob, context.Background())
 
 	// 如果最后一次构建是fops，且状态=构建中，同时fops的仓库=最后一次构建的镜像，则强制做一次同步操作
 	buildEO := container.Resolve[apps.Repository]().GetLastBuild()

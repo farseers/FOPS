@@ -73,7 +73,7 @@ func (receiver *DomainObject) GetWorkflowsDir() string {
 
 // GetCurClusterDockerImage 获取当前集群的镜像名称
 func (receiver *DomainObject) GetCurClusterDockerImage(clusterId int64) string {
-	if cur, ok := receiver.ClusterVer[clusterId]; !ok {
+	if cur, ok := receiver.ClusterVer[clusterId]; ok {
 		return cur.DockerImage
 	}
 	return ""

@@ -107,10 +107,10 @@ func (dockerSwarmDevice) CreateService(appName, dockerNodeRole, additionalScript
 	sb.WriteString("docker service create --with-registry-auth --mount type=bind,src=/etc/localtime,dst=/etc/localtime")
 	sb.WriteString(fmt.Sprintf(" --name %s --replicas %v -d --network=%s --constraint node.role==%s", appName, dockerReplicas, dockerNetwork, dockerNodeRole))
 	if limitCpus > 0 {
-		sb.WriteString(fmt.Sprintf(" --limit-cpu %f", limitCpus))
+		sb.WriteString(fmt.Sprintf(" --limit-cpu=%f", limitCpus))
 	}
 	if limitMemory != "" {
-		sb.WriteString(fmt.Sprintf(" --limit-memory %s", limitMemory))
+		sb.WriteString(fmt.Sprintf(" --limit-memory=%s", limitMemory))
 	}
 	sb.WriteString(fmt.Sprintf(" %s %s", additionalScripts, dockerImages))
 

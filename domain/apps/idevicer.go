@@ -49,7 +49,7 @@ type IDockerSwarmDevice interface {
 	Restart(cluster cluster.DomainObject, appName string, progress chan string) bool
 	ExistsDocker(appName string) bool
 	// CreateService 创建服务
-	CreateService(appName, dockerNodeRole, additionalScripts, dockerNetwork string, dockerReplicas int, dockerImages string, limitCpus float64, limitMemory float64, progress chan string, ctx context.Context) bool
+	CreateService(appName, dockerNodeRole, additionalScripts, dockerNetwork string, dockerReplicas int, dockerImages string, limitCpus float64, limitMemory string, progress chan string, ctx context.Context) bool
 	// Logs 获取日志
 	Logs(appName string, tailCount int) collections.List[string]
 	// ServiceList 获取所有Service

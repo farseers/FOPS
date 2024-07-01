@@ -100,7 +100,7 @@ func (dockerSwarmDevice) ExistsDocker(appName string) bool {
 	return lst.ContainsAny(fmt.Sprintf("\"Name\": \"%s\"", appName))
 }
 
-func (dockerSwarmDevice) CreateService(appName, dockerNodeRole, additionalScripts, dockerNetwork string, dockerReplicas int, dockerImages string, limitCpus float64, limitMemory float64, progress chan string, ctx context.Context) bool {
+func (dockerSwarmDevice) CreateService(appName, dockerNodeRole, additionalScripts, dockerNetwork string, dockerReplicas int, dockerImages string, limitCpus float64, limitMemory string, progress chan string, ctx context.Context) bool {
 	progress <- "开始创建Docker Swarm容器服务。"
 
 	var sb bytes.Buffer
@@ -109,8 +109,8 @@ func (dockerSwarmDevice) CreateService(appName, dockerNodeRole, additionalScript
 	if limitCpus > 0 {
 		sb.WriteString(fmt.Sprintf(" --limit-cpu %f", limitCpus))
 	}
-	if limitMemory > 0 {
-		sb.WriteString(fmt.Sprintf(" --limit-memory %f", limitMemory))
+	if limitMemory != "" {
+		sb.WriteString(fmt.Sprintf(" --limit-memory %s", limitMemory))
 	}
 	sb.WriteString(fmt.Sprintf(" %s %s", additionalScripts, dockerImages))
 

@@ -39,7 +39,7 @@
             <el-input v-model="state.ruleForm.LimitCpus" type="number" placeholder="请输入Cpu数量"></el-input>
           </el-form-item>
           <el-form-item label="内存限制">
-            <el-input v-model="state.ruleForm.LimitMemory" type="number" placeholder="请输入内存"></el-input>
+            <el-input v-model="state.ruleForm.LimitMemory" placeholder="请输入内存"></el-input>
           </el-form-item>
           <el-form-item label="Dockerfile">
             <el-input v-model="state.ruleForm.DockerfilePath" placeholder="请输入Dockerfile路径，默认为：./Dockerfile" clearable></el-input>
@@ -128,7 +128,7 @@ const state = reactive({
     AdditionalScripts:'',// 多行内容，用多行文本框
     WorkflowsYmlPath:'',// 工作流定义的路径
     LimitCpus:0,        // Cpu核数限制
-    LimitMemory:0,      // 内存限制
+    LimitMemory:'',      // 内存限制
 
 	},
   gitList:[],

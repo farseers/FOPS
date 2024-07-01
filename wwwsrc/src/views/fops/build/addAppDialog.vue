@@ -18,6 +18,12 @@
         <el-form-item label="容器参数">
           <el-input v-model="state.ruleForm.AdditionalScripts" type="textarea" placeholder="容器在创建时，附加的参数" clearable></el-input>
         </el-form-item>
+        <el-form-item style="float: left" label="Cpu限制">
+          <el-input v-model="state.ruleForm.LimitCpus" type="number" placeholder="请输入Cpu数量"></el-input>
+        </el-form-item>
+        <el-form-item label="内存限制">
+          <el-input v-model="state.ruleForm.LimitMemory" type="number" placeholder="请输入内存"></el-input>
+        </el-form-item>
         <el-form-item label="Dockerfile">
           <el-input v-model="state.ruleForm.DockerfilePath" placeholder="请输入Dockerfile路径，默认为：./Dockerfile" clearable></el-input>
         </el-form-item>
@@ -88,17 +94,23 @@ const state = reactive({
 	ruleForm: {
     AppName:'', //应用名称
     DockerVer: '', // 镜像版本
-    ClusterVer: '', // 集群版本
+    ClusterVer: { // 集群版本
+      ClusterId: 0,
+      DockerImage: '',
+    },
     AppGit: 0, // 应用的源代码
     AppGitName: '', // 应用的源代码
     FrameworkGits:[], // 依赖的框架源代码
     DockerfilePath: '', // Dockerfile路径
     IsHealth:false, // 是否健康
+    DockerInstances:0, // 实例数量
     DockerReplicas:1,// 副本数量
     DockerNodeRole:'',// 容器节点角色 manager or worker
     DockerNodeRoleInt:1,// 容器节点角色 manager or worker
     AdditionalScripts:'',// 多行内容，用多行文本框
-    WorkflowsYmlPath:'',// 工作流定义的路径
+    WorkflowsYmlPath:'',// 工作流定义的路径,
+    LimitCpus:0,        // Cpu核数限制
+    LimitMemory:0,      // 内存限制
 	},
   gitList:[],
   SelectItem:[],
@@ -132,6 +144,8 @@ const openDialog = (type: string, row: any) => {
   state.ruleForm.DockerVer=""
   state.ruleForm.ClusterVer=""
   state.ruleForm.AppGit=0
+  state.ruleForm.LimitCpus=0
+  state.ruleForm.LimitMemory=0
   state.ruleForm.AppGitName=''
   state.ruleForm.FrameworkGits=[]
   state.ruleForm.DockerfilePath=""
@@ -196,6 +210,8 @@ const onSubmit = () => {
     "DockerNodeRole":state.ruleForm.DockerNodeRole,
     "AdditionalScripts":state.ruleForm.AdditionalScripts,
     "WorkflowsYmlPath":state.ruleForm.WorkflowsYmlPath,
+    "LimitCpus":state.ruleForm.LimitCpus,
+    "LimitMemory":state.ruleForm.LimitMemory,
   }
   emit('showOverlay');
 	if (state.dialog.type === 'add') {

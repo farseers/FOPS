@@ -13,9 +13,9 @@ func SaveFlogQueue(subscribeName string, lstMessage collections.ListAny, remaini
 		traceContext.Ignore()
 	}
 
-	var lst collections.List[flog.LogData]
-	lstMessage.Select(&lst, func(item any) any {
-		return item.(flog.LogData)
+	lst := collections.NewList[flog.LogData]()
+	lstMessage.Foreach(func(item *any) {
+		lst.Add((*item).(flog.LogData))
 	})
 	err := container.Resolve[logData.Repository]().Save(lst)
 	flog.ErrorIfExists(err)

@@ -25,7 +25,7 @@ type Module struct {
 
 func (module Module) DependsModule() []modules.FarseerModule {
 	// 这些模块都是farseer-go内置的模块
-	return []modules.FarseerModule{data.Module{}, eventBus.Module{}}
+	return []modules.FarseerModule{data.Module{}, eventBus.Module{}, queue.Module{}}
 }
 
 func (module Module) PostInitialize() {

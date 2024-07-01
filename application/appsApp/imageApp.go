@@ -150,7 +150,7 @@ func RestartDocker(clusterId int64, appName string, appsIDockerSwarmDevice apps.
 			c = make(chan string, 100)
 			// 创建容器服务
 			do := appsRepository.ToEntity(appName)
-			if !appsIDockerSwarmDevice.CreateService(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, do.DockerImage, do.LimitCpus, do.LimitMemory, c, context.Background()) {
+			if !appsIDockerSwarmDevice.CreateService(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, do.GetCurClusterDockerImage(clusterId), do.LimitCpus, do.LimitMemory, c, context.Background()) {
 				lstLog := collections.NewListFromChan(c)
 				exception.ThrowWebExceptionf(403, "创建容器服务失败:<br />%s", lstLog.ToString("<br />"))
 			}

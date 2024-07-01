@@ -49,6 +49,7 @@ func (receiver *BuildEO) IsNil() bool {
 }
 
 func (receiver *BuildEO) StartBuild() {
+	fmt.Sprintf("开始StartBuild")
 	receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 	receiver.dockerDevice = container.Resolve[IDockerDevice]()
 	receiver.gitDevice = container.Resolve[IGitDevice]()

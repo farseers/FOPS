@@ -16,7 +16,6 @@ func Upload(req request.UploadRequest, linkTraceRepository linkTrace.Repository)
 		t.Ignore()
 	}
 
-	return
 	// 先发送到本地队列
 	req.List.Foreach(func(item *linkTraceCom.TraceContext) {
 		queue.Push("linkTrace", item)

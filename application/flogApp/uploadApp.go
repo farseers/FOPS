@@ -11,7 +11,6 @@ import (
 // Upload 上传链路记录
 // @post upload
 func Upload(req request.UploadRequest, logDataRepository logData.Repository) {
-	return
 	// 写入到本地队列
 	req.List.Foreach(func(item *flog.LogData) {
 		queue.Push("flog", item)

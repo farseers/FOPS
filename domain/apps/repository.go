@@ -26,9 +26,9 @@ type buildRepository interface {
 	ToBuildList(appName string, pageSize int, pageIndex int) collections.PageList[BuildEO] // 查询构建列表
 	GetUnBuildInfo() BuildEO                                                               // 获取未构建的任务
 	SetBuilding(id int64)                                                                  // 设置任务为构建中
-	SetSuccess(id int64, env EnvVO, logs []string)                                         // Success 任务完成
+	SetSuccess(id int64, env EnvVO)                                                        // Success 任务完成
 	SetSuccessForFops(id int64)                                                            // 设置任务为构建成功
-	SetCancel(id int64, env EnvVO, logs []string)                                          // Cancel 主动取消任务
+	SetCancel(id int64, env EnvVO)                                                         // Cancel 主动取消任务
 	GetStatus(id int64) eumBuildStatus.Enum                                                // GetStatus 获取构建状态
 	UpdateFailDockerImage(appName string, dockerImage string) (int64, error)               // UpdateFailDockerImage 更新构建中状态的构建记录
 	GetLastBuild() BuildEO                                                                 // 获取最后一次构建

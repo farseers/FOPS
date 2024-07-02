@@ -314,11 +314,12 @@ func (receiver *BuildEO) fail() {
 	// 发布事件
 	event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: false}.PublishEvent()
 
-	// 更新本次构建状态 = 失败
-	container.Resolve[Repository]().SetCancel(receiver.Id, receiver.Env, receiver.logQueue.View())
-
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 	receiver.logQueue.progress <- "执行失败，退出构建。"
+
+	// 更新本次构建状态 = 失败
+	container.Resolve[Repository]().SetCancel(receiver.Id, receiver.Env)
+
 }
 
 // 设置任务成功
@@ -332,11 +333,11 @@ func (receiver *BuildEO) success() {
 		event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: true}.PublishEvent()
 	}
 
-	// 更新本次构建状态 = 成功
-	container.Resolve[Repository]().SetSuccess(receiver.Id, receiver.Env, receiver.logQueue.View())
-
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 	receiver.logQueue.progress <- "构建完成。"
+
+	// 更新本次构建状态 = 成功
+	container.Resolve[Repository]().SetSuccess(receiver.Id, receiver.Env)
 }
 
 // 得到所有Git

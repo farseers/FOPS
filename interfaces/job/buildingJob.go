@@ -20,7 +20,7 @@ func BuildingJob(*tasks.TaskContext) {
 
 	// 应用不存在
 	if appDO := appsRepository.ToEntity(buildEO.AppName); appDO.IsNil() {
-		appsRepository.SetCancel(buildEO.Id, apps.EnvVO{}, nil)
+		appsRepository.SetCancel(buildEO.Id, apps.EnvVO{})
 		return
 	}
 

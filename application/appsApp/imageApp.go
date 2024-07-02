@@ -7,9 +7,7 @@ import (
 	"fops/domain/apps/event"
 	"fops/domain/cluster"
 	"github.com/farseer-go/collections"
-	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/exception"
-	"github.com/farseer-go/fs/trace"
 	"strings"
 )
 
@@ -82,45 +80,32 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 	clusterDO := clusterRepository.ToEntity(clusterId)
 	exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "集群不存在")
 
-	// 如果仓库和集群的版本一致时，不允许同步
-	if do.ClusterVer[clusterId] != nil && do.DockerVer == do.ClusterVer[clusterId].DockerVer {
-		exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "版本一致，不需要同步")
-	}
-
 	// 先登陆仓库
 	if dockerUserName != "" && dockerUserPwd != "" {
-		container.Resolve[trace.IManager]().TraceHand("登陆镜像仓库").Run(func() {
-			c := make(chan string, 100)
-			if !appsIDockerDevice.Login(dockerHub, dockerUserName, dockerUserPwd, c) {
-				lstLog := collections.NewListFromChan(c)
-				exception.ThrowWebExceptionf(403, "镜像登陆失败:<br />%s", lstLog.ToString("<br />"))
-			}
-		})
+		c := make(chan string, 100)
+		if !appsIDockerDevice.Login(dockerHub, dockerUserName, dockerUserPwd, c) {
+			lstLog := collections.NewListFromChan(c)
+			exception.ThrowWebExceptionf(403, "镜像登陆失败:\r\n%s", lstLog.ToString("\n"))
+		}
 	}
 
 	c := make(chan string, 100)
 	// 先拉取镜像
-	container.Resolve[trace.IManager]().TraceHand("先拉取镜像").Run(func() {
-		appsIDockerDevice.Pull(do.DockerImage, c)
-	})
+	appsIDockerDevice.Pull(do.DockerImage, c)
 
-	// 首次创建还是更新镜像
+	// 先判断容器服务是否存在（运行中）
 	if appsIDockerSwarmDevice.ExistsDocker(appName) {
 		// 更新镜像
-		container.Resolve[trace.IManager]().TraceHand("更新镜像").Run(func() {
-			if !appsIDockerSwarmDevice.SetImages(clusterDO, appName, do.DockerImage, c) {
-				lstLog := collections.NewListFromChan(c)
-				exception.ThrowWebExceptionf(403, "更新镜像失败:<br />%s", lstLog.ToString("<br />"))
-			}
-		})
+		if !appsIDockerSwarmDevice.SetImages(clusterDO, appName, do.DockerImage, c) {
+			lstLog := collections.NewListFromChan(c)
+			exception.ThrowWebExceptionf(403, "更新镜像失败:\n%s", lstLog.ToString("\n"))
+		}
 	} else {
 		// 创建容器服务
-		container.Resolve[trace.IManager]().TraceHand("创建容器服务").Run(func() {
-			if !appsIDockerSwarmDevice.CreateService(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, do.DockerImage, do.LimitCpus, do.LimitMemory, c, context.Background()) {
-				lstLog := collections.NewListFromChan(c)
-				exception.ThrowWebExceptionf(403, "创建容器服务失败:<br />%s", lstLog.ToString("<br />"))
-			}
-		})
+		if !appsIDockerSwarmDevice.CreateService(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, do.DockerImage, do.LimitCpus, do.LimitMemory, c, context.Background()) {
+			lstLog := collections.NewListFromChan(c)
+			exception.ThrowWebExceptionf(403, "创建容器服务失败:<br />%s", lstLog.ToString("<br />"))
+		}
 	}
 
 	// 更新集群版本信息

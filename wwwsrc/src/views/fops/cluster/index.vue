@@ -12,6 +12,7 @@
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
 				<el-table-column prop="Id" label="序号" width="60" />
 				<el-table-column prop="Name" label="集群名称" show-overflow-tooltip></el-table-column>
+				<el-table-column prop="IsLocal" label="本地集群" width="60" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="FopsAddr" label="集群地址" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="FScheduleAddr" label="调度中心" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="DockerNetwork" label="Docker网络" show-overflow-tooltip></el-table-column>
@@ -19,9 +20,7 @@
         <el-table-column prop="DockerUserName" label="账户名称" show-overflow-tooltip></el-table-column>
 				<el-table-column label="操作" width="100">
 					<template #default="scope">
-						<el-button size="small" text type="primary" @click="onOpenEdit('edit', scope.row)"
-							>修改</el-button
-						>
+						<el-button size="small" text type="primary" @click="onOpenEdit('edit', scope.row)">修改</el-button>
 						<el-button size="small" text type="primary" @click="onRowDel(scope.row)">删除</el-button>
 					</template>
 				</el-table-column>

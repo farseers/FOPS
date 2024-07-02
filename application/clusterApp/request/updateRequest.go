@@ -14,6 +14,7 @@ type UpdateRequest struct {
 	DockerUserName string // 账户名称
 	DockerUserPwd  string // 账户密码
 	DockerNetwork  string // Docker网络
+	IsLocal        bool   // 本地集群
 }
 
 func (receiver *UpdateRequest) Check() {

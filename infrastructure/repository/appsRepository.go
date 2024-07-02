@@ -47,24 +47,33 @@ func (receiver *appsRepository) UpdateClusterVer(appName string, dicClusterVer m
 }
 
 // UpdateInsReplicas 更新从集群中获取到的实例、副本数量
-func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.DockerServiceVO]) (int64, error) {
+func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.DomainObject]) (int64, error) {
 	sql := bytes.Buffer{}
 	sql.WriteString("UPDATE apps SET \n")
 
 	// Instances
 	sql.WriteString("docker_instances = case\n")
-	lst.Foreach(func(item *apps.DockerServiceVO) {
-		sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.Name, item.Instances))
+	lst.Foreach(func(item *apps.DomainObject) {
+		sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.AppName, item.DockerInstances))
 	})
 	sql.WriteString("else docker_instances\n")
 	sql.WriteString("end \n")
 
 	// Replicas
 	sql.WriteString(",docker_replicas = case\n")
-	lst.Foreach(func(item *apps.DockerServiceVO) {
-		sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.Name, item.Replicas))
+	lst.Foreach(func(item *apps.DomainObject) {
+		sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.AppName, item.DockerReplicas))
 	})
 	sql.WriteString("else docker_replicas\n")
+	sql.WriteString("end \n")
+
+	// cluster_ver
+	sql.WriteString(",cluster_ver = case\n")
+	lst.Foreach(func(item *apps.DomainObject) {
+		marshal, _ := json.Marshal(item.ClusterVer)
+		sql.WriteString(fmt.Sprintf("when app_name = '%s' then '%s'\n", item.AppName, string(marshal)))
+	})
+	sql.WriteString("else cluster_ver\n")
 	sql.WriteString("end \n")
 
 	// where

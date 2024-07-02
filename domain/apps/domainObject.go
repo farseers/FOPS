@@ -78,3 +78,11 @@ func (receiver *DomainObject) GetCurClusterDockerImage(clusterId int64) string {
 	}
 	return ""
 }
+
+func (receiver *DomainObject) InitCluster(clusterId int64) {
+	if receiver.ClusterVer[clusterId] == nil {
+		receiver.ClusterVer[clusterId] = &ClusterVerVO{
+			ClusterId: clusterId,
+		}
+	}
+}

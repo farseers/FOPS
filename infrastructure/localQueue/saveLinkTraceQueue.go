@@ -14,7 +14,6 @@ func SaveLinkTraceQueue(subscribeName string, lstMessage collections.ListAny, re
 		traceContext.Ignore()
 	}
 
-	return
 	lst := collections.NewList[linkTraceCom.TraceContext]()
 	for _, item := range lstMessage.ToArray() {
 		data := item.(*linkTraceCom.TraceContext)

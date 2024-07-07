@@ -1,13 +1,14 @@
 # 更新farseer-go框架
-cd ../farseer-go && sh git-update.sh
+#cd ../farseer-go && sh git-update.sh
 # 更新fops
-cd ../fops && git pull
+#cd ../fops && git pull
 # 将忽略文件复制到上下文根目录中
 #\cp .dockerignore ../
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./fops -ldflags="-w -s" .
 # 编译
-docker build -t hub.fsgit.cc/fops:dev --network=host -f ./Dockerfile ../
+docker build -t hub.fsgit.cc/hub:fops.672 --network=host .
 # 发到内网
-docker push hub.fsgit.cc/fops:dev && docker rmi hub.fsgit.cc/fops:dev
+docker push hub.fsgit.cc/hub:fops.672 && docker rmi hub.fsgit.cc/hub:fops.672
 
 # docker
 docker service rm fops

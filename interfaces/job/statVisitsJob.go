@@ -38,6 +38,7 @@ func StatVisitsJob(*tasks.TaskContext) {
 	}
 
 	// 获取链路集合
+	//lastVisitsAt = lastVisitsAt.Add(5 * time.Minute)
 	lst := repository.ToTraceListByVisits(lastVisitsAt, endAt)
 	// 没有同步到数据
 	if lst.Count() == 0 {

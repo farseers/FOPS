@@ -50,8 +50,6 @@ func (receiver *BuildEO) IsNil() bool {
 }
 
 func (receiver *BuildEO) StartBuild() {
-	fmt.Sprintf("开始StartBuild")
-	receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 	receiver.dockerDevice = container.Resolve[IDockerDevice]()
 	receiver.gitDevice = container.Resolve[IGitDevice]()
 	receiver.logQueue = NewLogQueue(receiver.Id)
@@ -135,6 +133,7 @@ func (receiver *BuildEO) StartBuild() {
 
 		// 使用action程序，需要判断是否要下载
 		if step.ActionName != "" {
+			receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 			if !file.IsExists(step.GetActionPath()) {
 				receiver.logQueue.progress <- fmt.Sprintf("下载 %s", step.ActionDownloadUrl)
 				// 先创建目录
@@ -170,9 +169,10 @@ func (receiver *BuildEO) StartBuild() {
 			receiver.dockerDevice.Copy(dockerName, WithJsonPath, WithJsonPath, receiver.Env, make(chan string, 100), receiver.ctx)
 
 			// 设置超时
-			ctx, _ := context.WithTimeout(receiver.ctx, time.Duration(step.Timeout)*time.Minute)
+			receiver.ctx, receiver.cancel = context.WithTimeout(receiver.ctx, time.Duration(step.Timeout)*time.Minute)
+
 			// 执行 docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
-			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.logQueue.progress, ctx))
+			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx))
 
 			switch step.ActionName {
 			case "checkout":
@@ -185,6 +185,7 @@ func (receiver *BuildEO) StartBuild() {
 
 		// 运行脚本
 		if len(step.Run) > 0 {
+			receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 			shellScript := collections.NewList[string]()
 			shellScript.Add("source /etc/profile")
 			shellScript.Add("mkdir -p " + DistRoot + receiver.appGit.GetRelativePath())
@@ -295,7 +296,9 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 
 func (receiver *BuildEO) catch() {
 	if err := recover(); err != nil {
-		receiver.cancel()
+		if receiver.cancel != nil {
+			receiver.cancel()
+		}
 		var msg string
 		switch e := err.(type) {
 		case string:
@@ -379,5 +382,25 @@ func (receiver *BuildEO) GenerateEnv(projectGitRoot string, dockerHub string, do
 		AppGitRoot:  projectGitRoot,
 		GitHub:      receiver.appGit.Hub,
 		GitName:     gitName,
+	}
+}
+
+// SetCancel 取消任务
+func (receiver *BuildEO) SetCancel() {
+	// 更新本次构建状态 = 失败
+	container.Resolve[Repository]().SetCancel(receiver.Id, receiver.Env)
+}
+
+// WatchStatus 监控当前构建
+func (receiver *BuildEO) WatchStatus() {
+	for {
+		time.Sleep(3 * time.Second)
+		curBuildEO := container.Resolve[Repository]().ToBuildEntity(receiver.Id)
+		if curBuildEO.Status == eumBuildStatus.Finish {
+			if receiver.cancel != nil && !curBuildEO.IsSuccess {
+				receiver.cancel()
+			}
+			return
+		}
 	}
 }

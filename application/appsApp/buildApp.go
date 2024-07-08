@@ -152,6 +152,8 @@ func View(buildId int64) action.IResult {
 // Stop 停止构建
 // @post build/stop
 // @filter application.Jwt
-func Stop(dockerDevice apps.IDockerDevice) {
-	dockerDevice.Kill("FOPS-Build")
+func Stop(dockerDevice apps.IDockerDevice, appsRepository apps.Repository) {
+	// 找到最后一个正在building的构建任务
+	buildEO := appsRepository.GetLastBuilding()
+	buildEO.SetCancel()
 }

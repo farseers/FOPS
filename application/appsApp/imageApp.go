@@ -116,9 +116,10 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 // ClearDockerImage 清除Docker镜像
 // @post build/clearDockerImage
 // @filter application.Jwt
-func ClearDockerImage(device apps.IDockerDevice) {
+func ClearDockerImage(dockerDevice apps.IDockerDevice) {
+	dockerDevice.Kill("FOPS-Build")
 	c := make(chan string, 100)
-	device.ClearImages(c)
+	dockerDevice.ClearImages(c)
 }
 
 // RestartDocker 重启容器

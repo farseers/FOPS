@@ -121,15 +121,6 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 					step.Run = append(step.Run, parse.ToString(run))
 				}
 			}
-
-			// 超时设置
-			if t, isOk := step.With["timeout"]; isOk {
-				step.Timeout = parse.ToInt(t)
-			}
-			// 没有设置，则默认5分钟
-			if step.Timeout == 0 {
-				step.Timeout = 300
-			}
 			act.Steps = append(act.Steps, step)
 		}
 	}

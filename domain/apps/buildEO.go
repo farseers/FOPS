@@ -277,6 +277,15 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 				step.With[k] = v
 			}
 		}
+
+		// 超时设置
+		if t, isOk := step.With["timeout"]; isOk {
+			step.Timeout = parse.ToInt(t)
+		}
+		// 没有设置，则默认5分钟
+		if step.Timeout == 0 {
+			step.Timeout = 300
+		}
 	}
 
 	return true

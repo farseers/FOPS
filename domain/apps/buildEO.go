@@ -18,6 +18,7 @@ import (
 	"os"
 	"path"
 	"strings"
+	"time"
 )
 
 // BuildEO 聚合
@@ -168,8 +169,10 @@ func (receiver *BuildEO) StartBuild() {
 			file.WriteByte(WithJsonPath, withContent)
 			receiver.dockerDevice.Copy(dockerName, WithJsonPath, WithJsonPath, receiver.Env, make(chan string, 100), receiver.ctx)
 
+			// 设置超时
+			ctx, _ := context.WithTimeout(receiver.ctx, time.Duration(step.Timeout)*time.Minute)
 			// 执行 docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
-			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx))
+			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.logQueue.progress, ctx))
 
 			switch step.ActionName {
 			case "checkout":

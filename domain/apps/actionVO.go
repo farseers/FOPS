@@ -16,6 +16,7 @@ type stepVO struct {
 	RepositoryName    string         // 仓库名称
 	With              map[string]any // 参数
 	Run               []string       // 运行脚本
+	Timeout           int            // 超时时间
 }
 
 func (receiver *stepVO) GetActionPath() string {
@@ -119,6 +120,15 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 				for _, run := range curStepsRun.([]any) {
 					step.Run = append(step.Run, parse.ToString(run))
 				}
+			}
+
+			// 超时设置
+			if t, isOk := step.With["timeout"]; isOk {
+				step.Timeout = parse.ToInt(t)
+			}
+			// 没有设置，则默认5分钟
+			if step.Timeout == 0 {
+				step.Timeout = 300
 			}
 			act.Steps = append(act.Steps, step)
 		}

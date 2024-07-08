@@ -259,7 +259,7 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 	}
 
 	// 系统参数替换到step.with变量
-	for _, step := range receiver.WorkflowsAction.Steps {
+	for i, step := range receiver.WorkflowsAction.Steps {
 		// 替换参数变量
 		for k, v := range step.With {
 			switch v.(type) {
@@ -286,6 +286,8 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 		if step.Timeout == 0 {
 			step.Timeout = 300
 		}
+
+		receiver.WorkflowsAction.Steps[i] = step
 	}
 
 	return true

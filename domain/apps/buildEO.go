@@ -127,6 +127,9 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 
 	gits := receiver.getGits()
+	// 开启异步监控状态
+	go receiver.WatchStatus()
+
 	// 运行step
 	for index, step := range receiver.WorkflowsAction.Steps {
 		receiver.logQueue.progress <- fmt.Sprintf("执行 %d %s: %s", index+1, step.ActionName, step.Name)

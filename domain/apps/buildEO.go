@@ -118,6 +118,7 @@ func (receiver *BuildEO) StartBuild() {
 	// 启动构建系统
 	dockerName := "FOPS-Build"
 	if !receiver.dockerDevice.ExistsDocker(dockerName) {
+		receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 		receiver.logQueue.progress <- "启动构建系统：" + receiver.WorkflowsAction.RunsOn
 		args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
 		receiver.checkResult(receiver.dockerDevice.Run(dockerName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env, receiver.logQueue.progress, receiver.ctx)) // , "-v /var/lib/fops:/var/lib/fops"

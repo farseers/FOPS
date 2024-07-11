@@ -72,8 +72,12 @@ func (receiver *BuildEO) StartBuild() {
 
 	defer receiver.catch()
 
-	// 设置with参数
-	sysWith := map[string]any{
+	// 把fops、fschedule版本写入到系统参数sysWith
+	//sysWith["fops.ver"] = container.Resolve[Repository]().ToEntity("fops").DockerVer
+	//sysWith["fschedule.ver"] = container.Resolve[Repository]().ToEntity("fschedule").DockerVer
+
+	// 生成Workflows文件
+	receiver.checkResult(receiver.GenerateWorkflowsContent(map[string]any{
 		"appName":     receiver.apps.AppName,
 		"buildId":     receiver.Env.BuildId,
 		"buildNumber": receiver.Env.BuildNumber,
@@ -92,14 +96,7 @@ func (receiver *BuildEO) StartBuild() {
 		"clusterId":               receiver.ClusterId,
 		"fopsAddr":                clusterDO.FopsAddr,
 		"fScheduleAddr":           clusterDO.FScheduleAddr,
-	}
-
-	// 把fops、fschedule版本写入到系统参数sysWith
-	//sysWith["fops.ver"] = container.Resolve[Repository]().ToEntity("fops").DockerVer
-	//sysWith["fschedule.ver"] = container.Resolve[Repository]().ToEntity("fschedule").DockerVer
-
-	// 生成Workflows文件
-	receiver.checkResult(receiver.GenerateWorkflowsContent(sysWith))
+	}))
 
 	// 设置镜像的代理
 	if receiver.WorkflowsAction.Proxy != "" {

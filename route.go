@@ -24,7 +24,7 @@ var route = []webapi.Route{
 	{"POST", "/apps/build/add", appsApp.BuildAdd, "", []context.IFilter{application.Jwt{}}, []string{"appName", "clusterId", "workflowsName", "", "", ""}},
 	{"POST", "/apps/build/list", appsApp.BuildList, "", []context.IFilter{application.Jwt{}}, []string{"appName", "pageSize", "pageIndex", ""}},
 	{"GET", "/apps/build/view-{buildId}", appsApp.View, "", []context.IFilter{}, []string{"buildId"}},
-	{"POST", "/apps/build/stop", appsApp.Stop, "", []context.IFilter{application.Jwt{}}, []string{"", ""}},
+	{"POST", "/apps/build/stop", appsApp.Stop, "", []context.IFilter{application.Jwt{}}, []string{"buildId", "", ""}},
 	{"POST", "/apps/build/syncDockerImage", appsApp.SyncDockerImage, "", []context.IFilter{application.Jwt{}}, []string{"clusterId", "appName", "", "", "", ""}},
 	{"POST", "/apps/updateDockerImage", appsApp.UpdateDockerImage, "", []context.IFilter{}, []string{"clusterId", "appName", "dockerImage", "buildNumber", "dockerHub", "dockerUserName", "dockerUserPwd", "", "", "", ""}},
 	{"POST", "/apps/build/clearDockerImage", appsApp.ClearDockerImage, "", []context.IFilter{application.Jwt{}}, []string{""}},

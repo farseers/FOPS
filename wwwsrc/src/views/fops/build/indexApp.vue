@@ -13,7 +13,7 @@
       <el-container>
         <el-main style="padding: 0;overflow: hidden;">
           <el-space wrap style="align-items: unset;">
-            <el-card shadow="hover" v-for="(v, k) in state.tableData.data" :key="k" style="width: 270px;">
+            <el-card shadow="hover" v-for="(v, k) in state.tableData.data" :key="k" style="width: 270px;"  class="appItemCard">
               <template #header>
                 <div class="card-header" style="height: 20px;">
                   <el-tag size="default" @click="onOpenEdit('edit', v)" style="cursor: pointer;">{{ v.AppName }}</el-tag>
@@ -24,10 +24,14 @@
                   </el-tooltip>
                 </div>
               </template>
-                <el-button size="small" type="success" @click="showFsLogLevel(2,v.AppName)" style="float:right;position: relative;margin-left: 5px">应用日志</el-button>
-                <el-button size="small" type="primary" @click="showDockerLog(v.AppName)" style="float:right;position: relative;margin-left: 5px">容器日志</el-button>
-
-                <div class="appItem" style="margin-bottom: 10px">仓库版本
+                <div class="appItem" style="margin-bottom: 10px">
+                  <div style="display: flex;justify-content: space-between;align-items: center;">
+                    <span>仓库版本</span>
+                    <div>
+                      <el-button size="small" type="success" @click="showFsLogLevel(2,v.AppName)" >应用日志</el-button>
+                <el-button size="small" type="primary" @click="showDockerLog(v.AppName)" >容器日志</el-button>
+                    </div>
+                  </div>
                   <div class="appItem">
                     <el-tag v-if="v.DockerImage !=''" size="small">{{ v.DockerImage }}</el-tag>
                     <el-tag v-else size="small">未构建</el-tag>
@@ -71,7 +75,7 @@
                 </el-tooltip>
               </div>
               <el-button v-if="v.AppGit > 0" size="small" @click="onSyncWorkflows(v)" type="info" style="margin-left: 5px;width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>
-              <div class="appItem">构建
+              <div class="appItem appItem1">构建
                 <el-button v-if="v.AppGit > 0" v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v,item)" type="danger" style="margin-left: 5px;margin-bottom: 5px;">{{item}}</el-button>
               </div>
             </el-card>
@@ -625,6 +629,19 @@ onUnmounted(()=>{
 }
 .appItem{
   margin: 10px;
+}
+.appItem2{
+  margin-top: 5px !important;
+}
+.appItem1{
+  margin-bottom: 10px;
+}
+.appItemCard{
+  display: flex;
+  flex-flow: column;
+}
+.appItemCard .el-card__body{
+  padding: 0;
 }
 .el-row{
   margin: 0!important;

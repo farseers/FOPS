@@ -76,7 +76,7 @@
               </div>
               <el-button v-if="v.AppGit > 0" size="small" @click="onSyncWorkflows(v)" type="info" style="margin-left: 5px;width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>
               <div class="appItem appItem1">构建
-                <el-button v-if="v.AppGit > 0" v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v,item)" type="danger" style="margin-left: 5px;margin-bottom: 5px;">{{item}}</el-button>
+                <el-button v-if="v.AppGit > 0" v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v,item)" type="danger" style="margin-left: 5px;">{{item}}</el-button>
               </div>
             </el-card>
           </el-space>
@@ -635,6 +635,8 @@ onUnmounted(()=>{
 }
 .appItem1{
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
 }
 .appItemCard{
   display: flex;

@@ -74,7 +74,9 @@
                   <el-tag v-else @click="showTask(3,v.AppName)" type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskFailCount }}</el-tag>
                 </el-tooltip>
               </div>
-              <el-button v-if="v.AppGit > 0" size="small" @click="onSyncWorkflows(v)" type="info" style="margin-left: 5px;width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>
+              <div v-if="v.AppGit > 0" style="display: flex;align-items: center;justify-content: center;padding: 0 10px;">
+                <el-button size="small" @click="onSyncWorkflows(v)" type="info" style="width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>
+              </div>
               <div class="appItem appItem1">构建
                 <el-button v-if="v.AppGit > 0" v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v,item)" type="danger" style="margin-left: 5px;">{{item}}</el-button>
               </div>

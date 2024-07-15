@@ -85,7 +85,7 @@
         </el-main>
         <el-aside width="480px">
           <el-card>
-            <h3 style="padding: 5px;">构建队列 <el-button size="small" type="danger" class="ml10" @click="onStopBuild()" style="float: right"><el-icon><ele-SwitchButton /></el-icon>停止</el-button></h3>
+            <h3 style="padding: 5px;">构建队列 <el-button size="small" type="danger" class="ml10" @click="onStopBuild(0)" style="float: right"><el-icon><ele-SwitchButton /></el-icon>停止</el-button></h3>
             <template v-if="state.tableLogData.data.length > 0">
               <el-table  :data="state.tableLogData.data" v-loading="state.tableLogData.loading" style="width: 100%;background: #ffffff;" :cell-style="{padding:'2px 0'}">
                 <el-table-column prop="FinishAt" width="140" label="构建时间"></el-table-column>
@@ -102,6 +102,7 @@
                 <el-table-column label="操作" width="80">
                   <template #default="scope">
                     <el-button v-if="scope.row.Status!=0" size="small" type="success" @click="showBuildLog(scope.row)">日志</el-button>
+                    <el-button v-else size="small" type="danger" @click="onStopBuild(scope.row.Id)">停止</el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -500,7 +501,7 @@ const onBuildAddFunc = (row:any) => {
     })
 };
 // 停止构建
-const onStopBuild=()=>{
+const onStopBuild=(rowId: any)=>{
   ElMessageBox.confirm(`请确认是否停止构建?`, '提示', {
     confirmButtonText: '确认',
     cancelButtonText: '取消',
@@ -508,7 +509,7 @@ const onStopBuild=()=>{
   })
       .then(() => {
         // 提交数据
-        var param={ }
+        var param={ "buildId": rowId }
         serverApi.buildStop(param).then(async function(res){
           if(res.Status){
             ElMessage.success("成功停止")

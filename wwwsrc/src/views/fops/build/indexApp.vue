@@ -178,7 +178,6 @@ const dockerDialogRef = ref();
 const state = reactive({
   isShowBuildLogDialog: false,
   buildLogContent: '',
-  buildLogContents: '',
 	tableData: {
 		data: [],
 		total: 0,
@@ -329,8 +328,6 @@ let intervalId = null;
 watch(() => state.isShowBuildLogDialog, (newValue, oldValue) => {
   if(!newValue){
     clearInterval(intervalId);
-  }else {
-    intervalId = setInterval(onShowLog, 500);
   }
 });
 
@@ -339,7 +336,19 @@ const showBuildLog=(row:any)=>{
   state.buildLogId = row.Id
   serverApi.buildLog(state.buildLogId.toString()).then(function (res){
     state.buildLogContent = res
-    state.isShowBuildLogDialog=true
+    state.isShowBuildLogDialog= true;
+    setTimeout(() => {   //自动跳到底部 
+        scrollableBuildLog.value.scrollTop = scrollableBuildLog.value.scrollHeight;
+        }, 500)
+    if(row.Status == 2){
+      state.autoLog = false
+    }else{
+      state.autoLog= true
+      clearInterval(intervalId);
+      intervalId = setInterval(onShowLog, 500);
+    }
+   
+    
   })
 }
 
@@ -347,9 +356,8 @@ const showBuildLog=(row:any)=>{
 const onShowLog=()=>{
   serverApi.buildLog(state.buildLogId.toString()).then(function (res) {
     // 如果从接口获取到的内容与本地内容一样时，则不用滚动
-    // let isChange= state.buildLogContents != res;
+   if(state.buildLogContent != res){
     state.buildLogContent = res;
-    state.buildLogContents = res;
     // 自动刷新日志
     // console.log(state.autoLog)
     if (state.autoLog ) {
@@ -358,6 +366,8 @@ const onShowLog=()=>{
         }, 500)
        
     }
+   }
+    
   })
 }
 

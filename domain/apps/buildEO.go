@@ -188,7 +188,7 @@ func (receiver *BuildEO) StartBuild() {
 		if len(step.Run) > 0 {
 			receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 			shellScript := collections.NewList[string]()
-			//shellScript.Add("source /root/.bashrc")
+			shellScript.Add("source /root/.bashrc")
 			shellScript.Add("mkdir -p " + DistRoot + receiver.appGit.GetRelativePath())
 			shellScript.Add("cd " + DistRoot + receiver.appGit.GetRelativePath())
 			shellScript.AddArray(step.Run)

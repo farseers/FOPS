@@ -4,7 +4,7 @@ jobs:
   build:
     runs-on: steden88/cicd:3.0-npm # 工作流运行的环境
     #proxy: "host.orb.internal:7890"
-    proxy: "192.168.1.88:7890"
+    proxy: "192.168.1.8:7890"
     env:
       GO111MODULE: on
       GOPROXY: https://goproxy.cn

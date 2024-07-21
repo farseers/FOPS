@@ -19,8 +19,8 @@ jobs:
           goVersion: go1.22.5
           goDownload:
 
-      #- name: 安装npm
-      #  uses: setup-npm@v1
+      - name: 安装npm
+        uses: setup-npm@v1
       #        run: # 安装cnpm
       #          - npm install -g cnpm --registry=https://registry.npmmirror.com/
 

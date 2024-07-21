@@ -2,7 +2,7 @@ module fops
 
 go 1.21
 
-toolchain go1.22.0
+toolchain go1.22.5
 
 exclude github.com/timandy/routine v1.1.3
 require (

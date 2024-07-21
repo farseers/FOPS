@@ -70,7 +70,9 @@ func (dockerDevice) Execute(dockerName string, execCmd string, env map[string]st
 	}
 	bf.WriteString(dockerName)
 	bf.WriteString(" /bin/bash -ic ")
+	bf.WriteString("\"")
 	bf.WriteString(execCmd)
+	bf.WriteString("\"")
 	return exec.RunShellContext(ctx, bf.String(), progress, nil, apps.DistRoot, false) == 0
 }
 

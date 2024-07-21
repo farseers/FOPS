@@ -15,9 +15,6 @@ jobs:
           goVersion: go1.22.0
           goDownload:
 
-      - name: 安装npm
-        uses: setup-npm@v1
-
       - name: 拉取应用Git
         uses: checkout@v1 # 在fops配置了依赖时，将自动拉取所有依赖Git
 

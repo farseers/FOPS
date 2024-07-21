@@ -10,7 +10,7 @@ func main() {
 	webapi.RegisterRoutes(route...)
 	webapi.UseCors()        // 使用CORS中间件
 	webapi.UseApiResponse() // 让所有的返回值，包含在core.ApiResponse中
-	webapi.PrintRoute()     // 打印所有路由信息到控制台
+	//webapi.PrintRoute()     // 打印所有路由信息到控制台
 	webapi.UseApiDoc()      // 开启api doc文档
 	webapi.UseValidate()    // 使用DTO验证
 	webapi.UseStaticFiles() // 使用静态文件 在根目录./wwwroot中的文件

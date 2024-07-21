@@ -24,7 +24,6 @@ func (module StartupModule) Initialize() {
 }
 
 func (module StartupModule) PostInitialize() {
-	// 当前主机系统不需要设置了。改到工作流中执行
 	// 使用git代理
 	receiveOutput := make(chan string, 100)
 	if gitAgent := configure.GetString("Fops.GitAgent"); gitAgent != "" {
@@ -32,6 +31,7 @@ func (module StartupModule) PostInitialize() {
 		exec.RunShell("git config --global http.https://github.com.proxy "+gitAgent, receiveOutput, nil, "", true)
 		exec.RunShell("git config --global https.https://github.com.proxy "+gitAgent, receiveOutput, nil, "", true)
 	} else {
+		flog.Info("未开启Git代理")
 		exec.RunShell("git config --global --unset http.https://github.com.proxy", receiveOutput, nil, "", false)
 		exec.RunShell("git config --global --unset https.https://github.com.proxy", receiveOutput, nil, "", false)
 	}

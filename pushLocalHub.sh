@@ -24,4 +24,4 @@ docker service create --name fops --replicas 1 -d --network=net \
 -l "traefik.http.services.fops.loadbalancer.server.port=8889" \
 hub.fsgit.cc/fops:dev
 
-docker run --name fops  -d --network=host -e "Database_default=DataType=mysql,PoolMaxSize=50,PoolMinSize=1,ConnectionString=root:harlen@tcp(host.docker.internal:3307)/fops2?charset=utf8&parseTime=True&loc=Local" -e "Redis_default=Server=host.docker.internal:6379,DB=13,Password=,ConnectTimeout=600000,SyncTimeout=10000,ResponseTimeout=10000" -e "FOPS_ConnString=DataType=clickhouse,PoolMaxSize=50,PoolMinSize=1,ConnectionString=clickhouse://default:@host.docker.internal:9000/linkTrace?dial_timeout=10s&read_timeout=20s" hub.fsgit.cc/fops:483
+docker run --name fops  -d --network=host -e "Database_default=DataType=mysql,PoolMaxSize=50,PoolMinSize=1,ConnectionString=root:harlen@tcp(host.docker.internal:3307)/fops2?charset=utf8&parseTime=True&loc=Local" -e "FOPS_ConnString=DataType=clickhouse,PoolMaxSize=50,PoolMinSize=1,ConnectionString=clickhouse://default:@host.docker.internal:9000/linkTrace?dial_timeout=10s&read_timeout=20s" hub.fsgit.cc/fops:483

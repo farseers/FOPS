@@ -122,6 +122,10 @@ func (receiver *BuildEO) StartBuild() {
 	}
 	//defer receiver.dockerDevice.Kill(dockerName)
 
+	// 获取外网IP
+	if extranetIpUrl := configure.GetString("Fops.ExtranetIpUrl"); extranetIpUrl != "" {
+		receiver.dockerDevice.Execute(dockerName, fmt.Sprintf("ip=$(curl -s $s) && echo \"公网IP: $ip\""), receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx)
+	}
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 
 	gits := receiver.getGits()

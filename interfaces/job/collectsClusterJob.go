@@ -37,7 +37,10 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		dockerService := serviceList.Find(func(item *apps.DockerServiceVO) bool {
 			return item.Name == appDO.AppName
 		})
-
+		// 应用没有启用容器服务，跳过
+		if dockerService == nil {
+			return
+		}
 		// 如果是本地集群，则更新镜像信息
 		if !localCluster.IsNil() {
 			appDO.InitCluster(localCluster.Id)

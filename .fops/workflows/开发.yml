@@ -50,8 +50,6 @@ jobs:
 
       - name: 编译前端
         run:
-          - unset HTTPS_PROXY
-          - unset HTTP_PROXY
           - mkdir wwwroot
           - cd ./wwwsrc
           - npm install

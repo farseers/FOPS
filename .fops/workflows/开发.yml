@@ -24,8 +24,7 @@ jobs:
           - unset HTTPS_PROXY
           - unset HTTP_PROXY
           - source /root/.bashrc
-          - go env -w GO111MODULE=on
-          - go env -w GOPROXY=https://goproxy.cn,direct
+          - go env
           - rm -rf ./go.work
           - go work init ./
           - go work edit -replace github.com/farseer-go/fs=../farseer-go/fs

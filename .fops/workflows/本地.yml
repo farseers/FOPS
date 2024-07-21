@@ -40,7 +40,7 @@ jobs:
         run:
           - unset HTTPS_PROXY
           - unset HTTP_PROXY
-          - source /root/.bashrc
+          #- source /root/.bashrc
           - rm -rf ./go.work
           - go work init ./
           - go work edit -replace github.com/farseer-go/fs=../farseer-go/fs

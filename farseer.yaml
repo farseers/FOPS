@@ -19,6 +19,7 @@ Fops:
   ExtranetIpUrl: "ipv4.ip.sb"
   Builder:
     - "-v /home/go/pkg/mod:/root/go/pkg/mod"
+    - "-v /home/go/go-build:/root/.cache/go-build"
 LinkTrace:
   Enable: true
   PrintLog: false

@@ -16,7 +16,7 @@ Fops:
   LinkTrace:
     Driver: "clickhouse"
     ConnString: "DataType=clickhouse,PoolMaxSize=50,PoolMinSize=1,ConnectionString=clickhouse://root:steden@192.168.1.8:9000/linkTrace?dial_timeout=10s&read_timeout=20s"
-  ExtranetIpUrl: "ip.sb"
+  ExtranetIpUrl: "ipv4.ip.sb"
 LinkTrace:
   Enable: true
   PrintLog: false

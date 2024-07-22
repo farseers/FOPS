@@ -31,7 +31,7 @@ func (repository *buildRepository) ToBuildList(appName string, pageSize int, pag
 	if appName != "" {
 		ts.Where("LOWER(app_name) = ?", appName)
 	}
-	lstPO := ts.ToPageList(pageSize, pageIndex)
+	lstPO := ts.Select("id", "app_name", "build_number", "status", "is_success", "create_at", "finish_at", "workflows_name").ToPageList(pageSize, pageIndex)
 	return mapper.ToPageList[apps.BuildEO](lstPO)
 }
 

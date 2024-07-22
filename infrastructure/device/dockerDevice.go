@@ -64,12 +64,13 @@ func (dockerDevice) Run(dockerName string, network string, dockerImage string, a
 
 func (dockerDevice) Execute(dockerName string, execCmd string, env map[string]string, progress chan string, ctx context.Context) bool {
 	bf := bytes.Buffer{}
-	bf.WriteString("docker exec -it ") // docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
+	bf.WriteString("docker exec ") // docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
 	for k, v := range env {
 		bf.WriteString(fmt.Sprintf("-e %s=%s ", k, v))
 	}
+	bf.WriteString("-e BASH_ENV=\"/root/.bashrc\" ")
 	bf.WriteString(dockerName)
-	bf.WriteString(" /bin/bash -ic ")
+	bf.WriteString(" /bin/bash -c ")
 	bf.WriteString("\"")
 	bf.WriteString(execCmd)
 	bf.WriteString("\"")

@@ -33,21 +33,43 @@ func CollectsClusterJob(*tasks.TaskContext) {
 	// 如果服务不存在，则添加到列表中，用于更新到数据库中，指明服务的实例为0
 	lstApp := appsRepository.ToList()
 
+	// 先把fops中的应用缺少的给补上
+	serviceList.Foreach(func(item *apps.DockerServiceVO) {
+		appDO := lstApp.Find(func(appDO *apps.DomainObject) bool {
+			return appDO.AppName == item.Name
+		})
+		// 本地应用不存在，则添加到fops
+		if appDO == nil {
+			_ = appsRepository.Add(apps.DomainObject{
+				AppName:         item.Name,
+				DockerImage:     item.Image,
+				DockerInstances: item.Instances,
+				DockerReplicas:  item.Replicas,
+				IsSys:           true,
+			})
+		}
+	})
+
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
 		dockerService := serviceList.Find(func(item *apps.DockerServiceVO) bool {
 			return item.Name == appDO.AppName
 		})
 		// 应用没有启用容器服务，跳过
-		if dockerService == nil {
-			return
+		if dockerService != nil {
+			// 如果是本地集群，则更新镜像信息
+			if !localCluster.IsNil() {
+				appDO.InitCluster(localCluster.Id)
+				appDO.ClusterVer[localCluster.Id].DockerImage = dockerService.Image
+			}
+			appDO.DockerReplicas = dockerService.Replicas
+			appDO.DockerInstances = dockerService.Instances
+		} else {
+			appDO.DockerInstances = 0
+			// 系统应用，同时在服务列表中又没有，则删除
+			if appDO.IsSys {
+				_, _ = appsRepository.Delete(appDO.AppName)
+			}
 		}
-		// 如果是本地集群，则更新镜像信息
-		if !localCluster.IsNil() {
-			appDO.InitCluster(localCluster.Id)
-			appDO.ClusterVer[localCluster.Id].DockerImage = dockerService.Image
-		}
-		appDO.DockerReplicas = dockerService.Replicas
-		appDO.DockerInstances = dockerService.Instances
 	})
 
 	container.Resolve[core.ITransaction]("default").Transaction(func() {

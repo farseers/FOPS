@@ -20,6 +20,7 @@ type DomainObject struct {
 	AdditionalScripts string                  // 首次创建应用时附加脚本
 	LimitCpus         float64                 // Cpu核数限制
 	LimitMemory       string                  // 内存限制
+	IsSys             bool                    // 是否系统应用
 }
 
 func (receiver *DomainObject) IsNil() bool {

@@ -20,4 +20,5 @@ type AppsPO struct {
 	AdditionalScripts string                       `gorm:"type:text;not null;comment:首次创建应用时附加脚本"`
 	LimitCpus         float64                      `gorm:"type:decimal(6,3);not null;default:0;comment:Cpu核数限制"`
 	LimitMemory       string                       `gorm:"not null;default:'';comment:内存限制"`
+	IsSys             bool                         `gorm:"size:1;not null;default:0;comment:是否系统应用"`
 }

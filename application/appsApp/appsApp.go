@@ -25,6 +25,7 @@ import (
 // @filter application.Jwt
 func Add(req request.AddRequest, appsRepository apps.Repository) {
 	do := mapper.Single[apps.DomainObject](req)
+	do.IsSys = false
 	exception.ThrowWebExceptionBool(appsRepository.IsExists(req.AppName), 403, "应用不能重复")
 	// 删除末尾的/
 	if strings.HasSuffix(do.AdditionalScripts, "\\") {
@@ -99,7 +100,7 @@ func Delete(appName string, appsRepository apps.Repository, appsIDockerSwarmDevi
 // List 应用列表
 // @post list
 // @filter application.Jwt
-func List(clusterId int64, appsRepository apps.Repository, logDataRepository logData.Repository, clusterRepository cluster.Repository, fScheduleHttp fSchedule.Http) collections.List[response.AppsResponse] {
+func List(clusterId int64, isSys bool, appsRepository apps.Repository, logDataRepository logData.Repository, clusterRepository cluster.Repository, fScheduleHttp fSchedule.Http) collections.List[response.AppsResponse] {
 	lstGit := appsRepository.ToGitListAll(-1)
 	countList := logDataRepository.StatCount()
 	clusterDO := clusterRepository.ToEntity(clusterId)
@@ -111,7 +112,7 @@ func List(clusterId int64, appsRepository apps.Repository, logDataRepository log
 	}
 
 	lst := collections.NewList[response.AppsResponse]()
-	appsRepository.ToList().Foreach(func(item *apps.DomainObject) {
+	appsRepository.ToListBySys(isSys).Foreach(func(item *apps.DomainObject) {
 		appsResponse := doToAppsResponse(clusterId, *item)
 		// Git名称
 		appsResponse.AppGitName = lstGit.Where(func(gitItem apps.GitEO) bool {

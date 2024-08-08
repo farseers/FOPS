@@ -21,14 +21,19 @@ type appsRepository struct {
 	gitRepository
 }
 
-func (receiver *appsRepository) ToList() collections.List[apps.DomainObject] {
-	lst := context.MysqlContext.Apps.Omit("framework_gits", "dockerfile_path", "additional_scripts").ToList()
+func (receiver *appsRepository) ToListBySys(isSys bool) collections.List[apps.DomainObject] {
+	ts := context.MysqlContext.Apps.Omit("framework_gits", "dockerfile_path", "additional_scripts", "is_sys")
+	// 只显示手动添加的应用（不含系统应用）
+	if !isSys {
+		ts.Where("is_sys = 0")
+	}
+	lst := ts.ToList()
 	return mapper.ToList[apps.DomainObject](lst)
 }
 
 func (receiver *appsRepository) UpdateApp(do apps.DomainObject) error {
 	po := mapper.Single[model.AppsPO](do)
-	_, err := context.MysqlContext.Apps.Where("LOWER(app_name) = ?", po.AppName).Omit("app_name", "docker_ver", "docker_image", "docker_instances").Update(po)
+	_, err := context.MysqlContext.Apps.Where("LOWER(app_name) = ?", po.AppName).Omit("app_name", "docker_ver", "docker_image", "docker_instances", "is_sys").Update(po)
 	return err
 }
 

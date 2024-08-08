@@ -16,6 +16,7 @@ type Repository interface {
 	UpdateInsReplicas(lst collections.List[DomainObject]) (int64, error)                   // UpdateInsReplicas 更新从集群中获取到的实例、副本数量
 	UpdateClusterNode(lst collections.List[DockerNodeVO])                                  // 更新集群节点信息
 	GetClusterNodeList() collections.List[DockerNodeVO]                                    // 获取集群节点列表
+	ToListBySys(isSys bool) collections.List[DomainObject]
 	buildRepository
 	gitRepository
 }

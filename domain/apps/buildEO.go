@@ -150,7 +150,7 @@ func (receiver *BuildEO) StartBuild() {
 				// 先创建目录
 				file.CreateDir766(path.Dir(step.GetActionPath()))
 				// 下载文件
-				if _, err := http.Download(step.ActionDownloadUrl, step.GetActionPath(), nil, 0, configure.GetString("Fops.GitAgent")); err != nil {
+				if _, err := http.Download(step.ActionDownloadUrl, step.GetActionPath(), nil, 0, configure.GetString("Fops.Proxy")); err != nil {
 					receiver.logQueue.progress <- fmt.Sprintf("下载action %s 时发生错误：%s", step.ActionDownloadUrl, err.Error())
 					receiver.checkResult(false)
 				}
@@ -233,7 +233,7 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 		return false
 	}
 
-	//if gitAgent := configure.GetString("Fops.GitAgent"); gitAgent != "" {
+	//if proxyAgent := configure.GetString("Fops.Proxy"); proxyAgent != "" {
 	//	receiver.WorkflowsAction.Steps = append([]stepVO{
 	//		{
 	//			Name:              "开启Git代理",
@@ -241,7 +241,7 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 	//			ActionVer:         "v1",
 	//			ActionDownloadUrl: "https://github.com/farseers/FOPS-Actions/releases/download/v1/gitProxy",
 	//			RepositoryName:    "farseers/FOPS-Actions",
-	//			With:              map[string]any{"proxy": gitAgent},
+	//			With:              map[string]any{"proxy": proxyAgent},
 	//		},
 	//	}, receiver.WorkflowsAction.Steps...)
 	//}

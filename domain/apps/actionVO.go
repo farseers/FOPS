@@ -53,7 +53,7 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 
 	name, _ := workflowsYml.Get("name")
 	clusterIds, _ := workflowsYml.GetArray("jobs.clusterId")
-	proxy, _ := workflowsYml.Get("jobs.build.proxy")
+	//proxy, _ := workflowsYml.Get("jobs.build.proxy")
 	sysImage, _ := workflowsYml.Get("jobs.build.runs-on")
 	env, _ := workflowsYml.GetSubNodes("jobs.build.env")
 	with, _ := workflowsYml.GetSubNodes("jobs.build.with")
@@ -62,7 +62,7 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 	}
 	act := ActionVO{
 		Name:   strings.TrimSpace(parse.ToString(name)),
-		Proxy:  strings.TrimSpace(parse.ToString(proxy)),
+		Proxy:  configure.GetString("Fops.Proxy"), // strings.TrimSpace(parse.ToString(proxy))
 		RunsOn: strings.TrimSpace(parse.ToString(sysImage)),
 		With:   with,
 		Env:    make(map[string]string),

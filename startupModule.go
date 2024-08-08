@@ -26,10 +26,10 @@ func (module StartupModule) Initialize() {
 func (module StartupModule) PostInitialize() {
 	// 使用git代理
 	receiveOutput := make(chan string, 100)
-	if gitAgent := configure.GetString("Fops.GitAgent"); gitAgent != "" {
-		flog.Info("开启Git代理：", gitAgent)
-		exec.RunShell("git config --global http.https://github.com.proxy "+gitAgent, receiveOutput, nil, "", true)
-		exec.RunShell("git config --global https.https://github.com.proxy "+gitAgent, receiveOutput, nil, "", true)
+	if proxyAgent := configure.GetString("Fops.Proxy"); proxyAgent != "" {
+		flog.Info("开启Git代理：", proxyAgent)
+		exec.RunShell("git config --global http.https://github.com.proxy "+proxyAgent, receiveOutput, nil, "", true)
+		exec.RunShell("git config --global https.https://github.com.proxy "+proxyAgent, receiveOutput, nil, "", true)
 	} else {
 		flog.Info("未开启Git代理")
 		exec.RunShell("git config --global --unset http.https://github.com.proxy", receiveOutput, nil, "", false)

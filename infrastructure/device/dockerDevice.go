@@ -70,7 +70,7 @@ func (dockerDevice) Execute(dockerName string, execCmd string, env map[string]st
 	}
 	bf.WriteString("-e BASH_ENV=\"/root/.bashrc\" ")
 	bf.WriteString(dockerName)
-	bf.WriteString(" /bin/bash -c ")
+	bf.WriteString(" /bin/bash -cx ")
 	bf.WriteString("\"")
 	bf.WriteString(execCmd)
 	bf.WriteString("\"")

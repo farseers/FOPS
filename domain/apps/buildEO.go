@@ -212,7 +212,7 @@ func (receiver *BuildEO) StartBuild() {
 			file.WriteString(shellPath, script)
 			receiver.dockerDevice.Copy(dockerName, shellPath, shellPath, receiver.Env, make(chan string, 100), receiver.ctx)
 
-			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, "/bin/bash -x "+shellPath, receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx))
+			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, shellPath, receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx))
 		}
 		receiver.logQueue.progress <- "---------------------------------------------------------"
 	}

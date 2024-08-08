@@ -173,26 +173,7 @@ const getAppData=()=>{
     }
   })
 }
-// 删除用户
-const onDel = (row: any) => {
-	ElMessageBox.confirm(`此操作将永久删除：“${row.Name}”，是否继续?`, '提示', {
-		confirmButtonText: '确认',
-		cancelButtonText: '取消',
-		type: 'warning',
-	})
-		.then(() => {
-      // 删除逻辑
-      serverApi.taskDel({"TaskGroupId":row.Id}).then(function (res){
-        if (res.Status){
-          getTableData();
-          ElMessage.success('删除成功');
-        }else{
-          ElMessage.error(res.StatusMessage)
-        }
-      })
-		})
-		.catch(() => {});
-};
+
 // 分页改变
 const onHandleSizeChange = (val: number) => {
 	state.tableData.param.pageSize = val;

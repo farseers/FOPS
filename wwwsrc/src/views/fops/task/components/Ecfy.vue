@@ -94,10 +94,11 @@ const showTask=(st,appName)=>{
 }
 
 const getData = () => {
-    var param = {
-        "ClusterId": 0,
-    }
-    // 获取应用列表
+  let param = {
+    "ClusterId": 0,
+    "IsSys": true,
+  };
+  // 获取应用列表
     serverApi.appsList(param).then(function (res) {
         if (res.Status) {
             state.tableData = res.Data;

@@ -211,9 +211,10 @@ const showDockerLog = (AppName) => {
 // 初始化表格数据
 const getTableData = () => {
 	state.tableData.loading = true;
-  var param={
-    "ClusterId" : state.clusterId,
-  }
+  let param = {
+    "ClusterId": state.clusterId,
+    "IsSys": false,
+  };
   // 获取应用列表
   serverApi.appsList(param).then(function (res){
     if (res.Status) {

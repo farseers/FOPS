@@ -126,13 +126,15 @@ func ClearDockerImage(dockerDevice apps.IDockerDevice) {
 // @post restartDocker
 // @filter application.Jwt
 func RestartDocker(clusterId int64, appName string, appsIDockerSwarmDevice apps.IDockerSwarmDevice, clusterRepository cluster.Repository, appsRepository apps.Repository) {
-	clusterDO := clusterRepository.ToEntity(clusterId)
-	exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "集群不存在")
-
 	c := make(chan string, 100)
-	if !appsIDockerSwarmDevice.Restart(clusterDO, appName, c) {
+	if !appsIDockerSwarmDevice.Restart(appName, c) {
 		// 重启失败时，判断容器是否存在
 		if !appsIDockerSwarmDevice.ExistsDocker(appName) {
+			clusterDO := clusterRepository.ToEntity(clusterId)
+			if clusterDO.IsNil() {
+				clusterDO.DockerNetwork = "net"
+			}
+
 			c = make(chan string, 100)
 			// 创建容器服务
 			do := appsRepository.ToEntity(appName)

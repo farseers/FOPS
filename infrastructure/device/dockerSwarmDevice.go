@@ -69,7 +69,7 @@ func (dockerSwarmDevice) SetReplicas(cluster cluster.DomainObject, appName strin
 	return true
 }
 
-func (dockerSwarmDevice) Restart(cluster cluster.DomainObject, appName string, progress chan string) bool {
+func (dockerSwarmDevice) Restart(appName string, progress chan string) bool {
 	progress <- "---------------------------------------------------------"
 	progress <- "开始重启Docker Swarm的容器。"
 

@@ -123,7 +123,7 @@ func ClearDockerImage(dockerDevice apps.IDockerDevice) {
 }
 
 // RestartDocker 重启容器
-// @post build/restartDocker
+// @post restartDocker
 // @filter application.Jwt
 func RestartDocker(clusterId int64, appName string, appsIDockerSwarmDevice apps.IDockerSwarmDevice, clusterRepository cluster.Repository, appsRepository apps.Repository) {
 	clusterDO := clusterRepository.ToEntity(clusterId)
@@ -149,6 +149,25 @@ func RestartDocker(clusterId int64, appName string, appsIDockerSwarmDevice apps.
 			exception.ThrowWebExceptionf(403, "容器重启失败:<br />%s", lstLog.ToString("<br />"))
 		}
 	}
+}
+
+// SetReplicas 更新副本实例数量
+// @post setReplicas
+// @filter application.Jwt
+func SetReplicas(appName string, dockerReplicas int, appsRepository apps.Repository, appsIDockerSwarmDevice apps.IDockerSwarmDevice) {
+	do := appsRepository.ToEntity(appName)
+	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
+
+	// 更新副本数量
+	c := make(chan string, 100)
+	if !appsIDockerSwarmDevice.SetReplicas(cluster.DomainObject{}, appName, dockerReplicas, c) {
+		lstLog := collections.NewListFromChan(c)
+		exception.ThrowWebExceptionf(403, "更新副本失败:<br />%s", lstLog.ToString("<br />"))
+	}
+
+	do.DockerReplicas = dockerReplicas
+	err := appsRepository.UpdateApp(do)
+	exception.ThrowWebExceptionError(403, err)
 }
 
 // DeleteService 删除容器服务

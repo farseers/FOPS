@@ -49,7 +49,7 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, appsIDock
 		c := make(chan string, 100)
 		if !appsIDockerSwarmDevice.SetImagesAndReplicas(cluster.DomainObject{}, req.AppName, req.ClusterDockerImage, req.DockerReplicas, c) {
 			lstLog := collections.NewListFromChan(c)
-			exception.ThrowWebExceptionf(403, "更新副本失败:<br />%s", lstLog.ToString("<br />"))
+			exception.ThrowWebExceptionf(403, "更新镜像失败:<br />%s", lstLog.ToString("<br />"))
 		}
 	} else if do.DockerReplicas != req.DockerReplicas {
 		// 更新副本数量

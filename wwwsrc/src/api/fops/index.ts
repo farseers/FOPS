@@ -138,7 +138,7 @@ export function fopsApi() {
 			});
 		},restartDocker: (param: object) => {
 			return request({
-				url: '/apps/build/restartDocker',
+				url: '/apps/restartDocker',
 				method: 'post',
 				data:param,
 			});

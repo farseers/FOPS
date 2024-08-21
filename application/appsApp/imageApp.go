@@ -3,10 +3,13 @@ package appsApp
 
 import (
 	"context"
+	"fops/domain/_/eumBuildStatus"
 	"fops/domain/apps"
 	"fops/domain/apps/event"
 	"fops/domain/cluster"
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/core"
+	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
 	"strings"
 )
@@ -65,6 +68,23 @@ func SyncDockerImage(clusterId int64, appName string, appsIDockerSwarmDevice app
 // UpdateDockerImage 更新仓库版本
 // @post updateDockerImage
 func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buildNumber int, dockerHub, dockerUserName, dockerUserPwd string, appsIDockerDevice apps.IDockerDevice, appsIDockerSwarmDevice apps.IDockerSwarmDevice, appsRepository apps.Repository, clusterRepository cluster.Repository) {
+	buildLogEO := apps.BuildEO{
+		ClusterId:     clusterId,
+		BuildNumber:   buildNumber,
+		Status:        eumBuildStatus.Finish,
+		CreateAt:      dateTime.Now(),
+		BuildServerId: core.AppId,
+		AppName:       appName,
+		WorkflowsName: "远程",
+		DockerImage:   dockerImage,
+	}
+
+	defer func() {
+		// 手动创建一个构建记录
+		buildLogEO.FinishAt = dateTime.Now()
+		_ = appsRepository.AddBuild(buildLogEO)
+	}()
+
 	// 更新仓库版本
 	event.DockerPushedEvent{BuildNumber: buildNumber, AppName: appName, ImageName: dockerImage}.PublishEvent()
 
@@ -111,6 +131,8 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 	// 更新集群版本信息
 	do.UpdateBuildVer(true, clusterId, 0)
 	_, _ = appsRepository.UpdateClusterVer(appName, do.ClusterVer)
+
+	buildLogEO.IsSuccess = true
 }
 
 // ClearDockerImage 清除Docker镜像

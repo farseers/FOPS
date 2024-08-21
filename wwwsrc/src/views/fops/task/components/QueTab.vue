@@ -62,7 +62,7 @@ const getData = () => {
     }
     state.loading = false;
     if(conlyTabs && conlyTabs.value){
-        console.log(conlyTabs.value.offsetHeight)
+        // console.log(conlyTabs.value.offsetHeight)
         state.screenHeight = conlyTabs.value.offsetHeight - 40
     }
   }).catch(()=>{

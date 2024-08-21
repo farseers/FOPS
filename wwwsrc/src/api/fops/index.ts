@@ -380,7 +380,15 @@ export function fopsApi() {
 				data:param,
 			});
 		},
-		//
+		setReplicas
+		: (param: object) => { 
+			return request({
+				url: '/apps/setReplicas',
+				method: 'post',
+				data:param,
+			});
+		},
+		// 修改副本数量
 		
 	};
 }

@@ -19,8 +19,8 @@
                   <el-tag size="default" @click="onOpenEdit('edit', v)" style="cursor: pointer;">{{ v.AppName }}</el-tag>
                   <el-button size="small" type="warning" @click="onRestartDocker(v)" style="float:right;position: relative;"><el-icon><ele-SwitchButton /></el-icon>重启</el-button>
                   <el-tooltip content="实例数量/副本数量" slot="label">
-                    <el-tag v-if="v.IsHealth" size="small" style="margin-left: 5px">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
-                    <el-tag v-else size="small" type="danger" style="margin-left: 5px">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
+                    <el-tag @click="showDockerTag(v,1)" v-if="v.IsHealth" size="small" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
+                    <el-tag @click="showDockerTag(v,2)" v-else size="small" type="danger" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                   </el-tooltip>
                 </div>
               </template>
@@ -28,8 +28,8 @@
                   <div style="display: flex;justify-content: space-between;align-items: center;">
                     <span>仓库版本</span>
                     <div>
+                      <el-button size="small" type="primary" @click="showDockerLog(v.AppName)" >容器日志</el-button>
                       <el-button size="small" type="success" @click="showFsLogLevel(2,v.AppName)" >应用日志</el-button>
-                <el-button size="small" type="primary" @click="showDockerLog(v.AppName)" >容器日志</el-button>
                     </div>
                   </div>
                   <div class="appItem">
@@ -139,6 +139,7 @@
     </div>
   </el-dialog>
   <dockerDialog ref="dockerDialogRef"/>
+  <editAppNum ref="editAppNumRef" @refresh="getTableData()"/>
   <div v-if="state.showOverlay" class="overlay">
     <div class="overlay-content">
       <img :src="Image" style="width: 200px" alt="Image">
@@ -168,6 +169,7 @@ const taskDialog= defineAsyncComponent(() => import('/src/views/fops/task/taskAp
 // 日志
 const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logV2Dialog.vue'));
 const dockerDialog = defineAsyncComponent(() => import('/src/views/fops/task/dockerDialog.vue'));
+const editAppNum = defineAsyncComponent(() => import('/src/views/fops/build/editAppNum.vue'));
 const logDialogRef = ref();
 // 定义变量内容
 const appDialogRef = ref();
@@ -175,6 +177,7 @@ const appAddDialogRef = ref();
 const taskDialogRef = ref();
 const scrollableBuildLog = ref();
 const dockerDialogRef = ref();
+const editAppNumRef = ref();
 const state = reactive({
   isShowBuildLogDialog: false,
   buildLogContent: '',
@@ -205,8 +208,11 @@ const state = reactive({
   autoLog:true,
 });
 
-const showDockerLog = (AppName) => {
+const showDockerLog = (AppName:any) => {
     dockerDialogRef.value.openDockerLog(AppName);
+}
+const showDockerTag = (row:any,type:any) =>{
+  editAppNumRef.value.openDialog(row,type);
 }
 // 初始化表格数据
 const getTableData = () => {

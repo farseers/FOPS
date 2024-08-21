@@ -13,6 +13,11 @@
 				</span>
 			</template>
 		</el-dialog>
+    <div v-if="state.showOverlay" class="overlay">
+    <div class="overlay-content">
+      <img :src="Image" style="width: 200px" alt="Image">
+    </div>
+  </div>
 	</div>
 </template>
 
@@ -20,6 +25,7 @@
 import {reactive, ref, onMounted} from 'vue';
 import {fopsApi} from "/@/api/fops";
 import {ElMessageBox, ElMessage, ElTable} from 'element-plus';
+import Image from '/@/assets/loading.gif';
 const emit = defineEmits(['refresh']);
 // 引入 api 请求接口
 const serverApi = fopsApi();
@@ -28,7 +34,8 @@ const state = reactive({
 	isShowDialog:false,
     title:'副本数量',
     appName:'',//应用名称
-    dockerReplicas:0
+    dockerReplicas:0,
+    showOverlay:false
 });
 
 // 打开弹窗
@@ -60,6 +67,7 @@ const onSubmit = () => {
   })
       .then(() => {
         // 删除逻辑
+        state.showOverlay = true;
         serverApi.setReplicas({
   "appName": state.appName, // # 应用名称
   "DockerReplicas": state.dockerReplicas  //# 数量
@@ -71,9 +79,12 @@ const onSubmit = () => {
           }else{
             ElMessage.error(res.StatusMessage)
           }
-        })
+          state.showOverlay = false;
+        }).catch(() => {
+        state.showOverlay = false;
+      });
       })
-      .catch(() => {});
+      .catch(() => {  });
 };
 
 
@@ -86,3 +97,22 @@ defineExpose({
 	openDialog,
 });
 </script>
+<style>
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.overlay-content {
+  text-align: center;
+  color: white;
+}
+</style>

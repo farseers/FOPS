@@ -144,7 +144,8 @@ const onRestartDocker = (row) => {
           }else{
             ElMessage.error(res.StatusMessage)
           }
-        })
+        }).catch(() => {
+            state.showOverlay=false});
       })
       .catch(() => {
         state.showOverlay=false});

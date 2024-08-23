@@ -201,6 +201,7 @@ func (receiver *BuildEO) StartBuild() {
 			//shellScript.Add("source /root/.bashrc")
 			shellScript.Add("mkdir -p " + DistRoot + receiver.appGit.GetRelativePath())
 			shellScript.Add("cd " + DistRoot + receiver.appGit.GetRelativePath())
+			shellScript.Add("set -x")
 			shellScript.AddArray(step.Run)
 			shellScript.Add("")
 			script := shellScript.ToString("\n")

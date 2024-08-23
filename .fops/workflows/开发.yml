@@ -19,6 +19,7 @@ jobs:
 
       - name: 编译
         run:
+          - env
           - unset HTTPS_PROXY
           - unset HTTP_PROXY
           - rm -rf ./go.work

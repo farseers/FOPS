@@ -240,6 +240,7 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 			ActionVer:         "v1",
 			ActionDownloadUrl: "https://github.com/farseers/FOPS-Actions/releases/download/v1/gitProxy",
 			RepositoryName:    "farseers/FOPS-Actions",
+			With:              make(map[string]any),
 		},
 	}, receiver.WorkflowsAction.Steps...)
 

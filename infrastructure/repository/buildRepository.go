@@ -31,7 +31,7 @@ func (repository *buildRepository) ToBuildList(appName string, pageSize int, pag
 	if appName != "" {
 		ts.Where("LOWER(app_name) = ?", appName)
 	}
-	lstPO := ts.ToPageList(pageSize, pageIndex)
+	lstPO := ts.Select("id", "app_name", "build_number", "status", "is_success", "create_at", "finish_at", "workflows_name").ToPageList(pageSize, pageIndex)
 	return mapper.ToPageList[apps.BuildEO](lstPO)
 }
 
@@ -50,13 +50,12 @@ func (repository *buildRepository) SetBuilding(id int64) {
 }
 
 // SetSuccess 任务完成
-func (repository *buildRepository) SetSuccess(id int64, env apps.EnvVO, log []string) {
+func (repository *buildRepository) SetSuccess(id int64, env apps.EnvVO) {
 	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at", "env", "log", "docker_image").Update(model.BuildPO{
 		Status:      eumBuildStatus.Finish,
 		IsSuccess:   true,
 		FinishAt:    time.Now(),
 		Env:         env,
-		Log:         log,
 		DockerImage: env.DockerImage,
 	})
 }
@@ -71,13 +70,12 @@ func (repository *buildRepository) SetSuccessForFops(id int64) {
 }
 
 // SetCancel 主动取消任务
-func (repository *buildRepository) SetCancel(id int64, env apps.EnvVO, log []string) {
+func (repository *buildRepository) SetCancel(id int64, env apps.EnvVO) {
 	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at", "env", "log", "docker_image").Update(model.BuildPO{
 		Status:      eumBuildStatus.Finish,
 		IsSuccess:   false,
 		FinishAt:    time.Now(),
 		Env:         env,
-		Log:         log,
 		DockerImage: env.DockerImage,
 	})
 }
@@ -97,7 +95,12 @@ func (repository *buildRepository) UpdateFailDockerImage(appName string, dockerI
 		})
 }
 
-func (repository *buildRepository) GetLastBuild() apps.BuildEO {
-	po := context.MysqlContext.Build.Desc("id").ToEntity()
+func (repository *buildRepository) GetLastBuilding() apps.BuildEO {
+	po := context.MysqlContext.Build.Where("status = ?", eumBuildStatus.Building).Desc("id").ToEntity()
+	return mapper.Single[apps.BuildEO](po)
+}
+
+func (repository *buildRepository) ToBuildEntity(id int64) apps.BuildEO {
+	po := context.MysqlContext.Build.Where("id = ?", id).ToEntity()
 	return mapper.Single[apps.BuildEO](po)
 }

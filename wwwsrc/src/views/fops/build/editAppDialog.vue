@@ -5,9 +5,8 @@
 				<el-row :gutter="35">
           <el-form-item label="应用名称">
             <el-input v-model="state.ruleForm.AppName" placeholder="请输入应用名称" style="max-width: 200px;margin-right: 5px"></el-input>
-            与应用的AppName一致，才能检查健康状态
             <el-button v-if="state.dialog.type=='edit'" @click="onDeleteApp" size="default" type="danger" style="margin-left: 5px;">删除应用</el-button>
-            <el-button v-if="state.dialog.type=='edit'" @click="onDeleteService" size="default" type="info" style="margin-left: 5px;">删除服务</el-button>
+            <el-button v-if="state.dialog.type=='edit'" @click="onDeleteService" size="default" type="info" style="margin-left: 5px;">删除容器</el-button>
           </el-form-item>
           <el-form-item label="仓库版本">
             <el-tag v-if="state.ruleForm.DockerImage !=''" size="small">{{state.ruleForm.DockerImage}}</el-tag>
@@ -21,7 +20,7 @@
             <el-tag v-else size="small" style="margin-right: 5px;">未发布</el-tag>
 
             <el-tag v-if="state.ruleForm.IsHealth" size="small" type="success">健康</el-tag>
-            <el-tag v-else-if="state.ruleForm.ActiveInstance!=null && state.ruleForm.ActiveInstance.length > 0" size="small" type="warning">不健康</el-tag>
+            <el-tag v-else-if="state.ruleForm.DockerInstances > 0" size="small" type="warning">不健康</el-tag>
             <el-tag v-else size="small" type="danger">未运行</el-tag>
           </el-form-item>
           <el-form-item style="float: left" label="副本数量">
@@ -35,6 +34,12 @@
           </el-form-item>
           <el-form-item label="容器参数">
             <el-input v-model="state.ruleForm.AdditionalScripts" type="textarea" placeholder="容器在创建时，附加的参数" clearable></el-input>
+          </el-form-item>
+          <el-form-item style="float: left" label="Cpu限制">
+            <el-input v-model="state.ruleForm.LimitCpus" type="number" placeholder="请输入Cpu数量"></el-input>
+          </el-form-item>
+          <el-form-item label="内存限制">
+            <el-input v-model="state.ruleForm.LimitMemory" placeholder="请输入内存"></el-input>
           </el-form-item>
           <el-form-item label="Dockerfile">
             <el-input v-model="state.ruleForm.DockerfilePath" placeholder="请输入Dockerfile路径，默认为：./Dockerfile" clearable></el-input>
@@ -107,18 +112,24 @@ const state = reactive({
     ClusterId:0, // 集群ID
     AppName:'', //应用名称
     DockerVer: '', // 镜像版本
-    ClusterVer: '', // 集群版本
+    ClusterVer: { // 集群版本
+      ClusterId: 0,
+      DockerImage: '',
+    },
     AppGit: 0, // 应用的源代码
     AppGitName: '', // 应用的源代码
     FrameworkGits:[], // 依赖的框架源代码
     DockerfilePath: '', // Dockerfile路径
     IsHealth:false, // 是否健康
+    DockerInstances:0, // 实例数量
     DockerReplicas:1,// 副本数量
     DockerNodeRole:'',// 容器节点角色 manager or worker
     DockerNodeRoleInt:1,// 容器节点角色 manager or worker
     AdditionalScripts:'',// 多行内容，用多行文本框
     WorkflowsYmlPath:'',// 工作流定义的路径
-    ActiveInstance:[]
+    LimitCpus:0,        // Cpu核数限制
+    LimitMemory:'',      // 内存限制
+
 	},
   gitList:[],
   SelectItem:[],
@@ -166,6 +177,8 @@ const openDialog = (type: string, row: any, clusterId: number) => {
       state.ruleForm.DockerNodeRole=row.DockerNodeRole
       state.ruleForm.AdditionalScripts=row.AdditionalScripts
       state.ruleForm.WorkflowsYmlPath=row.WorkflowsYmlPath
+      state.ruleForm.LimitCpus = row.LimitCpus
+      state.ruleForm.LimitMemory = row.LimitMemory
       if (state.ruleForm.DockerNodeRole == "manager") {
         state.ruleForm.DockerNodeRoleInt=0
       } else {
@@ -181,13 +194,15 @@ const openDialog = (type: string, row: any, clusterId: number) => {
 };
 
 const loadGit=()=>{
-  serverApi.gitList({isApp:1}).then(function (res){
-    // console.log(11111111)
+  serverApi.gitList({isApp:0}).then(function (res){
+    console.log(state.ruleForm.FrameworkGits)
     if (res.Status){
       // state.tableData.data = res.Data;
       // state.tableData.total = res.Data.length;
-      state.gitList= res.Data;
-      // console.log(state.gitList)
+      const SelectItem = state.ruleForm.FrameworkGits;
+      const arr = res.Data.filter(item => SelectItem.includes(item.Id));
+      state.gitList= arr;
+      // console.log(state.gitList,state.SelectItem)
     }else{
       state.gitList=[]
     }
@@ -240,7 +255,7 @@ const onDeleteApp = () => {
 
 // 删除服务
 const onDeleteService = () => {
-  ElMessageBox.confirm(`此操作将删除服务：“${state.ruleForm.AppName}”，是否继续?`, '提示', {
+  ElMessageBox.confirm(`此操作将删除容器服务：“${state.ruleForm.AppName}”，是否继续?`, '提示', {
     confirmButtonText: '确认',
     cancelButtonText: '取消',
     type: 'warning',
@@ -279,6 +294,8 @@ const onSubmit = () => {
     "DockerNodeRole":state.ruleForm.DockerNodeRole,
     "AdditionalScripts":state.ruleForm.AdditionalScripts,
     "WorkflowsYmlPath":state.ruleForm.WorkflowsYmlPath,
+    "LimitCpus":parseFloat(state.ruleForm.LimitCpus),
+    "LimitMemory":state.ruleForm.LimitMemory,
   }
   emit('showOverlay');
   serverApi.appsEdit(param).then(function (res){

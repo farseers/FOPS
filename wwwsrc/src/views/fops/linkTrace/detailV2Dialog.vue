@@ -47,15 +47,25 @@
             </div>
             <div :style="{'width':'95%','white-space': 'nowrap'}">
             <ul class="custom-list mt10">
-              <li style="height: 35px;padding: 10px 0;">
-                <span v-for="(info, index) in state.tableData" :key="index" :style="{'margin-left':info.StartRate+'%','float':'left','position':'absolute'}">
-                  <el-tag v-if="index>0 && info.UseTs > 0" size="small" type="success">{{info.StartTs / 1000}}ms</el-tag>
-                </span>
-
-                <span style="float:right;margin-right: 10px">
+              <li style="height: 35px;padding: 10px 0;position: relative;display: flex;">
+                <!-- <el-tooltip v-for="(info, index) in state.tableData" :key="index"  effect="dark" content="Top Left 提示文字" placement="top-start">
+                  <span style="height: 5px;flex: 1;background-color: red;"></span>
+          </el-tooltip> -->
+          <span v-for="(info, index) in state.timeDatas" :key="index" 
+                :style="{'left':info.StartRate+'%','position':'absolute'}">
+                  <el-tag  size="small" style="max-width: 65px;" type="success">{{info.StartTs / 1000}}ms</el-tag>
+                </span> 
+                  <!-- <span style="float:right;margin-right: 10px">
                   <el-tag size="small" type="success">{{state.UseTs / 1000000}}ms</el-tag>
-                </span>
+                </span> -->
               </li>
+                <!-- <span v-for="(info, index) in state.timeDatas" :key="index" 
+                :style="{'left':info.StartRate+'%','position':'absolute'}">
+                  <el-tag  size="small" style="max-width: 65px;" type="success">{{info.StartTs / 1000}}ms</el-tag>
+                </span> -->
+
+              
+     
               <!--详情-->
               <li style="clear: both;padding:2px 0;height:21px" v-for="(info, index) in state.tableData" :key="index">
                 <div>
@@ -136,6 +146,22 @@ const logDialogRef = ref();
 const state = reactive({
 	ruleForm: {},
   loading:false,
+  timeDatas:[
+  {
+    Rgba:'',
+    AppId:0,
+    AppIp:'',
+    AppName:'',
+    StartTs:0,
+    StartRate:0,
+    UseTs:0,
+    UseRate:0,
+    Caption:'',
+    Desc:'',
+    UseDesc:'',
+    Exception:'',
+  }
+  ],
   tableData:[{
     Rgba:'',
     AppId:0,
@@ -209,8 +235,48 @@ const openDialog = (row2: any) => {
       if (res.Data.Entry.TraceType == 0) {
 
       }
-
+      let originalArray = [...res.Data.List]
+      const set_arr = function(StartRate,index){
+        let row = null
+          for(var i=0;i<originalArray.length;i++){
+            if(i>=index){
+              var n_StartRate = originalArray[i].StartRate
+              if(n_StartRate>=StartRate+6){ 
+              row = {
+                StartRate:n_StartRate,
+                StartTs:originalArray[i].StartTs,
+                index:i
+              }
+              break
+            }
+            }
+            
+            
+          }
+          return row
+      }
+      let crr = [];
+      const items = function(item,i){
+          const StartRate = item.StartRate;
+          crr.push({
+              StartRate:item.StartRate,
+              StartTs:item.StartTs,
+            })
+          const row = set_arr(StartRate,i);
+          if(row){
+            var index = row.index + 1;
+            if(originalArray[index]){
+              items(originalArray[index],index)
+            }
+          
+          }
+      }
+      if(originalArray && originalArray.length>0){
+        items(originalArray[1],1)
+      }
+      
       // 绑定数据
+      state.timeDatas = crr
       state.tableData=res.Data.List
       state.AppId=res.Data.Entry.AppId
       state.AppIp=res.Data.Entry.AppIp

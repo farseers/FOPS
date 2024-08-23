@@ -1,0 +1,12 @@
+name: build
+jobs:
+  build:
+    runs-on: steden88/cicd:3.0-npm # 工作流运行的环境
+    env:
+      GO111MODULE: on
+      GOPROXY: https://goproxy.cn
+
+    steps:
+      - name: 清除缓存
+        run:
+          - go clean -cache

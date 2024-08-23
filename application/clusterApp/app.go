@@ -15,6 +15,10 @@ import (
 func Add(req request.AddRequest, clusterRepository cluster.Repository) {
 	do := mapper.Single[cluster.DomainObject](req)
 
+	// 如果新添加的集群为本地集群，则取消之前的本地集群
+	if req.IsLocal {
+		clusterRepository.CancelLocal(0)
+	}
 	// 添加
 	err := clusterRepository.Add(do)
 	exception.ThrowWebExceptionError(403, err)
@@ -27,6 +31,10 @@ func Update(req request.UpdateRequest, clusterRepository cluster.Repository) {
 	do := mapper.Single[cluster.DomainObject](req)
 	exception.ThrowWebExceptionBool(!clusterRepository.IsExists(req.Id), 403, "集群Id不存在")
 
+	// 如果新添加的集群为本地集群，则取消之前的本地集群
+	if req.IsLocal {
+		clusterRepository.CancelLocal(do.Id)
+	}
 	_, err := clusterRepository.Update(do.Id, do)
 	exception.ThrowWebExceptionError(403, err)
 }

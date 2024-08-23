@@ -6,11 +6,12 @@
                     <div class="name">
                         <el-tag size="default">{{ item.AppName }}</el-tag>
                         <el-tooltip content="实例数量/副本数量" slot="label">
-                            <el-tag v-if="item.IsHealth" size="small" style="margin-left: 5px">{{ item.DockerInstances
+                            <el-tag  @click="showDockerTag(item,1)" v-if="item.IsHealth" size="small" style="margin-left: 5px;cursor: pointer;">{{ item.DockerInstances
                                 }}/{{ item.DockerReplicas }}</el-tag>
-                            <el-tag v-else size="small" type="danger" style="margin-left: 5px">{{ item.DockerInstances
+                            <el-tag  @click="showDockerTag(item,2)" v-else size="small" type="danger" style="margin-left: 5px;cursor: pointer;">{{ item.DockerInstances
                                 }}/{{ item.DockerReplicas }}</el-tag>
                         </el-tooltip>
+                        <el-tag size="small" type="warning" @click="onRestartDocker(item)" style="margin-left: 5px;cursor: pointer;"><el-icon><ele-SwitchButton /></el-icon>重启</el-tag>
                     </div>
                     <div>
                         <el-button class="ecfy_btn" size="small" type="primary" @click="showDockerLog(item.AppName)">容器日志</el-button>
@@ -51,36 +52,50 @@
                 </el-card>
             </div>
         </div>
+        <div v-if="state.showOverlay" class="overlay">
+    <div class="overlay-content">
+      <img :src="Image" style="width: 200px" alt="Image">
+    </div>
+  </div>
             <dockerDialog ref="dockerDialogRef"/>
             <taskDialog ref="taskDialogRef"  />
             <logDialog ref="logDialogRef"  />
+            <editAppNum ref="editAppNumRef" @refresh="getData()"/>
     </div>
 </template>
 <script setup name="Ecfy">
 import { reactive, onMounted, defineExpose, ref,defineAsyncComponent } from 'vue';
-import { ElMessage } from 'element-plus';
+import { ElMessage,ElMessageBox } from 'element-plus';
 import { fopsApi } from "/@/api/fops";
+import Image from '/@/assets/loading.gif';
 const dockerDialog = defineAsyncComponent(() => import('/src/views/fops/task/dockerDialog.vue'));
 const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logV2Dialog.vue'));
 const taskDialog= defineAsyncComponent(() => import('/src/views/fops/task/taskAppDialog.vue'));
+const editAppNum = defineAsyncComponent(() => import('/src/views/fops/build/editAppNum.vue'));
 // 引入 api 请求接口
 const serverApi = fopsApi();
 const conlyTabs = ref(null)
 const logDialogRef = ref();
 const taskDialogRef = ref();
 const dockerDialogRef = ref();
+const editAppNumRef = ref();
 // 定义变量内容
 const state = reactive({
     tableData: [],
     statTask: [],
+    showOverlay:false,
     isShowDockerLogDialog: false, //容器日志
 	dockerLogContent: [],//容器日志
+    clusterId:0,
 	dockerLog: {
 		Id: '',
 		Name: '', Node: '', State: '', StateInfo: '', Error: '', Image: '',
 	},//容器日志选中
 });
-
+const showDockerTag = (row,type) =>{
+    // console.log(row,row.DockerReplicas,type)
+  editAppNumRef.value.openDialog(row,type);
+}
 const showDockerLog = (AppName) => {
     dockerDialogRef.value.openDockerLog(AppName);
 }
@@ -95,7 +110,8 @@ const showTask=(st,appName)=>{
 
 const getData = () => {
     var param = {
-        "ClusterId": 0,
+        "ClusterId": state.clusterId,
+        "IsSys": true,
     }
     // 获取应用列表
     serverApi.appsList(param).then(function (res) {
@@ -106,6 +122,34 @@ const getData = () => {
         }
     })
 }
+const onRestartDocker = (row) => {
+  ElMessageBox.confirm(`请确认是否重启容器?`, '提示', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+      .then(() => {
+        state.showOverlay=true
+        // 提交数据
+        var param={
+          "AppName":row.AppName,
+          "ClusterId":state.clusterId,
+        }
+        serverApi.restartDocker(param).then(async function(res){
+          state.showOverlay=false
+          if(res.Status){
+            ElMessage.success("重启成功")
+            // 刷新应用界面
+            getData()
+          }else{
+            ElMessage.error(res.StatusMessage)
+          }
+        }).catch(() => {
+            state.showOverlay=false});
+      })
+      .catch(() => {
+        state.showOverlay=false});
+};
 onMounted(() => {
     getData()
 });
@@ -165,5 +209,22 @@ defineExpose({
 .ecfy_btn{
     --el-button-size: 20px;
     padding: 3px 9px;
+}
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+}
+
+.overlay-content {
+  text-align: center;
+  color: white;
 }
 </style>

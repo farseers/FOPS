@@ -19,6 +19,5 @@ type BuildPO struct {
 	BuildServerId int64               `gorm:"not null;default:0;comment:构建的服务端id"`
 	WorkflowsName string              `gorm:"size:32;not null;default:'';comment:工作流名称（文件的名称）"`
 	DockerImage   string              `gorm:"size:64;not null;default:'';comment:Docker镜像"`
-	Log           []string            `gorm:"type:text;json;not null;comment:构建日志"`
 	Env           apps.EnvVO          `gorm:"type:text;json;not null;comment:环境变量"`
 }

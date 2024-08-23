@@ -13,9 +13,10 @@ type Repository interface {
 	UpdateApp(do DomainObject) error
 	UpdateDockerVer(appName string, dockerVer int, imageName string) (int64, error)        // UpdateDockerVer 修改镜像版本
 	UpdateClusterVer(appName string, dicClusterVer map[int64]*ClusterVerVO) (int64, error) // UpdateClusterVer 修改集群的镜像版本
-	UpdateInsReplicas(lst collections.List[DockerServiceVO]) (int64, error)                // UpdateInsReplicas 更新从集群中获取到的实例、副本数量
+	UpdateInsReplicas(lst collections.List[DomainObject]) (int64, error)                   // UpdateInsReplicas 更新从集群中获取到的实例、副本数量
 	UpdateClusterNode(lst collections.List[DockerNodeVO])                                  // 更新集群节点信息
 	GetClusterNodeList() collections.List[DockerNodeVO]                                    // 获取集群节点列表
+	ToListBySys(isSys bool) collections.List[DomainObject]
 	buildRepository
 	gitRepository
 }
@@ -26,12 +27,13 @@ type buildRepository interface {
 	ToBuildList(appName string, pageSize int, pageIndex int) collections.PageList[BuildEO] // 查询构建列表
 	GetUnBuildInfo() BuildEO                                                               // 获取未构建的任务
 	SetBuilding(id int64)                                                                  // 设置任务为构建中
-	SetSuccess(id int64, env EnvVO, logs []string)                                         // Success 任务完成
+	SetSuccess(id int64, env EnvVO)                                                        // Success 任务完成
 	SetSuccessForFops(id int64)                                                            // 设置任务为构建成功
-	SetCancel(id int64, env EnvVO, logs []string)                                          // Cancel 主动取消任务
+	SetCancel(id int64, env EnvVO)                                                         // Cancel 主动取消任务
 	GetStatus(id int64) eumBuildStatus.Enum                                                // GetStatus 获取构建状态
 	UpdateFailDockerImage(appName string, dockerImage string) (int64, error)               // UpdateFailDockerImage 更新构建中状态的构建记录
-	GetLastBuild() BuildEO                                                                 // 获取最后一次构建
+	GetLastBuilding() BuildEO                                                              // 获取最后一次构建
+	ToBuildEntity(id int64) BuildEO                                                        // 获取构建对象
 }
 
 type gitRepository interface {

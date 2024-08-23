@@ -38,6 +38,11 @@
               <el-input v-model="state.ruleForm.DockerUserPwd" placeholder="请输入账户密码" clearable></el-input>
             </el-form-item>
           </el-col>
+          <el-col :xs="24" :sm="24" :md="24" :lg="24" :xl="24" class="mb20">
+            <el-form-item label="本地集群">
+              <el-switch v-model="state.ruleForm.IsLocal" inline-prompt active-text="是" inactive-text="否"></el-switch>
+            </el-form-item>
+          </el-col>
 				</el-row>
 			</el-form>
 			<template #footer>
@@ -71,6 +76,7 @@ const state = reactive({
     DockerHub: '', // 托管地址
     DockerUserName: '', // 账户名称
     DockerUserPwd: '', // 账户密码
+    IsLocal: false, // 本地集群
 	},
 	dialog: {
 		isShowDialog: false,
@@ -96,6 +102,7 @@ const openDialog = (type: string, row: any) => {
     state.ruleForm.DockerHub=row.DockerHub
     state.ruleForm.DockerUserName=row.DockerUserName
     state.ruleForm.DockerUserPwd=row.DockerUserPwd
+    state.ruleForm.IsLocal=row.IsLocal
 
 	} else {
 		state.dialog.title = '新增集群';
@@ -109,6 +116,7 @@ const openDialog = (type: string, row: any) => {
     state.ruleForm.DockerHub=""
     state.ruleForm.DockerUserName=""
     state.ruleForm.DockerUserPwd=""
+    state.ruleForm.IsLocal=false
 	}
 	state.dialog.isShowDialog = true;
 	getMenuData();
@@ -125,14 +133,15 @@ const onCancel = () => {
 const onSubmit = () => {
   // 提交数据
   var param={
-    "Id":state.ruleForm.Id,
-    "Name":state.ruleForm.Name,
+    "Id": state.ruleForm.Id,
+    "Name": state.ruleForm.Name,
     "FopsAddr":state.ruleForm.FopsAddr,
     "FScheduleAddr":state.ruleForm.FScheduleAddr,
     "DockerNetwork":state.ruleForm.DockerNetwork,
     "DockerHub":state.ruleForm.DockerHub,
     "DockerUserName":state.ruleForm.DockerUserName,
-    "DockerUserPwd":state.ruleForm.DockerUserPwd
+    "DockerUserPwd":state.ruleForm.DockerUserPwd,
+    "IsLocal":state.ruleForm.IsLocal,
   }
 
 	if (state.dialog.type === 'add') {

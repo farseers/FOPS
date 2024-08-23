@@ -65,7 +65,7 @@ func (receiver *linkTraceRepository) ToEntity(traceId string) collections.List[l
 
 func (receiver *linkTraceRepository) ToWebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode int, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceContextView.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,web_domain,web_path,web_method,web_content_type,web_status_code,web_request_ip").
+		ts := context.CHContext.TraceContext.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,web_domain,web_path,web_method,web_content_type,web_status_code,web_request_ip").
 			Where("trace_type = ? and parent_app_name = ''", eumTraceType.WebApi).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
@@ -84,7 +84,7 @@ func (receiver *linkTraceRepository) ToWebApiList(traceId, appName, appIp, reque
 }
 func (receiver *linkTraceRepository) ToTraceListByVisits(startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceContextView.
+		ts := context.CHContext.TraceContext.
 			Where("start_ts >= ? and start_ts < ?", startAt.UnixMicro(), endAt.UnixMicro()) // parent_app_name = '' and
 		lstPO := ts.Asc("use_ts").ToList()
 		return mapper.ToList[linkTraceCom.TraceContext](lstPO)
@@ -93,7 +93,7 @@ func (receiver *linkTraceRepository) ToTraceListByVisits(startAt, endAt time.Tim
 }
 func (receiver *linkTraceRepository) ToTaskList(traceId, appName, appIp, taskName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceContextView.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,task_name").
+		ts := context.CHContext.TraceContext.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,task_name").
 			Where("trace_type = ?", eumTraceType.Task).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
@@ -110,7 +110,7 @@ func (receiver *linkTraceRepository) ToTaskList(traceId, appName, appIp, taskNam
 }
 func (receiver *linkTraceRepository) ToFScheduleList(traceId, appName, appIp, taskName string, taskGroupId, taskId, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceContextView.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,task_name,task_group_name,task_id,task_data").
+		ts := context.CHContext.TraceContext.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,task_name,task_group_name,task_id,task_data").
 			Where("trace_type = ? and parent_app_name = ''", eumTraceType.FSchedule).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
@@ -129,7 +129,7 @@ func (receiver *linkTraceRepository) ToFScheduleList(traceId, appName, appIp, ta
 }
 func (receiver *linkTraceRepository) ToConsumerList(traceId, appName, appIp, server, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceContextView.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,consumer_server,consumer_queue_name,consumer_routing_key").
+		ts := context.CHContext.TraceContext.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,consumer_server,consumer_queue_name,consumer_routing_key").
 			Where("trace_type = ?", eumTraceType.MqConsumer).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
@@ -148,7 +148,7 @@ func (receiver *linkTraceRepository) ToConsumerList(traceId, appName, appIp, ser
 }
 func (receiver *linkTraceRepository) ToEventList(traceId, appName, appIp, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceContextView.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,consumer_server,consumer_queue_name,consumer_routing_key").
+		ts := context.CHContext.TraceContext.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,consumer_server,consumer_queue_name,consumer_routing_key").
 			Where("trace_type = ?", eumTraceType.EventConsumer).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
@@ -166,7 +166,7 @@ func (receiver *linkTraceRepository) ToEventList(traceId, appName, appIp, queueN
 }
 func (receiver *linkTraceRepository) ToQueueList(traceId, appName, appIp, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceContextView.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,consumer_server,consumer_queue_name,consumer_routing_key").
+		ts := context.CHContext.TraceContext.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,consumer_server,consumer_queue_name,consumer_routing_key").
 			Where("trace_type = ?", eumTraceType.QueueConsumer).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
@@ -314,26 +314,30 @@ func (receiver *linkTraceRepository) ToSlowRedisList(traceId, appName, appIp, ke
 }
 
 func (receiver *linkTraceRepository) Save(lstEO collections.List[linkTraceCom.TraceContext]) error {
-	lst := mapper.ToList[model.TraceContextPO](lstEO)
-	lst.Foreach(func(item *model.TraceContextPO) {
-		item.UseDesc = item.UseTs.String()
-		item.CreateAt = dateTime.NewUnixMicro(item.StartTs)
-		item.TraceCount = len(item.List)
+	lst := collections.NewList[model.TraceContextPO]()
+	lstEO.Foreach(func(item *linkTraceCom.TraceContext) {
+		items := item.List
+		item.List = nil
 
-		for index, detail := range item.List {
+		po := mapper.Single[model.TraceContextPO](item)
+		po.List = items
+		po.UseDesc = po.UseTs.String()
+		po.CreateAt = dateTime.NewUnixMicro(po.StartTs)
+		po.TraceCount = len(items)
+		for index, detail := range items {
 			m := detail.(map[string]any)
 			baseDetailPO := mapper.Single[model.BaseTraceDetailPO](m)
 			m["UseDesc"] = baseDetailPO.UseTs.String()
 			m["CreateAt"] = dateTime.NewUnixMicro(baseDetailPO.StartTs)
-			item.List[index] = m
+			po.List[index] = m
 		}
+		lst.Add(po)
 	})
 
 	if linkTrace.Config.Driver == "clickhouse" {
 		// 写入上下文
 		if _, err := context.CHContext.TraceContext.InsertList(lst, 2000); err != nil {
-			b, _ := json.Marshal(lst)
-			_ = flog.Errorf("TraceContext写入ch失败,%s %s", err.Error(), string(b))
+			_ = flog.Errorf("TraceContext写入ch失败,%s", err.Error())
 		}
 	} else {
 		return fmt.Errorf("不支持的链路追踪驱动：%s", linkTrace.Config.Driver)

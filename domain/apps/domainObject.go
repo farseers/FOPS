@@ -18,6 +18,9 @@ type DomainObject struct {
 	DockerReplicas    int                     // 副本数量
 	DockerNodeRole    string                  // 容器节点角色 manager or worker
 	AdditionalScripts string                  // 首次创建应用时附加脚本
+	LimitCpus         float64                 // Cpu核数限制
+	LimitMemory       string                  // 内存限制
+	IsSys             bool                    // 是否系统应用
 }
 
 func (receiver *DomainObject) IsNil() bool {
@@ -67,4 +70,23 @@ func (receiver *DomainObject) GetWorkflowsRoot() string {
 // GetWorkflowsDir 获取工作流目录 如："/var/lib/fops/workflows/fops/.fops/workflows/"
 func (receiver *DomainObject) GetWorkflowsDir() string {
 	return WorkflowsRoot + receiver.AppName + "/.fops/workflows/"
+}
+
+// GetCurClusterDockerImage 获取当前集群的镜像名称
+func (receiver *DomainObject) GetCurClusterDockerImage(clusterId int64) string {
+	if cur, ok := receiver.ClusterVer[clusterId]; ok {
+		return cur.DockerImage
+	}
+	return ""
+}
+
+func (receiver *DomainObject) InitCluster(clusterId int64) {
+	if receiver.ClusterVer == nil {
+		receiver.ClusterVer = make(map[int64]*ClusterVerVO)
+	}
+	if receiver.ClusterVer[clusterId] == nil {
+		receiver.ClusterVer[clusterId] = &ClusterVerVO{
+			ClusterId: clusterId,
+		}
+	}
 }

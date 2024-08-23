@@ -1,5 +1,5 @@
 Database:
-  default: "DataType=mysql,PoolMaxSize=50,PoolMinSize=1,ConnectionString=root:steden@123@tcp(192.168.1.8:3306)/fops2?charset=utf8&parseTime=True&loc=Local"
+  default: "DataType=mysql,PoolMaxSize=50,PoolMinSize=1,ConnectionString=root:steden@123@tcp(192.168.1.8:3306)/fops?charset=utf8&parseTime=True&loc=Local"
 Redis:
   default: "Server=192.168.1.8:6379,DB=0,Password=steden@123,ConnectTimeout=600000,SyncTimeout=10000,ResponseTimeout=10000"
 WebApi:
@@ -11,11 +11,15 @@ WebApi:
     StoreConfigName: "default"
     Age: 1800
 Fops:
-  GitAgent: "socks5://192.168.1.88:7890"
+  Proxy: "socks5://192.168.1.8:7890"
   Server: "http://127.0.0.1:8889"
   LinkTrace:
     Driver: "clickhouse"
     ConnString: "DataType=clickhouse,PoolMaxSize=50,PoolMinSize=1,ConnectionString=clickhouse://root:steden@192.168.1.8:9000/linkTrace?dial_timeout=10s&read_timeout=20s"
+  ExtranetIpUrl: "ipv4.ip.sb"
+  Builder:
+    - "-v /home/go/pkg/mod:/root/go/pkg/mod"
+    - "-v /home/go/go-build:/root/.cache/go-build"
 LinkTrace:
   Enable: true
   PrintLog: false

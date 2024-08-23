@@ -68,9 +68,12 @@ func (dockerDevice) Execute(dockerName string, execCmd string, env map[string]st
 	for k, v := range env {
 		bf.WriteString(fmt.Sprintf("-e %s=%s ", k, v))
 	}
+	bf.WriteString("-e BASH_ENV=\"/root/.bashrc\" ")
 	bf.WriteString(dockerName)
-	bf.WriteString(" ")
+	bf.WriteString(" /bin/bash -c ") //x
+	bf.WriteString("\"")
 	bf.WriteString(execCmd)
+	bf.WriteString("\"")
 	return exec.RunShellContext(ctx, bf.String(), progress, nil, apps.DistRoot, false) == 0
 }
 

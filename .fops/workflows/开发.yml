@@ -1,11 +1,11 @@
 name: build
 jobs:
-  clusterId: [3]
+  clusterId: [4]
   build:
     runs-on: steden88/cicd:3.0-npm # 工作流运行的环境
     env:
       GO111MODULE: on
-      GOPROXY: https://goproxy.cn
+      GOPROXY: https://goproxy.cn,direct
 
     steps:
       - name: 安装go
@@ -16,15 +16,6 @@ jobs:
 
       - name: 拉取应用Git
         uses: checkout@v1 # 在fops配置了依赖时，将自动拉取所有依赖Git
-
-      #      - name: 拉取框架fs
-      #        uses: checkout@v1
-      #        with:
-      #          gitHub: https://github.com/farseer-go/fs.git
-      #          gitBranch: main
-      #          gitUserName: test
-      #          gitUserPwd: 123456
-      #          gitPath: farseer-go/fs
 
       - name: 编译
         run:
@@ -55,8 +46,6 @@ jobs:
 
       - name: 编译前端
         run:
-          - unset HTTPS_PROXY
-          - unset HTTP_PROXY
           - mkdir wwwroot
           - cd ./wwwsrc
           - npm install
@@ -66,10 +55,5 @@ jobs:
       - name: 打包镜像
         uses: dockerBuild@v1
 
-      - name: 上传镜像
-        uses: dockerPush@v1
-
       - name: 更新镜像
         uses: dockerswarmUpdateVer@v1
-        with:
-          remoteClusterId: 1

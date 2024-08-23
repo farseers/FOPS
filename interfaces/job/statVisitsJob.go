@@ -26,15 +26,12 @@ func StatVisitsJob(*tasks.TaskContext) {
 
 	// 还是为1，说明从来没有执行过统计，则默认时间为昨天
 	if lastVisitsAt.Year() == 1 {
-		lastVisitsAt = time.Now()
-		lastVisitsAt = time.Date(lastVisitsAt.Year(), lastVisitsAt.Month(), lastVisitsAt.Day(), lastVisitsAt.Hour(), lastVisitsAt.Minute(), 0, 0, time.Local)
+		lastVisitsAt = time.Now().Add(-24 * time.Hour)
 		// 抹去秒（只要分钟）
-		lastVisitsAt = lastVisitsAt.Add(-24 * time.Hour)
+		lastVisitsAt = time.Date(lastVisitsAt.Year(), lastVisitsAt.Month(), lastVisitsAt.Day(), lastVisitsAt.Hour(), lastVisitsAt.Minute(), 0, 0, time.Local)
 	}
 
-	lastVisitsAt = lastVisitsAt.Add(-30 * time.Minute)
-
-	// 截止到当前时间的0秒
+	// 按1个小时的数据
 	endAt := lastVisitsAt.Add(time.Hour)
 	if endAt.After(time.Now()) {
 		endAt = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), time.Now().Hour(), time.Now().Minute(), 0, 0, time.Local)

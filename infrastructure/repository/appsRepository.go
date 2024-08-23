@@ -21,21 +21,28 @@ type appsRepository struct {
 	gitRepository
 }
 
-func (receiver *appsRepository) ToList() collections.List[apps.DomainObject] {
-	lst := context.MysqlContext.Apps.Omit("framework_gits", "dockerfile_path", "additional_scripts").ToList()
+func (receiver *appsRepository) ToListBySys(isSys bool) collections.List[apps.DomainObject] {
+	ts := context.MysqlContext.Apps.Omit("framework_gits", "dockerfile_path", "additional_scripts", "is_sys")
+	// 只显示手动添加的应用（不含系统应用）
+	if !isSys {
+		ts.Where("is_sys = 0")
+	}
+	lst := ts.ToList()
 	return mapper.ToList[apps.DomainObject](lst)
 }
 
 func (receiver *appsRepository) UpdateApp(do apps.DomainObject) error {
 	po := mapper.Single[model.AppsPO](do)
-	_, err := context.MysqlContext.Apps.Where("LOWER(app_name) = ?", po.AppName).Omit("app_name", "docker_ver", "docker_image", "docker_instances").Update(po)
+	_, err := context.MysqlContext.Apps.Where("LOWER(app_name) = ?", po.AppName).Omit("app_name", "docker_ver", "docker_image", "docker_instances", "is_sys").Update(po)
 	return err
 }
 
 // UpdateDockerVer 修改镜像版本
 func (receiver *appsRepository) UpdateDockerVer(appName string, dockerVer int, imageName string) (int64, error) {
-	_, _ = context.MysqlContext.Apps.Where("LOWER(app_name) = ?", appName).UpdateValue("docker_ver", dockerVer)
-	return context.MysqlContext.Apps.Where("LOWER(app_name) = ?", appName).UpdateValue("docker_image", imageName)
+	return context.MysqlContext.Apps.Where("LOWER(app_name) = ?", appName).Select("docker_ver", "docker_image").Update(model.AppsPO{
+		DockerVer:   dockerVer,
+		DockerImage: imageName,
+	})
 }
 
 // UpdateClusterVer 修改集群的镜像版本
@@ -45,24 +52,33 @@ func (receiver *appsRepository) UpdateClusterVer(appName string, dicClusterVer m
 }
 
 // UpdateInsReplicas 更新从集群中获取到的实例、副本数量
-func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.DockerServiceVO]) (int64, error) {
+func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.DomainObject]) (int64, error) {
 	sql := bytes.Buffer{}
 	sql.WriteString("UPDATE apps SET \n")
 
 	// Instances
 	sql.WriteString("docker_instances = case\n")
-	lst.Foreach(func(item *apps.DockerServiceVO) {
-		sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.Name, item.Instances))
+	lst.Foreach(func(item *apps.DomainObject) {
+		sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.AppName, item.DockerInstances))
 	})
 	sql.WriteString("else docker_instances\n")
 	sql.WriteString("end \n")
 
 	// Replicas
 	sql.WriteString(",docker_replicas = case\n")
-	lst.Foreach(func(item *apps.DockerServiceVO) {
-		sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.Name, item.Replicas))
+	lst.Foreach(func(item *apps.DomainObject) {
+		sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.AppName, item.DockerReplicas))
 	})
 	sql.WriteString("else docker_replicas\n")
+	sql.WriteString("end \n")
+
+	// cluster_ver
+	sql.WriteString(",cluster_ver = case\n")
+	lst.Foreach(func(item *apps.DomainObject) {
+		marshal, _ := json.Marshal(item.ClusterVer)
+		sql.WriteString(fmt.Sprintf("when app_name = '%s' then '%s'\n", item.AppName, string(marshal)))
+	})
+	sql.WriteString("else cluster_ver\n")
 	sql.WriteString("end \n")
 
 	// where

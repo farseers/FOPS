@@ -1,34 +1,37 @@
 <template>
   <div class="layout-padding" style="position: relative;">
     <el-card shadow="hover">
-      <el-header style="padding: 0">
-        <el-select v-model="state.clusterId" placeholder="请选择集群" class="ml10" @change="onClusterChange" style="width: 250px;">
+      <el-header style="padding: 0;--el-header-height:40px">
+        集群<el-select size="default" v-model="state.clusterId" placeholder="请选择集群" class="ml10" @change="onClusterChange" style="width: 280px;">
           <el-option v-for="item in state.clusterData" :key="item.Id" :label="item.Name" :value="item.Id"></el-option>
         </el-select>
         <el-button size="default" type="success" class="ml10" @click="onOpenAdd('add')"><el-icon><ele-FolderAdd /></el-icon>新增应用</el-button>
-        <el-button size="default" type="info" class="ml10" @click="onClearDockerImage('add')"><el-icon><ele-Delete /></el-icon>清除None镜像</el-button>
+        <el-button size="default" type="info" class="ml10" @click="onClearDockerImage('add')"><el-icon><ele-Delete /></el-icon>清除镜像</el-button>
 <!--        <el-button size="default" type="warning" class="ml10" @click="onAllBuild()"><el-icon><ele-SwitchButton /></el-icon>全部构建</el-button>-->
-        <el-button size="default" type="danger" class="ml10" @click="onStopBuild()"><el-icon><ele-SwitchButton /></el-icon>停止构建</el-button>
       </el-header>
       <!--应用列表-->
       <el-container>
         <el-main style="padding: 0;overflow: hidden;">
           <el-space wrap style="align-items: unset;">
-            <el-card shadow="hover" v-for="(v, k) in state.tableData.data" :key="k" style="width: 270px;">
+            <el-card shadow="hover" v-for="(v, k) in state.tableData.data" :key="k" style="width: 270px;"  class="appItemCard">
               <template #header>
                 <div class="card-header" style="height: 20px;">
                   <el-tag size="default" @click="onOpenEdit('edit', v)" style="cursor: pointer;">{{ v.AppName }}</el-tag>
                   <el-button size="small" type="warning" @click="onRestartDocker(v)" style="float:right;position: relative;"><el-icon><ele-SwitchButton /></el-icon>重启</el-button>
                   <el-tooltip content="实例数量/副本数量" slot="label">
-                    <el-tag v-if="v.IsHealth" size="small" style="margin-left: 5px">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
-                    <el-tag v-else size="small" type="danger" style="margin-left: 5px">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
+                    <el-tag @click="showDockerTag(v,1)" v-if="v.IsHealth" size="small" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
+                    <el-tag @click="showDockerTag(v,2)" v-else size="small" type="danger" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                   </el-tooltip>
                 </div>
               </template>
-                <el-button size="small" type="success" @click="showFsLogLevel(2,v.AppName)" style="float:right;position: relative;margin-left: 5px">应用日志</el-button>
-                <el-button size="small" type="primary" @click="showDockerLog(v.AppName)" style="float:right;position: relative;margin-left: 5px">容器日志</el-button>
-
-                <div class="appItem" style="margin-bottom: 10px">仓库版本
+                <div class="appItem" style="margin-bottom: 10px">
+                  <div style="display: flex;justify-content: space-between;align-items: center;">
+                    <span>仓库版本</span>
+                    <div>
+                      <el-button size="small" type="primary" @click="showDockerLog(v.AppName)" >容器日志</el-button>
+                      <el-button size="small" type="success" @click="showFsLogLevel(2,v.AppName)" >应用日志</el-button>
+                    </div>
+                  </div>
                   <div class="appItem">
                     <el-tag v-if="v.DockerImage !=''" size="small">{{ v.DockerImage }}</el-tag>
                     <el-tag v-else size="small">未构建</el-tag>
@@ -71,16 +74,18 @@
                   <el-tag v-else @click="showTask(3,v.AppName)" type="info" size="small" style="margin-left: 5px;cursor: pointer">{{ v.TaskFailCount }}</el-tag>
                 </el-tooltip>
               </div>
-              <el-button v-if="v.AppGit > 0" size="small" @click="onSyncWorkflows(v)" type="info" style="margin-left: 5px;width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>
-              <div class="appItem">构建
-                <el-button v-if="v.AppGit > 0" v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v,item)" type="danger" style="margin-left: 5px;margin-bottom: 5px;">{{item}}</el-button>
+              <div v-if="v.AppGit > 0" style="display: flex;align-items: center;justify-content: center;padding: 0 10px;">
+                <el-button size="small" @click="onSyncWorkflows(v)" type="info" style="width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>
+              </div>
+              <div class="appItem appItem1">构建
+                <el-button v-if="v.AppGit > 0" v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v,item)" type="danger" style="margin-left: 5px;">{{item}}</el-button>
               </div>
             </el-card>
           </el-space>
         </el-main>
         <el-aside width="480px">
           <el-card>
-            <h3 style="padding: 5px;">构建队列</h3>
+            <h3 style="padding: 5px;">构建队列 <el-button size="small" type="danger" class="ml10" @click="onStopBuild(0)" style="float: right"><el-icon><ele-SwitchButton /></el-icon>停止</el-button></h3>
             <template v-if="state.tableLogData.data.length > 0">
               <el-table  :data="state.tableLogData.data" v-loading="state.tableLogData.loading" style="width: 100%;background: #ffffff;" :cell-style="{padding:'2px 0'}">
                 <el-table-column prop="FinishAt" width="140" label="构建时间"></el-table-column>
@@ -97,6 +102,7 @@
                 <el-table-column label="操作" width="80">
                   <template #default="scope">
                     <el-button v-if="scope.row.Status!=0" size="small" type="success" @click="showBuildLog(scope.row)">日志</el-button>
+                    <el-button v-else size="small" type="danger" @click="onStopBuild(scope.row.Id)">停止</el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -124,7 +130,7 @@
   <appAddDialog ref="appAddDialogRef" @refresh="getTableData()" @showOverlay="onShowOverlay()" @hideOverlay="onHideOverlay()" />
   <logDialog ref="logDialogRef"  />
   <taskDialog ref="taskDialogRef"  />
-  <el-dialog title="构建日志" v-model="state.isShowBuildLogDialog" style="width: 80%;top:20px;margin-bottom: 50px;">
+  <el-dialog title="构建日志" v-model="state.isShowBuildLogDialog" style="width: 80%;top:20px;margin-bottom: 50px;" class='initdialog__body'>
     <el-checkbox v-model="state.autoLog" style="margin-bottom: 5px;">自动刷新日志</el-checkbox>
     <div class="layout-padding-auto" style="background-color:#393d49;">
       <div ref="scrollableBuildLog" style="height: 100%;overflow-y: auto;">
@@ -133,6 +139,7 @@
     </div>
   </el-dialog>
   <dockerDialog ref="dockerDialogRef"/>
+  <editAppNum ref="editAppNumRef" @refresh="getTableData()"/>
   <div v-if="state.showOverlay" class="overlay">
     <div class="overlay-content">
       <img :src="Image" style="width: 200px" alt="Image">
@@ -142,7 +149,6 @@
 </template>
 
 <script setup lang="ts" name="fopsApp">
-
 import {defineAsyncComponent, reactive, onMounted, ref, nextTick, watch, onUnmounted} from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
 import {fopsApi} from "/@/api/fops";
@@ -163,18 +169,18 @@ const taskDialog= defineAsyncComponent(() => import('/src/views/fops/task/taskAp
 // 日志
 const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logV2Dialog.vue'));
 const dockerDialog = defineAsyncComponent(() => import('/src/views/fops/task/dockerDialog.vue'));
+const editAppNum = defineAsyncComponent(() => import('/src/views/fops/build/editAppNum.vue'));
 const logDialogRef = ref();
 // 定义变量内容
 const appDialogRef = ref();
 const appAddDialogRef = ref();
 const taskDialogRef = ref();
 const scrollableBuildLog = ref();
-const scrollableDockerLog = ref();
 const dockerDialogRef = ref();
+const editAppNumRef = ref();
 const state = reactive({
   isShowBuildLogDialog: false,
   buildLogContent: '',
-  buildLogContents: '',
 	tableData: {
 		data: [],
 		total: 0,
@@ -189,7 +195,7 @@ const state = reactive({
     loading: false,
     param: {
       pageNum: 1,
-      pageSize: 20,
+      pageSize: 22,
     },
 
   },
@@ -202,15 +208,19 @@ const state = reactive({
   autoLog:true,
 });
 
-const showDockerLog = (AppName) => {
+const showDockerLog = (AppName:any) => {
     dockerDialogRef.value.openDockerLog(AppName);
+}
+const showDockerTag = (row:any,type:any) =>{
+  editAppNumRef.value.openDialog(row,type);
 }
 // 初始化表格数据
 const getTableData = () => {
 	state.tableData.loading = true;
-  var param={
-    "ClusterId" : state.clusterId,
-  }
+  let param = {
+    "ClusterId": state.clusterId,
+    "IsSys": false,
+  };
   // 获取应用列表
   serverApi.appsList(param).then(function (res){
     if (res.Status) {
@@ -325,8 +335,6 @@ let intervalId = null;
 watch(() => state.isShowBuildLogDialog, (newValue, oldValue) => {
   if(!newValue){
     clearInterval(intervalId);
-  }else {
-    intervalId = setInterval(onShowLog, 500);
   }
 });
 
@@ -335,7 +343,19 @@ const showBuildLog=(row:any)=>{
   state.buildLogId = row.Id
   serverApi.buildLog(state.buildLogId.toString()).then(function (res){
     state.buildLogContent = res
-    state.isShowBuildLogDialog=true
+    state.isShowBuildLogDialog= true;
+    setTimeout(() => {   //自动跳到底部 
+        scrollableBuildLog.value.scrollTop = scrollableBuildLog.value.scrollHeight;
+        }, 500)
+    if(row.Status == 2){
+      state.autoLog = false
+    }else{
+      state.autoLog= true
+      clearInterval(intervalId);
+      intervalId = setInterval(onShowLog, 500);
+    }
+   
+    
   })
 }
 
@@ -343,13 +363,18 @@ const showBuildLog=(row:any)=>{
 const onShowLog=()=>{
   serverApi.buildLog(state.buildLogId.toString()).then(function (res) {
     // 如果从接口获取到的内容与本地内容一样时，则不用滚动
-    let isChange= state.buildLogContents != res;
+   if(state.buildLogContent != res){
     state.buildLogContent = res;
-    state.buildLogContents = res;
     // 自动刷新日志
-    if (state.autoLog && isChange) {
+    // console.log(state.autoLog)
+    if (state.autoLog ) {
+      setTimeout(() => {   //自动跳到底部 
         scrollableBuildLog.value.scrollTop = scrollableBuildLog.value.scrollHeight;
+        }, 500)
+       
     }
+   }
+    
   })
 }
 
@@ -427,7 +452,8 @@ const onRestartDocker = (row:any) => {
           }else{
             ElMessage.error(res.StatusMessage)
           }
-        })
+        }).catch(() => {
+          state.showOverlay=false});
       })
       .catch(() => {
         state.showOverlay=false});
@@ -493,7 +519,7 @@ const onBuildAddFunc = (row:any) => {
     })
 };
 // 停止构建
-const onStopBuild=()=>{
+const onStopBuild=(rowId: any)=>{
   ElMessageBox.confirm(`请确认是否停止构建?`, '提示', {
     confirmButtonText: '确认',
     cancelButtonText: '取消',
@@ -501,7 +527,7 @@ const onStopBuild=()=>{
   })
       .then(() => {
         // 提交数据
-        var param={ }
+        var param={ "buildId": rowId }
         serverApi.buildStop(param).then(async function(res){
           if(res.Status){
             ElMessage.success("成功停止")
@@ -530,8 +556,13 @@ onUnmounted(()=>{
   clearInterval(intervalAppId);
 })
 </script>
-
 <style lang="scss">
+.initdialog__body {
+    :deep(.el-dialog__body) {
+    display: flex;
+    flex-flow: column;
+   }
+  }
 .system-user-container {
 	:deep(.el-card__body) {
 		display: flex;
@@ -619,6 +650,21 @@ onUnmounted(()=>{
 }
 .appItem{
   margin: 10px;
+}
+.appItem2{
+  margin-top: 5px !important;
+}
+.appItem1{
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+.appItemCard{
+  display: flex;
+  flex-flow: column;
+}
+.appItemCard .el-card__body{
+  padding: 0;
 }
 .el-row{
   margin: 0!important;

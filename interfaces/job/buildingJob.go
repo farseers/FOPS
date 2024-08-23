@@ -11,15 +11,16 @@ import (
 func BuildingJob(*tasks.TaskContext) {
 	appsRepository := container.Resolve[apps.Repository]()
 	buildEO := appsRepository.GetUnBuildInfo()
-	if traceContext := trace.CurTraceContext.Get(); traceContext != nil && buildEO.IsNil() {
-		traceContext.Ignore()
+	if buildEO.IsNil() {
+		if traceContext := trace.CurTraceContext.Get(); traceContext != nil {
+			traceContext.Ignore()
+		}
 		return
 	}
 
-	appDO := appsRepository.ToEntity(buildEO.AppName)
 	// 应用不存在
-	if appDO.IsNil() {
-		appsRepository.SetCancel(buildEO.Id, apps.EnvVO{}, nil)
+	if appDO := appsRepository.ToEntity(buildEO.AppName); appDO.IsNil() {
+		appsRepository.SetCancel(buildEO.Id, apps.EnvVO{})
 		return
 	}
 

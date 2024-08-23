@@ -99,9 +99,9 @@ func (receiver *BuildEO) StartBuild() {
 	}))
 
 	// 设置镜像的代理
-	if receiver.WorkflowsAction.Proxy != "" {
-		receiver.WorkflowsAction.Env["HTTP_PROXY"] = receiver.WorkflowsAction.Proxy
-		receiver.WorkflowsAction.Env["HTTPS_PROXY"] = receiver.WorkflowsAction.Proxy
+	if receiver.WorkflowsAction.With["proxy"] != "" {
+		receiver.WorkflowsAction.Env["HTTP_PROXY"] = parse.ToString(receiver.WorkflowsAction.With["proxy"])
+		receiver.WorkflowsAction.Env["HTTPS_PROXY"] = parse.ToString(receiver.WorkflowsAction.With["proxy"])
 	}
 
 	// 加载环境变量提示
@@ -233,18 +233,15 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 		return false
 	}
 
-	//if proxyAgent := configure.GetString("Fops.Proxy"); proxyAgent != "" {
-	//	receiver.WorkflowsAction.Steps = append([]stepVO{
-	//		{
-	//			Name:              "开启Git代理",
-	//			ActionName:        "gitProxy",
-	//			ActionVer:         "v1",
-	//			ActionDownloadUrl: "https://github.com/farseers/FOPS-Actions/releases/download/v1/gitProxy",
-	//			RepositoryName:    "farseers/FOPS-Actions",
-	//			With:              map[string]any{"proxy": proxyAgent},
-	//		},
-	//	}, receiver.WorkflowsAction.Steps...)
-	//}
+	receiver.WorkflowsAction.Steps = append([]stepVO{
+		{
+			Name:              "开启Git代理",
+			ActionName:        "gitProxy",
+			ActionVer:         "v1",
+			ActionDownloadUrl: "https://github.com/farseers/FOPS-Actions/releases/download/v1/gitProxy",
+			RepositoryName:    "farseers/FOPS-Actions",
+		},
+	}, receiver.WorkflowsAction.Steps...)
 
 	receiver.WorkflowsAction.Steps = append([]stepVO{
 		{

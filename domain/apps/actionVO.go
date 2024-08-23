@@ -27,10 +27,10 @@ type ActionVO struct {
 	Name       string  // 工作流名称
 	ClusterIds []int64 // 归属集群Id
 	RunsOn     string  // 基础镜像系统
-	Proxy      string  // 代理
-	Env        map[string]string
-	With       map[string]any // 全局参数
-	Steps      []stepVO       // 步骤
+	//Proxy      string  // 代理（jobs.build.proxy -> Fops.Proxy）
+	Env   map[string]string
+	With  map[string]any // 全局参数
+	Steps []stepVO       // 步骤
 }
 
 func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysWith map[string]any) (ActionVO, error) {
@@ -60,16 +60,18 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 	if with == nil {
 		with = make(map[string]any)
 	}
+
 	act := ActionVO{
-		Name:   strings.TrimSpace(parse.ToString(name)),
-		Proxy:  strings.TrimSpace(parse.ToString(proxy)),
+		Name: strings.TrimSpace(parse.ToString(name)),
+		//Proxy:  strings.TrimSpace(parse.ToString(proxy)),
 		RunsOn: strings.TrimSpace(parse.ToString(sysImage)),
 		With:   with,
 		Env:    make(map[string]string),
 	}
 	// 如果工作流没定义proxy，则使用系统的代理
-	if act.Proxy == "" {
-		act.Proxy = configure.GetString("Fops.Proxy")
+	act.With["proxy"] = strings.TrimSpace(parse.ToString(proxy))
+	if act.With["proxy"] == "" {
+		act.With["proxy"] = configure.GetString("Fops.Proxy")
 	}
 	for _, clusterId := range clusterIds {
 		act.ClusterIds = append(act.ClusterIds, parse.ToInt64(clusterId))
@@ -83,7 +85,7 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 	//if index := strings.Index(act.Proxy, "//"); index > -1 {
 	//	act.Proxy = act.Proxy[index+2:]
 	//}
-	act.With["proxy"] = act.Proxy
+	//act.With["proxy"] = act.Proxy
 
 	// 运行steps
 	if steps, existsSteps := workflowsYml.Get("jobs.build.steps"); existsSteps {

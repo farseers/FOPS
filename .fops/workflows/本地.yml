@@ -37,6 +37,7 @@ jobs:
 
       - name: 编译
         run:
+          - env
           - unset HTTPS_PROXY
           - unset HTTP_PROXY
           - rm -rf ./go.work
@@ -64,6 +65,7 @@ jobs:
 
       - name: 编译前端
         run:
+          - env
 #          - unset HTTPS_PROXY
 #          - unset HTTP_PROXY
           - mkdir wwwroot

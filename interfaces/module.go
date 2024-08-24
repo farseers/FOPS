@@ -6,12 +6,15 @@ import (
 	"fops/domain/_/eumBuildStatus"
 	"fops/domain/apps"
 	"fops/domain/apps/event"
+	configure2 "fops/domain/configure"
 	"fops/interfaces/job"
+	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/modules"
 	"github.com/farseer-go/tasks"
 	"github.com/farseer-go/webapi"
+	"os"
 	"time"
 )
 
@@ -41,5 +44,12 @@ func (module Module) PostInitialize() {
 		// 发布事件
 		event.BuildFinishedEvent{AppName: appEO.AppName, BuildId: buildEO.Id, ClusterId: buildEO.ClusterId, IsSuccess: true}.PublishEvent()
 		container.Resolve[apps.Repository]().SetSuccessForFops(buildEO.Id)
+	}
+
+	// 替换Fops.Proxy的值
+	if configure.GetString("Fops.Proxy") == "global.proxy" {
+		configureDO := container.Resolve[configure2.Repository]().ToEntityByKey("global", "proxy")
+		_ = os.Setenv("Fops_Proxy", configureDO.Value)
+		flog.Infof("使用配置管理global.proxy的代理设置：%s", configureDO.Value)
 	}
 }

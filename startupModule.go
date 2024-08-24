@@ -2,12 +2,15 @@ package main
 
 import (
 	"fops/domain/apps"
+	configure2 "fops/domain/configure"
 	"fops/infrastructure"
 	"fops/interfaces"
 	"github.com/farseer-go/fs/configure"
+	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/modules"
 	"github.com/farseer-go/utils/exec"
+	"os"
 )
 
 type StartupModule struct {
@@ -24,6 +27,13 @@ func (module StartupModule) Initialize() {
 }
 
 func (module StartupModule) PostInitialize() {
+	// 替换Fops.Proxy的值
+	if configure.GetString("Fops.Proxy") == "global.proxy" {
+		configureDO := container.Resolve[configure2.Repository]().ToEntityByKey("global", "proxy")
+		_ = os.Setenv("Fops_Proxy", configureDO.Value)
+		flog.Infof("使用配置管理global.proxy的代理设置：%s", configureDO.Value)
+	}
+
 	// 使用git代理
 	receiveOutput := make(chan string, 100)
 	if proxyAgent := configure.GetString("Fops.Proxy"); proxyAgent != "" {

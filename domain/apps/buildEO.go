@@ -233,18 +233,18 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 		receiver.logQueue.progress <- err.Error()
 		return false
 	}
-
-	receiver.WorkflowsAction.Steps = append([]stepVO{
-		{
-			Name:              "开启Git代理",
-			ActionName:        "gitProxy",
-			ActionVer:         "v1",
-			ActionDownloadUrl: "https://github.com/farseers/FOPS-Actions/releases/download/v1/gitProxy",
-			RepositoryName:    "farseers/FOPS-Actions",
-			With:              make(map[string]any),
-		},
-	}, receiver.WorkflowsAction.Steps...)
-
+	if receiver.WorkflowsAction.With["proxy"] != "" {
+		receiver.WorkflowsAction.Steps = append([]stepVO{
+			{
+				Name:              "开启Git代理",
+				ActionName:        "gitProxy",
+				ActionVer:         "v1",
+				ActionDownloadUrl: "https://github.com/farseers/FOPS-Actions/releases/download/v1/gitProxy",
+				RepositoryName:    "farseers/FOPS-Actions",
+				With:              make(map[string]any),
+			},
+		}, receiver.WorkflowsAction.Steps...)
+	}
 	receiver.WorkflowsAction.Steps = append([]stepVO{
 		{
 			Name:              "初始化环境",

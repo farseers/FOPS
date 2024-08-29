@@ -38,7 +38,6 @@ func (module Module) PostInitialize() {
 
 	// 注册驱动
 	device.RegisterDockerDevice()
-	device.RegisterDockerSwarmDevice()
 	device.RegisterKubectlDevice()
 	device.RegisterGitDevice()
 

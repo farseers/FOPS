@@ -3,6 +3,7 @@ package job
 import (
 	"fops/domain/apps"
 	"fops/domain/cluster"
+	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/tasks"
@@ -10,14 +11,14 @@ import (
 
 // CollectsClusterJob 3秒收集一次Docker集群信息
 func CollectsClusterJob(*tasks.TaskContext) {
-	dockerSwarmDevice := container.Resolve[apps.IDockerSwarmDevice]()
 	appsRepository := container.Resolve[apps.Repository]()
 	clusterRepository := container.Resolve[cluster.Repository]()
 
 	// 收集所有节点的信息
-	nodeList := dockerSwarmDevice.NodeList()
-	nodeList.Foreach(func(node *apps.DockerNodeVO) {
-		vo := dockerSwarmDevice.NodeInfo(node.NodeName)
+	client, _ := docker.NewClient()
+	nodeList := client.Node.List()
+	nodeList.Foreach(func(node *docker.DockerNodeVO) {
+		vo := client.Node.Info(node.NodeName)
 		node.IP = vo.IP
 		node.OS = vo.OS
 		node.Architecture = vo.Architecture
@@ -29,12 +30,12 @@ func CollectsClusterJob(*tasks.TaskContext) {
 	// 获取本地集群信息
 	localCluster := clusterRepository.GetLocalCluster()
 	// 收集所有服务的运行情况
-	serviceList := dockerSwarmDevice.ServiceList()
+	serviceList := client.Service.List()
 	// 如果服务不存在，则添加到列表中，用于更新到数据库中，指明服务的实例为0
 	lstApp := appsRepository.ToList()
 
 	// 先把fops中的应用缺少的给补上
-	serviceList.Foreach(func(item *apps.DockerServiceVO) {
+	serviceList.Foreach(func(item *docker.ServiceListVO) {
 		appDO := lstApp.Find(func(appDO *apps.DomainObject) bool {
 			return appDO.AppName == item.Name
 		})
@@ -51,7 +52,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 	})
 
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
-		dockerService := serviceList.Find(func(item *apps.DockerServiceVO) bool {
+		dockerService := serviceList.Find(func(item *docker.ServiceListVO) bool {
 			return item.Name == appDO.AppName
 		})
 		// 应用没有启用容器服务，跳过

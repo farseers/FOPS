@@ -9,6 +9,7 @@ import (
 	"fops/infrastructure/repository/model"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/data"
+	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/mapper"
@@ -87,7 +88,7 @@ func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.Doma
 }
 
 // UpdateClusterNode 更新集群节点信息
-func (receiver *appsRepository) UpdateClusterNode(lst collections.List[apps.DockerNodeVO]) {
+func (receiver *appsRepository) UpdateClusterNode(lst collections.List[docker.DockerNodeVO]) {
 	lstPO := mapper.ToList[model.ClusterNodePO](lst)
 	lstPO.Foreach(func(item *model.ClusterNodePO) {
 		item.UpdateAt = dateTime.Now()
@@ -103,7 +104,7 @@ func (receiver *appsRepository) UpdateClusterNode(lst collections.List[apps.Dock
 	})
 }
 
-func (receiver *appsRepository) GetClusterNodeList() collections.List[apps.DockerNodeVO] {
+func (receiver *appsRepository) GetClusterNodeList() collections.List[docker.DockerNodeVO] {
 	lstPO := context.MysqlContext.ClusterNode.Desc("is_master").ToList()
-	return mapper.ToList[apps.DockerNodeVO](lstPO)
+	return mapper.ToList[docker.DockerNodeVO](lstPO)
 }

@@ -9,6 +9,7 @@ import (
 	"fops/domain/fSchedule"
 	"fops/domain/logData"
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/core/eumLogLevel"
 	"github.com/farseer-go/fs/dateTime"
@@ -39,25 +40,20 @@ func Add(req request.AddRequest, appsRepository apps.Repository) {
 // Update 修改应用
 // @post update
 // @filter application.Jwt
-func Update(req request.UpdateRequest, appsRepository apps.Repository, appsIDockerSwarmDevice apps.IDockerSwarmDevice) {
+func Update(req request.UpdateRequest, appsRepository apps.Repository) {
 	do := appsRepository.ToEntity(req.AppName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 
-	if appsIDockerSwarmDevice.ExistsDocker(req.AppName) {
+	client, _ := docker.NewClient()
+	if exists, err := client.Service.Exists(req.AppName); exists || err != nil {
 		// 更新镜像
 		if (req.ClusterDockerImage != "" && do.ClusterVer[req.ClusterId] != nil && req.ClusterDockerImage != do.ClusterVer[req.ClusterId].DockerImage) || do.DockerReplicas != req.DockerReplicas {
-			c := make(chan string, 100)
-			if !appsIDockerSwarmDevice.SetImagesAndReplicas(cluster.DomainObject{}, req.AppName, req.ClusterDockerImage, req.DockerReplicas, c) {
-				lstLog := collections.NewListFromChan(c)
-				exception.ThrowWebExceptionf(403, "更新镜像失败:<br />%s", lstLog.ToString("<br />"))
-			}
+			err = client.Service.SetImagesAndReplicas(req.AppName, req.ClusterDockerImage, req.DockerReplicas)
+			exception.ThrowWebExceptionError(403, err)
 		} else if do.DockerReplicas != req.DockerReplicas {
 			// 更新副本数量
-			c := make(chan string, 100)
-			if !appsIDockerSwarmDevice.SetReplicas(cluster.DomainObject{}, req.AppName, req.DockerReplicas, c) {
-				lstLog := collections.NewListFromChan(c)
-				exception.ThrowWebExceptionf(403, "更新副本失败:<br />%s", lstLog.ToString("<br />"))
-			}
+			err = client.Service.SetReplicas(req.AppName, req.DockerReplicas)
+			exception.ThrowWebExceptionError(403, err)
 		}
 	}
 
@@ -87,14 +83,19 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, appsIDock
 // Delete 删除应用
 // @post delete
 // @filter application.Jwt
-func Delete(appName string, appsRepository apps.Repository, appsIDockerSwarmDevice apps.IDockerSwarmDevice) {
+func Delete(appName string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(strings.Trim(appName, "") == "", 403, "参数不完整")
 	// 删除服务
-	c := make(chan string, 100)
-	appsIDockerSwarmDevice.DeleteService(appName, c)
+	client, _ := docker.NewClient()
+	exists, err := client.Service.Exists(appName)
+	// 当err!=nil时，也认为服务是存在的。
+	if exists || err != nil {
+		err = client.Service.Delete(appName)
+		exception.ThrowWebExceptionError(403, err)
+	}
 
 	// 删除应用
-	_, err := appsRepository.Delete(appName)
+	_, err = appsRepository.Delete(appName)
 	exception.ThrowWebExceptionError(403, err)
 }
 

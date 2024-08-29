@@ -10,6 +10,7 @@ exclude github.com/timandy/routine v1.1.3
 require (
 	github.com/docker/docker v27.2.0+incompatible
 	github.com/farseer-go/collections v0.14.0
+	github.com/farseer-go/docker v0.14.0
 	github.com/farseer-go/data v0.14.0
 	github.com/farseer-go/data/driver/clickhouse v0.14.0
 	github.com/farseer-go/elasticSearch v0.14.0

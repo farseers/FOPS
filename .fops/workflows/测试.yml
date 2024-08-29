@@ -33,6 +33,7 @@ jobs:
           - rm -rf ./go.work
           - go work init ./
           - go work edit -replace github.com/farseer-go/fs=../farseer-go/fs
+          - go work edit -replace github.com/farseer-go/docker=../farseer-go/docker
           - go work edit -replace github.com/farseer-go/data=../farseer-go/data
           - go work edit -replace github.com/farseer-go/data/driver/clickhouse=../farseer-go/data/driver/clickhouse
           - go work edit -replace github.com/farseer-go/mapper=../farseer-go/mapper

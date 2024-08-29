@@ -7,6 +7,7 @@ import (
 	"fops/domain/apps"
 	"fops/domain/apps/event"
 	"fops/interfaces/job"
+	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/modules"
@@ -23,7 +24,8 @@ func (module Module) DependsModule() []modules.FarseerModule {
 }
 
 func (module Module) PostInitialize() {
-	dockerVer := container.Resolve[apps.IDockerDevice]().GetVersion()
+	client, _ := docker.NewClient()
+	dockerVer := client.GetVersion()
 	if dockerVer != "" {
 		tasks.Run("开启构建", time.Second*1, job.BuildingJob, context.Background())
 		flog.Info("Docker version：" + flog.Blue(dockerVer))

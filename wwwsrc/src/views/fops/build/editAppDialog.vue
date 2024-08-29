@@ -30,6 +30,7 @@
             <el-select v-model="state.ruleForm.DockerNodeRoleInt" placeholder="请输入容器节点角色" class="ml10" style="max-width: 150px;" size="default">
               <el-option label="manager" :value="0"></el-option>
               <el-option label="worker" :value="1"></el-option>
+              <el-option label="global" :value="2"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="容器参数">

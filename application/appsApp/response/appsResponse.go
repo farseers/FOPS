@@ -17,7 +17,7 @@ type AppsResponse struct {
 	IsHealth          bool                    // 应用是否健康
 	DockerInstances   int                     // 运行的实例数量
 	DockerReplicas    int                     // 副本数量
-	DockerNodeRole    string                  // 容器节点角色 manager or worker
+	DockerNodeRole    string                  // 容器节点角色 manager or worker or global
 	AdditionalScripts string                  // 首次创建应用时附加脚本
 	LogErrorCount     int                     // 日志错误数量
 	LogWaringCount    int                     // 日志警告数量

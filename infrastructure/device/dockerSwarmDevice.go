@@ -105,7 +105,15 @@ func (dockerSwarmDevice) CreateService(appName, dockerNodeRole, additionalScript
 
 	var sb bytes.Buffer
 	sb.WriteString("docker service create --with-registry-auth --mount type=bind,src=/etc/localtime,dst=/etc/localtime")
-	sb.WriteString(fmt.Sprintf(" --name %s --replicas %v -d --network=%s --constraint node.role==%s", appName, dockerReplicas, dockerNetwork, dockerNodeRole))
+	sb.WriteString(fmt.Sprintf(" --name %s --replicas %v -d --network=%s", appName, dockerReplicas, dockerNetwork))
+
+	// 所有节点都要运行
+	if dockerNodeRole == "global" {
+		sb.WriteString(" --mode global")
+	} else {
+		sb.WriteString(fmt.Sprintf(" --constraint node.role==%s", dockerNodeRole))
+	}
+
 	if limitCpus > 0 {
 		sb.WriteString(fmt.Sprintf(" --limit-cpu=%f", limitCpus))
 	}

@@ -16,7 +16,7 @@ type DomainObject struct {
 	DockerfilePath    string                  // Dockerfile路径
 	DockerInstances   int                     // 运行的实例数量
 	DockerReplicas    int                     // 副本数量
-	DockerNodeRole    string                  // 容器节点角色 manager or worker
+	DockerNodeRole    string                  // 容器节点角色 manager or worker or global
 	AdditionalScripts string                  // 首次创建应用时附加脚本
 	LimitCpus         float64                 // Cpu核数限制
 	LimitMemory       string                  // 内存限制

@@ -8,6 +8,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/container"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/str"
 	"path"
@@ -147,9 +148,15 @@ func (dockerDevice) ClearImages(progress chan string) bool {
 func (dockerDevice) GetVersion() string {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
+		flog.Warning(err.Error())
 		return ""
 	}
-	return cli.ClientVersion()
+	version, err := cli.ServerVersion(context.Background())
+	if err != nil {
+		flog.Warning(err.Error())
+		return ""
+	}
+	return version.KernelVersion
 	//receiveOutput := make(chan string, 100)
 	//exec.RunShell("docker version --format '{{.Server.Version}}'", receiveOutput, nil, "", false)
 	//lst := collections.NewListFromChan(receiveOutput)

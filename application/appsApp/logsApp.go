@@ -31,7 +31,7 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 		if item.Error != "" {
 			containerInspectJson, _ := client.Container.Inspect(item.Id)
 			if len(containerInspectJson) > 0 {
-				logs.Insert(0, containerInspectJson[0].Status.Err)
+				item.Error = containerInspectJson[0].Status.Err
 			}
 		}
 

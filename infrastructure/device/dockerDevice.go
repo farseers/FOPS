@@ -5,12 +5,12 @@ import (
 	"context"
 	"fmt"
 	"fops/domain/apps"
+	"github.com/docker/docker/client"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/str"
 	"path"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -91,24 +91,39 @@ func (device dockerDevice) Copy(dockerName string, sourceFile, destFile string, 
 }
 
 func (dockerDevice) ExistsDocker(dockerName string) bool {
-	progress := make(chan string, 1000)
-	// docker inspect fops
-	var exitCode = exec.RunShell(fmt.Sprintf("docker inspect %s", dockerName), progress, nil, "", false)
-	lst := collections.NewListFromChan(progress)
-	if exitCode != 0 {
-		if lst.Contains("[]") && lst.ContainsPrefix("Error: No such object:") {
-			return false
-		}
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
 		return false
 	}
-	if lst.Contains("[]") && lst.ContainsPrefix("Error: No such object:") {
+	inspect, err := cli.ContainerInspect(context.Background(), dockerName)
+	if err != nil {
 		return false
 	}
-	return lst.ContainsAny(fmt.Sprintf("\"Name\": \"/%s\",", dockerName))
+	return inspect.Name == dockerName
+
+	//progress := make(chan string, 1000)
+	//// docker inspect fops
+	//var exitCode = exec.RunShell(fmt.Sprintf("docker inspect %s", dockerName), progress, nil, "", false)
+	//lst := collections.NewListFromChan(progress)
+	//if exitCode != 0 {
+	//	if lst.Contains("[]") && lst.ContainsPrefix("Error: No such object:") {
+	//		return false
+	//	}
+	//	return false
+	//}
+	//if lst.Contains("[]") && lst.ContainsPrefix("Error: No such object:") {
+	//	return false
+	//}
+	//return lst.ContainsAny(fmt.Sprintf("\"Name\": \"/%s\",", dockerName))
 }
 
 func (dockerDevice) Kill(dockerName string) {
-	exec.RunShell(fmt.Sprintf("docker kill %s", dockerName), make(chan string, 1000), nil, "", false)
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return
+	}
+	_ = cli.ContainerKill(context.Background(), dockerName, "")
+	//exec.RunShell(fmt.Sprintf("docker kill %s", dockerName), make(chan string, 1000), nil, "", false)
 }
 
 func (dockerDevice) Remove(dockerName string) {
@@ -130,16 +145,21 @@ func (dockerDevice) ClearImages(progress chan string) bool {
 }
 
 func (dockerDevice) GetVersion() string {
-	receiveOutput := make(chan string, 100)
-	exec.RunShell("docker version --format '{{.Server.Version}}'", receiveOutput, nil, "", false)
-	lst := collections.NewListFromChan(receiveOutput)
-	re := regexp.MustCompile(`^\d+\.\d+\.\d+$`)
-	for _, s := range lst.ToArray() {
-		if re.MatchString(s) {
-			return s
-		}
+	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
+	if err != nil {
+		return ""
 	}
-	return ""
+	return cli.ClientVersion()
+	//receiveOutput := make(chan string, 100)
+	//exec.RunShell("docker version --format '{{.Server.Version}}'", receiveOutput, nil, "", false)
+	//lst := collections.NewListFromChan(receiveOutput)
+	//re := regexp.MustCompile(`^\d+\.\d+\.\d+$`)
+	//for _, s := range lst.ToArray() {
+	//	if re.MatchString(s) {
+	//		return s
+	//	}
+	//}
+	//return ""
 }
 
 func (dockerDevice) Login(dockerHub string, loginName string, loginPwd string, progress chan string) bool {
@@ -172,4 +192,15 @@ func (dockerDevice) Logs(appName string, tailCount int) collections.List[string]
 		lst.Insert(0, "获取日志失败。")
 	}
 	return lst
+}
+
+func (dockerDevice) Inspect(containerId string) {
+	//progress := make(chan string, 1000)
+	//// docker inspect r6r8uboagmln
+	//var exitCode = exec.RunShell(fmt.Sprintf("docker inspect %s", containerId), progress, nil, "", true)
+	//lst := collections.NewListFromChan(progress)
+	//if exitCode != 0 {
+	//	lst.Insert(0, "获取日志失败。")
+	//}
+	//return lst
 }

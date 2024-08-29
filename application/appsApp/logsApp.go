@@ -32,6 +32,11 @@ func DockerSwarm(appName string, tailCount int, appsIDockerSwarmDevice apps.IDoc
 			DockerInstanceVO: *item,
 			Log:              logs,
 		})
+
+		// 有错误时，则通过docker inspect r6r8uboagmln 获取错误详情
+		if item.Error != "" {
+
+		}
 	})
 	return rsp
 }

@@ -31,7 +31,6 @@ func Add(req request.AddRequest, appsRepository apps.Repository) {
 	if strings.HasSuffix(do.AdditionalScripts, "\\") {
 		do.AdditionalScripts = do.AdditionalScripts[:len(do.AdditionalScripts)-1]
 	}
-
 	// 添加
 	err := appsRepository.Add(do)
 	exception.ThrowWebExceptionError(403, err)

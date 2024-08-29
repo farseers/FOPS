@@ -44,19 +44,21 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, appsIDock
 	do := appsRepository.ToEntity(req.AppName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 
-	// 更新镜像
-	if (req.ClusterDockerImage != "" && do.ClusterVer[req.ClusterId] != nil && req.ClusterDockerImage != do.ClusterVer[req.ClusterId].DockerImage) || do.DockerReplicas != req.DockerReplicas {
-		c := make(chan string, 100)
-		if !appsIDockerSwarmDevice.SetImagesAndReplicas(cluster.DomainObject{}, req.AppName, req.ClusterDockerImage, req.DockerReplicas, c) {
-			lstLog := collections.NewListFromChan(c)
-			exception.ThrowWebExceptionf(403, "更新镜像失败:<br />%s", lstLog.ToString("<br />"))
-		}
-	} else if do.DockerReplicas != req.DockerReplicas {
-		// 更新副本数量
-		c := make(chan string, 100)
-		if !appsIDockerSwarmDevice.SetReplicas(cluster.DomainObject{}, req.AppName, req.DockerReplicas, c) {
-			lstLog := collections.NewListFromChan(c)
-			exception.ThrowWebExceptionf(403, "更新副本失败:<br />%s", lstLog.ToString("<br />"))
+	if appsIDockerSwarmDevice.ExistsDocker(req.AppName) {
+		// 更新镜像
+		if (req.ClusterDockerImage != "" && do.ClusterVer[req.ClusterId] != nil && req.ClusterDockerImage != do.ClusterVer[req.ClusterId].DockerImage) || do.DockerReplicas != req.DockerReplicas {
+			c := make(chan string, 100)
+			if !appsIDockerSwarmDevice.SetImagesAndReplicas(cluster.DomainObject{}, req.AppName, req.ClusterDockerImage, req.DockerReplicas, c) {
+				lstLog := collections.NewListFromChan(c)
+				exception.ThrowWebExceptionf(403, "更新镜像失败:<br />%s", lstLog.ToString("<br />"))
+			}
+		} else if do.DockerReplicas != req.DockerReplicas {
+			// 更新副本数量
+			c := make(chan string, 100)
+			if !appsIDockerSwarmDevice.SetReplicas(cluster.DomainObject{}, req.AppName, req.DockerReplicas, c) {
+				lstLog := collections.NewListFromChan(c)
+				exception.ThrowWebExceptionf(403, "更新副本失败:<br />%s", lstLog.ToString("<br />"))
+			}
 		}
 	}
 

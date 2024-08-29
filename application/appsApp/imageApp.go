@@ -182,11 +182,13 @@ func SetReplicas(appName string, dockerReplicas int, appsRepository apps.Reposit
 	do := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 
-	// 更新副本数量
-	c := make(chan string, 100)
-	if !appsIDockerSwarmDevice.SetReplicas(cluster.DomainObject{}, appName, dockerReplicas, c) {
-		lstLog := collections.NewListFromChan(c)
-		exception.ThrowWebExceptionf(403, "更新副本失败:<br />%s", lstLog.ToString("<br />"))
+	if appsIDockerSwarmDevice.ExistsDocker(appName) {
+		// 更新副本数量
+		c := make(chan string, 100)
+		if !appsIDockerSwarmDevice.SetReplicas(cluster.DomainObject{}, appName, dockerReplicas, c) {
+			lstLog := collections.NewListFromChan(c)
+			exception.ThrowWebExceptionf(403, "更新副本失败:<br />%s", lstLog.ToString("<br />"))
+		}
 	}
 
 	do.DockerReplicas = dockerReplicas

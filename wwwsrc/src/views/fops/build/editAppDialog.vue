@@ -28,9 +28,9 @@
           </el-form-item>
           <el-form-item label="容器节点角色">
             <el-select v-model="state.ruleForm.DockerNodeRole" placeholder="请输入容器节点角色" class="ml10" style="max-width: 150px;" size="default">
-              <el-option label="manager" :value="manager"></el-option>
-              <el-option label="worker" :value="worker"></el-option>
-              <el-option label="global" :value="global"></el-option>
+              <el-option label="manager" value="manager"></el-option>
+              <el-option label="worker" value="worker"></el-option>
+              <el-option label="global" value="global"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="容器参数">
@@ -286,11 +286,11 @@ const onSubmit = () => {
     "FrameworkGits":state.ruleForm.FrameworkGits,
     "DockerfilePath":state.ruleForm.DockerfilePath,
     "DockerReplicas":parseInt(state.ruleForm.DockerReplicas),
-    "DockerNodeRole":state.ruleForm.DockerNodeRole,
     "AdditionalScripts":state.ruleForm.AdditionalScripts,
     "WorkflowsYmlPath":state.ruleForm.WorkflowsYmlPath,
     "LimitCpus":parseFloat(state.ruleForm.LimitCpus),
     "LimitMemory":state.ruleForm.LimitMemory,
+    "DockerNodeRole":state.ruleForm.DockerNodeRole,
   }
   emit('showOverlay');
   serverApi.appsEdit(param).then(function (res){

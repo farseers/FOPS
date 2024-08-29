@@ -9,13 +9,13 @@
         <el-form-item style="float: left" label="副本数量">
           <el-input v-model="state.ruleForm.DockerReplicas" type="number" placeholder="请输入副本数量"></el-input>
         </el-form-item>
-        <el-form-item label="容器节点角色">
-          <el-select v-model="state.ruleForm.DockerNodeRole" placeholder="请输入容器节点角色" class="ml10" style="max-width: 150px;" size="default">
-            <el-option label="manager" :value="manager"></el-option>
-            <el-option label="worker" :value="worker"></el-option>
-            <el-option label="global" :value="global"></el-option>
-          </el-select>
-        </el-form-item>
+          <el-form-item label="容器节点角色">
+            <el-select v-model="state.ruleForm.DockerNodeRole" placeholder="请输入容器节点角色" class="ml10" style="max-width: 150px;" size="default">
+              <el-option label="manager" value="manager"></el-option>
+              <el-option label="worker" value="worker"></el-option>
+              <el-option label="global" value="global"></el-option>
+            </el-select>
+          </el-form-item>
         <el-form-item label="容器参数">
           <el-input v-model="state.ruleForm.AdditionalScripts" type="textarea" placeholder="容器在创建时，附加的参数" clearable></el-input>
         </el-form-item>

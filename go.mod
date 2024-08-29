@@ -20,6 +20,7 @@ require (
 	github.com/farseer-go/tasks v0.14.0
 	github.com/farseer-go/utils v0.14.0
 	github.com/farseer-go/webapi v0.14.0
+	github.com/docker/docker v27.2.0
 )
 
 require (

@@ -3,7 +3,6 @@ package device
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"fops/domain/apps"
 	"github.com/docker/docker/client"
@@ -101,9 +100,7 @@ func (dockerDevice) ExistsDocker(dockerName string) bool {
 	if err != nil {
 		return false
 	}
-	b, _ := json.Marshal(inspect)
-	flog.Info(string(b))
-	return inspect.Name == dockerName
+	return inspect.Name == "/"+dockerName
 }
 
 func (dockerDevice) Kill(dockerName string) {

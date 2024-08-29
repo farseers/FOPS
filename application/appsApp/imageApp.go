@@ -164,8 +164,10 @@ func DeleteService(appName string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(strings.Trim(appName, "") == "", 403, "参数不完整")
 	// 删除服务
 	client, _ := docker.NewClient()
-	err := client.Service.Delete(appName)
-	exception.ThrowWebExceptionError(403, err)
+	_ = client.Service.Delete(appName)
+	// 验证
+	exists, _ := client.Service.Exists(appName)
+	exception.ThrowWebExceptionBool(exists, 403, "服务删除失败")
 }
 
 func createService(client *docker.Client, clusterId int64, appName string, appsRepository apps.Repository, clusterRepository cluster.Repository) bool {

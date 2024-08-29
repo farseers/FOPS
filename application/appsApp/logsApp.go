@@ -15,7 +15,7 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 	client, _ := docker.NewClient()
 	lst := client.Service.PS(appName)
 	lstRunning := lst.Where(func(item docker.ServicePsVO) bool {
-		return item.State == "Running"
+		return item.State != "Shutdown"
 	}).ToList()
 
 	rsp := collections.NewList[response.DockerSwarmResponse]()

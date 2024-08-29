@@ -5,7 +5,6 @@ go 1.22
 toolchain go1.22.5
 
 exclude github.com/mitchellh/osext v0.0.0-20151018003038-5e2d6d41470f
-
 exclude github.com/timandy/routine v1.1.3
 
 require (
@@ -67,7 +66,7 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
-	github.com/timandy/routine v1.1.4 // indirect
+	github.com/timandy/routine v1.1.3 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.55.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.54.0 // indirect

@@ -186,7 +186,7 @@ func createService(client *docker.Client, clusterId int64, appName string, appsR
 
 		err = client.Service.Create(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, dockerImage, do.LimitCpus, do.LimitMemory)
 		exception.ThrowRefuseExceptionError(err)
-		return false
+		return true
 	}
-	return true
+	return false
 }

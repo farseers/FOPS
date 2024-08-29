@@ -3,6 +3,7 @@ package device
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"fops/domain/apps"
 	"github.com/docker/docker/client"
@@ -100,22 +101,9 @@ func (dockerDevice) ExistsDocker(dockerName string) bool {
 	if err != nil {
 		return false
 	}
+	b, _ := json.Marshal(inspect)
+	flog.Info(string(b))
 	return inspect.Name == dockerName
-
-	//progress := make(chan string, 1000)
-	//// docker inspect fops
-	//var exitCode = exec.RunShell(fmt.Sprintf("docker inspect %s", dockerName), progress, nil, "", false)
-	//lst := collections.NewListFromChan(progress)
-	//if exitCode != 0 {
-	//	if lst.Contains("[]") && lst.ContainsPrefix("Error: No such object:") {
-	//		return false
-	//	}
-	//	return false
-	//}
-	//if lst.Contains("[]") && lst.ContainsPrefix("Error: No such object:") {
-	//	return false
-	//}
-	//return lst.ContainsAny(fmt.Sprintf("\"Name\": \"/%s\",", dockerName))
 }
 
 func (dockerDevice) Kill(dockerName string) {
@@ -156,17 +144,7 @@ func (dockerDevice) GetVersion() string {
 		flog.Warning(err.Error())
 		return ""
 	}
-	return version.KernelVersion
-	//receiveOutput := make(chan string, 100)
-	//exec.RunShell("docker version --format '{{.Server.Version}}'", receiveOutput, nil, "", false)
-	//lst := collections.NewListFromChan(receiveOutput)
-	//re := regexp.MustCompile(`^\d+\.\d+\.\d+$`)
-	//for _, s := range lst.ToArray() {
-	//	if re.MatchString(s) {
-	//		return s
-	//	}
-	//}
-	//return ""
+	return version.Version
 }
 
 func (dockerDevice) Login(dockerHub string, loginName string, loginPwd string, progress chan string) bool {

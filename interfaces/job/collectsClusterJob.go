@@ -90,6 +90,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 			appDO.DockerInspect[item.Id] = &apps.DockerInspectVO{
 				//ID:        containerInspectJson[0].ID,
 				ID:        item.Id,
+				Node:      item.Node,
 				CreatedAt: containerInspectJson[0].CreatedAt.Format(time.DateTime),
 				UpdatedAt: containerInspectJson[0].UpdatedAt.Format(time.DateTime),
 				State:     containerInspectJson[0].Status.State,

@@ -11,7 +11,7 @@
                         <el-tag type="danger" size="small">manager</el-tag>
                     </div>
                     <div v-show="!item.IsMaster"><el-tag size="small">worker</el-tag></div>
-                    <div>{{ item.OS }} {{ item.CPUs }}核 {{ item.Memory }} {{ item.Architecture }}</div>
+                    <div>{{ item.OS }} {{ item.Architecture }} docker：{{ item.EngineVersion }}</div>
                     <div>
                         <el-tag effect="dark" size="small" style="margin-right: 5px;"
                             :type="item.Status == 'Ready' ? 'success' : 'danger'">{{ item.Status }}</el-tag>
@@ -22,6 +22,8 @@
                     </div>
                     <div>{{ item.IP }}</div>
                     <div>docker：{{ item.EngineVersion }}</div>
+                    <div>CPU：{{ item.CpuUsagePercent }}% {{ item.CPUs }}核</div>
+                    <div>内存：{{ item.MemoryUsagePercent }}% {{ item.MemoryUsage }}MB {{ item.Memory }}</div>
                     <!-- <div class="line" v-show="item.Label && item.Label.length>0"></div> -->
                     <el-tag class="ks" v-for="row, j in item.Label" :key="index.toString() + j.toString() + 'conly2'">
                         <div>{{ row.Name }} = {{ row.Value }}</div>

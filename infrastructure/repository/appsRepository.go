@@ -82,6 +82,15 @@ func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.Doma
 	sql.WriteString("else cluster_ver\n")
 	sql.WriteString("end \n")
 
+	// docker_inspect
+	sql.WriteString(",docker_inspect = case\n")
+	lst.Foreach(func(item *apps.DomainObject) {
+		marshal, _ := json.Marshal(item.DockerInspect)
+		sql.WriteString(fmt.Sprintf("when app_name = '%s' then '%s'\n", item.AppName, string(marshal)))
+	})
+	sql.WriteString("else docker_inspect\n")
+	sql.WriteString("end \n")
+
 	// where
 	sql.WriteString("WHERE 1=1;\n")
 	return context.MysqlContext.ExecuteSql(sql.String())

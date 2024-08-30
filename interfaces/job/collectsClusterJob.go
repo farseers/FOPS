@@ -114,10 +114,9 @@ func CollectsClusterJob(*tasks.TaskContext) {
 	})
 
 	// 找到fops-agent应用
-	fopsAgentApp := lstApp.Find(func(item *apps.DomainObject) bool {
+	if fopsAgentApp := lstApp.Find(func(item *apps.DomainObject) bool {
 		return item.AppName == "fops-agent"
-	})
-	if fopsAgentApp != nil {
+	}); fopsAgentApp != nil {
 		// 遍历部署到每个节点的IP
 		for _, dockerInspectVO := range fopsAgentApp.DockerInspect {
 			if dockerInspectVO.IP == "" {
@@ -132,7 +131,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 			}
 			// 请求对应节点的agent
 			url := fmt.Sprintf("http://%s:8888/api/host/resource", dockerInspectVO.IP)
-			resourceResponse, err := http.GetJson[core.ApiResponse[system.Resource]](url, nil, 500)
+			resourceResponse, err := http.GetJson[core.ApiResponse[system.Resource]](url, nil, 2000)
 			if err != nil {
 				flog.Warningf("请求：[%s]%s，失败：%s", node.NodeName, url, err.Error())
 			} else {

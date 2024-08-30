@@ -88,7 +88,6 @@ func CollectsClusterJob(*tasks.TaskContext) {
 				return
 			}
 			dockerInspectVO := apps.DockerInspectVO{
-				//ID:        containerInspectJson[0].ID,
 				ServiceID:   item.ServiceId,
 				ContainerID: containerInspectJson[0].Status.ContainerStatus.ContainerID,
 				Node:        item.Node,

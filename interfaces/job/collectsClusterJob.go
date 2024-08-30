@@ -8,6 +8,7 @@ import (
 	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/tasks"
 	"strings"
+	"time"
 )
 
 // CollectsClusterJob 3秒收集一次Docker集群信息
@@ -87,9 +88,10 @@ func CollectsClusterJob(*tasks.TaskContext) {
 				return
 			}
 			appDO.DockerInspect[item.Id] = &apps.DockerInspectVO{
-				ID:        containerInspectJson[0].ID,
-				CreatedAt: containerInspectJson[0].CreatedAt,
-				UpdatedAt: containerInspectJson[0].UpdatedAt,
+				//ID:        containerInspectJson[0].ID,
+				ID:        item.Id,
+				CreatedAt: containerInspectJson[0].CreatedAt.Format(time.DateTime),
+				UpdatedAt: containerInspectJson[0].UpdatedAt.Format(time.DateTime),
 				State:     containerInspectJson[0].Status.State,
 			}
 

@@ -137,7 +137,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 			} else {
 				flog.Infof("请求：[%s]%s，%s", node.NodeName, url, resourceResponse.StatusMessage)
 				node.CpuUsagePercent = resourceResponse.Data.CpuUsagePercent
-				node.MemoryUsage = resourceResponse.Data.MemoryUsage
+				node.MemoryUsage = resourceResponse.Data.MemoryUsage / 1024 / 1024
 				node.MemoryUsagePercent = resourceResponse.Data.MemoryUsagePercent
 			}
 		}

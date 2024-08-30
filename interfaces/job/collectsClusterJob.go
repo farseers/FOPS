@@ -83,7 +83,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 			return item.State != "Shutdown"
 		}).ToList()
 		servicePS.Foreach(func(item *docker.ServicePsVO) {
-			containerInspectJson, _ := client.Container.Inspect(item.ServiceId)
+			containerInspectJson, _ := client.Container.InspectByServiceId(item.ServiceId)
 			if len(containerInspectJson) == 0 {
 				return
 			}

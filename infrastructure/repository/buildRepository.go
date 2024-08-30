@@ -16,7 +16,7 @@ type buildRepository struct {
 
 // GetBuildNumber 获取构建的编号
 func (repository *buildRepository) GetBuildNumber(appName string) int {
-	return context.MysqlContext.Build.Where("LOWER(app_name) = ?", appName).Order("ServiceId desc").GetInt("build_number")
+	return context.MysqlContext.Build.Where("LOWER(app_name) = ?", appName).Order("id desc").GetInt("build_number")
 }
 
 func (repository *buildRepository) AddBuild(eo apps.BuildEO) error {

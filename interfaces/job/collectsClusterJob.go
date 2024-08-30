@@ -7,6 +7,7 @@ import (
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/tasks"
+	"strings"
 )
 
 // CollectsClusterJob 3秒收集一次Docker集群信息
@@ -94,7 +95,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 
 			// IP
 			if len(containerInspectJson[0].NetworksAttachments) > 0 && len(containerInspectJson[0].NetworksAttachments[0].Addresses) > 0 {
-				appDO.DockerInspect[item.Id].IP = containerInspectJson[0].NetworksAttachments[0].Addresses[0]
+				appDO.DockerInspect[item.Id].IP = strings.Split(containerInspectJson[0].NetworksAttachments[0].Addresses[0], "/")[0]
 			}
 		})
 	})

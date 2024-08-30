@@ -26,10 +26,10 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 
 	lst.Foreach(func(item *docker.ServicePsVO) {
 		// 通过容器id获取日志
-		logs, _ := client.Service.Logs(item.Id, tailCount)
+		logs, _ := client.Service.Logs(item.ServiceId, tailCount)
 		// 有错误时，则通过docker inspect r6r8uboagmln 获取错误详情
 		if item.Error != "" {
-			containerInspectJson, _ := client.Container.Inspect(item.Id)
+			containerInspectJson, _ := client.Container.Inspect(item.ServiceId)
 			if len(containerInspectJson) > 0 {
 				item.Error = containerInspectJson[0].Status.Err
 			}

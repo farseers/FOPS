@@ -76,30 +76,37 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		appDO.DockerReplicas = dockerService.Replicas
 		appDO.DockerInstances = dockerService.Instances
 
-		appDO.DockerInspect = make(map[string]*apps.DockerInspectVO)
+		appDO.DockerInspect = make([]apps.DockerInspectVO, 0)
 		// 获取应用的详情
 		servicePS := client.Service.PS(appDO.AppName)
 		servicePS = servicePS.Where(func(item docker.ServicePsVO) bool {
 			return item.State != "Shutdown"
 		}).ToList()
 		servicePS.Foreach(func(item *docker.ServicePsVO) {
-			containerInspectJson, _ := client.Container.Inspect(item.Id)
+			containerInspectJson, _ := client.Container.Inspect(item.ServiceId)
 			if len(containerInspectJson) == 0 {
 				return
 			}
-			appDO.DockerInspect[item.Id] = &apps.DockerInspectVO{
+			dockerInspectVO := apps.DockerInspectVO{
 				//ID:        containerInspectJson[0].ID,
-				ID:        item.Id,
-				Node:      item.Node,
-				CreatedAt: containerInspectJson[0].CreatedAt.Format(time.DateTime),
-				UpdatedAt: containerInspectJson[0].UpdatedAt.Format(time.DateTime),
-				State:     containerInspectJson[0].Status.State,
+				ServiceID:   item.ServiceId,
+				ContainerID: containerInspectJson[0].Status.ContainerStatus.ContainerID,
+				Node:        item.Node,
+				CreatedAt:   containerInspectJson[0].CreatedAt.Format(time.DateTime),
+				UpdatedAt:   containerInspectJson[0].UpdatedAt.Format(time.DateTime),
+				State:       containerInspectJson[0].Status.State,
+			}
+
+			// 使用简短的容器ID
+			if len(dockerInspectVO.ContainerID) >= 12 {
+				dockerInspectVO.ContainerID = dockerInspectVO.ContainerID[:12]
 			}
 
 			// IP
 			if len(containerInspectJson[0].NetworksAttachments) > 0 && len(containerInspectJson[0].NetworksAttachments[0].Addresses) > 0 {
-				appDO.DockerInspect[item.Id].IP = strings.Split(containerInspectJson[0].NetworksAttachments[0].Addresses[0], "/")[0]
+				dockerInspectVO.IP = strings.Split(containerInspectJson[0].NetworksAttachments[0].Addresses[0], "/")[0]
 			}
+			appDO.DockerInspect = append(appDO.DockerInspect, dockerInspectVO)
 		})
 	})
 

@@ -1,12 +1,16 @@
 package job
 
 import (
+	"fmt"
 	"fops/domain/apps"
 	"fops/domain/cluster"
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/core"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/tasks"
+	"github.com/farseer-go/utils/http"
+	"github.com/farseer-go/utils/system"
 	"strings"
 	"time"
 )
@@ -76,8 +80,8 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		appDO.DockerReplicas = dockerService.Replicas
 		appDO.DockerInstances = dockerService.Instances
 
-		appDO.DockerInspect = make([]apps.DockerInspectVO, 0)
 		// 获取应用的详情
+		appDO.DockerInspect = make([]apps.DockerInspectVO, 0)
 		servicePS := client.Service.PS(appDO.AppName)
 		servicePS = servicePS.Where(func(item docker.ServicePsVO) bool {
 			return item.State != "Shutdown"
@@ -109,6 +113,36 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		})
 	})
 
+	// 找到fops-agent应用
+	fopsAgentApp := lstApp.Find(func(item *apps.DomainObject) bool {
+		return item.AppName == "fops-agent"
+	})
+	if fopsAgentApp != nil {
+		// 遍历部署到每个节点的IP
+		for _, dockerInspectVO := range fopsAgentApp.DockerInspect {
+			if dockerInspectVO.IP == "" {
+				continue
+			}
+			// 匹配对应的节点
+			node := nodeList.Find(func(node *docker.DockerNodeVO) bool {
+				return node.NodeName == dockerInspectVO.Node
+			})
+			if node == nil {
+				continue
+			}
+			// 请求对应节点的agent
+			url := fmt.Sprintf("http://%s:8888/api/host/resource", dockerInspectVO.IP)
+			resourceResponse, err := http.GetJson[core.ApiResponse[system.Resource]](url, nil, 500)
+			if err != nil {
+				flog.Warningf("请求：[%s]%s，失败：%s", node.NodeName, url, err.Error())
+			} else {
+				flog.Infof("请求：[%s]%s，%s", node.NodeName, url, resourceResponse.StatusMessage)
+				node.CpuUsagePercent = resourceResponse.Data.CpuUsagePercent
+				node.MemoryUsage = resourceResponse.Data.MemoryUsage
+				node.MemoryUsagePercent = resourceResponse.Data.MemoryUsagePercent
+			}
+		}
+	}
 	container.Resolve[core.ITransaction]("default").Transaction(func() {
 		// 更新集群节点信息
 		appsRepository.UpdateClusterNode(nodeList)

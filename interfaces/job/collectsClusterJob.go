@@ -51,26 +51,52 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		}
 	})
 
+	// 遍历数据库中的应用（包括系统应用）
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
 		dockerService := serviceList.Find(func(item *docker.ServiceListVO) bool {
 			return item.Name == appDO.AppName
 		})
 		// 应用没有启用容器服务，跳过
-		if dockerService != nil {
-			// 如果是本地集群，则更新镜像信息
-			if !localCluster.IsNil() {
-				appDO.InitCluster(localCluster.Id)
-				appDO.ClusterVer[localCluster.Id].DockerImage = dockerService.Image
-			}
-			appDO.DockerReplicas = dockerService.Replicas
-			appDO.DockerInstances = dockerService.Instances
-		} else {
+		if dockerService == nil {
 			appDO.DockerInstances = 0
 			// 系统应用，同时在服务列表中又没有，则删除
 			if appDO.IsSys {
 				_, _ = appsRepository.Delete(appDO.AppName)
 			}
+			return
 		}
+
+		// 如果是本地集群，则更新镜像信息
+		if !localCluster.IsNil() {
+			appDO.InitCluster(localCluster.Id)
+			appDO.ClusterVer[localCluster.Id].DockerImage = dockerService.Image
+		}
+		appDO.DockerReplicas = dockerService.Replicas
+		appDO.DockerInstances = dockerService.Instances
+
+		appDO.DockerInspect = make(map[string]*apps.DockerInspectVO)
+		// 获取应用的详情
+		servicePS := client.Service.PS(appDO.AppName)
+		servicePS = servicePS.Where(func(item docker.ServicePsVO) bool {
+			return item.State != "Shutdown"
+		}).ToList()
+		servicePS.Foreach(func(item *docker.ServicePsVO) {
+			containerInspectJson, _ := client.Container.Inspect(item.Id)
+			if len(containerInspectJson) == 0 {
+				return
+			}
+			appDO.DockerInspect[item.Id] = &apps.DockerInspectVO{
+				ID:        containerInspectJson[0].ID,
+				CreatedAt: containerInspectJson[0].CreatedAt,
+				UpdatedAt: containerInspectJson[0].UpdatedAt,
+				State:     containerInspectJson[0].Status.State,
+			}
+
+			// IP
+			if len(containerInspectJson[0].NetworksAttachments) > 0 && len(containerInspectJson[0].NetworksAttachments[0].Addresses) > 0 {
+				appDO.DockerInspect[item.Id].IP = containerInspectJson[0].NetworksAttachments[0].Addresses[0]
+			}
+		})
 	})
 
 	container.Resolve[core.ITransaction]("default").Transaction(func() {

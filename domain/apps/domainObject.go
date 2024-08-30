@@ -7,20 +7,21 @@ import (
 
 // DomainObject 聚合
 type DomainObject struct {
-	AppName           string                  // 应用名称（链路追踪）
-	DockerVer         int                     // 镜像版本
-	ClusterVer        map[int64]*ClusterVerVO // 集群版本
-	AppGit            int64                   // 应用的源代码
-	FrameworkGits     collections.List[int64] // 依赖的框架源代码
-	DockerImage       string                  // 仓库镜像名称
-	DockerfilePath    string                  // Dockerfile路径
-	DockerInstances   int                     // 运行的实例数量
-	DockerReplicas    int                     // 副本数量
-	DockerNodeRole    string                  // 容器节点角色 manager or worker or global
-	AdditionalScripts string                  // 首次创建应用时附加脚本
-	LimitCpus         float64                 // Cpu核数限制
-	LimitMemory       string                  // 内存限制
-	IsSys             bool                    // 是否系统应用
+	AppName           string                      // 应用名称（链路追踪）
+	DockerVer         int                         // 镜像版本
+	ClusterVer        map[int64]*ClusterVerVO     // 集群版本
+	AppGit            int64                       // 应用的源代码
+	FrameworkGits     collections.List[int64]     // 依赖的框架源代码
+	DockerImage       string                      // 仓库镜像名称
+	DockerfilePath    string                      // Dockerfile路径
+	DockerInstances   int                         // 运行的实例数量
+	DockerInspect     map[string]*DockerInspectVO // 运行的实例详情
+	DockerReplicas    int                         // 副本数量
+	DockerNodeRole    string                      // 容器节点角色 manager or worker or global
+	AdditionalScripts string                      // 首次创建应用时附加脚本
+	LimitCpus         float64                     // Cpu核数限制
+	LimitMemory       string                      // 内存限制
+	IsSys             bool                        // 是否系统应用
 }
 
 func (receiver *DomainObject) IsNil() bool {

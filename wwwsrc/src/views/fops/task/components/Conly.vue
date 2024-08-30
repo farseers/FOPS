@@ -4,14 +4,15 @@
             <div v-for="item, index in state.tableData" :key="index.toString() + 'conly1'" class="conlyCol">
                 <el-card :class="item.IsHealth ? 'conlyCard' : 'conlyCard conly_w'">
                     <div class="name">
-                        <span>{{ item.NodeName }}<img v-show="item.OS == 'linux'" :src="linux" alt=""></span>
-
+                        <span>{{ item.IP }} | {{ item.NodeName }} <img v-show="item.OS == 'linux'" :src="linux" alt="" /></span>
                     </div>
                     <div v-show="item.IsMaster">
-                        <el-tag type="danger" size="small">manager</el-tag>
+                        <el-tag type="danger" size="small">manager</el-tag> {{ item.Memory }}
                     </div>
-                    <div v-show="!item.IsMaster"><el-tag size="small">worker</el-tag></div>
-                    <div>{{ item.OS }} {{ item.Architecture }} docker：{{ item.EngineVersion }}</div>
+                    <div v-show="!item.IsMaster">
+                      <el-tag size="small">worker</el-tag> {{ item.Memory }}
+                    </div>
+                    <div>{{ item.OS }} {{ item.Architecture }} | {{ item.EngineVersion }}</div>
                     <div>
                         <el-tag effect="dark" size="small" style="margin-right: 5px;"
                             :type="item.Status == 'Ready' ? 'success' : 'danger'">{{ item.Status }}</el-tag>
@@ -20,11 +21,9 @@
                         {{ item.Availability }}
                     </el-tag>
                     </div>
-                    <div>{{ item.IP }}</div>
-                    <div>docker：{{ item.EngineVersion }}</div>
-                    <div>CPU：{{ item.CpuUsagePercent }}% {{ item.CPUs }}核</div>
-                    <div>内存：{{ item.MemoryUsagePercent }}% {{ item.MemoryUsage }}MB {{ item.Memory }}</div>
-                    <!-- <div class="line" v-show="item.Label && item.Label.length>0"></div> -->
+                  <div>CPU({{ item.CPUs }}核) ：<b>{{ item.CpuUsagePercent }}</b>%</div>
+                    <div>内存：<b>{{ item.MemoryUsagePercent }}</b>% <b>{{ item.MemoryUsage }}</b> MB</div>
+                  <!-- <div class="line" v-show="item.Label && item.Label.length>0"></div> -->
                     <el-tag class="ks" v-for="row, j in item.Label" :key="index.toString() + j.toString() + 'conly2'">
                         <div>{{ row.Name }} = {{ row.Value }}</div>
                     </el-tag>

@@ -11,11 +11,28 @@
                             <el-tag  @click="showDockerTag(item,2)" v-else size="small" type="danger" style="margin-left: 5px;cursor: pointer;">{{ item.DockerInstances
                                 }}/{{ item.DockerReplicas }}</el-tag>
                         </el-tooltip>
-                        <el-tag size="small" type="warning" @click="onRestartDocker(item)" style="margin-left: 5px;cursor: pointer;"><el-icon><ele-SwitchButton /></el-icon>重启</el-tag>
+                       
+                    </div>
+                    <div style="display: flex;">
+                        <el-tooltip content="重启" slot="label">
+                            <el-icon @click="onRestartDocker(item)" style="cursor: pointer;color: #F56C6C;font-size: 14px;">
+                                <ele-SwitchButton />
+                            </el-icon>
+                        </el-tooltip>
+                        <el-tooltip content="容器日志" slot="label">
+                            <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 14px;"  @click="showDockerLog(item.AppName)">
+                                <ele-Document />
+                            </el-icon>
+                         </el-tooltip>
+                        <el-tooltip content="应用日志" slot="label">
+                            <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 14px;" @click="showFsLogLevel(2, item.AppName)">
+                                <ele-Memo />
+                        </el-icon>
+                        </el-tooltip>
                     </div>
                     <div>
-                        <el-button class="ecfy_btn" size="small" type="primary" @click="showDockerLog(item.AppName)">容器日志</el-button>
-                            <el-button class="ecfy_btn" size="small" type="success" @click="showFsLogLevel(2, item.AppName)">应用日志</el-button>
+                       
+                           
                     </div>
                     <div>应用日志
                         <el-tooltip content="警告数量" slot="label">

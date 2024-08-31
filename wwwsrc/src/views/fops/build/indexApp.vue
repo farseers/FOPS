@@ -17,20 +17,31 @@
               <template #header>
                 <div class="card-header" style="height: 20px;">
                   <el-tag size="default" @click="onOpenEdit('edit', v)" style="cursor: pointer;">{{ v.AppName }}</el-tag>
-                  <el-button size="small" type="warning" @click="onRestartDocker(v)" style="float:right;position: relative;"><el-icon><ele-SwitchButton /></el-icon>重启</el-button>
+                 
                   <el-tooltip content="实例数量/副本数量" slot="label">
                     <el-tag @click="showDockerTag(v,1)" v-if="v.IsHealth" size="small" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                     <el-tag @click="showDockerTag(v,2)" v-else size="small" type="danger" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                   </el-tooltip>
+                  <span class="ecdis">
+                    <el-tooltip content="重启" slot="label">
+                    <el-icon style="cursor: pointer;color: #F56C6C;font-size: 18px" @click="onRestartDocker(v)"><ele-SwitchButton /></el-icon>
+                  </el-tooltip>
+                  <el-tooltip content="容器日志" slot="label">
+                            <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 18px"  @click="showDockerLog(v.AppName)" >
+                                <ele-Document />
+                            </el-icon>
+                         </el-tooltip>
+                        <el-tooltip content="应用日志" slot="label">
+                            <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 18px" @click="showFsLogLevel(2,v.AppName)">
+                                <ele-Memo />
+                        </el-icon>
+                        </el-tooltip>
+                  </span>
                 </div>
               </template>
                 <div class="appItem" style="margin-bottom: 10px">
                   <div style="display: flex;justify-content: space-between;align-items: center;">
                     <span>仓库版本</span>
-                    <div>
-                      <el-button size="small" type="primary" @click="showDockerLog(v.AppName)" >容器日志</el-button>
-                      <el-button size="small" type="success" @click="showFsLogLevel(2,v.AppName)" >应用日志</el-button>
-                    </div>
                   </div>
                   <div class="appItem">
                     <el-tag v-if="v.DockerImage !=''" size="small">{{ v.DockerImage }}</el-tag>
@@ -557,6 +568,14 @@ onUnmounted(()=>{
 })
 </script>
 <style lang="scss">
+.ecdis{
+  float: right;
+  background-color: aliceblue;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  padding: 3px;
+}
 .initdialog__body {
     :deep(.el-dialog__body) {
     display: flex;

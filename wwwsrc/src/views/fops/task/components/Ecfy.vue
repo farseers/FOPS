@@ -6,12 +6,9 @@
                     <div class="name">
                         <el-tag size="default">{{ item.AppName }}</el-tag>
                         <el-tooltip content="实例数量/副本数量" slot="label">
-                            <el-tag  @click="showDockerTag(item,1)" v-if="item.IsHealth" size="small" style="margin-left: 5px;cursor: pointer;">{{ item.DockerInstances
-                                }}/{{ item.DockerReplicas }}</el-tag>
-                            <el-tag  @click="showDockerTag(item,2)" v-else size="small" type="danger" style="margin-left: 5px;cursor: pointer;">{{ item.DockerInstances
-                                }}/{{ item.DockerReplicas }}</el-tag>
+                            <el-tag  @click="showDockerTag(item,1)" v-if="item.IsHealth" size="small" style="margin-left: 5px;cursor: pointer;">{{ item.DockerInstances }}/{{ item.DockerReplicas }}</el-tag>
+                            <el-tag  @click="showDockerTag(item,2)" v-else size="small" type="danger" style="margin-left: 5px;cursor: pointer;">{{ item.DockerInstances }}/{{ item.DockerReplicas }}</el-tag>
                         </el-tooltip>
-                       
                     </div>
                     <div style="display: flex;">
                         <el-tooltip content="重启" slot="label">
@@ -30,15 +27,10 @@
                         </el-icon>
                         </el-tooltip>
                     </div>
-                    <div>
-                       
-                           
-                    </div>
                     <div>应用日志
                         <el-tooltip content="警告数量" slot="label">
                             <el-tag v-if="item.LogWaringCount > 0" @click="showFsLogLevel(3, item.AppName)"
-                                type="warning" size="small" style="margin-left: 5px;cursor: pointer">{{
-        item.LogWaringCount }}</el-tag>
+                                type="warning" size="small" style="margin-left: 5px;cursor: pointer">{{ item.LogWaringCount }}</el-tag>
                             <el-tag v-else @click="showFsLogLevel(3, item.AppName)" type="info" size="small"
                                 style="margin-left: 5px;cursor: pointer">{{ item.LogWaringCount }}</el-tag>
                         </el-tooltip>
@@ -66,6 +58,8 @@
                                 style="margin-left: 5px;cursor: pointer">{{ item.TaskFailCount }}</el-tag>
                         </el-tooltip>
                     </div>
+                  <div>CPU：<b>{{ item.CpuUsagePercent }}</b>%</div>
+                  <div>内存：<b>{{ item.MemoryUsagePercent }}</b>% / <b>{{ item.MemoryUsage }}</b> MB</div>
                 </el-card>
             </div>
         </div>

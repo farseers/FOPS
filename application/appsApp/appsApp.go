@@ -2,6 +2,7 @@
 package appsApp
 
 import (
+	"fmt"
 	"fops/application/appsApp/request"
 	"fops/application/appsApp/response"
 	"fops/domain/apps"
@@ -18,6 +19,7 @@ import (
 	"github.com/farseer-go/mapper"
 	"github.com/farseer-go/utils/file"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -168,11 +170,15 @@ func List(clusterId int64, isSys bool, appsRepository apps.Repository, logDataRe
 		}).Average(func(item apps.DockerInspectVO) any {
 			return item.CpuUsagePercent
 		})
+		appsResponse.CpuUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.2f", appsResponse.CpuUsagePercent), 64)
+
 		appsResponse.MemoryUsagePercent = item.DockerInspect.Where(func(item apps.DockerInspectVO) bool {
 			return item.MemoryUsagePercent > 0
 		}).Average(func(item apps.DockerInspectVO) any {
 			return item.MemoryUsagePercent
 		})
+		appsResponse.MemoryUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.2f", appsResponse.MemoryUsagePercent), 64)
+
 		appsResponse.MemoryUsage = parse.ToUInt64(item.DockerInspect.Where(func(item apps.DockerInspectVO) bool {
 			return item.MemoryUsage > 0
 		}).Average(func(item apps.DockerInspectVO) any {

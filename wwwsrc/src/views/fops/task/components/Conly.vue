@@ -21,7 +21,7 @@
                         {{ item.Availability }}
                     </el-tag>
                     </div>
-                  <div>CPU({{ item.CPUs }}核) ：<b>{{ item.CpuUsagePercent }}</b>%</div>
+                    <div>CPU({{ item.CPUs }}核) ：<b>{{ item.CpuUsagePercent }}</b>%</div>
                     <div>内存：<b>{{ item.MemoryUsagePercent }}</b>% <b>{{ item.MemoryUsage }}</b> MB</div>
                   <!-- <div class="line" v-show="item.Label && item.Label.length>0"></div> -->
                     <el-tag class="ks" v-for="row, j in item.Label" :key="index.toString() + j.toString() + 'conly2'">

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"fops/domain/apps"
 	"fops/domain/cluster"
+	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/core"
@@ -57,7 +58,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		}
 	})
 
-	// 遍历数据库中的应用（包括系统应用）
+	// 遍历数据库中的应用（包括系统应用），更新副本、实例数量、镜像
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
 		dockerService := serviceList.Find(func(item *docker.ServiceListVO) bool {
 			return item.Name == appDO.AppName
@@ -79,25 +80,32 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		}
 		appDO.DockerReplicas = dockerService.Replicas
 		appDO.DockerInstances = dockerService.Instances
+	})
 
+	// 遍历数据库中的应用（包括系统应用），得到每个应用的inspect详情
+	lstApp.Foreach(func(appDO *apps.DomainObject) {
 		// 获取应用的详情
-		appDO.DockerInspect = make([]apps.DockerInspectVO, 0)
-		servicePS := client.Service.PS(appDO.AppName)
-		servicePS = servicePS.Where(func(item docker.ServicePsVO) bool {
+		appDO.DockerInspect = collections.NewList[apps.DockerInspectVO]()
+		// 得到该应用正在运行的实例列表
+		servicePS := client.Service.PS(appDO.AppName).Where(func(item docker.ServicePsVO) bool {
 			return item.State != "Shutdown"
 		}).ToList()
+
+		// 遍历每个实例，得到容器ID、IP
 		servicePS.Foreach(func(item *docker.ServicePsVO) {
 			containerInspectJson, _ := client.Container.InspectByServiceId(item.ServiceId)
 			if len(containerInspectJson) == 0 {
 				return
 			}
 			dockerInspectVO := apps.DockerInspectVO{
-				ServiceID:   item.ServiceId,
-				ContainerID: containerInspectJson[0].Status.ContainerStatus.ContainerID,
-				Node:        item.Node,
-				CreatedAt:   containerInspectJson[0].CreatedAt.Format(time.DateTime),
-				UpdatedAt:   containerInspectJson[0].UpdatedAt.Format(time.DateTime),
-				State:       containerInspectJson[0].Status.State,
+				DockerStatsVO: docker.DockerStatsVO{
+					ContainerID: containerInspectJson[0].Status.ContainerStatus.ContainerID,
+				},
+				ServiceID: item.ServiceId,
+				Node:      item.Node,
+				CreatedAt: containerInspectJson[0].CreatedAt.Format(time.DateTime),
+				UpdatedAt: containerInspectJson[0].UpdatedAt.Format(time.DateTime),
+				State:     containerInspectJson[0].Status.State,
 			}
 
 			// 使用简短的容器ID
@@ -109,39 +117,71 @@ func CollectsClusterJob(*tasks.TaskContext) {
 			if len(containerInspectJson[0].NetworksAttachments) > 0 && len(containerInspectJson[0].NetworksAttachments[0].Addresses) > 0 {
 				dockerInspectVO.IP = strings.Split(containerInspectJson[0].NetworksAttachments[0].Addresses[0], "/")[0]
 			}
-			appDO.DockerInspect = append(appDO.DockerInspect, dockerInspectVO)
+			appDO.DockerInspect.Add(dockerInspectVO)
 		})
 	})
 
-	// 找到fops-agent应用
-	if fopsAgentApp := lstApp.Find(func(item *apps.DomainObject) bool {
+	// 找到fops-agent应用，给node节点设置agent的容器IP
+	fopsAgentApp := lstApp.Find(func(item *apps.DomainObject) bool {
 		return item.AppName == "fops-agent"
-	}); fopsAgentApp != nil {
+	})
+	if fopsAgentApp != nil {
 		// 遍历部署到每个节点的IP
-		for _, dockerInspectVO := range fopsAgentApp.DockerInspect {
-			if dockerInspectVO.IP == "" {
-				continue
-			}
+		fopsAgentApp.DockerInspect.Foreach(func(dockerInspectVO *apps.DockerInspectVO) {
 			// 匹配对应的节点
 			node := nodeList.Find(func(node *docker.DockerNodeVO) bool {
 				return node.NodeName == dockerInspectVO.Node
 			})
-			if node == nil {
-				continue
+			if dockerInspectVO.IP == "" || node == nil {
+				return
 			}
-			// 请求对应节点的agent
-			url := fmt.Sprintf("http://%s:8888/api/host/resource", dockerInspectVO.IP)
-			resourceResponse, err := http.GetJson[core.ApiResponse[system.Resource]](url, nil, 2000)
-			if err != nil {
-				flog.Warningf("请求：[%s]%s，失败：%s", node.NodeName, url, err.Error())
-			} else {
-				flog.Infof("请求：[%s]%s，%s", node.NodeName, url, resourceResponse.StatusMessage)
-				node.CpuUsagePercent = resourceResponse.Data.CpuUsagePercent
-				node.MemoryUsage = resourceResponse.Data.MemoryUsage / 1024 / 1024
-				node.MemoryUsagePercent = resourceResponse.Data.MemoryUsagePercent
-			}
-		}
+			node.AgentIP = dockerInspectVO.IP
+		})
 	}
+
+	// 遍历节点，访问agent，得到主机资源占用情况
+	nodeList.Foreach(func(node *docker.DockerNodeVO) {
+		// 请求对应节点的agent
+		url := fmt.Sprintf("http://%s:8888/api/host/resource", node.AgentIP)
+		resourceResponse, err := http.GetJson[core.ApiResponse[system.Resource]](url, nil, 2000)
+		if err != nil {
+			flog.Warningf("请求：[%s]%s，失败：%s", node.NodeName, url, err.Error())
+			return
+		}
+		node.CpuUsagePercent = resourceResponse.Data.CpuUsagePercent
+		node.MemoryUsage = resourceResponse.Data.MemoryUsage / 1024 / 1024
+		node.MemoryUsagePercent = resourceResponse.Data.MemoryUsagePercent
+	})
+
+	// 遍历节点，访问agent，得到每个容器资源占用情况
+	lstDockerStats := collections.NewList[docker.DockerStatsVO]()
+	nodeList.Foreach(func(node *docker.DockerNodeVO) {
+		// 请求对应节点的agent
+		url := fmt.Sprintf("http://%s:8888/api/docker/resource", node.AgentIP)
+		resourceResponse, err := http.GetJson[core.ApiResponse[collections.List[docker.DockerStatsVO]]](url, nil, 2000)
+		if err != nil {
+			flog.Warningf("请求：[%s]%s，失败：%s", node.NodeName, url, err.Error())
+			return
+		}
+		flog.Infof("请求：[%s]%s，%s", node.NodeName, url, resourceResponse.StatusMessage)
+		// 将容器资源列表先加入到集合，供后续统一处理
+		lstDockerStats.AddList(resourceResponse.Data)
+	})
+	lstApp.Foreach(func(appDO *apps.DomainObject) {
+		appDO.DockerInspect.Foreach(func(dockerInspectVO *apps.DockerInspectVO) {
+			dockerStats := lstDockerStats.Find(func(item *docker.DockerStatsVO) bool {
+				return item.ContainerID == dockerInspectVO.ContainerID
+			})
+			if dockerStats != nil {
+				dockerInspectVO.CpuUsagePercent = dockerStats.CpuUsagePercent
+				dockerInspectVO.MemoryUsagePercent = dockerStats.MemoryUsagePercent
+				dockerInspectVO.MemoryUsage = dockerStats.MemoryUsage
+				dockerInspectVO.MemoryLimit = dockerStats.MemoryLimit
+			}
+		})
+	})
+
+	// 通过事务来更新
 	container.Resolve[core.ITransaction]("default").Transaction(func() {
 		// 更新集群节点信息
 		appsRepository.UpdateClusterNode(nodeList)

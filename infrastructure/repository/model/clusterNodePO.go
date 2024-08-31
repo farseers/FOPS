@@ -13,6 +13,7 @@ type ClusterNodePO struct {
 	IsMaster           bool                                 `gorm:"size:1;not null;default:0;comment:是否为主节点"`
 	EngineVersion      string                               `gorm:"size:64;not null;comment:引擎版本"`
 	IP                 string                               `gorm:"size:64;not null;comment:节点IP"`
+	AgentIP            string                               `gorm:"size:64;not null;comment:代理容器IP"`
 	OS                 string                               `gorm:"size:64;not null;comment:操作系统"`
 	Architecture       string                               `gorm:"size:64;not null;comment:架构"`
 	CPUs               string                               `gorm:"size:64;not null;comment:CPU核心数"`

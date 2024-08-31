@@ -24,7 +24,7 @@ func (module Module) DependsModule() []modules.FarseerModule {
 }
 
 func (module Module) PostInitialize() {
-	client, _ := docker.NewClient()
+	client := docker.NewClient()
 	dockerVer := client.GetVersion()
 	if dockerVer != "" {
 		tasks.Run("开启构建", time.Second*1, job.BuildingJob, context.Background())

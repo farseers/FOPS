@@ -28,7 +28,7 @@ func SyncDockerImage(clusterId int64, appName string, appsRepository apps.Reposi
 		exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "版本一致，不需要同步")
 	}
 
-	client, _ := docker.NewClient()
+	client := docker.NewClient()
 	// 先登陆仓库
 	err := client.Hub.Login(clusterDO.DockerHub, clusterDO.DockerUserName, clusterDO.DockerUserPwd)
 	if err != nil {
@@ -89,7 +89,7 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 	clusterDO := clusterRepository.ToEntity(clusterId)
 	exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "集群不存在")
 
-	client, _ := docker.NewClient()
+	client := docker.NewClient()
 
 	// 先登陆仓库
 	err := client.Hub.Login(dockerHub, dockerUserName, dockerUserPwd)
@@ -119,7 +119,7 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 // @post build/clearDockerImage
 // @filter application.Jwt
 func ClearDockerImage() {
-	client, _ := docker.NewClient()
+	client := docker.NewClient()
 	client.Container.Kill("FOPS-Build")
 	_ = client.Images.ClearImages()
 }
@@ -128,7 +128,7 @@ func ClearDockerImage() {
 // @post restartDocker
 // @filter application.Jwt
 func RestartDocker(clusterId int64, appName string, clusterRepository cluster.Repository, appsRepository apps.Repository) {
-	client, _ := docker.NewClient()
+	client := docker.NewClient()
 	// 服务存在，才重启，否则自动创建
 	if !createService(client, clusterId, appName, appsRepository, clusterRepository) {
 		err := client.Service.Restart(appName)
@@ -143,7 +143,7 @@ func SetReplicas(appName string, dockerReplicas int, appsRepository apps.Reposit
 	do := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 
-	client, _ := docker.NewClient()
+	client := docker.NewClient()
 	exists, err := client.Service.Exists(appName)
 
 	// 更新副本数量
@@ -163,7 +163,7 @@ func SetReplicas(appName string, dockerReplicas int, appsRepository apps.Reposit
 func DeleteService(appName string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(strings.Trim(appName, "") == "", 403, "参数不完整")
 	// 删除服务
-	client, _ := docker.NewClient()
+	client := docker.NewClient()
 	_ = client.Service.Delete(appName)
 	// 验证
 	exists, _ := client.Service.Exists(appName)

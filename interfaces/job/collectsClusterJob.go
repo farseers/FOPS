@@ -22,7 +22,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 	clusterRepository := container.Resolve[cluster.Repository]()
 
 	// 收集所有节点的信息
-	client, _ := docker.NewClient()
+	client := docker.NewClient()
 	nodeList := client.Node.List()
 	nodeList.Foreach(func(node *docker.DockerNodeVO) {
 		vo := client.Node.Info(node.NodeName)

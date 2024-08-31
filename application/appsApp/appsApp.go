@@ -44,7 +44,7 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository) {
 	do := appsRepository.ToEntity(req.AppName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 
-	client, _ := docker.NewClient()
+	client := docker.NewClient()
 	if exists, err := client.Service.Exists(req.AppName); exists || err != nil {
 		// 更新镜像
 		if (req.ClusterDockerImage != "" && do.ClusterVer[req.ClusterId] != nil && req.ClusterDockerImage != do.ClusterVer[req.ClusterId].DockerImage) || do.DockerReplicas != req.DockerReplicas {
@@ -86,7 +86,7 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository) {
 func Delete(appName string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(strings.Trim(appName, "") == "", 403, "参数不完整")
 	// 删除服务
-	client, _ := docker.NewClient()
+	client := docker.NewClient()
 	exists, err := client.Service.Exists(appName)
 	// 当err!=nil时，也认为服务是存在的。
 	if exists || err != nil {

@@ -52,7 +52,7 @@ func (receiver *BuildEO) IsNil() bool {
 }
 
 func (receiver *BuildEO) StartBuild() {
-	receiver.dockerClient, _ = docker.NewClient()
+	receiver.dockerClient = docker.NewClient()
 	receiver.dockerDevice = container.Resolve[IDockerDevice]()
 	receiver.gitDevice = container.Resolve[IGitDevice]()
 	receiver.logQueue = NewLogQueue(receiver.Id)

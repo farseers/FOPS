@@ -12,7 +12,7 @@ import (
 // @post logs/dockerSwarm
 // @filter application.Jwt
 func DockerSwarm(appName string, tailCount int) collections.List[response.DockerSwarmResponse] {
-	client, _ := docker.NewClient()
+	client := docker.NewClient()
 	lst := client.Service.PS(appName)
 	lstRunning := lst.Where(func(item docker.ServicePsVO) bool {
 		return item.State != "Shutdown"

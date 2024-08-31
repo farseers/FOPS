@@ -163,7 +163,6 @@ func CollectsClusterJob(*tasks.TaskContext) {
 			flog.Warningf("请求：[%s]%s，失败：%s", node.NodeName, url, err.Error())
 			return
 		}
-		flog.Infof("请求：[%s]%s，%s", node.NodeName, url, resourceResponse.StatusMessage)
 		// 将容器资源列表先加入到集合，供后续统一处理
 		lstDockerStats.AddList(resourceResponse.Data)
 	})

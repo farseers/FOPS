@@ -16,32 +16,30 @@
             <el-card shadow="hover" v-for="(v, k) in state.tableData.data" :key="k" style="width: 270px;"  class="appItemCard">
               <template #header>
                 <div class="card-header" style="height: 20px;">
-                  <el-tag size="default" @click="onOpenEdit('edit', v)" style="cursor: pointer;">{{ v.AppName }}</el-tag>
+                  <el-tag size="default" @click="onOpenEdit('edit', v)" style="cursor: pointer;text;font-weight: bold">{{ v.AppName }}</el-tag>
                  
                   <el-tooltip content="实例数量/副本数量" slot="label">
                     <el-tag @click="showDockerTag(v,1)" v-if="v.IsHealth" size="small" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                     <el-tag @click="showDockerTag(v,2)" v-else size="small" type="danger" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                   </el-tooltip>
-                  <span class="ecdis">
-                    <el-tooltip content="重启" slot="label">
-                    <el-icon style="cursor: pointer;color: #F56C6C;font-size: 18px" @click="onRestartDocker(v)"><ele-SwitchButton /></el-icon>
-                  </el-tooltip>
-                  <el-tooltip content="容器日志" slot="label">
-                            <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 18px"  @click="showDockerLog(v.AppName)" >
-                                <ele-Document />
-                            </el-icon>
-                         </el-tooltip>
-                        <el-tooltip content="应用日志" slot="label">
-                            <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 18px" @click="showFsLogLevel(2,v.AppName)">
-                                <ele-Memo />
-                        </el-icon>
-                        </el-tooltip>
-                  </span>
+                  <el-tag v-if="v.DockerNodeRole=='manager'" type="danger" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
+                  <el-tag v-else size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
                 </div>
               </template>
                 <div class="appItem" style="margin-bottom: 10px">
                   <div style="display: flex;justify-content: space-between;align-items: center;">
                     <span>仓库版本</span>
+                    <span class="ecdis">
+                      <el-tooltip content="重启" slot="label">
+                        <el-icon style="cursor: pointer;color: #ff5000;font-size: 18px" @click="onRestartDocker(v)"><ele-Refresh /></el-icon>
+                      </el-tooltip>
+                      <el-tooltip content="容器日志" slot="label">
+                          <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 18px"  @click="showDockerLog(v.AppName)" ><ele-Reading /></el-icon>
+                       </el-tooltip>
+                      <el-tooltip content="应用日志" slot="label">
+                          <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 18px" @click="showFsLogLevel(2,v.AppName)"><ele-Document /></el-icon>
+                      </el-tooltip>
+                    </span>
                   </div>
                   <div class="appItem">
                     <el-tag v-if="v.DockerImage !=''" size="small">{{ v.DockerImage }}</el-tag>
@@ -58,10 +56,6 @@
                 <div class="appItem" style="margin-bottom: 10px">部署时间
                   <span v-if="v.ClusterVer.DockerImage !=''">{{ v.ClusterVer.DeploySuccessAt }}</span>
                   <el-tag v-else size="small">未发布</el-tag>
-                </div>
-                <div class="appItem" style="margin-bottom: 10px">部署角色
-                  <el-tag v-if="v.DockerNodeRole=='manager'" type="danger" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
-                  <el-tag v-else size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
                 </div>
               <div class="appItem" style="margin-bottom: 10px">应用日志
                 <el-tooltip content="警告数量" slot="label">
@@ -88,8 +82,8 @@
               <div v-if="v.AppGit > 0" style="display: flex;align-items: center;justify-content: center;padding: 0 10px;">
                 <el-button size="small" @click="onSyncWorkflows(v)" type="info" style="width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>
               </div>
-              <div class="appItem appItem1">构建
-                <el-button v-if="v.AppGit > 0" v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v,item)" type="danger" style="margin-left: 5px;">{{item}}</el-button>
+              <div v-if="v.AppGit > 0" class="appItem appItem1">构建
+                <el-button v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v,item)" type="danger" style="margin-left: 5px;">{{item}}</el-button>
               </div>
             </el-card>
           </el-space>
@@ -570,11 +564,9 @@ onUnmounted(()=>{
 <style lang="scss">
 .ecdis{
   float: right;
-  background-color: aliceblue;
   border-radius: 5px;
   display: flex;
   align-items: center;
-  padding: 3px;
 }
 .initdialog__body {
     :deep(.el-dialog__body) {

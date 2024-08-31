@@ -1,6 +1,6 @@
 <template>
     <div class="w100">
-        <div  class="conlyRow">
+        <div class="conlyRow">
             <div v-for="item, index in state.tableData" :key="index.toString() + 'conly1'" class="conlyCol">
                 <el-card :class="item.IsHealth ? 'conlyCard' : 'conlyCard conly_w'">
                     <div class="name">
@@ -70,6 +70,7 @@ defineExpose({
     flex-wrap: wrap;
     display: flex !important;
     min-height: 200px;
+    line-height: 20px;
 }
 
 .conlyCol {

@@ -12,19 +12,13 @@
                     </div>
                     <div style="display: flex;">
                         <el-tooltip content="重启" slot="label">
-                            <el-icon @click="onRestartDocker(item)" style="cursor: pointer;color: #F56C6C;font-size: 14px;">
-                                <ele-SwitchButton />
-                            </el-icon>
+                            <el-icon @click="onRestartDocker(item)" style="cursor: pointer;color: #F56C6C;font-size: 14px;"><ele-Refresh /></el-icon>
                         </el-tooltip>
                         <el-tooltip content="容器日志" slot="label">
-                            <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 14px;"  @click="showDockerLog(item.AppName)">
-                                <ele-Document />
-                            </el-icon>
+                            <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 14px;"  @click="showDockerLog(item.AppName)"><ele-Reading /></el-icon>
                          </el-tooltip>
                         <el-tooltip content="应用日志" slot="label">
-                            <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 14px;" @click="showFsLogLevel(2, item.AppName)">
-                                <ele-Memo />
-                        </el-icon>
+                            <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 14px;" @click="showFsLogLevel(2, item.AppName)"><ele-Document /></el-icon>
                         </el-tooltip>
                     </div>
                     <div>应用日志

@@ -123,25 +123,32 @@ func List(clusterId int64, isSys bool, appsRepository apps.Repository, logDataRe
 			return item.AppGit == parse.ToInt64(gitItem.Id)
 		}).First().Name
 
-		// 日志异常数量
-		appsResponse.LogErrorCount = countList.Where(func(logItem logData.LogCountEO) bool {
-			return item.AppName == logItem.AppName && logItem.LogLevel == eumLogLevel.Error
-		}).First().LogCount
+		// 统计日志数量
+		countList.Foreach(func(logItem *logData.LogCountEO) {
+			if item.AppName != logItem.AppName {
+				return
+			}
+			switch logItem.LogLevel {
+			case eumLogLevel.Error: // 日志异常数量
+				appsResponse.LogErrorCount++
+			case eumLogLevel.Warning: // 日志警告数量
+				appsResponse.LogWaringCount++
+			default:
+			}
+		})
 
-		// 日志警告数量
-		appsResponse.LogWaringCount = countList.Where(func(logItem logData.LogCountEO) bool {
-			return item.AppName == logItem.AppName && logItem.LogLevel == eumLogLevel.Warning
-		}).First().LogCount
-
-		// 任务组执行失败数量
-		appsResponse.TaskFailCount = taskGroupStatList.Where(func(statTaskEO fSchedule.StatTaskEO) bool {
-			return statTaskEO.ClientName == item.AppName && statTaskEO.ExecuteStatus == 3
-		}).First().Count
-
-		// 任务组执行成功数量
-		appsResponse.TaskSuccessCount = taskGroupStatList.Where(func(statTaskEO fSchedule.StatTaskEO) bool {
-			return statTaskEO.ClientName == item.AppName && statTaskEO.ExecuteStatus == 2
-		}).First().Count
+		// 统计任务组执行数量
+		taskGroupStatList.Foreach(func(statTaskEO *fSchedule.StatTaskEO) {
+			if statTaskEO.ClientName != item.AppName {
+				return
+			}
+			switch statTaskEO.ExecuteStatus {
+			case 3: // 任务组执行失败数量
+				appsResponse.TaskFailCount++
+			case 2: // 任务组执行成功数量
+				appsResponse.TaskSuccessCount++
+			}
+		})
 
 		// 获取工作流文件名称
 		workflowsNames := file.GetFiles(item.GetWorkflowsDir(), "*.yml", true)
@@ -165,6 +172,7 @@ func List(clusterId int64, isSys bool, appsRepository apps.Repository, logDataRe
 			}
 		}
 
+		// 容器资源占用统计
 		appsResponse.CpuUsagePercent = item.DockerInspect.Where(func(item apps.DockerInspectVO) bool {
 			return item.CpuUsagePercent > 0
 		}).Average(func(item apps.DockerInspectVO) any {

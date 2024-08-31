@@ -141,6 +141,9 @@ func CollectsClusterJob(*tasks.TaskContext) {
 
 	// 遍历节点，访问agent，得到主机资源占用情况
 	nodeList.Parallel(func(node *docker.DockerNodeVO) {
+		if node.AgentIP == "" {
+			return
+		}
 		// 请求对应节点的agent
 		url := fmt.Sprintf("http://%s:8888/api/host/resource", node.AgentIP)
 		resourceResponse, err := http.GetJson[core.ApiResponse[system.Resource]](url, nil, 2000)
@@ -156,6 +159,9 @@ func CollectsClusterJob(*tasks.TaskContext) {
 	// 遍历节点，访问agent，得到每个容器资源占用情况
 	lstDockerStats := collections.NewList[docker.DockerStatsVO]()
 	nodeList.Parallel(func(node *docker.DockerNodeVO) {
+		if node.AgentIP == "" {
+			return
+		}
 		// 请求对应节点的agent
 		url := fmt.Sprintf("http://%s:8888/api/docker/resource", node.AgentIP)
 		resourceResponse, err := http.GetJson[core.ApiResponse[collections.List[docker.DockerStatsVO]]](url, nil, 5000)

@@ -40,7 +40,7 @@ func SyncDockerImage(clusterId int64, appName string, appsRepository apps.Reposi
 	exception.ThrowRefuseExceptionError(err)
 
 	// 服务存在，才更新，否则自动创建
-	if !createService(client, clusterId, appName, appsRepository, clusterRepository) {
+	if !createService(client, clusterId, appName, do.DockerImage, appsRepository, clusterRepository) {
 		// 更新镜像
 		err = client.Service.SetImages(appName, do.DockerImage)
 		exception.ThrowRefuseExceptionError(err)
@@ -68,12 +68,6 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 		DockerImage:   dockerImage,
 	}
 
-	defer func() {
-		// 手动创建一个构建记录
-		buildLogEO.FinishAt = dateTime.Now()
-		_ = appsRepository.AddBuild(buildLogEO)
-	}()
-
 	// 更新仓库版本
 	event.DockerPushedEvent{BuildNumber: buildNumber, AppName: appName, ImageName: dockerImage}.PublishEvent()
 
@@ -81,6 +75,12 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 	if clusterId < 1 {
 		return
 	}
+
+	defer func() {
+		// 手动创建一个构建记录
+		buildLogEO.FinishAt = dateTime.Now()
+		_ = appsRepository.AddBuild(buildLogEO)
+	}()
 
 	// 同步镜像
 	do := appsRepository.ToEntity(appName)
@@ -102,7 +102,7 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 	exception.ThrowRefuseExceptionError(err)
 
 	// 服务存在，才更新，否则自动创建
-	if !createService(client, clusterId, appName, appsRepository, clusterRepository) {
+	if !createService(client, clusterId, appName, do.DockerImage, appsRepository, clusterRepository) {
 		// 更新镜像
 		err = client.Service.SetImages(appName, do.DockerImage)
 		exception.ThrowRefuseExceptionError(err)
@@ -130,7 +130,7 @@ func ClearDockerImage() {
 func RestartDocker(clusterId int64, appName string, clusterRepository cluster.Repository, appsRepository apps.Repository) {
 	client := docker.NewClient()
 	// 服务存在，才重启，否则自动创建
-	if !createService(client, clusterId, appName, appsRepository, clusterRepository) {
+	if !createService(client, clusterId, appName, "", appsRepository, clusterRepository) {
 		err := client.Service.Restart(appName)
 		exception.ThrowRefuseExceptionError(err)
 	}
@@ -170,13 +170,15 @@ func DeleteService(appName string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(exists, 403, "服务删除失败")
 }
 
-func createService(client *docker.Client, clusterId int64, appName string, appsRepository apps.Repository, clusterRepository cluster.Repository) bool {
+func createService(client *docker.Client, clusterId int64, appName, dockerImage string, appsRepository apps.Repository, clusterRepository cluster.Repository) bool {
 	// 服务不存在，则创建
 	exists, err := client.Service.Exists(appName)
 	if !exists && err == nil {
 		// 创建容器服务
 		do := appsRepository.ToEntity(appName)
-		dockerImage := do.GetCurClusterDockerImage(clusterId)
+		if dockerImage == "" {
+			dockerImage = do.GetCurClusterDockerImage(clusterId)
+		}
 		if dockerImage == "" {
 			exception.ThrowWebExceptionf(403, "该集群没有可用的镜像")
 		}

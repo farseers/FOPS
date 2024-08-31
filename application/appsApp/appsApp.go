@@ -163,6 +163,26 @@ func List(clusterId int64, isSys bool, appsRepository apps.Repository, logDataRe
 			}
 		}
 
+		appsResponse.CpuUsagePercent = item.DockerInspect.Where(func(item apps.DockerInspectVO) bool {
+			return item.CpuUsagePercent > 0
+		}).Average(func(item apps.DockerInspectVO) any {
+			return item.CpuUsagePercent
+		})
+		appsResponse.MemoryUsagePercent = item.DockerInspect.Where(func(item apps.DockerInspectVO) bool {
+			return item.MemoryUsagePercent > 0
+		}).Average(func(item apps.DockerInspectVO) any {
+			return item.MemoryUsagePercent
+		})
+		appsResponse.MemoryUsage = parse.ToUInt64(item.DockerInspect.Where(func(item apps.DockerInspectVO) bool {
+			return item.MemoryUsage > 0
+		}).Average(func(item apps.DockerInspectVO) any {
+			return item.MemoryUsage
+		}))
+		appsResponse.MemoryLimit = parse.ToUInt64(item.DockerInspect.Where(func(item apps.DockerInspectVO) bool {
+			return item.MemoryLimit > 0
+		}).Average(func(item apps.DockerInspectVO) any {
+			return item.MemoryLimit
+		}))
 		lst.Add(appsResponse)
 	})
 	return lst

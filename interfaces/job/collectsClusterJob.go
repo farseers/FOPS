@@ -140,7 +140,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 	}
 
 	// 遍历节点，访问agent，得到主机资源占用情况
-	nodeList.Foreach(func(node *docker.DockerNodeVO) {
+	nodeList.Parallel(func(node *docker.DockerNodeVO) {
 		// 请求对应节点的agent
 		url := fmt.Sprintf("http://%s:8888/api/host/resource", node.AgentIP)
 		resourceResponse, err := http.GetJson[core.ApiResponse[system.Resource]](url, nil, 2000)
@@ -155,10 +155,10 @@ func CollectsClusterJob(*tasks.TaskContext) {
 
 	// 遍历节点，访问agent，得到每个容器资源占用情况
 	lstDockerStats := collections.NewList[docker.DockerStatsVO]()
-	nodeList.Foreach(func(node *docker.DockerNodeVO) {
+	nodeList.Parallel(func(node *docker.DockerNodeVO) {
 		// 请求对应节点的agent
 		url := fmt.Sprintf("http://%s:8888/api/docker/resource", node.AgentIP)
-		resourceResponse, err := http.GetJson[core.ApiResponse[collections.List[docker.DockerStatsVO]]](url, nil, 2000)
+		resourceResponse, err := http.GetJson[core.ApiResponse[collections.List[docker.DockerStatsVO]]](url, nil, 5000)
 		if err != nil {
 			flog.Warningf("请求：[%s]%s，失败：%s", node.NodeName, url, err.Error())
 			return

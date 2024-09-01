@@ -30,14 +30,17 @@
                   <div style="display: flex;justify-content: space-between;align-items: center;">
                     <span>仓库版本</span>
                     <span class="ecdis">
-                      <el-tooltip content="重启" slot="label">
-                        <el-icon style="cursor: pointer;color: #ff5000;font-size: 18px" @click="onRestartDocker(v)"><ele-Refresh /></el-icon>
+                      <el-tooltip content="删除服务" slot="label">
+                        <el-icon style="cursor: pointer;color: #f56c6c;font-size: 18px" @click="onDeleteDocker(v)"><ele-CircleCloseFilled /></el-icon>
+                      </el-tooltip>
+                      <el-tooltip content="重启服务" slot="label">
+                        <el-icon style="margin-left: 10px;cursor: pointer;color: #ff4d51;font-size: 18px" @click="onRestartDocker(v)"><ele-Refresh /></el-icon>
                       </el-tooltip>
                       <el-tooltip content="容器日志" slot="label">
                           <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 18px"  @click="showDockerLog(v.AppName)" ><ele-Reading /></el-icon>
                        </el-tooltip>
                       <el-tooltip content="应用日志" slot="label">
-                          <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 18px" @click="showFsLogLevel(2,v.AppName)"><ele-Document /></el-icon>
+                          <el-icon style="margin-left: 10px;cursor: pointer;color: #19d4ae;font-size: 18px" @click="showFsLogLevel(2,v.AppName)"><ele-Document /></el-icon>
                       </el-tooltip>
                     </span>
                   </div>
@@ -432,6 +435,35 @@ const onSyncWorkflows = (row:any) => {
     getTableData()
   })
   state.showOverlay=false
+};
+
+// 删除服务
+const onDeleteDocker = (row:any) => {
+  ElMessageBox.confirm(`请确认是否删除服务?`, '提示', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+      .then(() => {
+        state.showOverlay=true
+        // 提交数据
+        var param={
+          "AppName" : row.AppName,
+        }
+        serverApi.appsServiceDel(param).then(async function(res){
+          state.showOverlay=false
+          if(res.Status){
+            ElMessage.success("删除服务成功")
+            // 刷新应用界面
+            getTableData()
+          }else{
+            ElMessage.error(res.StatusMessage)
+          }
+        }).catch(() => {
+          state.showOverlay=false});
+      })
+      .catch(() => {
+        state.showOverlay=false});
 };
 
 // 重启容器

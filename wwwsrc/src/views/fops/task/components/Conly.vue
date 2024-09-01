@@ -69,8 +69,8 @@ defineExpose({
 .conlyRow {
     flex-wrap: wrap;
     display: flex !important;
-    min-height: 200px;
-    line-height: 20px;
+    min-height: 160px;
+    line-height: 22px;
 }
 
 .conlyCol {
@@ -96,7 +96,6 @@ defineExpose({
 }
     .name {
         font-weight: 700;
-
         span {
             display: inline-block;
             position: relative;

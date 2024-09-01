@@ -123,7 +123,6 @@ onMounted(() => {
 		overflow: hidden;
 	}
 	.argid {
-		
 		height: 100%;
 		width: 350px;
 	}
@@ -138,6 +137,4 @@ onMounted(() => {
 	}
 	
 }
-
-	
 </style>

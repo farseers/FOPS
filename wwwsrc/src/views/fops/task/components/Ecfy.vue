@@ -11,15 +11,18 @@
                         </el-tooltip>
                     </div>
                     <div style="display: flex;">
-                        <el-tooltip content="重启" slot="label">
-                            <el-icon @click="onRestartDocker(item)" style="cursor: pointer;color: #F56C6C;font-size: 14px;"><ele-Refresh /></el-icon>
-                        </el-tooltip>
-                        <el-tooltip content="容器日志" slot="label">
-                            <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 14px;"  @click="showDockerLog(item.AppName)"><ele-Reading /></el-icon>
-                         </el-tooltip>
-                        <el-tooltip content="应用日志" slot="label">
-                            <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 14px;" @click="showFsLogLevel(2, item.AppName)"><ele-Document /></el-icon>
-                        </el-tooltip>
+                      <el-tooltip content="删除服务" slot="label">
+                        <el-icon style="margin-left: 12px;cursor: pointer;color: #f56c6c;font-size: 18px" @click="onDeleteDocker(v)"><ele-CircleCloseFilled /></el-icon>
+                      </el-tooltip>
+                      <el-tooltip content="重启服务" slot="label">
+                          <el-icon style="margin-left: 20px;cursor: pointer;color: #F56C6C;font-size: 18px;" @click="onRestartDocker(item)"><ele-Refresh /></el-icon>
+                      </el-tooltip>
+                      <el-tooltip content="容器日志" slot="label">
+                          <el-icon style="margin-left: 20px;cursor: pointer;color: #409EFF;font-size: 18px;"  @click="showDockerLog(item.AppName)"><ele-Reading /></el-icon>
+                       </el-tooltip>
+                      <el-tooltip content="应用日志" slot="label">
+                          <el-icon style="margin-left: 20px;cursor: pointer;color: #409EFF;font-size: 18px;" @click="showFsLogLevel(2, item.AppName)"><ele-Document /></el-icon>
+                      </el-tooltip>
                     </div>
                     <div>应用日志
                         <el-tooltip content="警告数量" slot="label">
@@ -127,6 +130,36 @@ const getData = () => {
         }
     })
 }
+
+// 删除服务
+const onDeleteDocker = (row) => {
+  ElMessageBox.confirm(`请确认是否删除服务?`, '提示', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+      .then(() => {
+        state.showOverlay=true
+        // 提交数据
+        var param={
+          "AppName" : row.AppName,
+        }
+        serverApi.appsServiceDel(param).then(async function(res){
+          state.showOverlay=false
+          if(res.Status){
+            ElMessage.success("删除服务成功")
+            // 刷新应用界面
+            getTableData()
+          }else{
+            ElMessage.error(res.StatusMessage)
+          }
+        }).catch(() => {
+          state.showOverlay=false});
+      })
+      .catch(() => {
+        state.showOverlay=false});
+};
+
 const onRestartDocker = (row) => {
   ElMessageBox.confirm(`请确认是否重启容器?`, '提示', {
     confirmButtonText: '确认',
@@ -176,11 +209,12 @@ defineExpose({
 .conlyRow {
     flex-wrap: wrap;
     display: flex !important;
-    min-height: 200px;
+    min-height: 170px;
+  line-height: 20px;
 }
 
 .conlyCol {
-     padding: 5px;
+    padding: 5px;
     box-sizing: border-box;
     width: 180px;
 }

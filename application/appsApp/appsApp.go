@@ -197,6 +197,7 @@ func List(clusterId int64, isSys bool, appsRepository apps.Repository, logDataRe
 		}).Average(func(item apps.DockerInspectVO) any {
 			return item.MemoryLimit
 		}))
+
 		lst.Add(appsResponse)
 	})
 	return lst

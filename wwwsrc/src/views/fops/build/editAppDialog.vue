@@ -6,7 +6,6 @@
           <el-form-item label="应用名称">
             <el-input v-model="state.ruleForm.AppName" placeholder="请输入应用名称" style="max-width: 200px;margin-right: 5px"></el-input>
             <el-button v-if="state.dialog.type=='edit'" @click="onDeleteApp" size="default" type="danger" style="margin-left: 5px;">删除应用</el-button>
-            <el-button v-if="state.dialog.type=='edit'" @click="onDeleteService" size="default" type="info" style="margin-left: 5px;">删除容器</el-button>
           </el-form-item>
           <el-form-item label="仓库版本">
             <el-tag v-if="state.ruleForm.DockerImage !=''" size="small">{{state.ruleForm.DockerImage}}</el-tag>

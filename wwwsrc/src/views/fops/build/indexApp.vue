@@ -22,8 +22,9 @@
                     <el-tag @click="showDockerTag(v,1)" v-if="v.IsHealth" size="small" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                     <el-tag @click="showDockerTag(v,2)" v-else size="small" type="danger" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                   </el-tooltip>
-                  <el-tag v-if="v.DockerNodeRole=='manager'" type="danger" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
-                  <el-tag v-else size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
+                  <el-tag v-if="v.DockerNodeRole=='manager'" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
+                  <el-tag v-else-if="v.DockerNodeRole=='global'" type="success" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
+                  <el-tag v-else type="info" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
                 </div>
               </template>
                 <div class="appItem" style="margin-bottom: 10px">
@@ -33,10 +34,10 @@
                       <el-tooltip content="删除服务" slot="label">
                         <el-icon style="cursor: pointer;color: #f56c6c;font-size: 18px" @click="onDeleteDocker(v)"><ele-CircleCloseFilled /></el-icon>
                       </el-tooltip>
-                      <el-tooltip content="重启服务" slot="label">
+                      <el-tooltip content="重启服务" slot="label" v-if="v.DockerReplicas > 0">
                         <el-icon style="margin-left: 10px;cursor: pointer;color: #ff4d51;font-size: 18px" @click="onRestartDocker(v)"><ele-Refresh /></el-icon>
                       </el-tooltip>
-                      <el-tooltip content="容器日志" slot="label">
+                      <el-tooltip content="容器日志" slot="label" v-if="v.DockerReplicas > 0">
                           <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 18px"  @click="showDockerLog(v.AppName)" ><ele-Reading /></el-icon>
                        </el-tooltip>
                       <el-tooltip content="应用日志" slot="label">

@@ -14,13 +14,13 @@
                       <el-tooltip content="删除服务" slot="label">
                         <el-icon style="margin-left: 12px;cursor: pointer;color: #f56c6c;font-size: 18px" @click="onDeleteDocker(v)"><ele-CircleCloseFilled /></el-icon>
                       </el-tooltip>
-                      <el-tooltip content="重启服务" slot="label">
+                      <el-tooltip content="重启服务" slot="label" v-if="item.DockerReplicas > 0">
                           <el-icon style="margin-left: 20px;cursor: pointer;color: #F56C6C;font-size: 18px;" @click="onRestartDocker(item)"><ele-Refresh /></el-icon>
                       </el-tooltip>
-                      <el-tooltip content="容器日志" slot="label">
+                      <el-tooltip content="容器日志" slot="label" v-if="item.DockerReplicas > 0">
                           <el-icon style="margin-left: 20px;cursor: pointer;color: #409EFF;font-size: 18px;"  @click="showDockerLog(item.AppName)"><ele-Reading /></el-icon>
                        </el-tooltip>
-                      <el-tooltip content="应用日志" slot="label">
+                      <el-tooltip content="应用日志" slot="label" v-if="item.IsSys === false">
                           <el-icon style="margin-left: 20px;cursor: pointer;color: #409EFF;font-size: 18px;" @click="showFsLogLevel(2, item.AppName)"><ele-Document /></el-icon>
                       </el-tooltip>
                     </div>
@@ -210,7 +210,7 @@ defineExpose({
     flex-wrap: wrap;
     display: flex !important;
     min-height: 170px;
-  line-height: 20px;
+    line-height: 15px;
 }
 
 .conlyCol {

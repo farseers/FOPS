@@ -78,7 +78,10 @@ func CollectsClusterJob(*tasks.TaskContext) {
 			appDO.InitCluster(localCluster.Id)
 			appDO.ClusterVer[localCluster.Id].DockerImage = dockerService.Image
 		}
-		appDO.DockerReplicas = dockerService.Replicas
+		// 当系统应用 或 global模式，才要更新副本数量
+		if appDO.IsSys || appDO.DockerNodeRole == "global" {
+			appDO.DockerReplicas = dockerService.Replicas
+		}
 		appDO.DockerInstances = dockerService.Instances
 	})
 

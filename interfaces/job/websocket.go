@@ -33,17 +33,19 @@ func ListenerAgentNotify() {
 
 // 获取主机资源
 func connectAgentByHostResource(ip string) {
-	defer delete(mAgent, "host_"+ip)
-
 	// 访问获取主机资源
 	url := fmt.Sprintf("ws://%s:8888/ws/host/resource", ip)
+	defer func() {
+		delete(mAgent, "host_"+ip)
+		flog.Infof("代理节点%s，已断开", url)
+	}()
+
 	client, err := ws.Connect(url, 1024)
 	if err != nil {
 		flog.Warningf("连接%s 失败：%s", url, err.Error())
 		return
 	}
 
-	flog.Infof("已连接新的代理节点%s，持续接收消息中", url)
 	appsRepository := container.Resolve[apps.Repository]()
 	for {
 		var resourceResponse core.ApiResponse[system.Resource]
@@ -52,6 +54,7 @@ func connectAgentByHostResource(ip string) {
 			return
 		}
 
+		flog.Infof("%s %f,%f,%d", ip, resourceResponse.Data.CpuUsagePercent, resourceResponse.Data.MemoryUsagePercent, resourceResponse.Data.MemoryUsage)
 		// 更新集群节点资源信息
 		appsRepository.UpdateClusterNodeResourceByAgentIP(ip,
 			resourceResponse.Data.CpuUsagePercent,

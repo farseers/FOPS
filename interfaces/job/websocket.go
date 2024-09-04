@@ -36,11 +36,7 @@ func connectAgentByHostResource(ip string) {
 
 	// 访问获取主机资源
 	url := fmt.Sprintf("ws://%s:8888/ws/host/resource", ip)
-	client, err := ws.NewClient(url, 1024)
-	if err != nil {
-		return
-	}
-	err = client.Connect()
+	client, err := ws.Connect(url, 1024)
 	if err != nil {
 		flog.Warningf("连接%s 失败：%s", url, err.Error())
 		return

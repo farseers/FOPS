@@ -42,6 +42,7 @@ func connectAgentByHostResource(ip string) {
 		return
 	}
 
+	flog.Infof("已连接新的代理节点%s，持续接收消息中", url)
 	appsRepository := container.Resolve[apps.Repository]()
 	for {
 		var resourceResponse core.ApiResponse[system.Resource]

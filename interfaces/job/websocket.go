@@ -51,6 +51,9 @@ func connectAgentByHostResource(ip string) {
 	for {
 		var resourceResponse system.Resource
 		if err = client.Receiver(&resourceResponse); err != nil {
+			if client.IsClose() {
+				return
+			}
 			flog.Warningf("接收%s 消息失败：%s", url, err.Error())
 			return
 		}

@@ -31,6 +31,7 @@ func ListenerAgentNotify() {
 	}
 }
 
+// 获取主机资源
 func connectAgentByHostResource(ip string) {
 	defer delete(mAgent, "host_"+ip)
 
@@ -51,7 +52,7 @@ func connectAgentByHostResource(ip string) {
 			return
 		}
 
-		// 更新
+		// 更新集群节点资源信息
 		appsRepository.UpdateClusterNodeResourceByAgentIP(ip,
 			resourceResponse.Data.CpuUsagePercent,
 			resourceResponse.Data.MemoryUsagePercent,

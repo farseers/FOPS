@@ -24,10 +24,10 @@ func ListenerAgentNotify() {
 		}
 
 		// 获取容器资源
-		if _, exists := mAgent["docker_"+ip]; !exists {
-			mAgent["docker_"+ip] = ""
-			go connectAgentByHostResource(ip)
-		}
+		//if _, exists := mAgent["docker_"+ip]; !exists {
+		//	mAgent["docker_"+ip] = ""
+		//	go connectAgentByHostResource(ip)
+		//}
 	}
 }
 

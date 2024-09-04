@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"fops/domain/apps"
 	"github.com/farseer-go/fs/container"
-	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/utils/system"
 	"github.com/farseer-go/utils/ws"
@@ -50,17 +49,17 @@ func connectAgentByHostResource(ip string) {
 
 	appsRepository := container.Resolve[apps.Repository]()
 	for {
-		var resourceResponse core.ApiResponse[system.Resource]
+		var resourceResponse system.Resource
 		if err = client.Receiver(&resourceResponse); err != nil {
 			flog.Warningf("接收%s 消息失败：%s", url, err.Error())
 			return
 		}
 
-		flog.Infof("%s %f,%f,%d", ip, resourceResponse.Data.CpuUsagePercent, resourceResponse.Data.MemoryUsagePercent, resourceResponse.Data.MemoryUsage)
+		flog.Infof("%s %f,%f,%d", ip, resourceResponse.CpuUsagePercent, resourceResponse.MemoryUsagePercent, resourceResponse.MemoryUsage)
 		// 更新集群节点资源信息
 		appsRepository.UpdateClusterNodeResourceByAgentIP(ip,
-			resourceResponse.Data.CpuUsagePercent,
-			resourceResponse.Data.MemoryUsagePercent,
-			resourceResponse.Data.MemoryUsage/1024/1024)
+			resourceResponse.CpuUsagePercent,
+			resourceResponse.MemoryUsagePercent,
+			resourceResponse.MemoryUsage/1024/1024)
 	}
 }

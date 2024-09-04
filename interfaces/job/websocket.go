@@ -41,6 +41,8 @@ func connectAgentByHostResource(ip string) {
 	}()
 
 	client, err := ws.Connect(url, 1024)
+	client.AutoExit = false
+
 	if err != nil {
 		flog.Warningf("连接%s 失败：%s", url, err.Error())
 		return

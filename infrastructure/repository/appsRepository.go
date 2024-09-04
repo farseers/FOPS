@@ -102,7 +102,7 @@ func (receiver *appsRepository) UpdateClusterNode(lst collections.List[docker.Do
 	lstPO.Foreach(func(item *model.ClusterNodePO) {
 		item.UpdateAt = dateTime.Now()
 		// 更新数据
-		count, err := context.MysqlContext.ClusterNode.Where("node_name", item.NodeName).Update(*item)
+		count, err := context.MysqlContext.ClusterNode.Where("node_name", item.NodeName).Omit("cpu_usage_percent", "memory_usage_percent", "memory_usage").Update(*item)
 		flog.ErrorIfExists(err)
 
 		// 没有更新到数据时，则插入
@@ -116,4 +116,12 @@ func (receiver *appsRepository) UpdateClusterNode(lst collections.List[docker.Do
 func (receiver *appsRepository) GetClusterNodeList() collections.List[docker.DockerNodeVO] {
 	lstPO := context.MysqlContext.ClusterNode.Desc("is_master").ToList()
 	return mapper.ToList[docker.DockerNodeVO](lstPO)
+}
+
+func (receiver *appsRepository) UpdateClusterNodeResourceByAgentIP(agentIP string, cpuUsagePercent, memoryUsagePercent float64, memoryUsage uint64) {
+	_, _ = context.MysqlContext.ClusterNode.Where("agent_iP = ?", agentIP).Select("cpu_usage_percent", "memory_usage_percent", "memory_usage").Update(model.ClusterNodePO{
+		CpuUsagePercent:    cpuUsagePercent,
+		MemoryUsagePercent: memoryUsagePercent,
+		MemoryUsage:        memoryUsage,
+	})
 }

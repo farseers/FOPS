@@ -119,7 +119,7 @@ func (receiver *appsRepository) GetClusterNodeList() collections.List[docker.Doc
 }
 
 func (receiver *appsRepository) UpdateClusterNodeResourceByAgentIP(agentIP string, cpuUsagePercent, memoryUsagePercent float64, memoryUsage uint64) {
-	_, _ = context.MysqlContext.ClusterNode.Where("agent_iP = ?", agentIP).Select("cpu_usage_percent", "memory_usage_percent", "memory_usage").Update(model.ClusterNodePO{
+	_, _ = context.MysqlContext.ClusterNode.Where("agent_ip = ?", agentIP).Select("cpu_usage_percent", "memory_usage_percent", "memory_usage").Update(model.ClusterNodePO{
 		CpuUsagePercent:    cpuUsagePercent,
 		MemoryUsagePercent: memoryUsagePercent,
 		MemoryUsage:        memoryUsage,

@@ -23,6 +23,7 @@
                     </div>
                     <div>CPU ：<b>{{ item.CpuUsagePercent }}</b>% ({{ item.CPUs }}核)</div>
                     <div>内存：<b>{{ item.MemoryUsagePercent }}</b>% / <b>{{ item.MemoryUsage }}</b> MB</div>
+                    <div>硬盘：<b>{{ item.DiskUsagePercent }}</b>% / <b>{{ item.DiskUsage }}</b> GB</div>
                   <!-- <div class="line" v-show="item.Label && item.Label.length>0"></div> -->
                     <el-tag class="ks" v-for="row, j in item.Label" :key="index.toString() + j.toString() + 'conly2'">
                         <div>{{ row.Name }} = {{ row.Value }}</div>

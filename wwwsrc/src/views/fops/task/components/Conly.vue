@@ -18,9 +18,9 @@
                     </div>
                     <div><el-tag type="info" size="small">{{ item.OS }}</el-tag> <b>{{ item.Memory }}</b> | <b>{{ item.Disk }}GiB</b></div>
 
-                    <div><el-tag type="info" size="small">CPU</el-tag><b>{{ item.CpuUsagePercent }}</b>% ({{ item.CPUs }}核)</div>
-                    <div><el-tag type="info" size="small">内存</el-tag><b>{{ item.MemoryUsagePercent }}</b>% / <b>{{ item.MemoryUsage }}</b> MB</div>
-                    <div><el-tag type="info" size="small">硬盘</el-tag><b>{{ item.DiskUsagePercent }}</b>% / <b>{{ item.DiskUsage }}</b> GB</div>
+                    <div><el-tag type="info" size="small">CPU</el-tag> <b>{{ item.CpuUsagePercent }}</b>% ({{ item.CPUs }}核)</div>
+                    <div><el-tag type="info" size="small">内存</el-tag> <b>{{ item.MemoryUsagePercent }}</b>% / <b>{{ item.MemoryUsage }}</b> MB</div>
+                    <div><el-tag type="info" size="small">硬盘</el-tag> <b>{{ item.DiskUsagePercent }}</b>% / <b>{{ item.DiskUsage }}</b> GB</div>
                   <!-- <div class="line" v-show="item.Label && item.Label.length>0"></div> -->
                     <el-tag class="ks" v-for="row, j in item.Label" :key="index.toString() + j.toString() + 'conly2'">
                         <div>{{ row.Name }} = {{ row.Value }}</div>

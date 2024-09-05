@@ -55,8 +55,8 @@
                                 style="margin-left: 5px;cursor: pointer">{{ item.TaskFailCount }}</el-tag>
                         </el-tooltip>
                     </div>
-                  <div><el-tag type="info" size="small">CPU</el-tag><b>{{ item.CpuUsagePercent }}</b>%</div>
-                  <div><el-tag type="info" size="small">内存</el-tag><b>{{ item.MemoryUsagePercent }}</b>% / <b>{{ item.MemoryUsage }}</b> MB</div>
+                  <div><el-tag type="info" size="small">CPU</el-tag> <b>{{ item.CpuUsagePercent }}</b>%</div>
+                  <div><el-tag type="info" size="small">内存</el-tag> <b>{{ item.MemoryUsagePercent }}</b>% / <b>{{ item.MemoryUsage }}</b> MB</div>
                 </el-card>
             </div>
         </div>

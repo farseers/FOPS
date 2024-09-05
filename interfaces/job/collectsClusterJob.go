@@ -54,7 +54,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		}
 	})
 
-	// 遍历数据库中的应用（包括系统应用），更新副本、实例数量、镜像
+	// 遍历所有应用，获取docker swarm副本、实例数量、镜像
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
 		dockerService := serviceList.Find(func(item *docker.ServiceListVO) bool {
 			return item.Name == appDO.AppName
@@ -81,7 +81,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		appDO.DockerInstances = dockerService.Instances
 	})
 
-	// 遍历数据库中的应用（包括系统应用），得到每个应用的inspect详情
+	// 遍历所有应用，得到每个应用的inspect详情
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
 		// 获取应用的详情
 		appDO.DockerInspect = collections.NewList[apps.DockerInspectVO]()
@@ -97,9 +97,12 @@ func CollectsClusterJob(*tasks.TaskContext) {
 				return
 			}
 			// 匹配对应的节点
-			node := nodeList.Where(func(node docker.DockerNodeVO) bool {
+			node := nodeList.Find(func(node *docker.DockerNodeVO) bool {
 				return node.NodeName == item.Node
-			}).First()
+			})
+			if node == nil {
+				node = &docker.DockerNodeVO{}
+			}
 
 			// 通过代理节点同步到的容器资源信息
 			dockerInspectVO := apps.DockerInspectVO{
@@ -117,26 +120,14 @@ func CollectsClusterJob(*tasks.TaskContext) {
 				dockerInspectVO.ContainerIP = strings.Split(containerInspectJson[0].NetworksAttachments[0].Addresses[0], "/")[0]
 			}
 			appDO.DockerInspect.Add(dockerInspectVO)
+
+			// 如果应用是fops-agent，则给node节点设置agent的容器IP
+			if appDO.AppName == "fops-agent" && dockerInspectVO.ContainerIP != "" {
+				node.AgentIP = dockerInspectVO.ContainerIP
+				agentNotify <- dockerInspectVO.ContainerIP
+			}
 		})
 	})
-
-	// 找到fops-agent应用，给node节点设置agent的容器IP
-	if fopsAgentApp := lstApp.Find(func(item *apps.DomainObject) bool {
-		return item.AppName == "fops-agent"
-	}); fopsAgentApp != nil {
-		// 遍历部署到每个节点的IP
-		fopsAgentApp.DockerInspect.Foreach(func(dockerInspectVO *apps.DockerInspectVO) {
-			// 匹配对应的节点
-			node := nodeList.Find(func(node *docker.DockerNodeVO) bool {
-				return node.NodeName == dockerInspectVO.Node
-			})
-			if dockerInspectVO.ContainerIP == "" || node == nil {
-				return
-			}
-			node.AgentIP = dockerInspectVO.ContainerIP
-			agentNotify <- node.AgentIP
-		})
-	}
 
 	// 通过事务来更新
 	container.Resolve[core.ITransaction]("default").Transaction(func() {

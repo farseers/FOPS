@@ -7,6 +7,7 @@ import (
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
+	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/utils/system"
 	"github.com/farseer-go/utils/ws"
 )
@@ -57,7 +58,7 @@ func connectAgentByHostResource(agentIP string) {
 		if err = client.Receiver(&resourceResponse); err != nil {
 			if client.IsClose() {
 				// 更新集群节点资源信息
-				appsRepository.UpdateClusterNodeResourceByAgentIP(agentIP, 0, 0, 0)
+				appsRepository.UpdateClusterNodeResourceByAgentIP(agentIP, 0, 0, 0, 0, 0, 0)
 				return
 			}
 			flog.Warningf("接收%s 消息失败：%s", url, err.Error())
@@ -68,7 +69,11 @@ func connectAgentByHostResource(agentIP string) {
 		appsRepository.UpdateClusterNodeResourceByAgentIP(agentIP,
 			resourceResponse.CpuUsagePercent,
 			resourceResponse.MemoryUsagePercent,
-			resourceResponse.MemoryUsage/1024/1024)
+			parse.ToFloat64(resourceResponse.MemoryUsage)/1024/1024,
+			resourceResponse.DiskTotal,
+			resourceResponse.DiskUsagePercent,
+			parse.ToFloat64(resourceResponse.DiskUsage)/1024/1024/1024,
+		)
 	}
 }
 

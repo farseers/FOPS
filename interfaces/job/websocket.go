@@ -44,7 +44,7 @@ func connectAgentByHostResource(agentIP string) {
 		flog.Debugf("代理节点%s，已断开", url)
 	}()
 
-	client, err := ws.Connect(url, 1024)
+	client, err := ws.Connect(url, 8192)
 	client.AutoExit = false
 
 	if err != nil {

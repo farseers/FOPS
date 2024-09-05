@@ -10,6 +10,7 @@ import (
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/utils/system"
 	"github.com/farseer-go/utils/ws"
+	"strconv"
 )
 
 var agentNotify = make(chan string, 100)
@@ -65,14 +66,24 @@ func connectAgentByHostResource(agentIP string) {
 			return
 		}
 
+		resourceResponse.CpuUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", resourceResponse.CpuUsagePercent), 64)
+		resourceResponse.MemoryUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", resourceResponse.MemoryUsagePercent), 64)
+		resourceResponse.DiskUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", resourceResponse.DiskUsagePercent), 64)
+
+		memoryUsage := parse.ToFloat64(resourceResponse.MemoryUsage) / 1024 / 1024
+		memoryUsage, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", memoryUsage), 64)
+
+		diskUsage := parse.ToFloat64(resourceResponse.DiskUsage) / 1024 / 1024 / 1024
+		diskUsage, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", diskUsage), 64)
+
 		// 更新集群节点资源信息
 		appsRepository.UpdateClusterNodeResourceByAgentIP(agentIP,
 			resourceResponse.CpuUsagePercent,
 			resourceResponse.MemoryUsagePercent,
-			parse.ToFloat64(resourceResponse.MemoryUsage)/1024/1024,
-			resourceResponse.DiskTotal,
+			memoryUsage,
+			resourceResponse.DiskTotal/1024/1024/1024,
 			resourceResponse.DiskUsagePercent,
-			parse.ToFloat64(resourceResponse.DiskUsage)/1024/1024/1024,
+			diskUsage,
 		)
 	}
 }

@@ -65,10 +65,9 @@
             <el-table-column label="数据">
               <template #default="scope">
                 <div>{{friendlyJSONstringify(scope.row.Data)}}</div>
-                <div v-for="(item, index) in scope.row.Clients.slice(0, 3)" :key="index">
+                <span v-for="(item, index) in scope.row.Clients.slice(0, 3)" :key="index">
                   <el-tag size="small">{{item.Name}} {{item.Ip}}:{{item.Port}}</el-tag>
-                  <span v-if="scope.row.Clients.length>3">更多</span>
-                </div>
+                </span>
               </template>
             </el-table-column>
 				<el-table-column label="操作" width="100">

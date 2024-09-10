@@ -31,12 +31,6 @@
             <span>错误次数：{{scope.row.ErrorCount}}</span>
           </template>
         </el-table-column>
-        <el-table-column label="系统数据" show-overflow-tooltip>
-          <template #default="scope">
-            <span>CPU百分比：{{scope.row.CpuUsage}}</span><br>
-            <span>内存百分比：{{scope.row.MemoryUsage}}</span>
-          </template>
-        </el-table-column>
         <el-table-column prop="Jobs" label="Jobs" show-overflow-tooltip>
           <template #default="scope">
             <el-tag

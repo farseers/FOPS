@@ -205,7 +205,7 @@ export function fopsApi() {
 			});
 		},killTask: (param: object) => {
 			return requestFS({
-				url: '/api/killTask',
+				url: '/basicapi/task/killTask',
 				method: 'post',
 				data:param,
 			});

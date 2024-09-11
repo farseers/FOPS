@@ -121,7 +121,7 @@ const logDialogRef = ref();
 const state = reactive({
   keyWord:'',
   appName:'',
-  enable:-1,
+  enable:1,
   taskStatus:-1,
   clientId:'',
 	tableData: {
@@ -253,6 +253,7 @@ const onIsEnable=(row: any)=>{
       })
       .catch(() => {});
 }
+
 // 分页改变
 const onHandleSizeChange = (val: number) => {
 	state.tableData.param.pageSize = val;

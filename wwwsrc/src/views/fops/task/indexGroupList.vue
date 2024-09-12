@@ -56,7 +56,7 @@
                 <span title="下次运行时间" v-else> {{scope.row.NextAt}}</span>
               </template>
             </el-table-column>
-            <el-table-column label="运行情况" width="140" show-overflow-tooltip>
+            <el-table-column label="运行情况" width="160" show-overflow-tooltip>
               <template #default="scope">
                 <span>耗时: {{scope.row.RunSpeedAvg}} ms</span><br>
                 <span>运行: {{scope.row.RunCount}} 次</span>

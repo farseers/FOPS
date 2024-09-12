@@ -23,7 +23,7 @@
         </el-table-column>
         <el-table-column label="调度时间" width="250" show-overflow-tooltip>
           <template #default="scope">
-            <span>{{scope.row.ScheduleAt}}</span>
+            <span v-if='scope.row.ScheduleAt != "0001-01-01 00:00:00" '>{{scope.row.ScheduleAt}}</span>
           </template>
         </el-table-column>
         <el-table-column label="队列数量" width="90" show-overflow-tooltip>
@@ -107,5 +107,8 @@ onMounted(() => {
 			flex: 1;
 		}
 	}
+}
+.el-table__row .el-table__cell{
+  padding: 0 0;
 }
 </style>

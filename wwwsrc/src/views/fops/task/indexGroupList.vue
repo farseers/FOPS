@@ -66,7 +66,7 @@
               <template #default="scope">
                 <div>{{friendlyJSONstringify(scope.row.Data)}}</div>
                 <span v-for="(item, index) in scope.row.Clients.slice(0, 3)" :key="index">
-                  <el-tag size="small">{{item.Name}} {{item.Ip}}:{{item.Port}}</el-tag>
+                  <el-tag size="small"><span v-if="item.IsMaster">主</span>{{item.Name}} {{item.Ip}}:{{item.Port}}</el-tag>
                 </span>
               </template>
             </el-table-column>

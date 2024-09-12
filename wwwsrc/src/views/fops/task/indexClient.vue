@@ -12,7 +12,7 @@
             <el-tag v-if="scope.row.Status==4">离线</el-tag>
           </div>
           <div style="float: left">
-            {{scope.row.Name}} {{scope.row.Ip}}:{{scope.row.Port}} | {{scope.row.Job.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Job.Ver}}</span>）
+            <span v-if="scope.row.IsMaster">主</span> {{scope.row.Name}} {{scope.row.Ip}}:{{scope.row.Port}} | {{scope.row.Job.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Job.Ver}}</span>）
           </div>
           </template>
         </el-table-column>

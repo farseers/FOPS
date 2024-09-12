@@ -4,7 +4,7 @@
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
 				<el-table-column label="客户端">
           <template #default="scope">
-          <div style="float: left;padding-right: 10px;">
+          <div style="float: left;margin-right: 10px;">
             <el-tag v-if="scope.row.Status==0">刚上线</el-tag>
             <el-tag v-if="scope.row.Status==1">接受调度</el-tag>
             <el-tag v-if="scope.row.Status==2">无法调度</el-tag>
@@ -12,7 +12,7 @@
             <el-tag v-if="scope.row.Status==4">离线</el-tag>
           </div>
           <div style="float: left">
-            <span v-if="scope.row.IsMaster">主</span> {{scope.row.Name}} {{scope.row.Ip}}:{{scope.row.Port}} | {{scope.row.Job.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Job.Ver}}</span>）
+            <el-tag type="danger" size="small" v-if="scope.row.IsMaster" style="margin-right: 5px;">主</el-tag> {{scope.row.Name}} {{scope.row.Ip}}:{{scope.row.Port}} | {{scope.row.Job.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Job.Ver}}</span>）
           </div>
           </template>
         </el-table-column>

@@ -4,7 +4,7 @@
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
 				<el-table-column label="客户端">
           <template #default="scope">
-          <div style="float: left;padding-right: 10px;padding-top: 5px">
+          <div style="float: left;padding-right: 10px;">
             <el-tag v-if="scope.row.Status==0">刚上线</el-tag>
             <el-tag v-if="scope.row.Status==1">接受调度</el-tag>
             <el-tag v-if="scope.row.Status==2">无法调度</el-tag>
@@ -12,33 +12,33 @@
             <el-tag v-if="scope.row.Status==4">离线</el-tag>
           </div>
           <div style="float: left">
-              <span>{{scope.row.Name}} {{scope.row.Ip}}:{{scope.row.Port}} | {{scope.row.Job.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Job.Ver}}</span>）</span>
+            {{scope.row.Name}} {{scope.row.Ip}}:{{scope.row.Port}} | {{scope.row.Job.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Job.Ver}}</span>）
           </div>
           </template>
         </el-table-column>
         <el-table-column label="激活时间" width="250" show-overflow-tooltip>
           <template #default="scope">
-            <span>激活：{{scope.row.ActivateAt}}</span>
+            <span>{{scope.row.ActivateAt}}</span>
           </template>
         </el-table-column>
         <el-table-column label="调度时间" width="250" show-overflow-tooltip>
           <template #default="scope">
-            <span>调度：{{scope.row.ScheduleAt}}</span>
+            <span>{{scope.row.ScheduleAt}}</span>
           </template>
         </el-table-column>
-        <el-table-column label="队列数量" width="80" show-overflow-tooltip>
+        <el-table-column label="队列数量" width="90" show-overflow-tooltip>
           <template #default="scope">
             <span>{{scope.row.QueueCount}}</span>
           </template>
         </el-table-column>
-        <el-table-column label="工作数量" width="80" show-overflow-tooltip>
+        <el-table-column label="工作数量" width="90" show-overflow-tooltip>
           <template #default="scope">
             <span>{{scope.row.WorkCount}}</span>
           </template>
         </el-table-column>
-        <el-table-column label="错误次数" width="80" show-overflow-tooltip>
+        <el-table-column label="错误次数" width="90" show-overflow-tooltip>
           <template #default="scope">
-            <span>错误次数：{{scope.row.ErrorCount}}</span>
+            <span>{{scope.row.ErrorCount}}</span>
           </template>
         </el-table-column>
 			</el-table>

@@ -2,7 +2,6 @@
 	<div class="system-user-container layout-padding">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
-				<el-table-column prop="Id" label="序号" width="200" />
 				<el-table-column label="客户端">
           <template #default="scope">
           <div style="float: left;padding-right: 10px;padding-top: 5px">
@@ -13,7 +12,7 @@
             <el-tag v-if="scope.row.Status==4">离线</el-tag>
           </div>
           <div style="float: left">
-              <span>{{scope.row.Name}}</span><br>
+              <span>{{scope.row.Name}} {{scope.row.Job.Name}}({{scope.row.Job.Ver}})</span><br>
               <span>{{scope.row.Ip}}:{{scope.row.Port}}</span>
           </div>
           </template>
@@ -29,15 +28,6 @@
             <span>队列数量：{{scope.row.QueueCount}}</span><br>
             <span>工作数量：{{scope.row.WorkCount}}</span><br>
             <span>错误次数：{{scope.row.ErrorCount}}</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="Jobs" label="Jobs" show-overflow-tooltip>
-          <template #default="scope">
-            <el-tag
-                v-for="(tag, index) in scope.row.Jobs"
-                :key="index">
-              【{{ tag.Name }}-{{tag.Ver}}】
-            </el-tag>
           </template>
         </el-table-column>
 			</el-table>

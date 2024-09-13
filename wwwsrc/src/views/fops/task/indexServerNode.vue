@@ -8,7 +8,7 @@
 				<el-table-column prop="Port" label="端口" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="IsLeader" label="是否主节点" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small" v-if="scope.row.IsLeader = true" type="danger">主节点</el-tag>
+            <el-tag size="small" v-if="scope.row.IsLeader == true" type="danger">主节点</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="ActivateAt" label="激活时间" show-overflow-tooltip></el-table-column>

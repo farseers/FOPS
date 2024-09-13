@@ -10,6 +10,7 @@ import (
 	"fops/application/gitApp"
 	"fops/application/linkTraceApp"
 	"fops/application/login"
+	"fops/application/monitorApp"
 	"github.com/farseer-go/webapi"
 	"github.com/farseer-go/webapi/context"
 )
@@ -69,4 +70,5 @@ var route = []webapi.Route{
 	{"POST", "/linkTrace/upload", linkTraceApp.Upload, "", []context.IFilter{}, []string{"req", ""}},
 	{"GET", "/linkTrace/visits", linkTraceApp.Visits, "", []context.IFilter{}, []string{"request", ""}},
 	{"POST", "/user/passport/Login", login.Login, "", []context.IFilter{}, []string{"req", ""}},
+	{"WS", "/ws/monitor", monitorApp.WsReceive, "", []context.IFilter{}, []string{"context", ""}},
 }

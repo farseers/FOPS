@@ -6,22 +6,28 @@
                     <div class="name">
                         <el-tag size="default">{{ item.AppName }}</el-tag>
                         <el-tooltip content="实例数量/副本数量" slot="label">
-                            <el-tag  @click="showDockerTag(item,1)" v-if="item.IsHealth" size="small" style="margin-left: 5px;cursor: pointer;">{{ item.DockerInstances
-                                }}/{{ item.DockerReplicas }}</el-tag>
-                            <el-tag  @click="showDockerTag(item,2)" v-else size="small" type="danger" style="margin-left: 5px;cursor: pointer;">{{ item.DockerInstances
-                                }}/{{ item.DockerReplicas }}</el-tag>
+                            <el-tag  @click="showDockerTag(item,1)" v-if="item.IsHealth" size="small" style="margin-left: 5px;cursor: pointer;">{{ item.DockerInstances }}/{{ item.DockerReplicas }}</el-tag>
+                            <el-tag  @click="showDockerTag(item,2)" v-else size="small" type="danger" style="margin-left: 5px;cursor: pointer;">{{ item.DockerInstances }}/{{ item.DockerReplicas }}</el-tag>
                         </el-tooltip>
-                        <el-tag size="small" type="warning" @click="onRestartDocker(item)" style="margin-left: 5px;cursor: pointer;"><el-icon><ele-SwitchButton /></el-icon>重启</el-tag>
                     </div>
-                    <div>
-                        <el-button class="ecfy_btn" size="small" type="primary" @click="showDockerLog(item.AppName)">容器日志</el-button>
-                            <el-button class="ecfy_btn" size="small" type="success" @click="showFsLogLevel(2, item.AppName)">应用日志</el-button>
+                    <div style="display: flex;">
+                      <el-tooltip content="删除服务" slot="label">
+                        <el-icon style="margin-left: 12px;cursor: pointer;color: #f56c6c;font-size: 18px" @click="onDeleteDocker(v)"><ele-CircleCloseFilled /></el-icon>
+                      </el-tooltip>
+                      <el-tooltip content="重启服务" slot="label" v-if="item.DockerReplicas > 0">
+                          <el-icon style="margin-left: 20px;cursor: pointer;color: #F56C6C;font-size: 18px;" @click="onRestartDocker(item)"><ele-Refresh /></el-icon>
+                      </el-tooltip>
+                      <el-tooltip content="容器日志" slot="label" v-if="item.DockerReplicas > 0">
+                          <el-icon style="margin-left: 20px;cursor: pointer;color: #409EFF;font-size: 18px;"  @click="showDockerLog(item.AppName)"><ele-Reading /></el-icon>
+                       </el-tooltip>
+                      <el-tooltip content="应用日志" slot="label" v-if="item.IsSys === false">
+                          <el-icon style="margin-left: 20px;cursor: pointer;color: #409EFF;font-size: 18px;" @click="showFsLogLevel(2, item.AppName)"><ele-Document /></el-icon>
+                      </el-tooltip>
                     </div>
                     <div>应用日志
                         <el-tooltip content="警告数量" slot="label">
                             <el-tag v-if="item.LogWaringCount > 0" @click="showFsLogLevel(3, item.AppName)"
-                                type="warning" size="small" style="margin-left: 5px;cursor: pointer">{{
-        item.LogWaringCount }}</el-tag>
+                                type="warning" size="small" style="margin-left: 5px;cursor: pointer">{{ item.LogWaringCount }}</el-tag>
                             <el-tag v-else @click="showFsLogLevel(3, item.AppName)" type="info" size="small"
                                 style="margin-left: 5px;cursor: pointer">{{ item.LogWaringCount }}</el-tag>
                         </el-tooltip>
@@ -49,6 +55,8 @@
                                 style="margin-left: 5px;cursor: pointer">{{ item.TaskFailCount }}</el-tag>
                         </el-tooltip>
                     </div>
+                  <div><el-tag type="info" size="small">CPU</el-tag> <b>{{ item.CpuUsagePercent }}</b>%</div>
+                  <div><el-tag type="info" size="small">内存</el-tag> <b>{{ item.MemoryUsagePercent }}</b>% / <b>{{ item.MemoryUsage }}</b> MB</div>
                 </el-card>
             </div>
         </div>
@@ -122,6 +130,36 @@ const getData = () => {
         }
     })
 }
+
+// 删除服务
+const onDeleteDocker = (row) => {
+  ElMessageBox.confirm(`请确认是否删除服务?`, '提示', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+      .then(() => {
+        state.showOverlay=true
+        // 提交数据
+        var param={
+          "AppName" : row.AppName,
+        }
+        serverApi.appsServiceDel(param).then(async function(res){
+          state.showOverlay=false
+          if(res.Status){
+            ElMessage.success("删除服务成功")
+            // 刷新应用界面
+            getTableData()
+          }else{
+            ElMessage.error(res.StatusMessage)
+          }
+        }).catch(() => {
+          state.showOverlay=false});
+      })
+      .catch(() => {
+        state.showOverlay=false});
+};
+
 const onRestartDocker = (row) => {
   ElMessageBox.confirm(`请确认是否重启容器?`, '提示', {
     confirmButtonText: '确认',
@@ -171,13 +209,14 @@ defineExpose({
 .conlyRow {
     flex-wrap: wrap;
     display: flex !important;
-    min-height: 200px;
+    min-height: 170px;
+    line-height: 15px;
 }
 
 .conlyCol {
-     padding: 5px;
+    padding: 5px;
     box-sizing: border-box;
-    width: 180px;
+    width: 190px;
 }
 
 

@@ -56,7 +56,7 @@
                 <span title="下次运行时间" v-else> {{scope.row.NextAt}}</span>
               </template>
             </el-table-column>
-            <el-table-column label="运行情况" width="140" show-overflow-tooltip>
+            <el-table-column label="运行情况" width="160" show-overflow-tooltip>
               <template #default="scope">
                 <span>耗时: {{scope.row.RunSpeedAvg}} ms</span><br>
                 <span>运行: {{scope.row.RunCount}} 次</span>
@@ -65,10 +65,10 @@
             <el-table-column label="数据">
               <template #default="scope">
                 <div>{{friendlyJSONstringify(scope.row.Data)}}</div>
-                <div v-for="(item, index) in scope.row.Clients.slice(0, 3)" :key="index">
-                  <el-tag size="small">{{item.Name}} {{item.Ip}}:{{item.Port}}</el-tag>
-                  <span v-if="scope.row.Clients.length>3">更多</span>
-                </div>
+                <span v-for="(item, index) in scope.row.Clients.slice(0, 3)" :key="index">
+                  <el-tag v-if="item.IsMaster" size="small" style="margin-right: 5px;">主 {{item.Name}} {{item.Ip}}:{{item.Port}}</el-tag>
+                  <el-tag v-else size="small" type="info" style="margin-right: 5px;">{{item.Name}} {{item.Ip}}:{{item.Port}}</el-tag>
+                </span>
               </template>
             </el-table-column>
 				<el-table-column label="操作" width="100">
@@ -122,7 +122,7 @@ const logDialogRef = ref();
 const state = reactive({
   keyWord:'',
   appName:'',
-  enable:-1,
+  enable:1,
   taskStatus:-1,
   clientId:'',
 	tableData: {
@@ -254,6 +254,7 @@ const onIsEnable=(row: any)=>{
       })
       .catch(() => {});
 }
+
 // 分页改变
 const onHandleSizeChange = (val: number) => {
 	state.tableData.param.pageSize = val;

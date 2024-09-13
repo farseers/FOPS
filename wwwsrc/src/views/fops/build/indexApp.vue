@@ -16,21 +16,34 @@
             <el-card shadow="hover" v-for="(v, k) in state.tableData.data" :key="k" style="width: 270px;"  class="appItemCard">
               <template #header>
                 <div class="card-header" style="height: 20px;">
-                  <el-tag size="default" @click="onOpenEdit('edit', v)" style="cursor: pointer;">{{ v.AppName }}</el-tag>
-                  <el-button size="small" type="warning" @click="onRestartDocker(v)" style="float:right;position: relative;"><el-icon><ele-SwitchButton /></el-icon>重启</el-button>
+                  <el-tag size="default" @click="onOpenEdit('edit', v)" style="cursor: pointer;text;font-weight: bold">{{ v.AppName }}</el-tag>
+                 
                   <el-tooltip content="实例数量/副本数量" slot="label">
                     <el-tag @click="showDockerTag(v,1)" v-if="v.IsHealth" size="small" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                     <el-tag @click="showDockerTag(v,2)" v-else size="small" type="danger" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                   </el-tooltip>
+                  <el-tag v-if="v.DockerNodeRole=='manager'" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
+                  <el-tag v-else-if="v.DockerNodeRole=='global'" type="success" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
+                  <el-tag v-else type="info" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
                 </div>
               </template>
                 <div class="appItem" style="margin-bottom: 10px">
                   <div style="display: flex;justify-content: space-between;align-items: center;">
                     <span>仓库版本</span>
-                    <div>
-                      <el-button size="small" type="primary" @click="showDockerLog(v.AppName)" >容器日志</el-button>
-                      <el-button size="small" type="success" @click="showFsLogLevel(2,v.AppName)" >应用日志</el-button>
-                    </div>
+                    <span class="ecdis">
+                      <el-tooltip content="删除服务" slot="label">
+                        <el-icon style="cursor: pointer;color: #f56c6c;font-size: 18px" @click="onDeleteDocker(v)"><ele-CircleCloseFilled /></el-icon>
+                      </el-tooltip>
+                      <el-tooltip content="重启服务" slot="label" v-if="v.DockerReplicas > 0">
+                        <el-icon style="margin-left: 10px;cursor: pointer;color: #ff4d51;font-size: 18px" @click="onRestartDocker(v)"><ele-Refresh /></el-icon>
+                      </el-tooltip>
+                      <el-tooltip content="容器日志" slot="label" v-if="v.DockerReplicas > 0">
+                          <el-icon style="margin-left: 10px;cursor: pointer;color: #409EFF;font-size: 18px"  @click="showDockerLog(v.AppName)" ><ele-Reading /></el-icon>
+                       </el-tooltip>
+                      <el-tooltip content="应用日志" slot="label">
+                          <el-icon style="margin-left: 10px;cursor: pointer;color: #19d4ae;font-size: 18px" @click="showFsLogLevel(2,v.AppName)"><ele-Document /></el-icon>
+                      </el-tooltip>
+                    </span>
                   </div>
                   <div class="appItem">
                     <el-tag v-if="v.DockerImage !=''" size="small">{{ v.DockerImage }}</el-tag>
@@ -47,10 +60,6 @@
                 <div class="appItem" style="margin-bottom: 10px">部署时间
                   <span v-if="v.ClusterVer.DockerImage !=''">{{ v.ClusterVer.DeploySuccessAt }}</span>
                   <el-tag v-else size="small">未发布</el-tag>
-                </div>
-                <div class="appItem" style="margin-bottom: 10px">部署角色
-                  <el-tag v-if="v.DockerNodeRole=='manager'" type="danger" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
-                  <el-tag v-else size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
                 </div>
               <div class="appItem" style="margin-bottom: 10px">应用日志
                 <el-tooltip content="警告数量" slot="label">
@@ -77,8 +86,8 @@
               <div v-if="v.AppGit > 0" style="display: flex;align-items: center;justify-content: center;padding: 0 10px;">
                 <el-button size="small" @click="onSyncWorkflows(v)" type="info" style="width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>
               </div>
-              <div class="appItem appItem1">构建
-                <el-button v-if="v.AppGit > 0" v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v,item)" type="danger" style="margin-left: 5px;">{{item}}</el-button>
+              <div v-if="v.AppGit > 0" class="appItem appItem1">构建
+                <el-button v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v,item)" type="danger" style="margin-left: 5px;">{{item}}</el-button>
               </div>
             </el-card>
           </el-space>
@@ -429,6 +438,35 @@ const onSyncWorkflows = (row:any) => {
   state.showOverlay=false
 };
 
+// 删除服务
+const onDeleteDocker = (row:any) => {
+  ElMessageBox.confirm(`请确认是否删除服务?`, '提示', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+      .then(() => {
+        state.showOverlay=true
+        // 提交数据
+        var param={
+          "AppName" : row.AppName,
+        }
+        serverApi.appsServiceDel(param).then(async function(res){
+          state.showOverlay=false
+          if(res.Status){
+            ElMessage.success("删除服务成功")
+            // 刷新应用界面
+            getTableData()
+          }else{
+            ElMessage.error(res.StatusMessage)
+          }
+        }).catch(() => {
+          state.showOverlay=false});
+      })
+      .catch(() => {
+        state.showOverlay=false});
+};
+
 // 重启容器
 const onRestartDocker = (row:any) => {
   ElMessageBox.confirm(`请确认是否重启容器?`, '提示', {
@@ -557,6 +595,12 @@ onUnmounted(()=>{
 })
 </script>
 <style lang="scss">
+.ecdis{
+  float: right;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+}
 .initdialog__body {
     :deep(.el-dialog__body) {
     display: flex;

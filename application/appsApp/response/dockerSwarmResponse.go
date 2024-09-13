@@ -1,8 +1,8 @@
 package response
 
-import "fops/domain/apps"
+import "github.com/farseer-go/docker"
 
 type DockerSwarmResponse struct {
-	apps.DockerInstanceVO
+	docker.ServicePsVO
 	Log string
 }

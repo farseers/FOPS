@@ -59,13 +59,7 @@ const onCancel = () => {
 
 // 提交
 const onSubmit = () => {
-    const tis = `确定修改${state.appName}${state.title}?`
-    ElMessageBox.confirm(tis, '提示', {
-    confirmButtonText: '确认',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-      .then(() => {
+
         // 删除逻辑
         state.showOverlay = true;
         serverApi.setReplicas({
@@ -83,8 +77,6 @@ const onSubmit = () => {
         }).catch(() => {
         state.showOverlay = false;
       });
-      })
-      .catch(() => {  });
 };
 
 

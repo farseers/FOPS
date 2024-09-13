@@ -7,6 +7,7 @@ import (
 	"fops/domain/apps"
 	"fops/domain/apps/event"
 	"fops/interfaces/job"
+	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/modules"
@@ -23,7 +24,8 @@ func (module Module) DependsModule() []modules.FarseerModule {
 }
 
 func (module Module) PostInitialize() {
-	dockerVer := container.Resolve[apps.IDockerDevice]().GetVersion()
+	client := docker.NewClient()
+	dockerVer := client.GetVersion()
 	if dockerVer != "" {
 		tasks.Run("开启构建", time.Second*1, job.BuildingJob, context.Background())
 		flog.Info("Docker version：" + flog.Blue(dockerVer))
@@ -33,6 +35,9 @@ func (module Module) PostInitialize() {
 	}
 
 	tasks.Run("统计访问", time.Minute*1, job.StatVisitsJob, context.Background())
+
+	// 监听agent的IP变化
+	go job.ListenerAgentNotify()
 
 	// 如果最后一次构建是fops，且状态=构建中，同时fops的仓库=最后一次构建的镜像，则强制做一次同步操作
 	buildEO := container.Resolve[apps.Repository]().GetLastBuilding()

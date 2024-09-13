@@ -2,6 +2,7 @@
 package appsApp
 
 import (
+	"fmt"
 	"fops/application/appsApp/request"
 	"fops/application/appsApp/response"
 	"fops/domain/apps"
@@ -9,6 +10,7 @@ import (
 	"fops/domain/fSchedule"
 	"fops/domain/logData"
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/core/eumLogLevel"
 	"github.com/farseer-go/fs/dateTime"
@@ -17,6 +19,7 @@ import (
 	"github.com/farseer-go/mapper"
 	"github.com/farseer-go/utils/file"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -31,7 +34,6 @@ func Add(req request.AddRequest, appsRepository apps.Repository) {
 	if strings.HasSuffix(do.AdditionalScripts, "\\") {
 		do.AdditionalScripts = do.AdditionalScripts[:len(do.AdditionalScripts)-1]
 	}
-
 	// 添加
 	err := appsRepository.Add(do)
 	exception.ThrowWebExceptionError(403, err)
@@ -40,23 +42,20 @@ func Add(req request.AddRequest, appsRepository apps.Repository) {
 // Update 修改应用
 // @post update
 // @filter application.Jwt
-func Update(req request.UpdateRequest, appsRepository apps.Repository, appsIDockerSwarmDevice apps.IDockerSwarmDevice) {
+func Update(req request.UpdateRequest, appsRepository apps.Repository) {
 	do := appsRepository.ToEntity(req.AppName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 
-	// 更新镜像
-	if (req.ClusterDockerImage != "" && do.ClusterVer[req.ClusterId] != nil && req.ClusterDockerImage != do.ClusterVer[req.ClusterId].DockerImage) || do.DockerReplicas != req.DockerReplicas {
-		c := make(chan string, 100)
-		if !appsIDockerSwarmDevice.SetImagesAndReplicas(cluster.DomainObject{}, req.AppName, req.ClusterDockerImage, req.DockerReplicas, c) {
-			lstLog := collections.NewListFromChan(c)
-			exception.ThrowWebExceptionf(403, "更新镜像失败:<br />%s", lstLog.ToString("<br />"))
-		}
-	} else if do.DockerReplicas != req.DockerReplicas {
-		// 更新副本数量
-		c := make(chan string, 100)
-		if !appsIDockerSwarmDevice.SetReplicas(cluster.DomainObject{}, req.AppName, req.DockerReplicas, c) {
-			lstLog := collections.NewListFromChan(c)
-			exception.ThrowWebExceptionf(403, "更新副本失败:<br />%s", lstLog.ToString("<br />"))
+	client := docker.NewClient()
+	if exists, err := client.Service.Exists(req.AppName); exists || err != nil {
+		// 更新镜像
+		if (req.ClusterDockerImage != "" && do.ClusterVer[req.ClusterId] != nil && req.ClusterDockerImage != do.ClusterVer[req.ClusterId].DockerImage) || do.DockerReplicas != req.DockerReplicas {
+			err = client.Service.SetImagesAndReplicas(req.AppName, req.ClusterDockerImage, req.DockerReplicas)
+			exception.ThrowWebExceptionError(403, err)
+		} else if do.DockerReplicas != req.DockerReplicas {
+			// 更新副本数量
+			err = client.Service.SetReplicas(req.AppName, req.DockerReplicas)
+			exception.ThrowWebExceptionError(403, err)
 		}
 	}
 
@@ -86,14 +85,19 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, appsIDock
 // Delete 删除应用
 // @post delete
 // @filter application.Jwt
-func Delete(appName string, appsRepository apps.Repository, appsIDockerSwarmDevice apps.IDockerSwarmDevice) {
+func Delete(appName string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(strings.Trim(appName, "") == "", 403, "参数不完整")
 	// 删除服务
-	c := make(chan string, 100)
-	appsIDockerSwarmDevice.DeleteService(appName, c)
+	client := docker.NewClient()
+	exists, err := client.Service.Exists(appName)
+	// 当err!=nil时，也认为服务是存在的。
+	if exists || err != nil {
+		err = client.Service.Delete(appName)
+		exception.ThrowWebExceptionError(403, err)
+	}
 
 	// 删除应用
-	_, err := appsRepository.Delete(appName)
+	_, err = appsRepository.Delete(appName)
 	exception.ThrowWebExceptionError(403, err)
 }
 
@@ -119,25 +123,32 @@ func List(clusterId int64, isSys bool, appsRepository apps.Repository, logDataRe
 			return item.AppGit == parse.ToInt64(gitItem.Id)
 		}).First().Name
 
-		// 日志异常数量
-		appsResponse.LogErrorCount = countList.Where(func(logItem logData.LogCountEO) bool {
-			return item.AppName == logItem.AppName && logItem.LogLevel == eumLogLevel.Error
-		}).First().LogCount
+		// 统计日志数量
+		countList.Foreach(func(logItem *logData.LogCountEO) {
+			if item.AppName != logItem.AppName {
+				return
+			}
+			switch logItem.LogLevel {
+			case eumLogLevel.Error: // 日志异常数量
+				appsResponse.LogErrorCount++
+			case eumLogLevel.Warning: // 日志警告数量
+				appsResponse.LogWaringCount++
+			default:
+			}
+		})
 
-		// 日志警告数量
-		appsResponse.LogWaringCount = countList.Where(func(logItem logData.LogCountEO) bool {
-			return item.AppName == logItem.AppName && logItem.LogLevel == eumLogLevel.Warning
-		}).First().LogCount
-
-		// 任务组执行失败数量
-		appsResponse.TaskFailCount = taskGroupStatList.Where(func(statTaskEO fSchedule.StatTaskEO) bool {
-			return statTaskEO.ClientName == item.AppName && statTaskEO.ExecuteStatus == 3
-		}).First().Count
-
-		// 任务组执行成功数量
-		appsResponse.TaskSuccessCount = taskGroupStatList.Where(func(statTaskEO fSchedule.StatTaskEO) bool {
-			return statTaskEO.ClientName == item.AppName && statTaskEO.ExecuteStatus == 2
-		}).First().Count
+		// 统计任务组执行数量
+		taskGroupStatList.Foreach(func(statTaskEO *fSchedule.StatTaskEO) {
+			if statTaskEO.ClientName != item.AppName {
+				return
+			}
+			switch statTaskEO.ExecuteStatus {
+			case 3: // 任务组执行失败数量
+				appsResponse.TaskFailCount++
+			case 2: // 任务组执行成功数量
+				appsResponse.TaskSuccessCount++
+			}
+		})
 
 		// 获取工作流文件名称
 		workflowsNames := file.GetFiles(item.GetWorkflowsDir(), "*.yml", true)
@@ -160,6 +171,32 @@ func List(clusterId int64, isSys bool, appsRepository apps.Repository, logDataRe
 				}
 			}
 		}
+
+		// 容器资源占用统计
+		appsResponse.CpuUsagePercent = item.DockerInspect.Where(func(item apps.DockerInspectVO) bool {
+			return item.CpuUsagePercent > 0
+		}).Average(func(item apps.DockerInspectVO) any {
+			return item.CpuUsagePercent
+		})
+		appsResponse.CpuUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.2f", appsResponse.CpuUsagePercent), 64)
+
+		appsResponse.MemoryUsagePercent = item.DockerInspect.Where(func(item apps.DockerInspectVO) bool {
+			return item.MemoryUsagePercent > 0
+		}).Average(func(item apps.DockerInspectVO) any {
+			return item.MemoryUsagePercent
+		})
+		appsResponse.MemoryUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.2f", appsResponse.MemoryUsagePercent), 64)
+
+		appsResponse.MemoryUsage = parse.ToUInt64(item.DockerInspect.Where(func(item apps.DockerInspectVO) bool {
+			return item.MemoryUsage > 0
+		}).Average(func(item apps.DockerInspectVO) any {
+			return item.MemoryUsage
+		}))
+		appsResponse.MemoryLimit = parse.ToUInt64(item.DockerInspect.Where(func(item apps.DockerInspectVO) bool {
+			return item.MemoryLimit > 0
+		}).Average(func(item apps.DockerInspectVO) any {
+			return item.MemoryLimit
+		}))
 
 		lst.Add(appsResponse)
 	})

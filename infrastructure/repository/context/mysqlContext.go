@@ -8,6 +8,7 @@ import (
 	"fops/domain/monitor"
 	"fops/infrastructure/repository/model"
 	"github.com/farseer-go/data"
+	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/core"
 )
 
@@ -25,7 +26,7 @@ type mysqlContext struct {
 	// cluster表
 	Cluster data.DomainSet[model.ClusterPO, cluster.DomainObject] `data:"name=cluster;migrate;"`
 	// 节点信息
-	ClusterNode data.DomainSet[model.ClusterNodePO, apps.DockerNodeVO] `data:"name=cluster_node;migrate;"`
+	ClusterNode data.DomainSet[model.ClusterNodePO, docker.DockerNodeVO] `data:"name=cluster_node;migrate;"`
 	// build表
 	Build data.DomainSet[model.BuildPO, apps.BuildEO] `data:"name=build;migrate;"`
 	// Git

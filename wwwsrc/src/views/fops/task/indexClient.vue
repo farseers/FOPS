@@ -2,10 +2,9 @@
 	<div class="system-user-container layout-padding">
 		<el-card shadow="hover" class="layout-padding-auto">
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
-				<el-table-column prop="Id" label="序号" width="200" />
 				<el-table-column label="客户端">
           <template #default="scope">
-          <div style="float: left;padding-right: 10px;padding-top: 5px">
+          <div style="float: left;margin-right: 10px;">
             <el-tag v-if="scope.row.Status==0">刚上线</el-tag>
             <el-tag v-if="scope.row.Status==1">接受调度</el-tag>
             <el-tag v-if="scope.row.Status==2">无法调度</el-tag>
@@ -13,37 +12,33 @@
             <el-tag v-if="scope.row.Status==4">离线</el-tag>
           </div>
           <div style="float: left">
-              <span>{{scope.row.Name}}</span><br>
-              <span>{{scope.row.Ip}}:{{scope.row.Port}}</span>
+            <el-tag type="danger" size="small" v-if="scope.row.IsMaster" style="margin-right: 5px;">主</el-tag> {{scope.row.Name}} {{scope.row.Ip}}:{{scope.row.Port}} | {{scope.row.Job.Name}}（<span style="color:#4eb8ff">Ver:{{scope.row.Job.Ver}}</span>）
           </div>
           </template>
         </el-table-column>
-        <el-table-column label="时间" width="250" show-overflow-tooltip>
+        <el-table-column label="激活时间" width="250" show-overflow-tooltip>
           <template #default="scope">
-            <span>激活：{{scope.row.ActivateAt}}</span><br>
-            <span>调度：{{scope.row.ScheduleAt}}</span>
+            <span>{{scope.row.ActivateAt}}</span>
           </template>
         </el-table-column>
-        <el-table-column label="队列数量" show-overflow-tooltip>
+        <el-table-column label="调度时间" width="250" show-overflow-tooltip>
           <template #default="scope">
-            <span>队列数量：{{scope.row.QueueCount}}</span><br>
-            <span>工作数量：{{scope.row.WorkCount}}</span><br>
-            <span>错误次数：{{scope.row.ErrorCount}}</span>
+            <span v-if='scope.row.ScheduleAt != "0001-01-01 00:00:00" '>{{scope.row.ScheduleAt}}</span>
           </template>
         </el-table-column>
-        <el-table-column label="系统数据" show-overflow-tooltip>
+        <el-table-column label="队列数量" width="90" show-overflow-tooltip>
           <template #default="scope">
-            <span>CPU百分比：{{scope.row.CpuUsage}}</span><br>
-            <span>内存百分比：{{scope.row.MemoryUsage}}</span>
+            <span>{{scope.row.QueueCount}}</span>
           </template>
         </el-table-column>
-        <el-table-column prop="Jobs" label="Jobs" show-overflow-tooltip>
+        <el-table-column label="工作数量" width="90" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag
-                v-for="(tag, index) in scope.row.Jobs"
-                :key="index">
-              【{{ tag.Name }}-{{tag.Ver}}】
-            </el-tag>
+            <span>{{scope.row.WorkCount}}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="错误次数" width="90" show-overflow-tooltip>
+          <template #default="scope">
+            <span>{{scope.row.ErrorCount}}</span>
           </template>
         </el-table-column>
 			</el-table>
@@ -112,5 +107,8 @@ onMounted(() => {
 			flex: 1;
 		}
 	}
+}
+.el-table__row .el-table__cell{
+  padding: 0 0;
 }
 </style>

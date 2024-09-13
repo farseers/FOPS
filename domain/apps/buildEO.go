@@ -8,6 +8,7 @@ import (
 	"fops/domain/apps/event"
 	"fops/domain/cluster"
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/dateTime"
@@ -43,6 +44,7 @@ type BuildEO struct {
 	cancel          context.CancelFunc
 	apps            DomainObject
 	appGit          GitEO // 应用的源代码
+	dockerClient    *docker.Client
 }
 
 func (receiver *BuildEO) IsNil() bool {
@@ -50,6 +52,7 @@ func (receiver *BuildEO) IsNil() bool {
 }
 
 func (receiver *BuildEO) StartBuild() {
+	receiver.dockerClient = docker.NewClient()
 	receiver.dockerDevice = container.Resolve[IDockerDevice]()
 	receiver.gitDevice = container.Resolve[IGitDevice]()
 	receiver.logQueue = NewLogQueue(receiver.Id)
@@ -114,7 +117,7 @@ func (receiver *BuildEO) StartBuild() {
 
 	// 启动构建系统
 	dockerName := "FOPS-Build"
-	if !receiver.dockerDevice.ExistsDocker(dockerName) {
+	if !receiver.dockerClient.Container.Exists(dockerName) {
 		receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 		receiver.logQueue.progress <- "启动构建系统：" + receiver.WorkflowsAction.RunsOn
 		args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
@@ -123,14 +126,18 @@ func (receiver *BuildEO) StartBuild() {
 		for _, arg := range builderArgs {
 			args = append(args, arg)
 		}
-		receiver.checkResult(receiver.dockerDevice.Run(dockerName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env, receiver.logQueue.progress, receiver.ctx)) // , "-v /var/lib/fops:/var/lib/fops"
+		err := receiver.dockerClient.Container.Run(dockerName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env.ToMap(), receiver.ctx) // , "-v /var/lib/fops:/var/lib/fops"
+		if err != nil {
+			receiver.logQueue.progress <- err.Error()
+			receiver.checkResult(false)
+		}
 	}
-	//defer receiver.dockerDevice.Kill(dockerName)
+	//defer receiver.dockerClient.Container.Kill(dockerName)
 
 	// 获取外网IP
 	if extranetIpUrl := configure.GetString("Fops.ExtranetIpUrl"); extranetIpUrl != "" {
 		receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
-		receiver.dockerDevice.Execute(dockerName, fmt.Sprintf("echo '公网IP：$(curl -s %s)'", extranetIpUrl), nil, receiver.logQueue.progress, receiver.ctx)
+		_ = receiver.dockerClient.Container.Exec(dockerName, fmt.Sprintf("echo '公网IP：$(curl -s %s)'", extranetIpUrl), nil, receiver.logQueue.progress, receiver.ctx)
 	}
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 
@@ -159,7 +166,7 @@ func (receiver *BuildEO) StartBuild() {
 			}
 
 			// 将action文件复制到容器
-			receiver.dockerDevice.Copy(dockerName, step.GetActionPath(), step.GetActionPath(), receiver.Env, make(chan string, 100), receiver.ctx)
+			_ = receiver.dockerClient.Container.Cp(dockerName, step.GetActionPath(), step.GetActionPath(), receiver.ctx)
 
 			// 支持checkout默认拉取应用
 			if parse.ToString(step.With["gitHub"]) != "" {
@@ -177,13 +184,14 @@ func (receiver *BuildEO) StartBuild() {
 			file.Delete(WithJsonPath)
 			withContent, _ := json.Marshal(step.With)
 			file.WriteByte(WithJsonPath, withContent)
-			receiver.dockerDevice.Copy(dockerName, WithJsonPath, WithJsonPath, receiver.Env, make(chan string, 100), receiver.ctx)
+			_ = receiver.dockerClient.Container.Cp(dockerName, WithJsonPath, WithJsonPath, receiver.ctx)
 
 			// 设置超时
 			receiver.ctx, receiver.cancel = context.WithTimeout(receiver.ctx, time.Duration(step.Timeout)*time.Minute)
 
 			// 执行 docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
-			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx))
+			err := receiver.dockerClient.Container.Exec(dockerName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx)
+			receiver.checkResult(err == nil)
 
 			switch step.ActionName {
 			case "checkout":
@@ -201,6 +209,7 @@ func (receiver *BuildEO) StartBuild() {
 			//shellScript.Add("source /root/.bashrc")
 			shellScript.Add("mkdir -p " + DistRoot + receiver.appGit.GetRelativePath())
 			shellScript.Add("cd " + DistRoot + receiver.appGit.GetRelativePath())
+			shellScript.Add("set -xe")
 			shellScript.AddArray(step.Run)
 			shellScript.Add("")
 			script := shellScript.ToString("\n")
@@ -210,9 +219,10 @@ func (receiver *BuildEO) StartBuild() {
 			}
 			shellPath := fmt.Sprintf("%s%d-%d.sh", ShellRoot, receiver.Env.BuildNumber, index+1)
 			file.WriteString(shellPath, script)
-			receiver.dockerDevice.Copy(dockerName, shellPath, shellPath, receiver.Env, make(chan string, 100), receiver.ctx)
+			_ = receiver.dockerClient.Container.Cp(dockerName, shellPath, shellPath, receiver.ctx)
 
-			receiver.checkResult(receiver.dockerDevice.Execute(dockerName, shellPath, receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx))
+			// 执行脚本
+			receiver.checkResult(receiver.dockerClient.Container.Exec(dockerName, shellPath, receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx) == nil)
 		}
 		receiver.logQueue.progress <- "---------------------------------------------------------"
 	}
@@ -232,17 +242,18 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 		receiver.logQueue.progress <- err.Error()
 		return false
 	}
-
-	receiver.WorkflowsAction.Steps = append([]stepVO{
-		{
-			Name:              "开启Git代理",
-			ActionName:        "gitProxy",
-			ActionVer:         "v1",
-			ActionDownloadUrl: "https://github.com/farseers/FOPS-Actions/releases/download/v1/gitProxy",
-			RepositoryName:    "farseers/FOPS-Actions",
-		},
-	}, receiver.WorkflowsAction.Steps...)
-
+	if receiver.WorkflowsAction.With["proxy"] != "" {
+		receiver.WorkflowsAction.Steps = append([]stepVO{
+			{
+				Name:              "开启Git代理",
+				ActionName:        "gitProxy",
+				ActionVer:         "v1",
+				ActionDownloadUrl: "https://github.com/farseers/FOPS-Actions/releases/download/v1/gitProxy",
+				RepositoryName:    "farseers/FOPS-Actions",
+				With:              make(map[string]any),
+			},
+		}, receiver.WorkflowsAction.Steps...)
+	}
 	receiver.WorkflowsAction.Steps = append([]stepVO{
 		{
 			Name:              "初始化环境",

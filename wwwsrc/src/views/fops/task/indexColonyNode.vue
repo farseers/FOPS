@@ -6,13 +6,13 @@
 			</div>
 			<div class="main">
 				<div class="aside">
+          <div>
+            <h3 class="con_ts">集群节点</h3>
+            <AsyncConly ref="childConly" />
+          </div>
 					<div>
 						<h3 class="con_ts">应用</h3>
 					   <AsyncEcfy ref="childEcfy" />
-					</div>
-					<div>
-						<h3 class="con_ts">集群节点</h3>
-					    <AsyncConly ref="childConly" />
 					</div>
 				</div>
 				<div class="argid">
@@ -123,7 +123,6 @@ onMounted(() => {
 		overflow: hidden;
 	}
 	.argid {
-		
 		height: 100%;
 		width: 350px;
 	}
@@ -138,6 +137,4 @@ onMounted(() => {
 	}
 	
 }
-
-	
 </style>

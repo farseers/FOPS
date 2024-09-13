@@ -6,7 +6,6 @@
           <el-form-item label="应用名称">
             <el-input v-model="state.ruleForm.AppName" placeholder="请输入应用名称" style="max-width: 200px;margin-right: 5px"></el-input>
             <el-button v-if="state.dialog.type=='edit'" @click="onDeleteApp" size="default" type="danger" style="margin-left: 5px;">删除应用</el-button>
-            <el-button v-if="state.dialog.type=='edit'" @click="onDeleteService" size="default" type="info" style="margin-left: 5px;">删除容器</el-button>
           </el-form-item>
           <el-form-item label="仓库版本">
             <el-tag v-if="state.ruleForm.DockerImage !=''" size="small">{{state.ruleForm.DockerImage}}</el-tag>
@@ -27,9 +26,10 @@
             <el-input v-model="state.ruleForm.DockerReplicas" type="number" placeholder="请输入副本数量"></el-input>
           </el-form-item>
           <el-form-item label="容器节点角色">
-            <el-select v-model="state.ruleForm.DockerNodeRoleInt" placeholder="请输入容器节点角色" class="ml10" style="max-width: 150px;" size="default">
-              <el-option label="manager" :value="0"></el-option>
-              <el-option label="worker" :value="1"></el-option>
+            <el-select v-model="state.ruleForm.DockerNodeRole" placeholder="请输入容器节点角色" class="ml10" style="max-width: 150px;" size="default">
+              <el-option label="manager" value="manager"></el-option>
+              <el-option label="worker" value="worker"></el-option>
+              <el-option label="global" value="global"></el-option>
             </el-select>
           </el-form-item>
           <el-form-item label="容器参数">
@@ -124,7 +124,6 @@ const state = reactive({
     DockerInstances:0, // 实例数量
     DockerReplicas:1,// 副本数量
     DockerNodeRole:'',// 容器节点角色 manager or worker
-    DockerNodeRoleInt:1,// 容器节点角色 manager or worker
     AdditionalScripts:'',// 多行内容，用多行文本框
     WorkflowsYmlPath:'',// 工作流定义的路径
     LimitCpus:0,        // Cpu核数限制
@@ -179,11 +178,11 @@ const openDialog = (type: string, row: any, clusterId: number) => {
       state.ruleForm.WorkflowsYmlPath=row.WorkflowsYmlPath
       state.ruleForm.LimitCpus = row.LimitCpus
       state.ruleForm.LimitMemory = row.LimitMemory
-      if (state.ruleForm.DockerNodeRole == "manager") {
-        state.ruleForm.DockerNodeRoleInt=0
-      } else {
-        state.ruleForm.DockerNodeRoleInt=1
-      }
+      // if (state.ruleForm.DockerNodeRole == "manager") {
+      //   state.ruleForm.DockerNodeRoleInt=0
+      // } else {
+      //   state.ruleForm.DockerNodeRoleInt=1
+      // }
       state.ruleForm.AppGitName = row.AppGitName
       //loadGitInfo(row.AppGit)
       // 加载git数据
@@ -277,11 +276,6 @@ const onDeleteService = () => {
 
 // 提交
 const onSubmit = () => {
-  if(state.ruleForm.DockerNodeRoleInt==0){
-    state.ruleForm.DockerNodeRole="manager"
-  }else{
-    state.ruleForm.DockerNodeRole="worker"
-  }
   // 提交数据
   var param={
     "ClusterId":state.ruleForm.ClusterVer.ClusterId,
@@ -291,11 +285,11 @@ const onSubmit = () => {
     "FrameworkGits":state.ruleForm.FrameworkGits,
     "DockerfilePath":state.ruleForm.DockerfilePath,
     "DockerReplicas":parseInt(state.ruleForm.DockerReplicas),
-    "DockerNodeRole":state.ruleForm.DockerNodeRole,
     "AdditionalScripts":state.ruleForm.AdditionalScripts,
     "WorkflowsYmlPath":state.ruleForm.WorkflowsYmlPath,
     "LimitCpus":parseFloat(state.ruleForm.LimitCpus),
     "LimitMemory":state.ruleForm.LimitMemory,
+    "DockerNodeRole":state.ruleForm.DockerNodeRole,
   }
   emit('showOverlay');
   serverApi.appsEdit(param).then(function (res){

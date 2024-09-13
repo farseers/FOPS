@@ -152,7 +152,7 @@ func View(buildId int64) action.IResult {
 // Stop 停止构建
 // @post build/stop
 // @filter application.Jwt
-func Stop(buildId int64, dockerDevice apps.IDockerDevice, appsRepository apps.Repository) {
+func Stop(buildId int64, appsRepository apps.Repository) {
 	var buildEO apps.BuildEO
 	if buildId > 0 {
 		buildEO = appsRepository.ToBuildEntity(buildId)

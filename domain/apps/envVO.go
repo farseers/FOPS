@@ -3,7 +3,7 @@ package apps
 import (
 	"fmt"
 	"github.com/farseer-go/fs/parse"
-	"github.com/farseer-go/utils/file"
+	"os"
 )
 
 const (
@@ -22,14 +22,15 @@ const (
 
 // InitFopsDir 初始化目录
 func InitFopsDir() {
-	file.CreateDir766(FopsRoot)
-	file.CreateDir766(KubeRoot)
-	file.CreateDir766(NpmModulesRoot)
-	file.CreateDir766(DistRoot)
-	file.CreateDir766(GitRoot)
-	file.CreateDir766(ShellRoot)
-	file.CreateDir766(ActionsRoot)
-	file.CreateDir766(WorkflowsRoot)
+	// sudo chmod -R 777 /var/lib/fops/
+	_ = os.MkdirAll(FopsRoot, 0777)
+	_ = os.MkdirAll(KubeRoot, 0777)
+	_ = os.MkdirAll(NpmModulesRoot, 0777)
+	_ = os.MkdirAll(DistRoot, 0777)
+	_ = os.MkdirAll(GitRoot, 0777)
+	_ = os.MkdirAll(ShellRoot, 0777)
+	_ = os.MkdirAll(ActionsRoot, 0777)
+	_ = os.MkdirAll(WorkflowsRoot, 0777)
 }
 
 // EnvVO 构建时的环境变量

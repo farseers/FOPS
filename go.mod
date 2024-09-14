@@ -22,7 +22,7 @@ require (
 	github.com/farseer-go/tasks v0.14.0
 	github.com/farseer-go/utils v0.14.0
 	github.com/farseer-go/webapi v0.14.0
-	github.com/farseer-go/monitor v0.0.0-20240831085226-a4718886ccee // indirect
+	github.com/farseer-go/monitor v0.0.0-20240913090221-e4f96ce2b7f0 // indirect
 )
 
 require (

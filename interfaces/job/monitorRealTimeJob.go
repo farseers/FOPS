@@ -51,15 +51,16 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 				switch rule.Comparison {
 				case ">":
 					if parse.ToFloat32(rule.KeyValue) > parse.ToFloat32(reqVal) {
-						comparisonMsg = fmt.Sprintf("%s %s %s %s %s", time.Now().Format("2006-01-02 15:04:05"), rule.AppName, rule.Remark, "大于", reqVal)
+						comparisonMsg = fmt.Sprintf("%s %s %s 大于 %f", time.Now().Format("01-02 15:04:05"), rule.AppId, rule.AppName, parse.ToFloat32(reqVal))
 					}
 				case "<":
 					if parse.ToFloat32(rule.KeyValue) < parse.ToFloat32(reqVal) {
-						comparisonMsg = fmt.Sprintf("%s %s %s %s %s", time.Now().Format("2006-01-02 15:04:05"), rule.AppName, rule.Remark, "小于", reqVal)
+						comparisonMsg = fmt.Sprintf("%s %s %s 小于 %f", time.Now().Format("01-02 15:04:05"), rule.AppId, rule.AppName, parse.ToFloat32(reqVal))
 					}
 				case "=":
 					if parse.ToFloat32(rule.KeyValue) == parse.ToFloat32(reqVal) {
-						comparisonMsg = fmt.Sprintf("%s %s %s %s %s", time.Now().Format("2006-01-02 15:04:05"), rule.AppName, rule.Remark, "等于", reqVal)
+						comparisonMsg = fmt.Sprintf("%s %s %s 等于 %f", time.Now().Format("01-02 15:04:05"), rule.AppId, rule.AppName, parse.ToFloat32(reqVal))
+						//comparisonMsg = fmt.Sprintf("%s %s 等于", time.Now().Format("01-02 15:04:05"), rule.AppName)
 					}
 
 				}
@@ -74,8 +75,8 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 			}
 			// 监控程序是否正常
 			if dateTime.Now().Sub(dataInfo.CreateAt).Minutes() > 10 {
-				time.Sleep(5 * time.Second)
-				var comparisonMsg = fmt.Sprintf("%s %s %s %s", time.Now().Format("2006-01-02 15:04:05"), rule.AppId, rule.AppName, "请检查项目是否已经停止")
+				time.Sleep(1 * time.Second)
+				var comparisonMsg = fmt.Sprintf("%s %s %s %s", time.Now().Format("01-02 15:04:05"), rule.AppId, rule.AppName, "请检查项目是否已经停止")
 				// 通知数据
 				noticeList := monitorRepository.ToListNoticeById(strings.Split(rule.NoticeWhatsAppIds, ","))
 				noticeList.Foreach(func(not *monitor.NoticeEO) {

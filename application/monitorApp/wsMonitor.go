@@ -20,21 +20,11 @@ func WsReceive(context *websocket.Context[fsMonitor.SendContentVO], monitorRepos
 	if len(req.AppId) == 0 {
 		return
 	}
-	// 规则
-	ruleList := monitorRepository.ToListRuleByAppId(req.AppId)
 	// 所有key值进行处理
 	// 添加记录
 	addList := collections.NewList[monitor.DataEO]()
 	req.Keys.Keys().Foreach(func(key *string) {
-		ruleVal := ruleList.Where(func(rule monitor.RuleEO) bool {
-			return rule.KeyName == *key
-		}).First()
 		reqVal := req.Keys.GetValue(*key)
-		// 发送消息
-		if len(ruleVal.NoticeWhatsAppApiKey) > 0 {
-			ruleVal.WhatsAppSendMsg(parse.ToString(reqVal))
-		}
-
 		addList.Add(monitor.NewDataEO(req.AppId, req.AppName, *key, parse.ToString(reqVal)))
 	})
 	err := monitorRepository.Save(addList)

@@ -38,6 +38,8 @@ type mysqlContext struct {
 
 	// 监控规则
 	MonitorRule data.DomainSet[model.MonitorRulePO, monitor.RuleEO] `data:"name=monitor_rule;migrate;"`
+	// 通知数据
+	MonitorNotice data.DomainSet[model.MonitorNoticePO, monitor.NoticeEO] `data:"name=monitor_notice;migrate;"`
 }
 
 // InitMysqlContext 初始化上下文

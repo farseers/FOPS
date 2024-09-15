@@ -36,6 +36,8 @@ func (module Module) PostInitialize() {
 
 	tasks.Run("统计访问", time.Minute*1, job.StatVisitsJob, context.Background())
 
+	tasks.Run("监控数据处理", time.Second*5, job.MonitorRealTimeJob, context.Background())
+
 	// 监听agent的IP变化
 	go job.ListenerAgentNotify()
 

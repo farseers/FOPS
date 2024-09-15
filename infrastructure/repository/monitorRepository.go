@@ -20,6 +20,25 @@ func (receiver *monitorRepository) ToListRuleByAppId(appId string) collections.L
 	return mapper.ToList[monitor.RuleEO](poList)
 }
 
+// ToListRule 获取所有规则数据
+func (receiver *monitorRepository) ToListRule() collections.List[monitor.RuleEO] {
+	poList := context.MysqlContext.MonitorRule.Where("enable = 1").ToList()
+	return mapper.ToList[monitor.RuleEO](poList)
+}
+
+// ToListDataByAppId 监控数据
+func (receiver *monitorRepository) ToListDataByAppIdKey(appId, key string, top int) collections.List[monitor.DataEO] {
+	poList := context.CHContext.MonitorData.Where("app_id = ? and key = ?", appId, key).Desc("create_at").ToPageList(top, 1)
+	return mapper.ToList[monitor.DataEO](poList.List)
+}
+
+// ToListNoticeById 通知人集合
+func (receiver *monitorRepository) ToListNoticeById(ids []string) collections.List[monitor.NoticeEO] {
+	poList := context.MysqlContext.MonitorNotice.Where("id in ? and enable = 1", ids).ToList()
+	return mapper.ToList[monitor.NoticeEO](poList)
+}
+
+// Save 保存数据
 func (receiver *monitorRepository) Save(lstEO collections.List[monitor.DataEO]) error {
 	lstPO := mapper.ToList[model.MonitorDataPO](lstEO)
 

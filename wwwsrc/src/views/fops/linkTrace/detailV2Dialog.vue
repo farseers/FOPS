@@ -35,8 +35,12 @@
                 <el-tag v-if="state.TaskId >0" size="small" type="success">任务Id：{{state.TaskId}}</el-tag>
                 {{state.TaskName}}
               </span>
-              <!--WatchKey-->
-              <span v-else-if="state.TraceType == 5"></span>
+              <!--webSocket-->
+              <span v-else-if="state.TraceType == 7">
+                {{state.WebRequestIp}} <el-tag type="success" size="small">ws</el-tag>
+                {{state.WebPath}}
+                <el-button style="margin-left: 20px" type="primary" @click="onShow()" size="small">查看报文</el-button>
+              </span>
               <el-button style="margin-left: 20px" size="small" type="success" @click="showLog()">查看日志</el-button>
               <div v-if="state.Exception!=null" class="mt5">
               <el-tag type="danger">

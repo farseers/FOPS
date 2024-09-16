@@ -82,6 +82,26 @@ func (receiver *linkTraceRepository) ToWebApiList(traceId, appName, appIp, reque
 	}
 	return collections.NewPageList[linkTraceCom.TraceContext](collections.NewList[linkTraceCom.TraceContext](), 0)
 }
+
+func (receiver *linkTraceRepository) ToWebSocketList(traceId, appName, appIp, requestIp, searchUrl string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
+	if linkTrace.Config.Driver == "clickhouse" {
+		ts := context.CHContext.TraceContext.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,web_domain,web_path,web_method,web_request_ip").
+			Where("trace_type = ? and parent_app_name = ''", eumTraceType.WebSocket).
+			WhereIf(traceId != "", "trace_id = ?", traceId).
+			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
+			WhereIf(appIp != "", "app_ip = ?", appIp).
+			WhereIf(searchUseTs > 0, "use_ts >= ?", searchUseTs*int64(time.Millisecond)).
+			WhereIf(requestIp != "", "web_request_ip = ?", requestIp).
+			WhereIf(searchUrl != "", "web_path like ?", "%"+searchUrl+"%").
+			WhereIf(onlyViewException, "exception <> ''").
+			WhereIf(startMin > 0, "start_ts >= ?", dateTime.Now().AddMinutes(-startMin).UnixMicro())
+
+		lstPO := ts.DescIfElse(startMin > 0, "use_ts", "start_ts").ToPageList(pageSize, pageIndex)
+		return mapper.ToPageList[linkTraceCom.TraceContext](lstPO)
+	}
+	return collections.NewPageList[linkTraceCom.TraceContext](collections.NewList[linkTraceCom.TraceContext](), 0)
+}
+
 func (receiver *linkTraceRepository) ToTraceListByVisits(startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
 		ts := context.CHContext.TraceContext.

@@ -338,6 +338,20 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 							icon: 'iconfont icon-zidingyibuju',
 						},
 					},{
+						path: '/linkTrace/webSocket',
+						name: 'webSocket',
+						component: () => import('/@/views/fops/linkTrace/indexWebSocket.vue'),
+						meta: {
+							title: 'message.router.webSocket',
+							isLink: '',
+							isHide: false,
+							isKeepAlive: true,
+							isAffix: false,
+							isIframe: false,
+							roles: ['admin'],
+							icon: 'iconfont icon-zidingyibuju',
+						},
+					},{
 						path: '/linkTrace/taskApi',
 						name: 'taskApi',
 						component: () => import('/@/views/fops/linkTrace/indexTaskApi.vue'),

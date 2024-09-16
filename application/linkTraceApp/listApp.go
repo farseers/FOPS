@@ -27,6 +27,25 @@ func WebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode
 	return linkTraceRepository.ToWebApiList(traceId, appName, appIp, requestIp, searchUrl, statusCode, searchUseTs, onlyViewException, startMin, pageSize, pageIndex)
 }
 
+// WebSocketList WebSocket链路追踪列表
+// @get webSocketList
+// @filter application.Jwt
+func WebSocketList(traceId, appName, appIp, requestIp, searchUrl string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceContext] {
+	if pageSize < 1 {
+		pageSize = 20
+	}
+	if pageIndex < 1 {
+		pageIndex = 1
+	}
+	traceId = strings.TrimSpace(traceId)
+	appName = strings.TrimSpace(appName)
+	appIp = strings.TrimSpace(appIp)
+	requestIp = strings.TrimSpace(requestIp)
+	searchUrl = strings.TrimSpace(searchUrl)
+
+	return linkTraceRepository.ToWebSocketList(traceId, appName, appIp, requestIp, searchUrl, searchUseTs, onlyViewException, startMin, pageSize, pageIndex)
+}
+
 // TaskList Task链路追踪列表
 // @get taskList
 // @filter application.Jwt

@@ -102,6 +102,7 @@ export default {
 		TaskList:'任务列表',
 		linkTrace:'链路追踪',
 		webApi:'webApi列表',
+		webSocket:'webSocket列表',
 		visits:'访问统计',
 		taskApi:'task列表',
 		customerApi:'consumer列表',

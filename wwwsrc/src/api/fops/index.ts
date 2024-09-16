@@ -249,6 +249,12 @@ export function fopsApi() {
 				method: 'get',
 				//data:param,
 			});
+		},linkTraceWebSocket:(param: string) => {
+			return requestGet({
+				url: '/linkTrace/webSocketList?'+param,
+				method: 'get',
+				//data:param,
+			});
 		},linkTraceTask:(param: string) => {
 			return requestGet({
 				url: '/linkTrace/taskList?'+param,

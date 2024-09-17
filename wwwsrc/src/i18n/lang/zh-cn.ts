@@ -112,7 +112,9 @@ export default {
 		Etcd:'Etcd',
 		Hand:'手动埋点',
 		LogList:'应用日志',
-		Log:'日志'
+		Log:'日志',
+		terminal: '远程终端',
+		ssh: 'SSH',
 	},
 	staticRoutes: {
 		signIn: '登录',

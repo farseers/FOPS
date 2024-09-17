@@ -106,6 +106,21 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					// 		icon: 'iconfont icon-ico_shuju',
 					// 	},
 					// },
+					{
+						path: '/terminal/index',
+						name: 'terminalIndex',
+						component: () => import('/@/views/fops/terminal/index.vue'),
+						meta: {
+							title: 'message.router.terminal',
+							isLink: '',
+							isHide: false,
+							isKeepAlive: true,
+							isAffix: false,
+							isIframe: false,
+							roles: ['admin'],
+							icon: 'iconfont icon-zidingyibuju',
+						},
+					}
 				]
 			},{
 				path: '/app',
@@ -536,7 +551,6 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 						},
 					}
 				]
-
 			}
 		],
 	},

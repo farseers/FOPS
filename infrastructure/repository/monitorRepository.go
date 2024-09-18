@@ -9,6 +9,7 @@ import (
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/mapper"
+	"time"
 )
 
 type monitorRepository struct {
@@ -32,8 +33,17 @@ func (receiver *monitorRepository) ToListDataByAppIdKey(appId, key string, top i
 	return mapper.ToList[monitor.DataEO](poList.List)
 }
 
+// 获取app最大时间
+func (receiver *monitorRepository) GetMaxTimeByAppId(appId string) time.Time {
+	sql := `select max(create_at) from monitor_data where app_id='%s';`
+	query := fmt.Sprintf(sql, appId)
+	var getTime time.Time
+	_, _ = context.CHContext.ExecuteSqlToValue(&getTime, query)
+	return getTime
+}
+
 // ToListNoticeById 通知人集合
-func (receiver *monitorRepository) ToListNoticeById(ids []string) collections.List[monitor.NoticeEO] {
+func (receiver *monitorRepository) ToListNoticeById(ids []int) collections.List[monitor.NoticeEO] {
 	poList := context.MysqlContext.MonitorNotice.Where("id in ? and enable = 1", ids).ToList()
 	return mapper.ToList[monitor.NoticeEO](poList)
 }

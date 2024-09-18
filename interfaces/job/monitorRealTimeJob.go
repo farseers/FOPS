@@ -4,12 +4,9 @@ import (
 	"fmt"
 	"fops/domain/enum/ruleTimeType"
 	"fops/domain/monitor"
-	"fops/interfaces/notice"
 	"github.com/farseer-go/fs/container"
-	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/tasks"
-	"strings"
 	"time"
 )
 
@@ -26,14 +23,14 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 	// 循环map
 
 	for appId, ruleArray := range appIdMap {
-
+		var ruleInfo monitor.RuleEO
 		for _, rule := range ruleArray {
-
+			ruleInfo = rule
 			// 获取app数据
 			appData := monitorRepository.ToListDataByAppIdKey(appId, rule.KeyName, 1)
 			dataInfo := appData.First()
 			reqVal := dataInfo.Value
-
+			ruleInfo = rule
 			// 时间类型判断
 			var send = false
 			switch rule.TimeType {
@@ -65,24 +62,26 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 
 				}
 				// 发送消息 whatsapp
-				if comparisonMsg != "" && rule.NoticeWhatsAppIds != "" {
+				if comparisonMsg != "" && len(rule.NoticeIds) > 0 {
 					// 通知数据
-					noticeList := monitorRepository.ToListNoticeById(strings.Split(rule.NoticeWhatsAppIds, ","))
+					noticeList := monitorRepository.ToListNoticeById(rule.NoticeIds)
 					noticeList.Foreach(func(not *monitor.NoticeEO) {
-						notice.WhatsAppSendMsg(comparisonMsg, not.Phone, not.ApiKey)
+						not.Notice(comparisonMsg)
 					})
 				}
 			}
-			// 监控程序是否正常
-			if dateTime.Now().Sub(dataInfo.CreateAt).Minutes() > 10 {
-				time.Sleep(1 * time.Second)
-				var comparisonMsg = fmt.Sprintf("%s %s %s %s", time.Now().Format("01-02 15:04:05"), rule.AppId, rule.AppName, "请检查项目是否已经停止")
-				// 通知数据
-				noticeList := monitorRepository.ToListNoticeById(strings.Split(rule.NoticeWhatsAppIds, ","))
-				noticeList.Foreach(func(not *monitor.NoticeEO) {
-					notice.WhatsAppSendMsg(comparisonMsg, not.Phone, not.ApiKey)
-				})
-			}
+		}
+		// appid 取最大的时间
+		maxTime := monitorRepository.GetMaxTimeByAppId(appId)
+		// 监控程序是否正常
+		if time.Now().Sub(maxTime).Minutes() > 10 {
+			time.Sleep(1 * time.Second)
+			var comparisonMsg = fmt.Sprintf("%s %s %s %s", time.Now().Format("01-02 15:04:05"), ruleInfo.AppId, ruleInfo.AppName, "请检查项目是否已经停止")
+			// 通知数据
+			noticeList := monitorRepository.ToListNoticeById(ruleInfo.NoticeIds)
+			noticeList.Foreach(func(not *monitor.NoticeEO) {
+				not.Notice(comparisonMsg)
+			})
 		}
 	}
 

@@ -51,7 +51,6 @@ const state = reactive({
 const getData = () => {
 	const params = new URLSearchParams();
   params.append('top', '20');
-    state.loading = true;
   // 请求接口
   serverApi.taskPlanList(params.toString()).then(function (res){
     if (res.Status){
@@ -60,13 +59,11 @@ const getData = () => {
         ElMessage.warning(res.StatusMessage);
        state.tableData=[]
     }
-    state.loading = false;
     if(conlyTabs && conlyTabs.value){
         // console.log(conlyTabs.value.offsetHeight)
         state.screenHeight = conlyTabs.value.offsetHeight - 40
     }
   }).catch(()=>{
-    state.loading = false;
   })
 };
 

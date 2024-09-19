@@ -11,6 +11,7 @@ import (
 	"fops/application/linkTraceApp"
 	"fops/application/login"
 	"fops/application/monitorApp"
+	"fops/application/terminalApp"
 	"github.com/farseer-go/webapi"
 	"github.com/farseer-go/webapi/context"
 )
@@ -71,5 +72,23 @@ var route = []webapi.Route{
 	{"POST", "/linkTrace/upload", linkTraceApp.Upload, "", []context.IFilter{}, []string{"req", ""}},
 	{"GET", "/linkTrace/visits", linkTraceApp.Visits, "", []context.IFilter{}, []string{"request", ""}},
 	{"POST", "/user/passport/Login", login.Login, "", []context.IFilter{}, []string{"req", ""}},
+	{"POST", "/monitor/appList", monitorApp.DropDownListAppInfo, "", []context.IFilter{application.Jwt{}}, []string{""}},
+	{"POST", "/monitor/ruleList", monitorApp.ToListPageRule, "", []context.IFilter{application.Jwt{}}, []string{"pageSize", "pageIndex", ""}},
+	{"POST", "/monitor/delRule", monitorApp.DeleteRule, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
+	{"POST", "/monitor/infoRule", monitorApp.ToEntityRule, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
+	{"POST", "/monitor/saveRule", monitorApp.SaveRule, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
+	{"POST", "/monitor/noticeList", monitorApp.ToListPageNotice, "", []context.IFilter{application.Jwt{}}, []string{"pageSize", "pageIndex", ""}},
+	{"POST", "/monitor/delNotice", monitorApp.DeleteNotice, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
+	{"POST", "/monitor/infoNotice", monitorApp.ToEntityNotice, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
+	{"POST", "/monitor/saveNotice", monitorApp.SaveNotice, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
+	{"POST", "/monitor/dataList", monitorApp.ToListPageData, "", []context.IFilter{application.Jwt{}}, []string{"appId", "pageSize", "pageIndex", ""}},
+	{"POST", "/monitor/noticeLogList", monitorApp.ToListPageNoticeLog, "", []context.IFilter{application.Jwt{}}, []string{"appId", "pageSize", "pageIndex", ""}},
+	{"POST", "/monitor/delNoticeLog", monitorApp.DeleteNoticeLog, "", []context.IFilter{application.Jwt{}}, []string{"startTime", "endTime", ""}},
 	{"WS", "/ws/monitor", monitorApp.WsReceive, "", []context.IFilter{}, []string{"context", ""}},
+	{"POST", "/terminal/clientList", terminalApp.ClientList, "", []context.IFilter{application.Jwt{}}, []string{"pageSize", "pageIndex", ""}},
+	{"POST", "/terminal/clientAdd", terminalApp.ClientAdd, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
+	{"POST", "/terminal/clientUpdate", terminalApp.ClientUpdate, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
+	{"POST", "/terminal/clientDel", terminalApp.ClientDel, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
+	{"POST", "/terminal/clientInfo", terminalApp.ClientInfo, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
+	{"WS", "/terminal/ws/ssh", terminalApp.WsSsh, "", []context.IFilter{application.Jwt{}}, []string{"context", ""}},
 }

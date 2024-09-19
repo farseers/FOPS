@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"fops/domain/enum/ruleTimeType"
 	"fops/domain/monitor"
+	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/container"
+	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/tasks"
 	"time"
@@ -20,8 +22,9 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 	ruleList.GroupBy(&appIdMap, func(item monitor.RuleEO) any {
 		return item.AppId
 	})
+	// 添加通知日志
+	addLogs := collections.NewList[monitor.NoticeLogEO]()
 	// 循环map
-
 	for appId, ruleArray := range appIdMap {
 		var ruleInfo monitor.RuleEO
 		for _, rule := range ruleArray {
@@ -67,6 +70,8 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 					noticeList := monitorRepository.ToListNoticeById(rule.NoticeIds)
 					noticeList.Foreach(func(not *monitor.NoticeEO) {
 						not.Notice(comparisonMsg)
+						// 记录日志
+						addLogs.Add(monitor.NewLog(rule.AppId, rule.AppName, not.Id, not.NoticeType, comparisonMsg))
 					})
 				}
 			}
@@ -81,8 +86,13 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 			noticeList := monitorRepository.ToListNoticeById(ruleInfo.NoticeIds)
 			noticeList.Foreach(func(not *monitor.NoticeEO) {
 				not.Notice(comparisonMsg)
+				// 记录日志
+				addLogs.Add(monitor.NewLog(ruleInfo.AppId, ruleInfo.AppName, not.Id, not.NoticeType, comparisonMsg))
 			})
 		}
 	}
 
+	// 保存日志
+	err := monitorRepository.SaveLog(addLogs)
+	exception.ThrowWebExceptionError(403, err)
 }

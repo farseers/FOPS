@@ -8,6 +8,7 @@ import (
 	"fops/domain/linkTrace"
 	"fops/domain/logData"
 	"fops/domain/monitor"
+	"fops/domain/terminal"
 	"github.com/farseer-go/fs/container"
 )
 
@@ -27,4 +28,7 @@ func InitRepository() {
 	container.Register(func() configure.Repository { return &configureRepository{} })
 	// 监控中心
 	container.Register(func() monitor.Repository { return &monitorRepository{} })
+	// ssh客户端
+	container.Register(func() terminal.Repository { return &terminalRepository{} })
+
 }

@@ -6,6 +6,7 @@ import (
 	"fops/domain/cluster"
 	"fops/domain/configure"
 	"fops/domain/monitor"
+	"fops/domain/terminal"
 	"fops/infrastructure/repository/model"
 	"github.com/farseer-go/data"
 	"github.com/farseer-go/docker"
@@ -40,6 +41,11 @@ type mysqlContext struct {
 	MonitorRule data.DomainSet[model.MonitorRulePO, monitor.RuleEO] `data:"name=monitor_rule;migrate;"`
 	// 通知数据
 	MonitorNotice data.DomainSet[model.MonitorNoticePO, monitor.NoticeEO] `data:"name=monitor_notice;migrate;"`
+	// 通知记录数据
+	MonitorNoticeLog data.DomainSet[model.MonitorNoticeLogPO, monitor.NoticeLogEO] `data:"name=monitor_notice_log;migrate;"`
+
+	// 客户端
+	TerminalClient data.DomainSet[model.TerminalClientPO, terminal.ClientEO] `data:"name=terminal_client;migrate;"`
 }
 
 // InitMysqlContext 初始化上下文

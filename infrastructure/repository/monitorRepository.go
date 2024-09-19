@@ -21,10 +21,84 @@ func (receiver *monitorRepository) ToListRuleByAppId(appId string) collections.L
 	return mapper.ToList[monitor.RuleEO](poList)
 }
 
+func (receiver *monitorRepository) DropDownListAppInfo() collections.List[monitor.RuleEO] {
+	sql := `select app_id,app_name from monitor_rule where enable=1
+			group by  app_id, app_name
+			order by app_id desc;`
+	list := context.MysqlContext.MonitorRule.ExecuteSqlToList(sql)
+	return mapper.ToList[monitor.RuleEO](list)
+}
+
 // ToListRule 获取所有规则数据
 func (receiver *monitorRepository) ToListRule() collections.List[monitor.RuleEO] {
 	poList := context.MysqlContext.MonitorRule.Where("enable = 1").ToList()
 	return mapper.ToList[monitor.RuleEO](poList)
+}
+
+func (receiver *monitorRepository) ToListPageRule(pageSize, pageIndex int) collections.PageList[monitor.RuleEO] {
+	poList := context.MysqlContext.MonitorRule.Where("enable = 1").Desc("id").ToPageList(pageSize, pageIndex)
+	return mapper.ToPageList[monitor.RuleEO](poList)
+}
+func (receiver *monitorRepository) DeleteRule(id int64) error {
+	_, err := context.MysqlContext.MonitorRule.Where("id = ?", id).Delete()
+	return err
+}
+func (receiver *monitorRepository) ToEntityRule(id int64) monitor.RuleEO {
+	entity := context.MysqlContext.MonitorRule.Where("id = ?", id).ToEntity()
+	return mapper.Single[monitor.RuleEO](entity)
+}
+func (receiver *monitorRepository) UpdateRule(id int64, rule monitor.RuleEO) error {
+	po := mapper.Single[model.MonitorRulePO](rule)
+	_, err := context.MysqlContext.MonitorRule.Where("id = ?", id).Update(po)
+	return err
+}
+func (receiver *monitorRepository) AddRule(rule monitor.RuleEO) error {
+	po := mapper.Single[model.MonitorRulePO](rule)
+	err := context.MysqlContext.MonitorRule.Insert(&po)
+	return err
+}
+
+// ToListNoticeById 通知人集合
+func (receiver *monitorRepository) ToListNoticeById(ids []int) collections.List[monitor.NoticeEO] {
+	poList := context.MysqlContext.MonitorNotice.Where("id in ? and enable = 1", ids).ToList()
+	return mapper.ToList[monitor.NoticeEO](poList)
+}
+func (receiver *monitorRepository) ToListPageNotice(pageSize, pageIndex int) collections.PageList[monitor.NoticeEO] {
+	poList := context.MysqlContext.MonitorNotice.Where("enable = 1").Desc("id").ToPageList(pageSize, pageIndex)
+	return mapper.ToPageList[monitor.NoticeEO](poList)
+}
+func (receiver *monitorRepository) DeleteNotice(id int64) error {
+	_, err := context.MysqlContext.MonitorNotice.Where("id = ?", id).Delete()
+	return err
+}
+func (receiver *monitorRepository) ToEntityNotice(id int64) monitor.NoticeEO {
+	entity := context.MysqlContext.MonitorNotice.Where("id = ?", id).ToEntity()
+	return mapper.Single[monitor.NoticeEO](entity)
+}
+func (receiver *monitorRepository) UpdateNotice(id int64, rule monitor.NoticeEO) error {
+	po := mapper.Single[model.MonitorNoticePO](rule)
+	_, err := context.MysqlContext.MonitorNotice.Where("id = ?", id).Update(po)
+	return err
+}
+func (receiver *monitorRepository) AddRNotice(rule monitor.NoticeEO) error {
+	po := mapper.Single[model.MonitorNoticePO](rule)
+	err := context.MysqlContext.MonitorNotice.Insert(&po)
+	return err
+}
+
+// Save 保存数据
+func (receiver *monitorRepository) Save(lstEO collections.List[monitor.DataEO]) error {
+	lstPO := mapper.ToList[model.MonitorDataPO](lstEO)
+
+	if linkTrace.Config.Driver == "clickhouse" {
+		// 写入上下文
+		if _, err := context.CHContext.MonitorData.InsertList(lstPO, 2000); err != nil {
+			_ = flog.Errorf("MonitorData写入ch失败,%s", err.Error())
+		}
+	} else {
+		return fmt.Errorf("不支持的链路追踪驱动：%s", linkTrace.Config.Driver)
+	}
+	return nil
 }
 
 // ToListDataByAppId 监控数据
@@ -42,23 +116,30 @@ func (receiver *monitorRepository) GetMaxTimeByAppId(appId string) time.Time {
 	return getTime
 }
 
-// ToListNoticeById 通知人集合
-func (receiver *monitorRepository) ToListNoticeById(ids []int) collections.List[monitor.NoticeEO] {
-	poList := context.MysqlContext.MonitorNotice.Where("id in ? and enable = 1", ids).ToList()
-	return mapper.ToList[monitor.NoticeEO](poList)
+func (receiver *monitorRepository) ToListPageData(appId string, pageSize, pageIndex int) collections.PageList[monitor.DataEO] {
+	ts := context.CHContext.MonitorData.Desc("create_at")
+	if len(appId) > 0 {
+		ts.Where("app_id = ?", appId)
+	}
+	list := ts.ToPageList(pageSize, pageIndex)
+	return mapper.ToPageList[monitor.DataEO](list)
 }
 
-// Save 保存数据
-func (receiver *monitorRepository) Save(lstEO collections.List[monitor.DataEO]) error {
-	lstPO := mapper.ToList[model.MonitorDataPO](lstEO)
-
-	if linkTrace.Config.Driver == "clickhouse" {
-		// 写入上下文
-		if _, err := context.CHContext.MonitorData.InsertList(lstPO, 2000); err != nil {
-			_ = flog.Errorf("MonitorData写入ch失败,%s", err.Error())
-		}
-	} else {
-		return fmt.Errorf("不支持的链路追踪驱动：%s", linkTrace.Config.Driver)
+// SaveLog 批量添加日志数据
+func (receiver *monitorRepository) SaveLog(lstEO collections.List[monitor.NoticeLogEO]) error {
+	lstPO := mapper.ToList[model.MonitorNoticeLogPO](lstEO)
+	_, err := context.MysqlContext.MonitorNoticeLog.InsertList(lstPO, 1000)
+	return err
+}
+func (receiver *monitorRepository) ToListPageNoticeLog(appId string, pageSize, pageIndex int) collections.PageList[monitor.NoticeLogEO] {
+	ts := context.MysqlContext.MonitorNoticeLog.Desc("notice_at")
+	if len(appId) > 0 {
+		ts.Where("app_id = ?", appId)
 	}
-	return nil
+	poList := ts.ToPageList(pageSize, pageIndex)
+	return mapper.ToPageList[monitor.NoticeLogEO](poList)
+}
+func (receiver *monitorRepository) DeleteNoticeLog(startTime, endTime time.Time) error {
+	_, err := context.MysqlContext.MonitorNoticeLog.Where("notice_at >= ? and notice_at <= ?", startTime, endTime).Delete()
+	return err
 }

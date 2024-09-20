@@ -5,8 +5,10 @@ import (
 	"fops/domain/logData"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/core/eumLogLevel"
+	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/flog"
 	"strings"
+	"time"
 )
 
 // List 日志列表
@@ -29,6 +31,14 @@ func List(traceId, appName, appIp, logContent string, minute int, logLevel eumLo
 		return item.CreateAt.UnixNano()
 	}).ToList()
 	return lst
+}
+
+// Delete 删除7天之前的日志
+// @post delete
+// @filter application.Jwt
+func Delete(logDataRepository logData.Repository) {
+	err := logDataRepository.DeleteLog(time.Now().AddDate(0, 0, -7))
+	exception.ThrowWebExceptionError(403, err)
 }
 
 // Info 日志详情

@@ -3,6 +3,7 @@ package linkTrace
 import (
 	"github.com/farseer-go/collections"
 	linkTraceCom "github.com/farseer-go/linkTrace"
+	"github.com/farseer-go/linkTrace/eumTraceType"
 	"time"
 )
 
@@ -10,6 +11,7 @@ import (
 type Repository interface {
 	// ToEntity 获取列表
 	ToEntity(traceId string) collections.List[linkTraceCom.TraceContext]
+	Delete(traceType eumTraceType.Enum, startTime time.Time) error
 	ToWebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode int, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext]
 	ToWebSocketList(traceId, appName, appIp, requestIp, searchUrl string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext]
 	ToTraceListByVisits(startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext]
@@ -18,6 +20,8 @@ type Repository interface {
 	ToConsumerList(traceId, appName, appIp, server, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext]
 	ToEventList(traceId, appName, appIp, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext]
 	ToQueueList(traceId, appName, appIp, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext]
+
+	DeleteSlow(dbName string, startTime time.Time) error
 
 	ToSlowDbList(traceId, appName, appIp, dbName, tableName string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailDatabase]
 	ToSlowEsList(traceId, appName, appIp, indexName, aliasesName string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailEs]

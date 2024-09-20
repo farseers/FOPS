@@ -15,9 +15,9 @@ import (
 type monitorRepository struct {
 }
 
-// ToListRuleByAppId 获取规则数据
-func (receiver *monitorRepository) ToListRuleByAppId(appId string) collections.List[monitor.RuleEO] {
-	poList := context.MysqlContext.MonitorRule.Where("app_id = ? and enable = 1", appId).ToList()
+// ToListRuleByAppName 获取规则数据
+func (receiver *monitorRepository) ToListRuleByAppName(appName string) collections.List[monitor.RuleEO] {
+	poList := context.MysqlContext.MonitorRule.Where("app_name = ? and enable = 1", appName).ToList()
 	return mapper.ToList[monitor.RuleEO](poList)
 }
 
@@ -102,24 +102,24 @@ func (receiver *monitorRepository) Save(lstEO collections.List[monitor.DataEO]) 
 }
 
 // ToListDataByAppId 监控数据
-func (receiver *monitorRepository) ToListDataByAppIdKey(appId, key string, top int) collections.List[monitor.DataEO] {
-	poList := context.CHContext.MonitorData.Where("app_id = ? and key = ?", appId, key).Desc("create_at").ToPageList(top, 1)
+func (receiver *monitorRepository) ToListDataByAppNameKey(appName, key string, top int) collections.List[monitor.DataEO] {
+	poList := context.CHContext.MonitorData.Where("app_name = ? and key = ?", appName, key).Desc("create_at").ToPageList(top, 1)
 	return mapper.ToList[monitor.DataEO](poList.List)
 }
 
 // 获取app最大时间
-func (receiver *monitorRepository) GetMaxTimeByAppId(appId string) time.Time {
-	sql := `select max(create_at) from monitor_data where app_id='%s';`
-	query := fmt.Sprintf(sql, appId)
+func (receiver *monitorRepository) GetMaxTimeByAppName(appName string) time.Time {
+	sql := `select max(create_at) from monitor_data where app_name='%s';`
+	query := fmt.Sprintf(sql, appName)
 	var getTime time.Time
 	_, _ = context.CHContext.ExecuteSqlToValue(&getTime, query)
 	return getTime
 }
 
-func (receiver *monitorRepository) ToListPageData(appId string, pageSize, pageIndex int) collections.PageList[monitor.DataEO] {
+func (receiver *monitorRepository) ToListPageData(appName string, pageSize, pageIndex int) collections.PageList[monitor.DataEO] {
 	ts := context.CHContext.MonitorData.Desc("create_at")
-	if len(appId) > 0 {
-		ts.Where("app_id = ?", appId)
+	if len(appName) > 0 {
+		ts.Where("app_name = ?", appName)
 	}
 	list := ts.ToPageList(pageSize, pageIndex)
 	return mapper.ToPageList[monitor.DataEO](list)
@@ -131,15 +131,15 @@ func (receiver *monitorRepository) SaveLog(lstEO collections.List[monitor.Notice
 	_, err := context.MysqlContext.MonitorNoticeLog.InsertList(lstPO, 1000)
 	return err
 }
-func (receiver *monitorRepository) ToListPageNoticeLog(appId string, pageSize, pageIndex int) collections.PageList[monitor.NoticeLogEO] {
+func (receiver *monitorRepository) ToListPageNoticeLog(appName string, pageSize, pageIndex int) collections.PageList[monitor.NoticeLogEO] {
 	ts := context.MysqlContext.MonitorNoticeLog.Desc("notice_at")
-	if len(appId) > 0 {
-		ts.Where("app_id = ?", appId)
+	if len(appName) > 0 {
+		ts.Where("app_name = ?", appName)
 	}
 	poList := ts.ToPageList(pageSize, pageIndex)
 	return mapper.ToPageList[monitor.NoticeLogEO](poList)
 }
-func (receiver *monitorRepository) DeleteNoticeLog(startTime, endTime time.Time) error {
+func (receiver *monitorRepository) DeleteNoticeLog(startTime time.Time) error {
 	_, err := context.MysqlContext.MonitorNoticeLog.Where("notice_at <= ?", startTime).Delete() //notice_at >= ? and
 	return err
 }

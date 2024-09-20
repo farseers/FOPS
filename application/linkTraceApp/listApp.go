@@ -4,8 +4,11 @@ package linkTraceApp
 import (
 	"fops/domain/linkTrace"
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/exception"
 	linkTraceCom "github.com/farseer-go/linkTrace"
+	"github.com/farseer-go/linkTrace/eumTraceType"
 	"strings"
+	"time"
 )
 
 // WebApiList WebApi链路追踪列表
@@ -25,6 +28,14 @@ func WebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode
 	searchUrl = strings.TrimSpace(searchUrl)
 
 	return linkTraceRepository.ToWebApiList(traceId, appName, appIp, requestIp, searchUrl, statusCode, searchUseTs, onlyViewException, startMin, pageSize, pageIndex)
+}
+
+// Delete 删除7天之前的日志
+// @post delete
+// @filter application.Jwt
+func Delete(traceType int, linkTraceRepository linkTrace.Repository) {
+	err := linkTraceRepository.Delete(eumTraceType.Enum(traceType), time.Now().AddDate(0, 0, -7))
+	exception.ThrowWebExceptionError(403, err)
 }
 
 // WebSocketList WebSocket链路追踪列表

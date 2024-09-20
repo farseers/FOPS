@@ -101,6 +101,13 @@ func Delete(appName string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionError(403, err)
 }
 
+// DropDownList 应用列表
+// @post dropDownList
+// @filter application.Jwt
+func DropDownList(appsRepository apps.Repository) collections.List[apps.ShortEO] {
+	return appsRepository.ToShortList()
+}
+
 // List 应用列表
 // @post list
 // @filter application.Jwt

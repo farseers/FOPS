@@ -25,7 +25,7 @@ func WsReceive(context *websocket.Context[fsMonitor.SendContentVO], monitorRepos
 	addList := collections.NewList[monitor.DataEO]()
 	req.Keys.Keys().Foreach(func(key *string) {
 		reqVal := req.Keys.GetValue(*key)
-		addList.Add(monitor.NewDataEO(req.AppId, req.AppName, *key, parse.ToString(reqVal)))
+		addList.Add(monitor.NewDataEO(req.AppName, *key, parse.ToString(reqVal)))
 	})
 	err := monitorRepository.Save(addList)
 	exception.ThrowWebExceptionError(403, err)

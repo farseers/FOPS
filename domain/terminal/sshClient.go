@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"fops/application/terminalApp/request"
+	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/webapi/websocket"
 	"golang.org/x/crypto/ssh"
 	"log"
@@ -121,7 +122,7 @@ func (receiver *SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
 		}
 	}()
 	modes := ssh.TerminalModes{
-		ssh.ECHO:          0,
+		ssh.ECHO:          0, // 是否需要回显 1是需要 0不需要
 		ssh.TTY_OP_ISPEED: 14400,
 		ssh.TTY_OP_OSPEED: 14400,
 	}
@@ -157,6 +158,17 @@ func (receiver *SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
 
 // 连接
 func (receiver *SSHClient) Connect(ws *websocket.Context[request.SshRequest]) {
+	//这里第一个协程获取用户的输入
+	go func() {
+		for {
+			// p为用户输入
+			req := ws.Receiver()
+			if len(req.Command) > 0 {
+				_, err := receiver.Channel.Write([]byte(req.Command))
+				exception.ThrowWebExceptionError(403, err)
+			}
+		}
+	}()
 
 	//第二个协程将远程主机的返回结果返回给用户
 	go func() {

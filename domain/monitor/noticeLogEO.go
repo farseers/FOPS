@@ -7,7 +7,6 @@ import (
 
 type NoticeLogEO struct {
 	Id         int64           // 主键
-	AppId      string          // 项目ID
 	AppName    string          // 项目名称
 	NoticeId   int64           // 通知Id
 	NoticeType noticeType.Enum // 0 whatsapp
@@ -16,9 +15,8 @@ type NoticeLogEO struct {
 }
 
 // NewLog 添加新日志
-func NewLog(appId string, appName string, noticeId int64, notType noticeType.Enum, noticeMsg string) NoticeLogEO {
+func NewLog(appName string, noticeId int64, notType noticeType.Enum, noticeMsg string) NoticeLogEO {
 	return NoticeLogEO{
-		AppId:      appId,
 		AppName:    appName,
 		NoticeId:   noticeId,
 		NoticeType: notType,

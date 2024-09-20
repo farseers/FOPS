@@ -10,7 +10,7 @@ type Repository interface {
 	// 规则
 	DropDownListAppInfo() collections.List[RuleEO]
 	// ToListRuleByAppId 查询读取规则
-	ToListRuleByAppId(appId string) collections.List[RuleEO]
+	ToListRuleByAppName(appName string) collections.List[RuleEO]
 	ToListRule() collections.List[RuleEO]
 	ToListPageRule(pageSize, pageIndex int) collections.PageList[RuleEO]
 	DeleteRule(id int64) error
@@ -30,15 +30,15 @@ type Repository interface {
 	// 上传数据
 	// Save 批量添加监控数据
 	Save(lstEO collections.List[DataEO]) error
-	// ToListDataByAppIdKey 监控数据
-	ToListDataByAppIdKey(appId, key string, top int) collections.List[DataEO]
-	// GetMaxTimeByAppId 获取app最大时间
-	GetMaxTimeByAppId(appId string) time.Time
-	ToListPageData(appId string, pageSize, pageIndex int) collections.PageList[DataEO]
+	// ToListDataByAppNameKey 监控数据
+	ToListDataByAppNameKey(appName, key string, top int) collections.List[DataEO]
+	// GetMaxTimeByAppName 获取app最大时间
+	GetMaxTimeByAppName(appName string) time.Time
+	ToListPageData(appName string, pageSize, pageIndex int) collections.PageList[DataEO]
 
 	// 日志
 	// SaveLog 批量添加日志数据
 	SaveLog(lstEO collections.List[NoticeLogEO]) error
-	ToListPageNoticeLog(appId string, pageSize, pageIndex int) collections.PageList[NoticeLogEO]
-	DeleteNoticeLog(startTime, endTime time.Time) error
+	ToListPageNoticeLog(appName string, pageSize, pageIndex int) collections.PageList[NoticeLogEO]
+	DeleteNoticeLog(startTime time.Time) error
 }

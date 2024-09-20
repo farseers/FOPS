@@ -7,8 +7,8 @@ import (
 	"fops/domain/monitor"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/exception"
-	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/mapper"
+	"time"
 )
 
 // DropDownListAppInfo 应用下拉框
@@ -111,35 +111,34 @@ func SaveNotice(req monitor.NoticeEO, monitorRepository monitor.Repository) {
 // ToListPageData 监控数据列表
 // @post dataList
 // @filter application.Jwt
-func ToListPageData(appId string, pageSize, pageIndex int, monitorRepository monitor.Repository) collections.PageList[monitor.DataEO] {
+func ToListPageData(appName string, pageSize, pageIndex int, monitorRepository monitor.Repository) collections.PageList[monitor.DataEO] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
 	if pageIndex < 1 {
 		pageIndex = 1
 	}
-	return monitorRepository.ToListPageData(appId, pageSize, pageIndex)
+	return monitorRepository.ToListPageData(appName, pageSize, pageIndex)
 }
 
 // ToListPageNoticeLog 通知消息列表
 // @post noticeLogList
 // @filter application.Jwt
-func ToListPageNoticeLog(appId string, pageSize, pageIndex int, monitorRepository monitor.Repository) collections.PageList[monitor.NoticeLogEO] {
+func ToListPageNoticeLog(appName string, pageSize, pageIndex int, monitorRepository monitor.Repository) collections.PageList[monitor.NoticeLogEO] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
 	if pageIndex < 1 {
 		pageIndex = 1
 	}
-	return monitorRepository.ToListPageNoticeLog(appId, pageSize, pageIndex)
+	return monitorRepository.ToListPageNoticeLog(appName, pageSize, pageIndex)
 }
 
 // DeleteNoticeLog 删除通知消息日志
 // @post delNoticeLog
 // @filter application.Jwt
-func DeleteNoticeLog(startTime, endTime string, monitorRepository monitor.Repository) {
-	stime := parse.ToTime(startTime)
-	etime := parse.ToTime(endTime)
-	err := monitorRepository.DeleteNoticeLog(stime, etime)
+func DeleteNoticeLog(monitorRepository monitor.Repository) {
+	// 7天之前的全部删除
+	err := monitorRepository.DeleteNoticeLog(time.Now().AddDate(0, 0, -7))
 	exception.ThrowWebExceptionError(403, err)
 }

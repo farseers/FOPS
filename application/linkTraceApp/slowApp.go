@@ -4,9 +4,19 @@ package linkTraceApp
 import (
 	"fops/domain/linkTrace"
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/exception"
 	linkTraceCom "github.com/farseer-go/linkTrace"
 	"strings"
+	"time"
 )
+
+// DeleteSlow 删除7天之前的日志
+// @post deleteSlow
+// @filter application.Jwt
+func DeleteSlow(dbName string, linkTraceRepository linkTrace.Repository) {
+	err := linkTraceRepository.DeleteSlow(dbName, time.Now().AddDate(0, 0, -7))
+	exception.ThrowWebExceptionError(403, err)
+}
 
 // SlowDbList 慢数据库列表
 // @get slowDbList

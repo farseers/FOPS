@@ -12,6 +12,7 @@ import (
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/mapper"
+	"time"
 )
 
 type logDataRepository struct {
@@ -46,6 +47,11 @@ func (receiver *logDataRepository) ToList(traceId, appName, appIp, logContent st
 		exception.ThrowRefuseExceptionf("不支持的链路追踪驱动：%s", linkTrace.Config.Driver)
 	}
 	return lst
+}
+
+func (receiver *logDataRepository) DeleteLog(startTime time.Time) error {
+	_, err := context.CHContext.LogData.Where("create_at <= ?", startTime).Delete()
+	return err
 }
 
 func (receiver *logDataRepository) ToInfo(id string) flog.LogData {

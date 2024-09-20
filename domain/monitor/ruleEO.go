@@ -7,7 +7,6 @@ import (
 
 type RuleEO struct {
 	Id         int64             // 主键
-	AppId      string            // 项目ID
 	AppName    string            // 项目名称
 	TimeType   ruleTimeType.Enum // 规则时间类型 0小时，1天
 	StartTime  time.Time         // 开始时间
@@ -22,5 +21,5 @@ type RuleEO struct {
 
 // IsNull 判断是否为空
 func (receiver *RuleEO) IsNull() bool {
-	return receiver == nil || receiver.Id == 0 || len(receiver.AppId) == 0
+	return receiver == nil || receiver.Id == 0
 }

@@ -19,6 +19,7 @@ type Repository interface {
 	GetClusterNodeList() collections.List[docker.DockerNodeVO]                                                                                                     // 获取集群节点列表
 	UpdateClusterNodeResourceByAgentIP(agentIP string, cpuUsagePercent, memoryUsagePercent, memoryUsage float64, disk uint64, diskUsagePercent, diskUsage float64) // 更新集群节点的资源信息
 	ToListBySys(isSys bool) collections.List[DomainObject]
+	ToShortList() collections.List[ShortEO]
 	buildRepository
 	gitRepository
 }

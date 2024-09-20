@@ -63,6 +63,14 @@ func (receiver *linkTraceRepository) ToEntity(traceId string) collections.List[l
 	return lst
 }
 
+func (receiver *linkTraceRepository) Delete(traceType eumTraceType.Enum, startTime time.Time) error {
+	if linkTrace.Config.Driver == "clickhouse" {
+		_, err := context.CHContext.TraceContext.Where("trace_type = ? and parent_app_name = '' and create_at <= ?", traceType, startTime).Delete()
+		return err
+	}
+	return nil
+}
+
 func (receiver *linkTraceRepository) ToWebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode int, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
 		ts := context.CHContext.TraceContext.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,web_domain,web_path,web_method,web_content_type,web_status_code,web_request_ip").
@@ -201,6 +209,30 @@ func (receiver *linkTraceRepository) ToQueueList(traceId, appName, appIp, queueN
 		return mapper.ToPageList[linkTraceCom.TraceContext](lstPO)
 	}
 	return collections.NewPageList[linkTraceCom.TraceContext](collections.NewList[linkTraceCom.TraceContext](), 0)
+}
+
+func (receiver *linkTraceRepository) DeleteSlow(dbName string, startTime time.Time) error {
+	if linkTrace.Config.Driver == "clickhouse" {
+		var err error
+		switch dbName {
+		case "Db":
+			_, err = context.CHContext.TraceDetailDatabase.Where("create_at <= ?", startTime).Delete()
+		case "Es":
+			_, err = context.CHContext.TraceDetailEs.Where("create_at <= ?", startTime).Delete()
+		case "Etcd":
+			_, err = context.CHContext.TraceDetailEtcd.Where("create_at <= ?", startTime).Delete()
+		case "Hand":
+			_, err = context.CHContext.TraceDetailHand.Where("create_at <= ?", startTime).Delete()
+		case "Http":
+			_, err = context.CHContext.TraceDetailHttp.Where("create_at <= ?", startTime).Delete()
+		case "Mq":
+			_, err = context.CHContext.TraceDetailMq.Where("create_at <= ?", startTime).Delete()
+		case "Redis":
+			_, err = context.CHContext.TraceDetailRedis.Where("create_at <= ?", startTime).Delete()
+		}
+		return err
+	}
+	return nil
 }
 
 func (receiver *linkTraceRepository) ToSlowDbList(traceId, appName, appIp, dbName, tableName string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailDatabase] {

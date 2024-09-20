@@ -140,6 +140,6 @@ func (receiver *monitorRepository) ToListPageNoticeLog(appId string, pageSize, p
 	return mapper.ToPageList[monitor.NoticeLogEO](poList)
 }
 func (receiver *monitorRepository) DeleteNoticeLog(startTime, endTime time.Time) error {
-	_, err := context.MysqlContext.MonitorNoticeLog.Where("notice_at >= ? and notice_at <= ?", startTime, endTime).Delete()
+	_, err := context.MysqlContext.MonitorNoticeLog.Where("notice_at <= ?", startTime).Delete() //notice_at >= ? and
 	return err
 }

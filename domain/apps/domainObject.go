@@ -18,7 +18,7 @@ type DomainObject struct {
 	DockerInspect     collections.List[DockerInspectVO] // 运行的实例详情
 	DockerReplicas    int                               // 副本数量
 	DockerNodeRole    string                            // 容器节点角色 manager or worker or global
-	AdditionalScripts string                            // 首次创建应用时附加脚本
+	AdditionalScripts string                            // 首次创建应用时附加容器参数
 	LimitCpus         float64                           // Cpu核数限制
 	LimitMemory       string                            // 内存限制
 	IsSys             bool                              // 是否系统应用

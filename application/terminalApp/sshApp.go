@@ -2,7 +2,6 @@
 package terminalApp
 
 import (
-	"fops/application/terminalApp/request"
 	"fops/domain/terminal"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/webapi/websocket"
@@ -10,7 +9,7 @@ import (
 
 // WsSsh 远程命令终端
 // @ws ssh
-func WsSsh(context *websocket.Context[request.SshRequest], terminalRepository terminal.Repository) {
+func WsSsh(context *websocket.Context[terminal.SshRequest], terminalRepository terminal.Repository) {
 	var sshClient terminal.SSHClient
 	term := terminal.Terminal{
 		Columns: uint32(150),
@@ -19,7 +18,7 @@ func WsSsh(context *websocket.Context[request.SshRequest], terminalRepository te
 	// p为用户输入
 	req := context.Receiver()
 	// 初始化客户端
-	if sshClient.Client == nil && req.Id > 0 {
+	if req.Id > 0 {
 		info := terminalRepository.ToEntity(req.Id)
 		if info.Id > 0 {
 			sshClient = terminal.DecodedMsgToSSHClient(info.LoginIp, info.LoginName, info.LoginPwd, info.LoginPort)
@@ -28,5 +27,8 @@ func WsSsh(context *websocket.Context[request.SshRequest], terminalRepository te
 			sshClient.RequestTerminal(term)
 		}
 	}
+
+	//context.ReceiverFunc()
+
 	sshClient.Connect(context)
 }

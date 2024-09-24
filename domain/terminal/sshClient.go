@@ -3,8 +3,6 @@ package terminal
 import (
 	"bufio"
 	"fmt"
-	"fops/application/terminalApp/request"
-	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/webapi/websocket"
 	"golang.org/x/crypto/ssh"
 	"log"
@@ -38,21 +36,26 @@ type SSHClient struct {
 }
 
 // 创建新的ssh客户端时, 默认用户名为root, 端口为22
-//func NewSSHClient(ip, userName, passWord string, port int) SSHClient {
-//	client := SSHClient{}
-//	client.IpAddress = ip
-//	client.Username = userName
-//	client.Password = passWord
-//	client.Port = port
-//	// 创建客户端
-//	err := client.generateClient()
-//	flog.ErrorIfExists(err)
-//	// 创建通道
-//	client.createChannel()
-//	// 开启终端
-//	client.openShell()
-//	return client
-//}
+//
+//	func NewSSHClient(ip, userName, passWord string, port int) SSHClient {
+//		client := SSHClient{}
+//		client.IpAddress = ip
+//		client.Username = userName
+//		client.Password = passWord
+//		client.Port = port
+//		// 创建客户端
+//		err := client.generateClient()
+//		flog.ErrorIfExists(err)
+//		// 创建通道
+//		client.createChannel()
+//		// 开启终端
+//		client.openShell()
+//		return client
+//	}
+type SshRequest struct {
+	Id      int64  // 连接ID
+	Command string // 输入命令
+}
 
 func NewSSHClient() SSHClient {
 	client := SSHClient{}
@@ -122,7 +125,7 @@ func (receiver *SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
 		}
 	}()
 	modes := ssh.TerminalModes{
-		ssh.ECHO:          0, // 是否需要回显 1是需要 0不需要
+		//ssh.ECHO:          1, // 是否需要回显 1是需要 0不需要
 		ssh.TTY_OP_ISPEED: 14400,
 		ssh.TTY_OP_OSPEED: 14400,
 	}
@@ -157,19 +160,14 @@ func (receiver *SSHClient) RequestTerminal(terminal Terminal) *SSHClient {
 }
 
 // 连接
-func (receiver *SSHClient) Connect(ws *websocket.Context[request.SshRequest]) {
-	//这里第一个协程获取用户的输入
-	go func() {
-		for {
-			// p为用户输入
-			req := ws.Receiver()
-			if len(req.Command) > 0 {
-				_, err := receiver.Channel.Write([]byte(req.Command))
-				exception.ThrowWebExceptionError(403, err)
-			}
+func (receiver *SSHClient) Connect(ws *websocket.Context[SshRequest]) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println(err)
 		}
+		_ = receiver.Client.Close()
+		_ = receiver.Session.Close()
 	}()
-
 	//第二个协程将远程主机的返回结果返回给用户
 	go func() {
 		br := bufio.NewReader(receiver.Channel)
@@ -181,14 +179,15 @@ func (receiver *SSHClient) Connect(ws *websocket.Context[request.SshRequest]) {
 
 		// 另起一个协程, 一个死循环不断的读取ssh channel的数据, 并传给r信道直到连接断开
 		go func() {
-			defer receiver.Client.Close()
-			defer receiver.Session.Close()
-
 			for {
 				x, size, err := br.ReadRune()
 				if err != nil {
 					log.Println(err)
-					ws.Send([]byte("\033[31m已经关闭连接!\033[0m"))
+					err = ws.Send([]byte("\033[31m已经关闭连接!\033[0m"))
+					//exception.ThrowWebExceptionError(403, err)
+					if err != nil {
+						return
+					}
 					ws.Close()
 					return
 				}
@@ -221,13 +220,18 @@ func (receiver *SSHClient) Connect(ws *websocket.Context[request.SshRequest]) {
 				} else {
 					buf = append(buf, []byte("@")...)
 				}
+			case <-ws.Ctx.Done():
+				return
 			}
 		}
 	}()
-
-	defer func() {
-		if err := recover(); err != nil {
-			log.Println(err)
+	//这里第一个协程获取用户的输入
+	for {
+		// p为用户输入
+		req := ws.Receiver()
+		if len(req.Command) > 0 {
+			_, _ = receiver.Channel.Write([]byte(req.Command))
+			//exception.ThrowWebExceptionError(403, err)
 		}
-	}()
+	}
 }

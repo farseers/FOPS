@@ -53,7 +53,6 @@ jobs:
           - go mod download
           - GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./fops -ldflags="-w -s" .
 
-
       - name: 编译前端
         run:
           - unset HTTPS_PROXY

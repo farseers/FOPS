@@ -7,16 +7,19 @@ type Enum int
 
 const (
 	WhatsApp Enum = iota // whatsApp
+	Telegram             // Telegram
 )
 
 func (e Enum) ToString() string {
 	switch e {
 	case WhatsApp:
 		return "whatsApp"
+	case Telegram:
+		return "Telegram"
 	}
 	return ""
 }
 
 func ToList() collections.List[Enum] {
-	return collections.NewList[Enum](WhatsApp)
+	return collections.NewList[Enum](WhatsApp, Telegram)
 }

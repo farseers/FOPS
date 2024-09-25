@@ -71,7 +71,6 @@ func SaveRule(req request.SaveRuleRequest, monitorRepository monitor.Repository)
 		exception.ThrowWebExceptionError(403, err)
 	} else {
 		// 添加规则
-		do.Enable = true
 		err := monitorRepository.AddRule(do)
 		exception.ThrowWebExceptionError(403, err)
 	}

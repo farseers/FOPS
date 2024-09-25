@@ -11,6 +11,7 @@ import (
 type NoticeEO struct {
 	Id         int64           // 主键
 	NoticeType noticeType.Enum // 通知类型
+	Name       string          // 名称
 	Email      string          // 邮箱
 	Phone      string          // 号码
 	ApiKey     string          // 接口Key

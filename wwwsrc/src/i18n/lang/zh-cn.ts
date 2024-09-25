@@ -92,6 +92,7 @@ export default {
 		DispatchNode:'服务端节点',
 		Client:'客户端列表',
 		SlowQuery:'慢查询',
+		Monitor:'监控',
 		DataBase:'数据库',
 		Redis:'Redis',
 		MQ:'MQ',
@@ -115,6 +116,10 @@ export default {
 		Log:'日志',
 		terminal: '远程终端',
 		ssh: 'SSH',
+		magule:'规则',
+		madata:'监控数据',
+		manotice:'通知用户',
+		malog:'通知日志',
 	},
 	staticRoutes: {
 		signIn: '登录',

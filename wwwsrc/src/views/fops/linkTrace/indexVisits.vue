@@ -210,7 +210,7 @@ const getTableData = () => {
 };
 
 const getAppData=()=>{
-  serverApi.appsList({}).then(function (res){
+  serverApi.dropDownList({}).then(function (res){
     if (res.Status){
       state.appData=res.Data
     }else{

@@ -54,6 +54,13 @@ export function fopsApi() {
 				method: 'post',
 				data:param,
 			});
+		}
+		,dropDownList: (param: object) => {
+			return request({
+				url: '/apps/dropDownList',
+				method: 'post',
+				data:param,
+			});
 		},
 		appsAdd: (param: object) => {
 			return request({
@@ -332,6 +339,19 @@ export function fopsApi() {
 				method: 'get',
 				//data:param,
 			});
+		},linkTraceDelete:(param: any) => { 
+			return request({
+				url: '/linkTrace/delete',
+				method: 'post',
+				data:param,
+			});
+		}, 
+		linkTraceDeleteSlow:(param: any) => { 
+			return request({
+				url: '/linkTrace/deleteSlow',
+				method: 'post',
+				data:param,
+			});
 		},logList:(param: string) => {
 			return requestGet({
 				url: '/flog/list?'+param,
@@ -343,6 +363,12 @@ export function fopsApi() {
 				url: '/flog/info-'+param,
 				method: 'get',
 				//data:param,
+			});
+		},logDelete:(param: string) => {
+			return request({
+				url: '/flog/delete',
+				method: 'post',
+				data:param,
 			});
 		},statInfo: (param: object) => {
 			return requestFS({
@@ -395,6 +421,130 @@ export function fopsApi() {
 			});
 		},
 		// 修改副本数量
-		
+		// 客户端查询列表 terminal/clientList pageSize pageIndex
+		terminalClientList:(param: object) => { 
+			return request({
+				url: '/terminal/clientList',
+				method:'post',
+				data:param,
+			});
+		},
+		// 客户端查询添加 terminal/clientAdd Name LoginIp LoginName LoginPwd  LoginPort
+		terminalClientAdd:(param: object) => { 
+			return request({
+				url: '/terminal/clientAdd',
+				method: 'post',
+				data:param,
+			});
+		},
+		// 客户端查询修改 terminal/clientUpdate Name LoginIp LoginName LoginPwd  LoginPort Id
+		terminalClientUpdate:(param: object) => { 
+			return request({
+				url: '/terminal/clientUpdate',
+				method: 'post',
+				data:param,
+			});
+		},
+		// 客户端查询删除 terminal/clientDel Id
+		terminalClientDel:(param: object) => { 
+			return request({
+				url: '/terminal/clientDel',
+				method: 'post',
+				data:param,
+			});
+		},
+		// 客户端查询详情 terminal/clientInfo Id 
+		terminalClientInfo:(param: object) => { 
+			return request({
+				url: '/terminal/clientInfo',
+				method:'post',
+				data:param,
+			});
+		},
+		//监控模块接口
+		monitorRuleList:(param: object) => {  // 规则列表
+			return request({
+				url: '/monitor/ruleList',
+				method:'post',
+				data:param,
+			});
+		},
+		monitorDelRule:(param: object) => { // 规则删除
+			return request({
+				url: '/monitor/delRule',
+				method:'post',
+				data:param,
+			});
+		},
+		monitorInfoRule:(param: object) => { // 规则详情
+			return request({
+				url: '/monitor/infoRule',
+				method:'post',
+				data:param,
+			});
+		},
+		monitorSaveRule:(param: object) => { // 规则保存
+			return request({
+				url: '/monitor/saveRule',
+				method:'post',
+				data:param,
+			});
+		},
+		monitorNoticeList:(param: object) => { // 通知用户列表
+			return request({
+				url: '/monitor/noticeList',
+				method:'post',
+				data:param,
+			});
+		},
+		monitorDelNotice:(param: object) => { // 通知用户删除
+			return request({
+				url: '/monitor/delNotice',
+				method:'post',
+				data:param,
+			});
+		},
+		monitorSaveNotice:(param: object) => { // 通知用户保存
+			return request({
+				url: '/monitor/saveNotice',
+				method:'post',
+				data:param,
+			});
+		},
+		monitorInfoNotice:(param: object) => { // 通知人详情
+			return request({
+				url: '/monitor/infoNotice',
+				method:'post',
+				data:param,
+			});
+		},
+		monitorDataList:(param: object) => { // 监控数据列表
+			return request({
+				url: '/monitor/dataList',
+				method:'post',
+				data:param,
+			});
+		},
+		monitorNoticeLogList:(param: object) => { // 通知日志列表
+			return request({
+				url: '/monitor/noticeLogList',
+				method:'post',
+				data:param,
+			});
+		},
+		monitorDelNoticeLog:(param: object) => { // 删除通知消息日志
+			return request({
+				url: '/monitor/delNoticeLog',
+				method:'post',
+				data:param,
+			});
+		},
+		monitorNoticeTypeList:(param: object) => { // 通知类型
+			return request({
+				url: '/monitor/noticeTypeList',
+				method:'post',
+				data:param,
+			});
+		},
 	};
 }

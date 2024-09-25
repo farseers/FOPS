@@ -33,6 +33,10 @@
 					</el-icon>
 					查询
 				</el-button>
+        <el-button size="default" type="warning" class="ml5" @click="linkTraceDeleteSlow">
+					<el-icon><ele-Delete /></el-icon>
+					删除七天前数据
+				</el-button>
 			</div>
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
         <el-table-column width="180px" label="TraceID" show-overflow-tooltip>
@@ -165,7 +169,7 @@ const onDetail=(row: any)=>{
   detailDialogRef.value.openDialog(row);
 }
 const getAppData=()=>{
-  serverApi.appsList({}).then(function (res){
+  serverApi.dropDownList({}).then(function (res){
     if (res.Status){
       state.appData=res.Data
     }else{
@@ -203,7 +207,27 @@ const onHandleCurrentChange = (val: number) => {
 	state.tableData.param.pageNum = val;
 	getTableData();
 };
+const linkTraceDeleteSlow = ()=>{
+  ElMessageBox.confirm(`删除七天前的数据，是否继续?`, '提示', {
+		confirmButtonText: '确认',
+		cancelButtonText: '取消',
+		type: 'warning',
+	})
+		.then(() => {
+			serverApi.linkTraceDelete({dbName:'Redis'}).then((res)=>{
+				if(res.Status){
+					onQuery();
+					ElMessage.success('删除成功');
+				}else{
+				ElMessage.error(res.StatusMessage);
+			}
+			})
+			
+		})
+		.catch(() => {});
+}
 const onQuery=()=>{
+  state.tableData.param.pageNum = 1;
   getTableData();
 }
 // 页面加载时

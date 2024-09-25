@@ -551,7 +551,84 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 						},
 					}
 				]
-			}
+			},
+			{
+				path:'/monitor',
+				name:'monitor',
+				component: () => import('/@/views/home/index.vue'),
+				meta: {
+					title: 'message.router.Monitor',
+					isLink: '',
+					isHide: false,
+					isKeepAlive: true,
+					isAffix: false,
+					isIframe: false,
+					roles: ['admin', 'common'],
+					icon: 'iconfont icon-shuju',
+				},
+				children:[
+					   {
+						path: '/monitor/magule',
+						name: 'magule',
+						component: () => import('/@/views/fops/monitor/gule.vue'),
+						meta: {
+							title: 'message.router.magule',
+							isLink: '',
+							isHide: false,
+							isKeepAlive: true,
+							isAffix: false,
+							isIframe: false,
+							roles: ['admin'],
+							icon: 'iconfont icon-zidingyibuju',
+					   }
+					},
+					{
+						path: '/monitor/manotice',
+						name: 'manotice',
+						component: () => import('/@/views/fops/monitor/notice.vue'),
+						meta: {
+							title: 'message.router.manotice',
+							isLink: '',
+							isHide: false,
+							isKeepAlive: true,
+							isAffix: false,
+							isIframe: false,
+							roles: ['admin'],
+							icon: 'iconfont icon-zidingyibuju',
+					   }
+					},
+					{
+						path: '/monitor/madata',
+						name: 'madata',
+						component: () => import('/@/views/fops/monitor/data.vue'),
+						meta: {
+							title: 'message.router.madata',
+							isLink: '',
+							isHide: false,
+							isKeepAlive: true,
+							isAffix: false,
+							isIframe: false,
+							roles: ['admin'],
+							icon: 'iconfont icon-zidingyibuju',
+					   }
+					},
+					{
+						path: '/monitor/malog',
+						name: 'malog',
+						component: () => import('/@/views/fops/monitor/log.vue'),
+						meta: {
+							title: 'message.router.malog',
+							isLink: '',
+							isHide: false,
+							isKeepAlive: true,
+							isAffix: false,
+							isIframe: false,
+							roles: ['admin'],
+							icon: 'iconfont icon-zidingyibuju',
+					   }
+					}
+				]
+			},
 		],
 	},
 ];

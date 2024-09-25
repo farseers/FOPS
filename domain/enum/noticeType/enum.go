@@ -1,5 +1,7 @@
 package noticeType
 
+import "github.com/farseer-go/collections"
+
 // Enum 通知类型
 type Enum int
 
@@ -13,4 +15,8 @@ func (e Enum) ToString() string {
 		return "whatsApp"
 	}
 	return ""
+}
+
+func ToList() collections.List[Enum] {
+	return collections.NewList[Enum](WhatsApp)
 }

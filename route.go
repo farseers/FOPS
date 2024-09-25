@@ -88,6 +88,7 @@ var route = []webapi.Route{
 	{"POST", "/monitor/dataList", monitorApp.ToListPageData, "", []context.IFilter{application.Jwt{}}, []string{"appName", "pageSize", "pageIndex", ""}},
 	{"POST", "/monitor/noticeLogList", monitorApp.ToListPageNoticeLog, "", []context.IFilter{application.Jwt{}}, []string{"appName", "pageSize", "pageIndex", ""}},
 	{"POST", "/monitor/delNoticeLog", monitorApp.DeleteNoticeLog, "", []context.IFilter{application.Jwt{}}, []string{""}},
+	{"POST", "/monitor/noticeTypeList", monitorApp.NoticeTypeList, "", []context.IFilter{application.Jwt{}}, []string{}},
 	{"WS", "/ws/monitor", monitorApp.WsReceive, "", []context.IFilter{}, []string{"context", ""}},
 	{"POST", "/terminal/clientList", terminalApp.ClientList, "", []context.IFilter{application.Jwt{}}, []string{"pageSize", "pageIndex", ""}},
 	{"POST", "/terminal/clientAdd", terminalApp.ClientAdd, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},

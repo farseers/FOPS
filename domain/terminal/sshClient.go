@@ -3,6 +3,7 @@ package terminal
 import (
 	"bufio"
 	"fmt"
+	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/webapi/websocket"
 	"golang.org/x/crypto/ssh"
 	"log"
@@ -179,21 +180,29 @@ func (receiver *SSHClient) Connect(ws *websocket.Context[SshRequest]) {
 
 		// 另起一个协程, 一个死循环不断的读取ssh channel的数据, 并传给r信道直到连接断开
 		go func() {
-			for {
-				x, size, err := br.ReadRune()
-				if err != nil {
-					log.Println(err)
-					err = ws.Send([]byte("\033[31m已经关闭连接!\033[0m"))
-					//exception.ThrowWebExceptionError(403, err)
+			catch := exception.Try(func() {
+				for {
+
+					x, size, err := br.ReadRune()
 					if err != nil {
+						log.Println(err)
+						//err = ws.Send([]byte("\033[31m已经关闭连接!\033[0m"))
+						//exception.ThrowWebExceptionError(403, err)
+						if err != nil {
+							return
+						}
+						ws.Close()
 						return
 					}
-					ws.Close()
-					return
+					if size > 0 {
+						r <- x
+					}
+
 				}
-				if size > 0 {
-					r <- x
-				}
+			})
+			// 处理异常
+			if catch != nil {
+				return
 			}
 		}()
 

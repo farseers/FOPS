@@ -4,6 +4,7 @@ package monitorApp
 import (
 	"fops/application/monitorApp/request"
 	"fops/application/monitorApp/response"
+	"fops/domain/enum/noticeType"
 	"fops/domain/monitor"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/exception"
@@ -22,14 +23,21 @@ func DropDownListAppInfo(monitorRepository monitor.Repository) collections.List[
 // ToListPageRule 规则分页
 // @post ruleList
 // @filter application.Jwt
-func ToListPageRule(pageSize, pageIndex int, monitorRepository monitor.Repository) collections.PageList[monitor.RuleEO] {
+func ToListPageRule(pageSize, pageIndex int, monitorRepository monitor.Repository) collections.PageList[response.RuleResponse] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
 	if pageIndex < 1 {
 		pageIndex = 1
 	}
-	return monitorRepository.ToListPageRule(pageSize, pageIndex)
+	lst := monitorRepository.ToListPageRule(pageSize, pageIndex)
+	resList := mapper.ToPageList[response.RuleResponse](lst)
+	resList.List.Foreach(func(item *response.RuleResponse) {
+		if len(item.NoticeIds) > 0 {
+			item.NoticeList = monitorRepository.ToListNoticeById(item.NoticeIds)
+		}
+	})
+	return resList
 }
 
 // DeleteRule 删除规则
@@ -43,8 +51,13 @@ func DeleteRule(id int64, monitorRepository monitor.Repository) {
 // ToEntityRule 规则详情
 // @post infoRule
 // @filter application.Jwt
-func ToEntityRule(id int64, monitorRepository monitor.Repository) monitor.RuleEO {
-	return monitorRepository.ToEntityRule(id)
+func ToEntityRule(id int64, monitorRepository monitor.Repository) response.RuleResponse {
+	info := monitorRepository.ToEntityRule(id)
+	resInfo := mapper.Single[response.RuleResponse](info)
+	if len(info.NoticeIds) > 0 {
+		resInfo.NoticeList = monitorRepository.ToListNoticeById(info.NoticeIds)
+	}
+	return resInfo
 }
 
 // SaveRule 保存规则
@@ -141,4 +154,19 @@ func DeleteNoticeLog(monitorRepository monitor.Repository) {
 	// 7天之前的全部删除
 	err := monitorRepository.DeleteNoticeLog(time.Now().AddDate(0, 0, -7))
 	exception.ThrowWebExceptionError(403, err)
+}
+
+// NoticeTypeList 通知类型列表
+// @post noticeTypeList
+// @filter application.Jwt
+func NoticeTypeList() collections.List[response.NoticeTypeResponse] {
+	lst := noticeType.ToList()
+	resList := collections.NewList[response.NoticeTypeResponse]()
+	lst.Foreach(func(item *noticeType.Enum) {
+		resList.Add(response.NoticeTypeResponse{
+			NoticeType:     int(*item),
+			NoticeTypeName: item.ToString(),
+		})
+	})
+	return resList
 }

@@ -3,7 +3,6 @@ package terminalApp
 
 import (
 	"fops/domain/terminal"
-	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/webapi/websocket"
 )
 
@@ -23,12 +22,20 @@ func WsSsh(context *websocket.Context[terminal.SshRequest], terminalRepository t
 		if info.Id > 0 {
 			sshClient = terminal.DecodedMsgToSSHClient(info.LoginIp, info.LoginName, info.LoginPwd, info.LoginPort)
 			err := sshClient.GenerateClient()
-			exception.ThrowWebExceptionError(403, err)
+			if err != nil {
+				sendMap := make(map[string]interface{})
+				sendMap["StatusCode"] = "403"
+				sendMap["StatusMessage"] = "连接失败"
+				_ = context.Send(sendMap)
+				return
+			} else {
+				sendMap := make(map[string]interface{})
+				sendMap["StatusCode"] = "200"
+				sendMap["StatusMessage"] = "连接成功"
+				_ = context.Send(sendMap)
+			}
 			sshClient.RequestTerminal(term)
 		}
 	}
-
-	//context.ReceiverFunc()
-
 	sshClient.Connect(context)
 }

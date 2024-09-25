@@ -31,12 +31,12 @@ func (receiver *monitorRepository) DropDownListAppInfo() collections.List[monito
 
 // ToListRule 获取所有规则数据
 func (receiver *monitorRepository) ToListRule() collections.List[monitor.RuleEO] {
-	poList := context.MysqlContext.MonitorRule.Where("enable = 1").ToList()
+	poList := context.MysqlContext.MonitorRule.ToList()
 	return mapper.ToList[monitor.RuleEO](poList)
 }
 
 func (receiver *monitorRepository) ToListPageRule(pageSize, pageIndex int) collections.PageList[monitor.RuleEO] {
-	poList := context.MysqlContext.MonitorRule.Where("enable = 1").Desc("id").ToPageList(pageSize, pageIndex)
+	poList := context.MysqlContext.MonitorRule.Desc("id").ToPageList(pageSize, pageIndex)
 	return mapper.ToPageList[monitor.RuleEO](poList)
 }
 func (receiver *monitorRepository) DeleteRule(id int64) error {
@@ -64,7 +64,7 @@ func (receiver *monitorRepository) ToListNoticeById(ids []int) collections.List[
 	return mapper.ToList[monitor.NoticeEO](poList)
 }
 func (receiver *monitorRepository) ToListPageNotice(pageSize, pageIndex int) collections.PageList[monitor.NoticeEO] {
-	poList := context.MysqlContext.MonitorNotice.Where("enable = 1").Desc("id").ToPageList(pageSize, pageIndex)
+	poList := context.MysqlContext.MonitorNotice.Desc("id").ToPageList(pageSize, pageIndex)
 	return mapper.ToPageList[monitor.NoticeEO](poList)
 }
 func (receiver *monitorRepository) DeleteNotice(id int64) error {

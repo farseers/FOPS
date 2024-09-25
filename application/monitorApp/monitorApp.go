@@ -114,7 +114,6 @@ func SaveNotice(req monitor.NoticeEO, monitorRepository monitor.Repository) {
 		exception.ThrowWebExceptionError(403, err)
 	} else {
 		// 添加规则
-		req.Enable = true
 		err := monitorRepository.AddRNotice(req)
 		exception.ThrowWebExceptionError(403, err)
 	}

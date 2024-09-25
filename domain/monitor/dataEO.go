@@ -2,6 +2,7 @@ package monitor
 
 import (
 	"github.com/farseer-go/fs/dateTime"
+	"strings"
 )
 
 type DataEO struct {
@@ -14,9 +15,9 @@ type DataEO struct {
 // NewDataEO 新建实体
 func NewDataEO(appName string, key, value string) DataEO {
 	return DataEO{
-		AppName:  appName,
-		Key:      key,
-		Value:    value,
+		AppName:  strings.ReplaceAll(appName, "\\u0000", ""),
+		Key:      strings.ReplaceAll(key, "\\u0000", ""),
+		Value:    strings.ReplaceAll(value, "\\u0000", ""),
 		CreateAt: dateTime.Now(),
 	}
 }

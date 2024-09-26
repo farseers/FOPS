@@ -41,8 +41,7 @@
 </template>
 
 <script>
-// const host = window.location.host;
-const host = '192.168.1.195:8889'
+
 import { Session } from '/@/utils/storage';
 import { ElMessage } from 'element-plus';
 import { Terminal } from 'xterm'
@@ -332,8 +331,10 @@ export default {
     // socket
     initSocket() {
       let w_s = 'wss';
+      let host = window.location.host;
       if (process.env.NODE_ENV === 'development') {
         w_s = 'ws';
+        host = '192.168.1.195:8889'
       }
       this.term && this.term.write('连接中...\r\n')
       const token = `${Session.get('token')}`;

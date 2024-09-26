@@ -56,39 +56,113 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 				if !rule.IsNull() && send {
 					comparisonMsg := ""
 					switch rule.Comparison {
-					case "cpu":
-						appList.Foreach(func(app *apps.DomainObject) {
-							app.DockerInspect.Foreach(func(docker *apps.DockerInspectVO) {
-								if docker.CpuUsagePercent > parse.ToFloat64(rule.KeyValue) {
-									comparisonMsg += fmt.Sprintf(" %s %s cpu 大于 %s%", time.Now().Format("01-02 15:04:05"), app.AppName, rule.KeyValue)
+					case ">":
+						switch rule.KeyName {
+						case "cpu":
+							appList.Foreach(func(app *apps.DomainObject) {
+								app.DockerInspect.Foreach(func(docker *apps.DockerInspectVO) {
+									if docker.CpuUsagePercent > parse.ToFloat64(rule.KeyValue) {
+										comparisonMsg += fmt.Sprintf(" %s %s cpu 大于 %s%", time.Now().Format("01-02 15:04:05"), app.AppName, rule.KeyValue)
+									}
+								})
+							})
+							nodeList.Foreach(func(node *docker.DockerNodeVO) {
+								if node.CpuUsagePercent > parse.ToFloat64(rule.KeyValue) {
+									comparisonMsg += fmt.Sprintf(" %s %s cpu 大于 %s%", time.Now().Format("01-02 15:04:05"), node.NodeName, rule.KeyValue)
 								}
 							})
-						})
-						nodeList.Foreach(func(node *docker.DockerNodeVO) {
-							if node.CpuUsagePercent > parse.ToFloat64(rule.KeyValue) {
-								comparisonMsg += fmt.Sprintf(" %s %s cpu 大于 %s%", time.Now().Format("01-02 15:04:05"), node.NodeName, rule.KeyValue)
-							}
-						})
-					case "memory":
-						appList.Foreach(func(app *apps.DomainObject) {
-							app.DockerInspect.Foreach(func(docker *apps.DockerInspectVO) {
-								if docker.MemoryUsagePercent > parse.ToFloat64(rule.KeyValue) {
-									comparisonMsg += fmt.Sprintf(" %s %s memory 大于 %s%", time.Now().Format("01-02 15:04:05"), app.AppName, rule.KeyValue)
+						case "memory":
+							appList.Foreach(func(app *apps.DomainObject) {
+								app.DockerInspect.Foreach(func(docker *apps.DockerInspectVO) {
+									if docker.MemoryUsagePercent > parse.ToFloat64(rule.KeyValue) {
+										comparisonMsg += fmt.Sprintf(" %s %s memory 大于 %s%", time.Now().Format("01-02 15:04:05"), app.AppName, rule.KeyValue)
+									}
+								})
+							})
+							nodeList.Foreach(func(node *docker.DockerNodeVO) {
+								if node.MemoryUsagePercent > parse.ToFloat64(rule.KeyValue) {
+									comparisonMsg += fmt.Sprintf(" %s %s memory 大于 %s%", time.Now().Format("01-02 15:04:05"), node.NodeName, rule.KeyValue)
 								}
 							})
-						})
-						nodeList.Foreach(func(node *docker.DockerNodeVO) {
-							if node.MemoryUsagePercent > parse.ToFloat64(rule.KeyValue) {
-								comparisonMsg += fmt.Sprintf(" %s %s memory 大于 %s%", time.Now().Format("01-02 15:04:05"), node.NodeName, rule.KeyValue)
-							}
-						})
-					case "disk":
-						nodeList.Foreach(func(node *docker.DockerNodeVO) {
-							if node.DiskUsagePercent > parse.ToFloat64(rule.KeyValue) {
-								comparisonMsg += fmt.Sprintf(" %s %s disk 大于 %s%", time.Now().Format("01-02 15:04:05"), node.NodeName, rule.KeyValue)
-							}
-						})
+						case "disk":
+							nodeList.Foreach(func(node *docker.DockerNodeVO) {
+								if node.DiskUsagePercent > parse.ToFloat64(rule.KeyValue) {
+									comparisonMsg += fmt.Sprintf(" %s %s disk 大于 %s%", time.Now().Format("01-02 15:04:05"), node.NodeName, rule.KeyValue)
+								}
+							})
+						}
+					case "<":
+						switch rule.KeyName {
+						case "cpu":
+							appList.Foreach(func(app *apps.DomainObject) {
+								app.DockerInspect.Foreach(func(docker *apps.DockerInspectVO) {
+									if docker.CpuUsagePercent < parse.ToFloat64(rule.KeyValue) {
+										comparisonMsg += fmt.Sprintf(" %s %s cpu 小于 %s%", time.Now().Format("01-02 15:04:05"), app.AppName, rule.KeyValue)
+									}
+								})
+							})
+							nodeList.Foreach(func(node *docker.DockerNodeVO) {
+								if node.CpuUsagePercent < parse.ToFloat64(rule.KeyValue) {
+									comparisonMsg += fmt.Sprintf(" %s %s cpu 小于 %s%", time.Now().Format("01-02 15:04:05"), node.NodeName, rule.KeyValue)
+								}
+							})
+						case "memory":
+							appList.Foreach(func(app *apps.DomainObject) {
+								app.DockerInspect.Foreach(func(docker *apps.DockerInspectVO) {
+									if docker.MemoryUsagePercent < parse.ToFloat64(rule.KeyValue) {
+										comparisonMsg += fmt.Sprintf(" %s %s memory 小于 %s%", time.Now().Format("01-02 15:04:05"), app.AppName, rule.KeyValue)
+									}
+								})
+							})
+							nodeList.Foreach(func(node *docker.DockerNodeVO) {
+								if node.MemoryUsagePercent < parse.ToFloat64(rule.KeyValue) {
+									comparisonMsg += fmt.Sprintf(" %s %s memory 小于 %s%", time.Now().Format("01-02 15:04:05"), node.NodeName, rule.KeyValue)
+								}
+							})
+						case "disk":
+							nodeList.Foreach(func(node *docker.DockerNodeVO) {
+								if node.DiskUsagePercent < parse.ToFloat64(rule.KeyValue) {
+									comparisonMsg += fmt.Sprintf(" %s %s disk 小于 %s%", time.Now().Format("01-02 15:04:05"), node.NodeName, rule.KeyValue)
+								}
+							})
+						}
+					case "=":
+						switch rule.KeyName {
+						case "cpu":
+							appList.Foreach(func(app *apps.DomainObject) {
+								app.DockerInspect.Foreach(func(docker *apps.DockerInspectVO) {
+									if docker.CpuUsagePercent == parse.ToFloat64(rule.KeyValue) {
+										comparisonMsg += fmt.Sprintf(" %s %s cpu 等于 %s%", time.Now().Format("01-02 15:04:05"), app.AppName, rule.KeyValue)
+									}
+								})
+							})
+							nodeList.Foreach(func(node *docker.DockerNodeVO) {
+								if node.CpuUsagePercent == parse.ToFloat64(rule.KeyValue) {
+									comparisonMsg += fmt.Sprintf(" %s %s cpu 等于 %s%", time.Now().Format("01-02 15:04:05"), node.NodeName, rule.KeyValue)
+								}
+							})
+						case "memory":
+							appList.Foreach(func(app *apps.DomainObject) {
+								app.DockerInspect.Foreach(func(docker *apps.DockerInspectVO) {
+									if docker.MemoryUsagePercent == parse.ToFloat64(rule.KeyValue) {
+										comparisonMsg += fmt.Sprintf(" %s %s memory 等于 %s%", time.Now().Format("01-02 15:04:05"), app.AppName, rule.KeyValue)
+									}
+								})
+							})
+							nodeList.Foreach(func(node *docker.DockerNodeVO) {
+								if node.MemoryUsagePercent == parse.ToFloat64(rule.KeyValue) {
+									comparisonMsg += fmt.Sprintf(" %s %s memory 等于 %s%", time.Now().Format("01-02 15:04:05"), node.NodeName, rule.KeyValue)
+								}
+							})
+						case "disk":
+							nodeList.Foreach(func(node *docker.DockerNodeVO) {
+								if node.DiskUsagePercent == parse.ToFloat64(rule.KeyValue) {
+									comparisonMsg += fmt.Sprintf(" %s %s disk 等于 %s%", time.Now().Format("01-02 15:04:05"), node.NodeName, rule.KeyValue)
+								}
+							})
+						}
 					}
+
 					// 发送消息 whatsapp
 					if len(comparisonMsg) > 0 && len(rule.NoticeIds) > 0 {
 						// 通知数据

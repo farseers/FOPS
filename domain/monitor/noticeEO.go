@@ -33,7 +33,7 @@ func (receiver *NoticeEO) Notice(content string) {
 		sendUrl := fmt.Sprintf("https://api.callmebot.com/whatsapp.php?phone=%s&apikey=%s&text=%s", receiver.Phone, receiver.ApiKey, url.QueryEscape(content))
 		body, statusCode, _, err = http.RequestProxyConfigure("GET", sendUrl, head, nil, "", 5000)
 	case noticeType.Telegram: // Telegram
-		sendUrl := fmt.Sprintf("http://api.callmebot.com/start.php?user=%s&text=%s&rpt=1", receiver.Phone, url.QueryEscape(content))
+		sendUrl := fmt.Sprintf("https://api.telegram.org/bot%s/sendmessage?chat_id=%s&text=%s", receiver.ApiKey, receiver.Phone, url.QueryEscape(content))
 		body, statusCode, _, err = http.RequestProxyConfigure("GET", sendUrl, head, nil, "", 5000)
 	case noticeType.Log:
 		flog.Infof("消息通知：%s", content)

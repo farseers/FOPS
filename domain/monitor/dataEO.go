@@ -2,6 +2,7 @@ package monitor
 
 import (
 	"github.com/farseer-go/fs/dateTime"
+	"regexp"
 	"strings"
 )
 
@@ -25,5 +26,8 @@ func NewDataEO(appName string, key, value string) DataEO {
 func FilterElement(val string) string {
 	val = strings.ReplaceAll(val, "\\u0000", "")
 	val = strings.TrimSpace(val)
+	val = strings.ReplaceAll(val, " ", "")
+	re := regexp.MustCompile(`\s+`)
+	val = re.ReplaceAllString(val, "")
 	return val
 }

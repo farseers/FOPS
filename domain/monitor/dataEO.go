@@ -24,7 +24,8 @@ func NewDataEO(appName string, key, value string) DataEO {
 }
 
 func FilterElement(val string) string {
-	val = strings.ReplaceAll(val, "\\u0000", "")
+	// 去除字符串中的 '\0' 字符
+	val = strings.ReplaceAll(val, "\x00", "")
 	val = strings.TrimSpace(val)
 	val = strings.ReplaceAll(val, " ", "")
 	re := regexp.MustCompile(`\s+`)

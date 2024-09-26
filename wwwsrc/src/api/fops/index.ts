@@ -55,7 +55,7 @@ export function fopsApi() {
 				data:param,
 			});
 		}
-		,dropDownList: (param: object) => {
+		,dropDownList: (param: object) => { //IsAll:false  默认false  
 			return request({
 				url: '/apps/dropDownList',
 				method: 'post',
@@ -542,6 +542,13 @@ export function fopsApi() {
 		monitorNoticeTypeList:(param: object) => { // 通知类型
 			return request({
 				url: '/monitor/noticeTypeList',
+				method:'post',
+				data:param,
+			});
+		},
+		drpBaseList:(param: object) => { // 通知类型 {baseType:'1,2'} 1通知类型 2比较方式
+			return request({
+				url: '/monitor/drpBaseList',
 				method:'post',
 				data:param,
 			});

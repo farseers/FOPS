@@ -104,8 +104,8 @@ func Delete(appName string, appsRepository apps.Repository) {
 // DropDownList 应用列表
 // @post dropDownList
 // @filter application.Jwt
-func DropDownList(appsRepository apps.Repository) collections.List[apps.ShortEO] {
-	return appsRepository.ToShortList()
+func DropDownList(isAll bool, appsRepository apps.Repository) collections.List[apps.ShortEO] {
+	return appsRepository.ToShortList(isAll)
 }
 
 // List 应用列表

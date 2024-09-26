@@ -1,18 +1,27 @@
 <template>
     <div class="system-user-container layout-padding">
         <el-card>
-            <div class="system-user-search mb15">
-                <el-button size="default" type="warning" class="ml10" @click="set_add()">
-                    <el-icon>
-						<ele-Plus />
-					</el-icon>
-                    新增</el-button>
+            <div class="system-user-search mb15" style="display: flex;">
+                <el-form-item label="应用名称">
+                    <el-select v-model="AppName" clearable style="width: 200px;" @change="onSearch()" filterable  placeholder="请选择" >
+                    <el-option 
+                    v-for="item in m_list"
+                    :key="item.AppName"
+                    :label="item.AppName"
+                    :value="item.AppName"
+                    />
+                </el-select>
+      </el-form-item>
                 <el-button size="default" type="primary" class="ml10" @click="onSearch()">
                     <el-icon>
 						<ele-Search />
 					</el-icon>
                     查询</el-button>
-                    
+                    <el-button size="default" type="warning" class="ml10" @click="set_add()">
+                    <el-icon>
+						<ele-Plus />
+					</el-icon>
+                    新增</el-button>
             </div>
             <el-table :data="tableData" v-loading="loading" style="width: 100%" size="default">
                 <el-table-column type="index" label="序号" width="60" />
@@ -74,7 +83,9 @@ export default {
             tableData: [],
             loading: false,
             p_list:[],//关联人
+            AppName:'',//应用名称
             m_list:[],//项目列表
+            typeList:[],//比较方式
             pages: {
                 pageNum: 1,
                 pageSize: 10,
@@ -108,13 +119,20 @@ export default {
                     this.m_list = [...Data]
                 }
             })
+            serverApi.drpBaseList({baseType:'2'}).then(d=>{
+                const { Data,Status } = d;
+                if(Status){
+                    const { CompareList } = Data
+                    this.typeList = [...CompareList];
+                }
+            })
       },
       set_add(){
-        this.$refs.editInfo && this.$refs.editInfo.info(null,this.p_list,this.m_list)
+        this.$refs.editInfo && this.$refs.editInfo.info(null,this.p_list,this.m_list,this.typeList)
         },
         set_edit(row){
             if(row.Id){
-                this.$refs.editInfo && this.$refs.editInfo.info(row.Id,this.p_list,this.m_list)
+                this.$refs.editInfo && this.$refs.editInfo.info(row.Id,this.p_list,this.m_list,this.typeList)
             }
         },
         set_del(row){ //删除
@@ -158,6 +176,7 @@ export default {
         getTableData() {
             this.loading = true;
             serverApi.monitorRuleList({
+                'appName':this.AppName,
                 "pageSize": this.pages.pageSize,
                 "pageIndex": this.pages.pageNum
             }).then((d)=>{

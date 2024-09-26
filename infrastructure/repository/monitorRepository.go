@@ -17,7 +17,11 @@ type monitorRepository struct {
 
 // ToListRuleByAppName 获取规则数据
 func (receiver *monitorRepository) ToListRuleByAppName(appName string) collections.List[monitor.RuleEO] {
-	poList := context.MysqlContext.MonitorRule.Where("app_name = ? and enable = 1", appName).ToList()
+	ts := context.MysqlContext.MonitorRule.Where("enable = 1")
+	if len(appName) > 0 {
+		ts.Where("app_name = ?", appName)
+	}
+	poList := ts.ToList()
 	return mapper.ToList[monitor.RuleEO](poList)
 }
 
@@ -35,8 +39,12 @@ func (receiver *monitorRepository) ToListRule() collections.List[monitor.RuleEO]
 	return mapper.ToList[monitor.RuleEO](poList)
 }
 
-func (receiver *monitorRepository) ToListPageRule(pageSize, pageIndex int) collections.PageList[monitor.RuleEO] {
-	poList := context.MysqlContext.MonitorRule.Desc("id").ToPageList(pageSize, pageIndex)
+func (receiver *monitorRepository) ToListPageRule(appName string, pageSize, pageIndex int) collections.PageList[monitor.RuleEO] {
+	ts := context.MysqlContext.MonitorRule.Desc("id")
+	if len(appName) > 0 {
+		ts.Where("app_name = ?", appName)
+	}
+	poList := ts.ToPageList(pageSize, pageIndex)
 	return mapper.ToPageList[monitor.RuleEO](poList)
 }
 func (receiver *monitorRepository) DeleteRule(id int64) error {
@@ -63,8 +71,12 @@ func (receiver *monitorRepository) ToListNoticeById(ids []int) collections.List[
 	poList := context.MysqlContext.MonitorNotice.Where("id in ? and enable = 1", ids).ToList()
 	return mapper.ToList[monitor.NoticeEO](poList)
 }
-func (receiver *monitorRepository) ToListPageNotice(pageSize, pageIndex int) collections.PageList[monitor.NoticeEO] {
-	poList := context.MysqlContext.MonitorNotice.Desc("id").ToPageList(pageSize, pageIndex)
+func (receiver *monitorRepository) ToListPageNotice(name string, pageSize, pageIndex int) collections.PageList[monitor.NoticeEO] {
+	ts := context.MysqlContext.MonitorNotice.Desc("id")
+	if len(name) > 0 {
+		ts.Where("name like ?", name)
+	}
+	poList := ts.ToPageList(pageSize, pageIndex)
 	return mapper.ToPageList[monitor.NoticeEO](poList)
 }
 func (receiver *monitorRepository) DeleteNotice(id int64) error {

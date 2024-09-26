@@ -53,11 +53,11 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 				comparisonMsg := ""
 				switch rule.Comparison {
 				case ">":
-					if parse.ToFloat32(rule.KeyValue) > parse.ToFloat32(reqVal) {
+					if parse.ToFloat32(reqVal) > parse.ToFloat32(rule.KeyValue) {
 						comparisonMsg = fmt.Sprintf("%s %s %s 大于 %f", time.Now().Format("01-02 15:04:05"), rule.AppName, rule.KeyName, parse.ToFloat32(reqVal))
 					}
 				case "<":
-					if parse.ToFloat32(rule.KeyValue) < parse.ToFloat32(reqVal) {
+					if parse.ToFloat32(reqVal) < parse.ToFloat32(rule.KeyValue) {
 						comparisonMsg = fmt.Sprintf("%s %s %s 小于 %f", time.Now().Format("01-02 15:04:05"), rule.AppName, rule.KeyName, parse.ToFloat32(reqVal))
 					}
 				case "=":

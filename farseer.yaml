@@ -22,7 +22,7 @@ Fops:
     - "-v /home/go/go-build:/root/.cache/go-build"
 LinkTrace:
   Enable: true
-  PrintLog: false
+  PrintLog: true
 Log:
   Default:
     LogLevel: "info"          # 只记录级别>=info的日志内容

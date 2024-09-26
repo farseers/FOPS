@@ -32,8 +32,11 @@ func (receiver *appsRepository) ToListBySys(isSys bool) collections.List[apps.Do
 	return mapper.ToList[apps.DomainObject](lst)
 }
 
-func (receiver *appsRepository) ToShortList() collections.List[apps.ShortEO] {
-	ts := context.MysqlContext.Apps.Omit("framework_gits", "dockerfile_path", "additional_scripts", "is_sys").Where("is_sys = false")
+func (receiver *appsRepository) ToShortList(isAll bool) collections.List[apps.ShortEO] {
+	ts := context.MysqlContext.Apps.Omit("framework_gits", "dockerfile_path", "additional_scripts", "is_sys")
+	if !isAll {
+		ts.Where("is_sys = false")
+	}
 	lst := ts.ToList()
 	return mapper.ToList[apps.ShortEO](lst)
 }

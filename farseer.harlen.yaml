@@ -15,8 +15,8 @@ Fops:
     Driver: "clickhouse"
     ConnString: "DataType=clickhouse,PoolMaxSize=50,PoolMinSize=1,ConnectionString=clickhouse://default:@localhost:9000/linkTrace?dial_timeout=10s&read_timeout=20s"
 LinkTrace:
-  Enable: false
-  PrintLog: false
+  Enable: true
+  PrintLog: true
 Log:
   Default:
     LogLevel: "info"          # 只记录级别>=info的日志内容

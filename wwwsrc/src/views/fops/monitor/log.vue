@@ -1,7 +1,17 @@
 <template>
     <div class="system-user-container layout-padding">
         <el-card>
-            <div class="system-user-search mb15">
+            <div class="system-user-search mb15" style="display: flex;">
+                <el-form-item label="项目名称">
+                    <el-select v-model="AppName" style="width: 200px;" @change="onSearch()" clearable filterable  placeholder="请选择项目名称" >
+                        <el-option 
+                        v-for="item in m_list"
+                        :key="item.AppName"
+                        :label="item.AppName"
+                        :value="item.AppName"
+                        />
+                    </el-select>
+                </el-form-item>
                 <el-button size="default" type="primary" class="ml10" @click="onSearch()">
                     <el-icon>
 						<ele-Search />
@@ -47,6 +57,8 @@ export default {
     components: { InitPagination,noticeDialog },
     data() {
         return {
+            AppName:'',
+            m_list:[],
             typeList:[],//通知类型
             tableData: [],
             loading: false,
@@ -66,19 +78,26 @@ export default {
     },
     methods: {
         info(){
-            serverApi.monitorNoticeTypeList({}).then(d=>{
+            serverApi.dropDownList({}).then(d=>{
+                const { Status,Data } = d;
+                if(Status){
+                    this.m_list = [...Data]
+                }
+            })
+            serverApi.drpBaseList({baseType:'1'}).then(d=>{
                 const { Data,Status } = d;
                 if(Status){
-                    this.typeList = [...Data];
+                    const { NoticeTypeList } = Data
+                    this.typeList = [...NoticeTypeList];
                 }
             })
         },
         set_type(type){
            const row =  this.typeList.find(item=>{
-                return item.NoticeType == type
+                return item.Key == type
             })
             if(row){
-                return row.NoticeTypeName
+                return row.Value
             }else{
                 return ''
             }
@@ -120,6 +139,7 @@ export default {
         getTableData() {
             this.loading = true;
             serverApi.monitorNoticeLogList({
+                "appName":this.AppName,
                 "pageSize": this.pages.pageSize,
                 "pageIndex": this.pages.pageNum
             }).then((d)=>{

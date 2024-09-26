@@ -1,7 +1,17 @@
 <template>
     <div class="system-user-container layout-padding">
         <el-card>
-            <div class="system-user-search mb15">
+            <div class="system-user-search mb15" style="display: flex;">
+                <el-form-item label="项目名称">
+                    <el-select v-model="AppName" clearable style="width: 200px;" @change="onSearch()" filterable  placeholder="请选择项目名称" >
+                        <el-option 
+                        v-for="item in m_list"
+                        :key="item.AppName"
+                        :label="item.AppName"
+                        :value="item.AppName"
+                        />
+                    </el-select>
+                </el-form-item>
                 <el-button size="default" type="primary" class="ml10" @click="onSearch()">
                     <el-icon>
 						<ele-Search />
@@ -37,7 +47,9 @@ export default {
     data() {
         return {
             tableData: [],
+            m_list:[],
             loading: false,
+            AppName:'',//项目名称
             pages: {
                 pageNum: 1,
                 pageSize: 10,
@@ -45,6 +57,14 @@ export default {
             }
 
         }
+    },
+    created(){
+        serverApi.dropDownList({IsAll:true}).then(d=>{
+                const { Status,Data } = d;
+                if(Status){
+                    this.m_list = [...Data]
+                }
+            })
     },
     mounted(){
         this.getTableData()
@@ -66,6 +86,7 @@ export default {
         getTableData() {
             this.loading = true;
             serverApi.monitorDataList({
+                'appName':this.AppName,
                 "pageSize": this.pages.pageSize,
                 "pageIndex": this.pages.pageNum
             }).then((d)=>{

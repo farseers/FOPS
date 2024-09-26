@@ -1,17 +1,23 @@
 <template>
     <div class="system-user-container layout-padding">
         <el-card>
-            <div class="system-user-search mb15">
-                <el-button size="default" type="warning" class="ml10" @click="set_add()">
-                    <el-icon>
-						<ele-Plus />
-					</el-icon>
-                    新增用户</el-button>
+            <div class="system-user-search mb15" style="display: flex;">
+                <el-form-item label="姓名">
+                    <el-input v-model="name" clearable 
+                    placeholder="请输入姓名"
+                    style="width: 200px;" @clear="onSearch()" @keyup.enter="onSearch()"/>
+                </el-form-item>
+               
                 <el-button size="default" type="primary" class="ml10" @click="onSearch()">
                     <el-icon>
 						<ele-Search />
 					</el-icon>
                     查询</el-button>
+                    <el-button size="default" type="warning" class="ml10" @click="set_add()">
+                    <el-icon>
+						<ele-Plus />
+					</el-icon>
+                    新增用户</el-button>
                     
             </div>
             <el-table :data="tableData" size="default" v-loading="loading" style="width: 100%">
@@ -64,6 +70,7 @@ export default {
     data() {
         return {
             tableData: [],
+            name:'',//姓名
             typeList:[],//通知类型
             loading: false,
             pages: {
@@ -84,19 +91,20 @@ export default {
     methods: {
         set_type(type){
            const row =  this.typeList.find(item=>{
-                return item.NoticeType == type
+                return item.Key == type
             })
             if(row){
-                return row.NoticeTypeName
+                return row.Value
             }else{
                 return ''
             }
         },
         info(){
-            serverApi.monitorNoticeTypeList({}).then(d=>{
+            serverApi.drpBaseList({baseType:'1'}).then(d=>{
                 const { Data,Status } = d;
                 if(Status){
-                    this.typeList = [...Data];
+                    const { NoticeTypeList } = Data
+                    this.typeList = [...NoticeTypeList];
                 }
             })
         },
@@ -145,6 +153,7 @@ export default {
         getTableData() {
             this.loading = true;
             serverApi.monitorNoticeList({
+                "name":this.name,
                 "pageSize": this.pages.pageSize,
                 "pageIndex": this.pages.pageNum
             }).then((d)=>{

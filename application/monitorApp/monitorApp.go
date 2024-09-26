@@ -9,6 +9,7 @@ import (
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/mapper"
+	"strings"
 	"time"
 )
 
@@ -23,14 +24,14 @@ func DropDownListAppInfo(monitorRepository monitor.Repository) collections.List[
 // ToListPageRule 规则分页
 // @post ruleList
 // @filter application.Jwt
-func ToListPageRule(pageSize, pageIndex int, monitorRepository monitor.Repository) collections.PageList[response.RuleResponse] {
+func ToListPageRule(appName string, pageSize, pageIndex int, monitorRepository monitor.Repository) collections.PageList[response.RuleResponse] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
 	if pageIndex < 1 {
 		pageIndex = 1
 	}
-	lst := monitorRepository.ToListPageRule(pageSize, pageIndex)
+	lst := monitorRepository.ToListPageRule(appName, pageSize, pageIndex)
 	resList := mapper.ToPageList[response.RuleResponse](lst)
 	resList.List.Foreach(func(item *response.RuleResponse) {
 		if len(item.NoticeIds) > 0 {
@@ -79,14 +80,14 @@ func SaveRule(req request.SaveRuleRequest, monitorRepository monitor.Repository)
 // ToListPageNotice 通知人列表
 // @post noticeList
 // @filter application.Jwt
-func ToListPageNotice(pageSize, pageIndex int, monitorRepository monitor.Repository) collections.PageList[monitor.NoticeEO] {
+func ToListPageNotice(name string, pageSize, pageIndex int, monitorRepository monitor.Repository) collections.PageList[monitor.NoticeEO] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
 	if pageIndex < 1 {
 		pageIndex = 1
 	}
-	return monitorRepository.ToListPageNotice(pageSize, pageIndex)
+	return monitorRepository.ToListPageNotice(name, pageSize, pageIndex)
 }
 
 // DeleteNotice 删除通知人
@@ -155,17 +156,39 @@ func DeleteNoticeLog(monitorRepository monitor.Repository) {
 	exception.ThrowWebExceptionError(403, err)
 }
 
-// NoticeTypeList 通知类型列表
-// @post noticeTypeList
+// DrpBaseList drp基础类型列表
+// @post drpBaseList
 // @filter application.Jwt
-func NoticeTypeList() collections.List[response.NoticeTypeResponse] {
-	lst := noticeType.ToList()
-	resList := collections.NewList[response.NoticeTypeResponse]()
-	lst.Foreach(func(item *noticeType.Enum) {
-		resList.Add(response.NoticeTypeResponse{
-			NoticeType:     int(*item),
-			NoticeTypeName: item.ToString(),
+func DrpBaseList(baseType string) map[string][]response.KeyValueResponse {
+
+	reqList := collections.NewList(strings.Split(baseType, ",")...)
+	resMap := make(map[string][]response.KeyValueResponse)
+	if reqList.Contains("1") {
+		lst := noticeType.ToList()
+		resList := collections.NewList[response.KeyValueResponse]()
+		lst.Foreach(func(item *noticeType.Enum) {
+			resList.Add(response.KeyValueResponse{
+				Key:   int(*item),
+				Value: item.ToString(),
+			})
 		})
-	})
-	return resList
+		resMap["NoticeTypeList"] = resList.ToArray()
+	}
+	if reqList.Contains("2") {
+		resList := collections.NewList[response.KeyValueResponse]()
+		resList.Add(response.KeyValueResponse{
+			Key:   1,
+			Value: ">",
+		})
+		resList.Add(response.KeyValueResponse{
+			Key:   2,
+			Value: "<",
+		})
+		resList.Add(response.KeyValueResponse{
+			Key:   3,
+			Value: "=",
+		})
+		resMap["CompareList"] = resList.ToArray()
+	}
+	return resMap
 }

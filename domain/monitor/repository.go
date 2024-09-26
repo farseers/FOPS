@@ -12,7 +12,7 @@ type Repository interface {
 	// ToListRuleByAppId 查询读取规则
 	ToListRuleByAppName(appName string) collections.List[RuleEO]
 	ToListRule() collections.List[RuleEO]
-	ToListPageRule(pageSize, pageIndex int) collections.PageList[RuleEO]
+	ToListPageRule(appName string, pageSize, pageIndex int) collections.PageList[RuleEO]
 	DeleteRule(id int64) error
 	ToEntityRule(id int64) RuleEO
 	UpdateRule(id int64, rule RuleEO) error
@@ -21,7 +21,7 @@ type Repository interface {
 	// 通知人数据
 	// ToListNoticeById 通知人集合
 	ToListNoticeById(ids []int) collections.List[NoticeEO]
-	ToListPageNotice(pageSize, pageIndex int) collections.PageList[NoticeEO]
+	ToListPageNotice(name string, pageSize, pageIndex int) collections.PageList[NoticeEO]
 	DeleteNotice(id int64) error
 	ToEntityNotice(id int64) NoticeEO
 	UpdateNotice(id int64, rule NoticeEO) error

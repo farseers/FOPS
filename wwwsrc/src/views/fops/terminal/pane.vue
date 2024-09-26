@@ -198,7 +198,7 @@ export default {
       const _this = this;
       this.$refs['elForm'].validate((valid) => {
         if (valid) {
-          const port = _this.form.port *1;
+          let port = _this.form.port *1;
           if(isNaN(port)){port = 0}
           let param = {
             LoginName: _this.form.user,
@@ -331,10 +331,13 @@ export default {
     },
     // socket
     initSocket() {
-     
+      let w_s = 'wss';
+      if (process.env.NODE_ENV === 'development') {
+        w_s = 'ws';
+      }
       this.term && this.term.write('连接中...\r\n')
       const token = `${Session.get('token')}`;
-      const socketUrl = `ws://${host}/terminal/ws/ssh?Authorization=${token}`;
+      const socketUrl = `${w_s}://${host}/terminal/ws/ssh?Authorization=${token}`;
       this.ws = new WebSocket(socketUrl, ['webssh'])
       this.onOpenSocket()
       this.onCloseSocket()

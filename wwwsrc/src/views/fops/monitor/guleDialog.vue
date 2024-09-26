@@ -1,24 +1,42 @@
 <template>
+  
   <div class="system-role-dialog-container">
-    <el-dialog :title="title" v-model="isShowDialog" width="800px" @close="close">
-      <el-form-item label="项目名称"><el-input v-model="infoRow.AppName" /></el-form-item>
-      <el-form-item label="时间类型">
+    <el-dialog :title="title" v-model="isShowDialog" width="800px" >
+      <el-form  
+       ref="ruleFormRef"
+      :model="infoRow"
+      :rules="rules">
+      <el-form-item label="应用名称" prop="AppName">
+        <el-select v-model="infoRow.AppName" filterable  placeholder="请选择" >
+        <el-option 
+          v-for="item in m_list"
+          :key="item.AppName"
+          :label="item.AppName"
+          :value="item.AppName"
+        />
+      </el-select>
+      </el-form-item>
+      <el-form-item label="时间类型" prop="TimeType">
         <el-radio-group v-model="infoRow.TimeType">
           <el-radio :label="0">小时</el-radio>
           <el-radio :label="1">天</el-radio>
         </el-radio-group>
       </el-form-item>
-      <el-form-item label="开始时间">
+      <el-form-item label="生效时间" prop="daterange">
         <el-date-picker v-model="infoRow.daterange" type="datetimerange" range-separator="To" start-placeholder="Start date"
           end-placeholder="End date" />
       </el-form-item>
-      <el-form-item label="比较方式">
+      <el-form-item label="比较方式" prop="Comparison">
         <el-input v-model="infoRow.Comparison" />
       </el-form-item>
-      <el-form-item label="监控键值">
-        <el-input v-model="infoRow.KeyName" style="flex: 1;" />
+      <el-form-item label="监控键值" required>
+        <el-form-item prop="KeyName"  style="flex: 1;" >
+          <el-input v-model="infoRow.KeyName"/>
+        </el-form-item>
         <span style="width: 15px;text-align: center;"> : </span>
-        <el-input style="flex: 1;" v-model="infoRow.KeyValue" />
+        <el-form-item prop="KeyValue"  style="flex: 1;" >
+          <el-input v-model="infoRow.KeyValue"/>
+        </el-form-item>
       </el-form-item>
       <el-form-item label="是否启用">
         <el-switch v-model="infoRow.Enable" active-text="启用" inactive-text="关闭"
@@ -39,6 +57,7 @@
         </div>
       </el-form-item>
       <el-form-item label="备注"><el-input v-model="infoRow.Remark" /></el-form-item>
+    </el-form>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="onCancel" size="default">取 消</el-button>
@@ -71,28 +90,43 @@
 
 
 <script>
-
 import { fopsApi } from "/@/api/fops";
 import { ElMessage } from 'element-plus';
 const serverApi = fopsApi();
+const validators =(e,s)=>{
+ if(s&&s.length == 2){
+  return true
+ }else{
+  return false
+ }
+}
 export default {
   data() {
     return {
+      rules : {
+        daterange: [{required: true,trigger: 'change', type: 'date',message:'请选择时间',validator:validators}],
+        AppName:[{required: true,trigger: 'change',message:'请选择应用名称',}],
+        TimeType:[{required: true,trigger: 'change',}],
+        Comparison:[{required: true,trigger: 'blur',message:'请输入比较方式'}],
+        KeyName:[{required: true,trigger: 'blur',message:'请输入键值'}],
+        KeyValue:[{required: true,trigger: 'blur',message:'请输入键值'}],
+      },
       ck_list: [],//穿梭框选中
       p_list: [],//关联人列表
+      m_list:[],//项目列表
       title: '编辑规则',
       isShowDialog: false,
       isTransfer: false,//设置关联人
       infoRow: {
-        "daterange": [],
+        "daterange": [],//必传
         "Id": null,
-        "AppName": "",
-        "TimeType": null,
-        "StartTime": "",
-        "EndTime": "",
-        "Comparison": "",
-        "KeyName": "",
-        "KeyValue": "",
+        "AppName": "", //必传
+        "TimeType": 1, //必传
+        "StartTime": "",//必传
+        "EndTime": "",//必传
+        "Comparison": "",//必传
+        "KeyName": "",//必传
+        "KeyValue": "",//必传
         "Remark": "",
         "NoticeIds": [],
         "NoticeList":[]
@@ -104,6 +138,7 @@ export default {
             return item.Name.toLowerCase().includes(query.toLowerCase())
        } ,
     tranSave(){ //关联人保存 
+     
       this.infoRow.NoticeIds = this.ck_list;
       const param = this.get_param()
       serverApi.monitorSaveRule(param).then(d => {
@@ -125,18 +160,15 @@ export default {
     setPers() {//设置关联人
       this.isTransfer = true;
     },
-    close(){
-      this.$emit('search')
-    },
-    onCancel() {
-      this.isShowDialog = false;
+    init(){
       this.ck_list = [];
       this.p_list = [];
+      this.m_list = [];
       this.infoRow = {
         "daterange": [],
         "Id": null,
-        "AppName": "",
-        "TimeType": null,
+        "AppName": "", 
+        "TimeType": 1,
         "StartTime": "",
         "EndTime": "",
         "Comparison": "",
@@ -146,6 +178,11 @@ export default {
         "NoticeIds": [],
         "NoticeList":[]
       }
+      this.$refs.ruleFormRef && this.$refs.ruleFormRef.resetFields()
+    },
+    onCancel() {
+      this.isShowDialog = false;
+      this.init()
       this.$emit('search')
     },
     get_param(){
@@ -158,23 +195,30 @@ export default {
       return param
     },
     onSubmit() {
-      const param = this.get_param()
-      serverApi.monitorSaveRule(param).then(d => {
-        let { Status, StatusMessage } = d;
-        if (Status) {
-          this.onCancel()
-        
-        } else {
-          ElMessage.error(StatusMessage)
+      this.$refs.ruleFormRef &&  this.$refs.ruleFormRef.validate((valid)=>{
+        if(valid){
+          const param = this.get_param()
+          serverApi.monitorSaveRule(param).then(d => {
+            let { Status, StatusMessage } = d;
+            if (Status) {
+              this.onCancel()
+            } else {
+              ElMessage.error(StatusMessage)
+            }
+           })
         }
       })
     },
-    info(id, list) {
-      if(list){
-        this.p_list = [...list];
+    info(id, list1,list2) {
+      this.init()
+      if(list1){
+        this.p_list = [...list1];
       }
-     
-      serverApi.monitorInfoRule({ id: id }).then(d => {
+      if(list2){
+        this.m_list = [...list2]
+      }
+      if(id){
+        serverApi.monitorInfoRule({ id: id }).then(d => {
         let { Data, Status, StatusMessage } = d;
         if (Status) {
           this.infoRow = { ...Data, daterange: [Data.StartTime, Data.EndTime] }
@@ -184,6 +228,10 @@ export default {
           ElMessage.error(StatusMessage)
         }
       })
+      }else{
+        this.isShowDialog = true;
+      }
+      
     }
   }
 }

@@ -2,6 +2,11 @@
     <div class="system-user-container layout-padding">
         <el-card>
             <div class="system-user-search mb15">
+                <el-button size="default" type="warning" class="ml10" @click="set_add()">
+                    <el-icon>
+						<ele-Plus />
+					</el-icon>
+                    新增</el-button>
                 <el-button size="default" type="success" class="ml10" @click="onSearch()">
                     <el-icon>
 						<ele-Search />
@@ -11,7 +16,7 @@
             </div>
             <el-table :data="tableData" v-loading="loading" style="width: 100%">
                 <el-table-column type="index" label="序号" width="60" />
-                <el-table-column prop="AppName" label="项目名称" show-overflow-tooltip></el-table-column>
+                <el-table-column prop="AppName" label="应用名称" show-overflow-tooltip></el-table-column>
                 <el-table-column label="时间类型" show-overflow-tooltip>
                 <template #default="scope">
                     <span v-if="scope.row.TimeType==0">小时</span>
@@ -49,7 +54,7 @@
             </el-table>
             <InitPagination @sizeChange="onHandleSizeChange" @currentChange="onHandleCurrentChange" :pages="pages" />
         </el-card>
-        <GuleDialog ref="editInfo" @search="getTableData" :p_list="p_list"/>
+        <GuleDialog ref="editInfo" @search="getTableData"/>
     </div>
 </template>
 <script>
@@ -65,6 +70,7 @@ export default {
             tableData: [],
             loading: false,
             p_list:[],//关联人
+            m_list:[],//项目列表
             pages: {
                 pageNum: 1,
                 pageSize: 10,
@@ -75,10 +81,10 @@ export default {
     },
     mounted(){
         this.getTableData()
-        this.get_notie()
+        this.info()
     },
     methods: {
-        get_notie(){ //获取关联人
+        info(){ //获取关联人 项目名称
         serverApi.monitorNoticeList({
                 "pageSize": 10000,
                 "pageIndex": 1
@@ -92,10 +98,19 @@ export default {
             }).catch(e=>{
                 ElMessage.error('网络错误');
             })
+            serverApi.dropDownList({}).then(d=>{
+                const { Status,Data } = d;
+                if(Status){
+                    this.m_list = [...Data]
+                }
+            })
       },
+      set_add(){
+        this.$refs.editInfo && this.$refs.editInfo.info(null,this.p_list,this.m_list)
+        },
         set_edit(row){
             if(row.Id){
-                this.$refs.editInfo && this.$refs.editInfo.info(row.Id,this.p_list)
+                this.$refs.editInfo && this.$refs.editInfo.info(row.Id,this.p_list,this.m_list)
             }
         },
         set_del(row){ //删除
@@ -131,6 +146,7 @@ export default {
             this.pageNum = val;
             this.getTableData();
         },
+       
         onSearch(){
             this.pageNum = 1;
             this.getTableData();

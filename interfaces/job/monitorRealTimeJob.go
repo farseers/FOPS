@@ -50,7 +50,7 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 				}
 			}
 			if !rule.IsNull() && send {
-				var comparisonMsg string
+				comparisonMsg := ""
 				switch rule.Comparison {
 				case ">":
 					if parse.ToFloat32(rule.KeyValue) > parse.ToFloat32(reqVal) {
@@ -68,7 +68,7 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 
 				}
 				// 发送消息 whatsapp
-				if comparisonMsg != "" && len(rule.NoticeIds) > 0 {
+				if len(comparisonMsg) > 0 && len(rule.NoticeIds) > 0 {
 					// 通知数据
 					noticeList := monitorRepository.ToListNoticeById(rule.NoticeIds)
 					noticeList.Foreach(func(not *monitor.NoticeEO) {
@@ -96,6 +96,8 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 	}
 
 	// 保存日志
-	err := monitorRepository.SaveLog(addLogs)
-	exception.ThrowWebExceptionError(403, err)
+	if addLogs.Count() > 0 {
+		err := monitorRepository.SaveLog(addLogs)
+		exception.ThrowWebExceptionError(403, err)
+	}
 }

@@ -21,7 +21,7 @@
             <el-form-item label="接口Key" prop='ApiKey'><el-input v-model="infoRow.ApiKey" /></el-form-item>
             <el-form-item label="邮箱"><el-input v-model="infoRow.Email" /></el-form-item>
             <el-form-item label="是否启用">
-            <el-switch v-model="infoRow.Enable" style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" active-text="启用" inactive-text="关闭" />
+            <el-switch v-model="infoRow.Enable" style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" active-text="启用" inactive-text="停用" />
         </el-form-item>
             <el-form-item label="备注"><el-input v-model="infoRow.Remark" /></el-form-item>
           </el-form>

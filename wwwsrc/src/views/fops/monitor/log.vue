@@ -2,7 +2,7 @@
     <div class="system-user-container layout-padding">
         <el-card>
             <div class="system-user-search mb15">
-                <el-button size="default" type="success" class="ml10" @click="onSearch()">
+                <el-button size="default" type="primary" class="ml10" @click="onSearch()">
                     <el-icon>
 						<ele-Search />
 					</el-icon>
@@ -12,13 +12,17 @@
 					删除七天前数据
 				</el-button>
             </div>
-            <el-table :data="tableData" v-loading="loading" style="width: 100%">
+            <el-table :data="tableData" v-loading="loading" style="width: 100%" size="default">
                 <el-table-column type="index" label="序号" width="60" />
-                <el-table-column prop="AppName" label="项目名称" show-overflow-tooltip></el-table-column>
-                <el-table-column prop="NoticeId" label="通知Id" show-overflow-tooltip></el-table-column>
-                <el-table-column prop="NoticeType" label="通知类型" show-overflow-tooltip></el-table-column>
-                <el-table-column prop="NoticeMsg" label="通知消息" show-overflow-tooltip></el-table-column>
-                <el-table-column prop="NoticeAt" label="通知时间" show-overflow-tooltip></el-table-column>
+                <el-table-column prop="AppName" label="项目名称" width="120px"></el-table-column>
+                <el-table-column prop="NoticeName" label="通知人" width="110px"></el-table-column>
+                <el-table-column prop="NoticeType" label="通知类型" width="110px">
+                    <template #default="scope">
+                            <span v-text="set_type(scope.row.NoticeType)"></span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="NoticeMsg" label="通知消息"></el-table-column>
+                <el-table-column prop="NoticeAt" label="通知时间" width="160px"></el-table-column>
             </el-table>
             <InitPagination @sizeChange="onHandleSizeChange" @currentChange="onHandleCurrentChange" :pages="pages" />
         </el-card>
@@ -43,6 +47,7 @@ export default {
     components: { InitPagination,noticeDialog },
     data() {
         return {
+            typeList:[],//通知类型
             tableData: [],
             loading: false,
             pages: {
@@ -53,10 +58,31 @@ export default {
 
         }
     },
+    created(){
+        this.info()
+    },
     mounted(){
         this.getTableData()
     },
     methods: {
+        info(){
+            serverApi.monitorNoticeTypeList({}).then(d=>{
+                const { Data,Status } = d;
+                if(Status){
+                    this.typeList = [...Data];
+                }
+            })
+        },
+        set_type(type){
+           const row =  this.typeList.find(item=>{
+                return item.NoticeType == type
+            })
+            if(row){
+                return row.NoticeTypeName
+            }else{
+                return ''
+            }
+        },
         set_del(){ //删除
             let str = '确定删除七天前数据?'
             const _this = this;

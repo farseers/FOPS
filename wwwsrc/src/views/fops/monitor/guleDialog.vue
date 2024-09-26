@@ -39,7 +39,7 @@
         </el-form-item>
       </el-form-item>
       <el-form-item label="是否启用">
-        <el-switch v-model="infoRow.Enable" active-text="启用" inactive-text="关闭"
+        <el-switch v-model="infoRow.Enable" active-text="启用" inactive-text="停用"
           style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949" />
       </el-form-item>
       <el-form-item label="关联人ID">
@@ -52,7 +52,7 @@
           设置</el-button>
           </div>
          <div style="flex: 1;">
-          <span style="margin: 3px;" v-for="item,index in infoRow.NoticeList" :key="index">{{item.Name}}、</span>
+          <span style="margin: 3px;" v-for="item,index in infoRow.NoticeIds" :key="index" v-text="set_name(item,index)"></span>
          </div>
         </div>
       </el-form-item>
@@ -134,24 +134,23 @@ export default {
     }
   },
   methods: {
+    set_name(id,i){
+        const row = this.p_list.find(d=>{
+          return d.Id == id
+        })
+       
+        if(row){
+          let str = row.Name + ' /';
+          if(this.infoRow.NoticeIds.length-1==i){str = row.Name}
+          return str
+        }
+    },
     filterMethod (query, item){
             return item.Name.toLowerCase().includes(query.toLowerCase())
        } ,
     tranSave(){ //关联人保存 
-     
       this.infoRow.NoticeIds = this.ck_list;
-      const param = this.get_param()
-      serverApi.monitorSaveRule(param).then(d => {
-        let { Status, StatusMessage } = d;
-        if (Status) {
-          this.isTransfer = false;
-          this.info(this.infoRow.Id)
-        } else {
-          ElMessage.error(StatusMessage)
-        }
-      })
-    
-      
+      this.isTransfer = false;
     },
     tranCancel(){
      

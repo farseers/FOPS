@@ -17,10 +17,12 @@ func (e Enum) ToString() string {
 		return "whatsApp"
 	case Telegram:
 		return "Telegram"
+	case Log:
+		return "Log"
 	}
 	return ""
 }
 
 func ToList() collections.List[Enum] {
-	return collections.NewList[Enum](WhatsApp, Telegram)
+	return collections.NewList[Enum](WhatsApp, Telegram, Log)
 }

@@ -7,35 +7,35 @@
 						<ele-Plus />
 					</el-icon>
                     新增用户</el-button>
-                <el-button size="default" type="success" class="ml10" @click="onSearch()">
+                <el-button size="default" type="primary" class="ml10" @click="onSearch()">
                     <el-icon>
 						<ele-Search />
 					</el-icon>
                     查询</el-button>
                     
             </div>
-            <el-table :data="tableData" v-loading="loading" style="width: 100%">
+            <el-table :data="tableData" size="default" v-loading="loading" style="width: 100%">
                 <el-table-column type="index" label="序号" width="60" />
-                <el-table-column prop="NoticeType" label="通知类型" show-overflow-tooltip>
+                <el-table-column prop="NoticeType" label="通知类型" width="100px" show-overflow-tooltip>
                     <template #default="scope">
                             <span v-text="set_type(scope.row.NoticeType)"></span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="Name" label="姓名" show-overflow-tooltip></el-table-column>
-                <el-table-column prop="Email" label="邮箱" show-overflow-tooltip></el-table-column>
-                <el-table-column prop="Phone" label="号码" show-overflow-tooltip></el-table-column>
-                <el-table-column prop="ApiKey" label="接口Key" show-overflow-tooltip></el-table-column>
-                <el-table-column label="是否启用" show-overflow-tooltip>
+                <el-table-column prop="Name" label="姓名">
                     <template #default="scope">
-                        <el-tag size="small" v-if="scope.row.Enable" type="success">是</el-tag>
-                        <el-tag size="small" v-else type="danger">否</el-tag>
+                        {{ scope.row.Name }}
+                        <el-tag size="small" style="margin-left: 3px;" v-if="scope.row.Enable" type="success">启用</el-tag>
+                        <el-tag size="small" style="margin-left: 3px;" v-else type="danger">停用</el-tag>
                 </template>
                 </el-table-column>
+                <el-table-column prop="Phone" label="号码"></el-table-column>
+                <el-table-column prop="Email" label="邮箱"></el-table-column>
+                <el-table-column prop="ApiKey" label="接口Key" show-overflow-tooltip></el-table-column>
                 <el-table-column prop="Remark" label="备注" show-overflow-tooltip></el-table-column>
-                <el-table-column label="操作" width="140px" fixed="right" align="center">
+                <el-table-column label="操作" width="100px" fixed="right" align="center">
                     <template #default="scope">
-                        <el-button @click="set_edit(scope.row)" type="primary" plain size="small">编辑</el-button>
-                        <el-button @click="set_del(scope.row)" type="danger" plain size="small">删除</el-button>
+                        <el-button @click="set_edit(scope.row)" type="primary" text size="small">编辑</el-button>
+                        <el-button @click="set_del(scope.row)" type="danger" text size="small">删除</el-button>
                     </template>
             </el-table-column>
             </el-table>

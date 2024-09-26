@@ -2,14 +2,14 @@
     <div class="system-user-container layout-padding">
         <el-card>
             <div class="system-user-search mb15">
-                <el-button size="default" type="success" class="ml10" @click="onSearch()">
+                <el-button size="default" type="primary" class="ml10" @click="onSearch()">
                     <el-icon>
 						<ele-Search />
 					</el-icon>
                     查询</el-button>
                     
             </div>
-            <el-table :data="tableData" v-loading="loading" style="width: 100%">
+            <el-table :data="tableData" v-loading="loading" style="width: 100%" size="default">
                 <el-table-column type="index" label="序号" width="60" />
                 <el-table-column prop="AppName" label="项目名称" show-overflow-tooltip></el-table-column>
                 <el-table-column prop="Key" label="监控key" show-overflow-tooltip></el-table-column>

@@ -135,14 +135,15 @@ func ToListPageData(appName string, pageSize, pageIndex int, monitorRepository m
 // ToListPageNoticeLog 通知消息列表
 // @post noticeLogList
 // @filter application.Jwt
-func ToListPageNoticeLog(appName string, pageSize, pageIndex int, monitorRepository monitor.Repository) collections.PageList[monitor.NoticeLogEO] {
+func ToListPageNoticeLog(appName string, pageSize, pageIndex int, monitorRepository monitor.Repository) collections.PageList[response.NoticeLogResponse] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
 	if pageIndex < 1 {
 		pageIndex = 1
 	}
-	return monitorRepository.ToListPageNoticeLog(appName, pageSize, pageIndex)
+	pageList := monitorRepository.ToListPageNoticeLog(appName, pageSize, pageIndex)
+	return mapper.ToPageList[response.NoticeLogResponse](pageList)
 }
 
 // DeleteNoticeLog 删除通知消息日志

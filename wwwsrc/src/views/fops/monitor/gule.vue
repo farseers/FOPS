@@ -7,37 +7,40 @@
 						<ele-Plus />
 					</el-icon>
                     新增</el-button>
-                <el-button size="default" type="success" class="ml10" @click="onSearch()">
+                <el-button size="default" type="primary" class="ml10" @click="onSearch()">
                     <el-icon>
 						<ele-Search />
 					</el-icon>
                     查询</el-button>
                     
             </div>
-            <el-table :data="tableData" v-loading="loading" style="width: 100%">
+            <el-table :data="tableData" v-loading="loading" style="width: 100%" size="default">
                 <el-table-column type="index" label="序号" width="60" />
-                <el-table-column prop="AppName" label="应用名称" show-overflow-tooltip></el-table-column>
-                <el-table-column label="时间类型" show-overflow-tooltip>
+                <el-table-column prop="AppName" label="应用名称">
+                    <template #default="scope">
+                        {{ scope.row.AppName }}
+                        <el-tag size="small" style="margin-left: 3px;" v-if="scope.row.Enable" type="success">启用</el-tag>
+                        <el-tag size="small" style="margin-left: 3px;" v-else type="danger">停用</el-tag>
+                </template>
+                </el-table-column>
+                <el-table-column label="起止时间" width="160px">
+                    <template #default="scope">
+                        <div>{{ scope.row.StartTime }} </div>
+                        <div>{{ scope.row.EndTime }}</div> 
+                    </template>
+                </el-table-column>
+                <el-table-column label="时间类型" width="80px">
                 <template #default="scope">
                     <span v-if="scope.row.TimeType==0">小时</span>
                     <span v-if="scope.row.TimeType==1">天</span>
                 </template>
                 </el-table-column>
-                <el-table-column prop="StartTime" label="开始时间" show-overflow-tooltip></el-table-column>
-                <el-table-column prop="EndTime" label="结束时间" show-overflow-tooltip></el-table-column>
                 <el-table-column prop="Comparison" label="比较方式" show-overflow-tooltip></el-table-column>
-                <el-table-column label="监控键值" show-overflow-tooltip>
-                <template #default="scope">
-                    <span>{{scope.row.KeyName}}</span>
-                    <span v-show="scope.row.KeyName">:</span>
-                    <span>{{scope.row.KeyValue}}</span>
-                </template>
-                </el-table-column>
-                <el-table-column label="是否启用" show-overflow-tooltip>
+                <el-table-column label="监控键值" width="180px">
                     <template #default="scope">
-                        <el-tag size="small" v-if="scope.row.Enable" type="success">是</el-tag>
-                        <el-tag size="small" v-else type="danger">否</el-tag>
-                </template>
+                        <div>K：{{ scope.row.KeyName }} </div>
+                        <div>V：{{ scope.row.KeyValue }}</div> 
+                    </template>
                 </el-table-column>
                 <el-table-column prop="NoticeIds" label="关联人" show-overflow-tooltip>
                     <template #default="scope">
@@ -45,10 +48,10 @@
                     </template>
                 </el-table-column>
                 <el-table-column prop="Remark" label="备注" show-overflow-tooltip></el-table-column>
-                <el-table-column label="操作" width="140px" fixed="right" align="center">
+                <el-table-column label="操作" width="100px" fixed="right" align="center">
                     <template #default="scope">
-                        <el-button @click="set_edit(scope.row)" type="primary" plain size="small">编辑</el-button>
-                        <el-button @click="set_del(scope.row)" type="danger" plain size="small">删除</el-button>
+                        <el-button @click="set_edit(scope.row)" type="primary" text size="small">编辑</el-button>
+                        <el-button @click="set_del(scope.row)" type="danger" text size="small">删除</el-button>
                     </template>
             </el-table-column>
             </el-table>
@@ -57,6 +60,7 @@
         <GuleDialog ref="editInfo" @search="getTableData"/>
     </div>
 </template>
+
 <script>
 import { fopsApi } from "/@/api/fops";
 import InitPagination from '/src/views/components/InitPagination.vue';

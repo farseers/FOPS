@@ -1,6 +1,7 @@
 <template>
   <el-dialog v-model="dialogVisible" 
   @close="close"
+  @before-close="beforeClose"
   custom-class="fixed-dialog">
     <el-tabs v-model="activeName">
       <el-tab-pane name="first" label="SSH">
@@ -132,8 +133,8 @@ export default {
         this.ws = null; 
       }
       if(this.term) {
-        this.term.clear();
         this.term.dispose(); 
+        this.term.clear();
         this.term = null; 
       }
   },
@@ -166,6 +167,9 @@ export default {
       this.dialogVisible = true;
       this.initWs()
     },
+    beforeClose(){
+      this.clearWs()
+    },
     close() {
       this.form = {
         user: '',
@@ -174,7 +178,6 @@ export default {
         name: '',
         port: '',
       }
-      this.clearWs()
       this.dialogVisible = false;
       this.secondShow = false;
       this.activeName = 'first';
@@ -230,8 +233,9 @@ export default {
         this.ws = null; 
       }
       if(this.term) {
-        this.term.clear();
+        console.log(this.term)
         this.term.dispose(); 
+        this.term.clear();
         this.term = null; 
       }
       this.initTerm()
@@ -314,9 +318,9 @@ export default {
     },
     // resize 相关
     resizeRemoteTerminal() {
-      const { cols, rows } = this.term
+      // const { cols, rows } = this.term
       // 调整后端终端大小 使后端与前端终端大小一致
-      this.isWsOpen() && this.ws.send(JSON.stringify({ Id: this.editId, Command: '' }))
+      // this.isWsOpen() && this.ws.send(JSON.stringify({ Id: this.editId, Command: '' }))
     },
     onResize: debounce(function () {
       this.fitAddon.fit()

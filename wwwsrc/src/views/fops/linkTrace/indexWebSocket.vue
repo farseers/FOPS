@@ -33,7 +33,7 @@
 					</el-icon>
 					查询
 				</el-button>
-        <el-button size="default" type="warning" class="ml5" @click="onLinkTraceDelete">
+        <el-button size="default" type="warning" class="ml5" @click="linkTraceDelete">
 					<el-icon><ele-Delete /></el-icon>
 					删除七天前数据
 				</el-button>
@@ -196,7 +196,7 @@ const onHandleCurrentChange = (val: number) => {
 	state.tableData.param.pageNum = val;
 	getTableData();
 };
-const onLinkTraceDelete = ()=>{
+const linkTraceDelete = ()=>{
   ElMessageBox.confirm(`删除七天前的数据，是否继续?`, '提示', {
 		confirmButtonText: '确认',
 		cancelButtonText: '取消',

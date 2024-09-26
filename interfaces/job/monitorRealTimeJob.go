@@ -38,7 +38,10 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 			var send = false
 			switch rule.TimeType {
 			case ruleTimeType.Hour:
-				if time.Now().Hour() >= rule.StartTime.Hour() && time.Now().Hour() <= rule.EndTime.Hour() {
+				startTime := parse.ToInt(rule.StartTime.Format("150405"))
+				endTime := parse.ToInt(rule.EndTime.Format("150405"))
+				nowTime := parse.ToInt(time.Now().Format("150405"))
+				if nowTime >= startTime && nowTime <= endTime {
 					send = true
 				}
 			case ruleTimeType.Day:

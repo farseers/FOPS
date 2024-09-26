@@ -29,7 +29,7 @@
 					</el-icon>
 					查询
 				</el-button>
-        <el-button size="default" type="warning" class="ml5" @click="linkTraceDeleteSlow">
+        <el-button size="default" type="warning" class="ml5" @click="logDelete">
 					<el-icon><ele-Delete /></el-icon>
 					删除七天前数据
 				</el-button>
@@ -178,14 +178,14 @@ const onHandleCurrentChange = (val: number) => {
 	state.tableData.param.pageNum = val;
 	getTableData();
 };
-const linkTraceDeleteSlow = ()=>{
+const logDelete = ()=>{
   ElMessageBox.confirm(`删除七天前的数据，是否继续?`, '提示', {
 		confirmButtonText: '确认',
 		cancelButtonText: '取消',
 		type: 'warning',
 	})
 		.then(() => {
-			serverApi.linkTraceDelete({ "AppName": "lbs"}).then((res)=>{
+			serverApi.logDelete({ "AppName": "lbs"}).then((res)=>{
 				if(res.Status){
 					onQuery();
 					ElMessage.success('删除成功');

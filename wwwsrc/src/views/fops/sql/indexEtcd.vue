@@ -214,7 +214,7 @@ const linkTraceDeleteSlow = ()=>{
 		type: 'warning',
 	})
 		.then(() => {
-			serverApi.linkTraceDelete({dbName:'Etcd'}).then((res)=>{
+			serverApi.linkTraceDeleteSlow({dbName:'Etcd'}).then((res)=>{
 				if(res.Status){
 					onQuery();
 					ElMessage.success('删除成功');

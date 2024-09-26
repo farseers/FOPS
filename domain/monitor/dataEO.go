@@ -15,9 +15,15 @@ type DataEO struct {
 // NewDataEO 新建实体
 func NewDataEO(appName string, key, value string) DataEO {
 	return DataEO{
-		AppName:  strings.ReplaceAll(appName, "\\u0000", ""),
-		Key:      strings.ReplaceAll(key, "\\u0000", ""),
-		Value:    strings.ReplaceAll(value, "\\u0000", ""),
+		AppName:  FilterElement(appName),
+		Key:      FilterElement(key),
+		Value:    FilterElement(value),
 		CreateAt: dateTime.Now(),
 	}
+}
+
+func FilterElement(val string) string {
+	val = strings.ReplaceAll(val, "\\u0000", "")
+	val = strings.TrimSpace(val)
+	return val
 }

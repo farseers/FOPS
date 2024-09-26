@@ -8,6 +8,7 @@ type Enum int
 const (
 	WhatsApp Enum = iota // whatsApp
 	Telegram             // Telegram
+	Log      = -1        // 仅打印日志
 )
 
 func (e Enum) ToString() string {

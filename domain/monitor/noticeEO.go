@@ -21,16 +21,24 @@ type NoticeEO struct {
 
 // Notice 通知
 func (receiver *NoticeEO) Notice(content string) {
-	head := make(map[string]any)
-	head["User-Agent"] = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"
-	var sendUrl string
+	var (
+		body       string
+		statusCode int
+		err        error
+		head       = map[string]any{"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36"}
+	)
+
 	switch receiver.NoticeType {
 	case noticeType.WhatsApp: // whatsApp
-		sendUrl = fmt.Sprintf("https://api.callmebot.com/whatsapp.php?phone=%s&apikey=%s&text=%s", receiver.Phone, receiver.ApiKey, url.QueryEscape(content))
+		sendUrl := fmt.Sprintf("https://api.callmebot.com/whatsapp.php?phone=%s&apikey=%s&text=%s", receiver.Phone, receiver.ApiKey, url.QueryEscape(content))
+		body, statusCode, _, err = http.RequestProxyConfigure("GET", sendUrl, head, nil, "", 5000)
 	case noticeType.Telegram: // Telegram
-		sendUrl = fmt.Sprintf("http://api.callmebot.com/start.php?user=%s&text=%s&rpt=1", receiver.Phone, url.QueryEscape(content))
+		sendUrl := fmt.Sprintf("http://api.callmebot.com/start.php?user=%s&text=%s&rpt=1", receiver.Phone, url.QueryEscape(content))
+		body, statusCode, _, err = http.RequestProxyConfigure("GET", sendUrl, head, nil, "", 5000)
+	case noticeType.Log:
+		flog.Infof("消息通知：%s", content)
 	}
-	body, statusCode, _, err := http.RequestProxyConfigure("GET", sendUrl, head, nil, "", 5000)
+
 	if err != nil {
 		flog.Warningf("发送告警通知异常：%s", err.Error())
 		return

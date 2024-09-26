@@ -36,6 +36,7 @@ func (receiver *NoticeEO) Notice(content string) {
 		sendUrl := fmt.Sprintf("https://api.telegram.org/bot%s/sendmessage?chat_id=%s&text=%s", receiver.ApiKey, receiver.Phone, url.QueryEscape(content))
 		body, statusCode, _, err = http.RequestProxyConfigure("GET", sendUrl, head, nil, "", 5000)
 	case noticeType.Log:
+		statusCode = 200
 		flog.Infof("消息通知：%s", content)
 	}
 
@@ -44,6 +45,6 @@ func (receiver *NoticeEO) Notice(content string) {
 		return
 	}
 	if statusCode != 200 {
-		flog.Warningf("发送告警通知失败：statusCode = %d %s", statusCode, body)
+		flog.Warningf("【%s】发送告警通知失败：statusCode = %d %s", receiver.NoticeType.ToString(), statusCode, body)
 	}
 }

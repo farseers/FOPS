@@ -46,14 +46,16 @@ func SaveMonitorDataQueue(subscribeName string, lstMessage collections.ListAny, 
 			var send = false
 			switch rule.TimeType {
 			case ruleTimeType.Hour:
-				startTime := parse.ToInt(rule.StartTime.Format("150405"))
-				endTime := parse.ToInt(rule.EndTime.Format("150405"))
+				startTime := parse.ToInt(strings.ReplaceAll(rule.StartDate, ":", ""))
+				endTime := parse.ToInt(strings.ReplaceAll(rule.EndDate, ":", ""))
 				nowTime := parse.ToInt(time.Now().Format("150405"))
 				if nowTime >= startTime && nowTime <= endTime {
 					send = true
 				}
 			case ruleTimeType.Day:
-				if time.Now().After(rule.StartTime) && time.Now().Before(rule.EndTime) {
+				startDay := parse.ToTime(rule.StartDay)
+				endDay := parse.ToTime(rule.EndDay)
+				if time.Now().After(startDay) && time.Now().Before(endDay) {
 					send = true
 				}
 			}

@@ -3,9 +3,9 @@ package monitorApp
 
 import (
 	"fops/domain/monitor"
-	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
 	fsMonitor "github.com/farseer-go/monitor"
+	"github.com/farseer-go/queue"
 	"github.com/farseer-go/webapi/websocket"
 )
 
@@ -21,8 +21,6 @@ func WsReceive(context *websocket.Context[fsMonitor.SendContentVO], monitorRepos
 	req.Keys.Keys().Foreach(func(key *string) {
 		reqVal := req.Keys.GetValue(*key)
 		// 添加消息队列
-		err := monitorRepository.SendMonitorData(monitor.NewDataEO(req.AppName, *key, parse.ToString(reqVal)))
-		exception.ThrowWebExceptionError(403, err)
+		queue.Push("monitor", monitor.NewDataEO(req.AppName, *key, parse.ToString(reqVal)))
 	})
-
 }

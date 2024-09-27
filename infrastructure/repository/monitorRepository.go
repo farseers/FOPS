@@ -7,10 +7,8 @@ import (
 	"fops/infrastructure/repository/context"
 	"fops/infrastructure/repository/model"
 	"github.com/farseer-go/collections"
-	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/mapper"
-	"github.com/farseer-go/rabbit"
 	"time"
 )
 
@@ -158,15 +156,14 @@ func (receiver *monitorRepository) DeleteNoticeLog(startTime time.Time) error {
 	return err
 }
 
-// SendMonitorData 保存监控数据
-func (receiver *monitorRepository) SendMonitorData(do monitor.DataEO) error {
-	return container.Resolve[rabbit.IProduct]("SaveMonitorData").SendJsonKey(do, "fops")
-}
-
 // 同步时间
 func (receiver *monitorRepository) SaveSyncAt(eo monitor.SyncAtEO) error {
 	po := mapper.Single[model.MonitorSyncAtPO](eo)
 	err := context.MysqlContext.MonitorSyncAt.Insert(&po)
+	return err
+}
+func (receiver *monitorRepository) UpdateSyncAt(appName string, syncAt time.Time) error {
+	_, err := context.MysqlContext.MonitorSyncAt.Where("app_name = ?", appName).UpdateValue("sync_at", syncAt)
 	return err
 }
 func (receiver *monitorRepository) ToSyncAtEntity(appName string) monitor.SyncAtEO {

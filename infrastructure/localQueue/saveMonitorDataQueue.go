@@ -1,27 +1,28 @@
-package consumer
+package localQueue
 
 import (
-	"encoding/json"
 	"fops/domain/enum/ruleTimeType"
 	"fops/domain/monitor"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
-	"github.com/farseer-go/rabbit"
+	"github.com/farseer-go/fs/trace"
 	"strings"
 	"time"
 )
 
-// MonitorDataConsumer 监控数据处理
-func MonitorDataConsumer(messages collections.List[rabbit.EventArgs]) bool {
-	// 监控数据
+func SaveMonitorDataQueue(subscribeName string, lstMessage collections.ListAny, remainingCount int) {
+	if traceContext := trace.CurTraceContext.Get(); traceContext != nil {
+		traceContext.Ignore()
+	}
+
 	lstData := collections.NewList[monitor.DataEO]()
-	messages.Foreach(func(item *rabbit.EventArgs) {
-		var dataEO monitor.DataEO
-		_ = json.Unmarshal(item.Body, &dataEO)
-		lstData.Add(dataEO)
-	})
+	for _, item := range lstMessage.ToArray() {
+		data := item.(*monitor.DataEO)
+		lstData.Add(*data)
+	}
+
 	// 规则
 	monitorRepository := container.Resolve[monitor.Repository]()
 	// 应用规则数据
@@ -104,8 +105,11 @@ func MonitorDataConsumer(messages collections.List[rabbit.EventArgs]) bool {
 			if !monitorRepository.IsExistSyncAt(*item) {
 				err := monitorRepository.SaveSyncAt(monitor.NewSyncAtEO(*item))
 				exception.ThrowWebExceptionError(403, err)
+			} else {
+				// 更新时间
+				err := monitorRepository.UpdateSyncAt(*item, time.Now())
+				exception.ThrowWebExceptionError(403, err)
 			}
 		})
 	}
-	return true
 }

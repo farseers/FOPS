@@ -14,8 +14,8 @@ type DataEO struct {
 }
 
 // NewDataEO 新建实体
-func NewDataEO(appName string, key, value string) DataEO {
-	return DataEO{
+func NewDataEO(appName string, key, value string) *DataEO {
+	return &DataEO{
 		AppName:  FilterElement(appName),
 		Key:      FilterElement(key),
 		Value:    FilterElement(value),

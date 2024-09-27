@@ -7,15 +7,14 @@ import (
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/dateTime"
-	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
+	"github.com/farseer-go/queue"
 	"github.com/farseer-go/tasks"
 )
 
 // MonitorFopsJob 监控fops数据
 func MonitorFopsJob(*tasks.TaskContext) {
 	appsRepository := container.Resolve[apps.Repository]()
-	monitorRepository := container.Resolve[monitor.Repository]()
 	// apps 信息
 	appList := appsRepository.ToList()
 	// cluster_node 节点信息
@@ -61,8 +60,7 @@ func MonitorFopsJob(*tasks.TaskContext) {
 	})
 	// 添加消息队列
 	addMonitorData.Foreach(func(item *monitor.DataEO) {
-		err := monitorRepository.SendMonitorData(*item)
-		exception.ThrowWebExceptionError(403, err)
+		queue.Push("monitor", item)
 	})
 
 }

@@ -10,8 +10,10 @@ type RuleResponse struct {
 	Id         int64             // 主键
 	AppName    string            // 项目名称
 	TimeType   ruleTimeType.Enum // 规则时间类型 0小时，1天
-	StartTime  string            // 开始时间
-	EndTime    string            // 结束时间
+	StartDate  string            // 开始小时
+	EndDate    string            // 结束小时
+	StartDay   string            // 开始天
+	EndDay     string            // 结束天
 	Comparison string            // 比较方式 >  =  <
 	KeyName    string            // 监控键
 	KeyValue   string            // 监控键值

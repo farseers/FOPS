@@ -43,6 +43,8 @@ type mysqlContext struct {
 	MonitorNotice data.DomainSet[model.MonitorNoticePO, monitor.NoticeEO] `data:"name=monitor_notice;migrate;"`
 	// 通知记录数据
 	MonitorNoticeLog data.DomainSet[model.MonitorNoticeLogPO, monitor.NoticeLogEO] `data:"name=monitor_notice_log;migrate;"`
+	// 时间记录数据
+	MonitorSyncAt data.DomainSet[model.MonitorSyncAtPO, monitor.SyncAtEO] `data:"name=monitor_sync_at;migrate;"`
 
 	// 客户端
 	TerminalClient data.DomainSet[model.TerminalClientPO, terminal.ClientEO] `data:"name=terminal_client;migrate;"`

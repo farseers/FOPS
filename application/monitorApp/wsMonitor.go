@@ -3,7 +3,6 @@ package monitorApp
 
 import (
 	"fops/domain/monitor"
-	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
 	fsMonitor "github.com/farseer-go/monitor"
@@ -19,12 +18,11 @@ func WsReceive(context *websocket.Context[fsMonitor.SendContentVO], monitorRepos
 		return
 	}
 	// 所有key值进行处理
-	// 添加记录
-	addList := collections.NewList[monitor.DataEO]()
 	req.Keys.Keys().Foreach(func(key *string) {
 		reqVal := req.Keys.GetValue(*key)
-		addList.Add(monitor.NewDataEO(req.AppName, *key, parse.ToString(reqVal)))
+		// 添加消息队列
+		err := monitorRepository.SendMonitorData(monitor.NewDataEO(req.AppName, *key, parse.ToString(reqVal)))
+		exception.ThrowWebExceptionError(403, err)
 	})
-	err := monitorRepository.Save(addList)
-	exception.ThrowWebExceptionError(403, err)
+
 }

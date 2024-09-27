@@ -1,4 +1,5 @@
 module fops
+
 go 1.22
 
 toolchain go1.22.5
@@ -17,12 +18,13 @@ require (
 	github.com/farseer-go/fs v0.14.0
 	github.com/farseer-go/linkTrace v0.14.0
 	github.com/farseer-go/mapper v0.14.0
+	github.com/farseer-go/monitor v0.0.0-20240913090221-e4f96ce2b7f0 // indirect
 	github.com/farseer-go/queue v0.14.0
 	github.com/farseer-go/redis v0.14.0
 	github.com/farseer-go/tasks v0.14.0
 	github.com/farseer-go/utils v0.14.0
 	github.com/farseer-go/webapi v0.14.0
-	github.com/farseer-go/monitor v0.0.0-20240913090221-e4f96ce2b7f0 // indirect
+	github.com/farseer-go/rabbit v0.14.0
 )
 
 require (
@@ -40,6 +42,7 @@ require (
 	github.com/docker/docker v27.2.1+incompatible // indirect
 	github.com/docker/go-connections v0.5.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
+	github.com/farseer-go/rabbit v0.14.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
@@ -65,6 +68,7 @@ require (
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/rabbitmq/amqp091-go v1.10.0 // indirect
 	github.com/secure-systems-lab/go-securesystemslib v0.4.0 // indirect
 	github.com/shibumi/go-pathspec v1.3.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect

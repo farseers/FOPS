@@ -59,6 +59,10 @@ func MonitorFopsJob(*tasks.TaskContext) {
 			CreateAt: dateTime.Now(),
 		})
 	})
-	err := monitorRepository.Save(addMonitorData)
-	exception.ThrowWebExceptionError(403, err)
+	// 添加消息队列
+	addMonitorData.Foreach(func(item *monitor.DataEO) {
+		err := monitorRepository.SendMonitorData(*item)
+		exception.ThrowWebExceptionError(403, err)
+	})
+
 }

@@ -35,10 +35,15 @@ type Repository interface {
 	// GetMaxTimeByAppName 获取app最大时间
 	GetMaxTimeByAppName(appName string) time.Time
 	ToListPageData(appName string, pageSize, pageIndex int) collections.PageList[DataEO]
-
+	SendMonitorData(do DataEO) error
 	// 日志
 	// SaveLog 批量添加日志数据
 	SaveLog(lstEO collections.List[NoticeLogEO]) error
 	ToListPageNoticeLog(appName string, pageSize, pageIndex int) collections.PageList[NoticeLogEO]
 	DeleteNoticeLog(startTime time.Time) error
+
+	// 同步时间
+	SaveSyncAt(eo SyncAtEO) error
+	ToSyncAtEntity(appName string) SyncAtEO
+	IsExistSyncAt(appName string) bool
 }

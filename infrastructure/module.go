@@ -10,6 +10,7 @@ import (
 	"fops/infrastructure/localQueue"
 	"fops/infrastructure/repository"
 	"fops/infrastructure/repository/context"
+	"fops/interfaces/consumer"
 	"github.com/farseer-go/data"
 	"github.com/farseer-go/data/driver/clickhouse"
 	"github.com/farseer-go/eventBus"
@@ -17,6 +18,7 @@ import (
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/modules"
 	"github.com/farseer-go/queue"
+	"github.com/farseer-go/rabbit"
 	"time"
 )
 
@@ -25,7 +27,7 @@ type Module struct {
 
 func (module Module) DependsModule() []modules.FarseerModule {
 	// 这些模块都是farseer-go内置的模块
-	return []modules.FarseerModule{data.Module{}, eventBus.Module{}, queue.Module{}}
+	return []modules.FarseerModule{data.Module{}, eventBus.Module{}, queue.Module{}, rabbit.Module{}}
 }
 
 func (module Module) PostInitialize() {
@@ -51,7 +53,8 @@ func (module Module) PostInitialize() {
 		data_clickhouse.Module{}.Initialize()
 		context.InitChContextContext()
 	}
-
+	// 监控数据消息处理
+	container.Resolve[rabbit.IConsumer]("SaveMonitorData").SubscribeBatchAck("fops_SaveMonitorData_HandleData", "fops", 100, consumer.MonitorDataConsumer)
 	// 日志消费
 	queue.Subscribe("flog", "saveFlogDataToCh", 1000, 5*time.Second, localQueue.SaveFlogQueue)
 

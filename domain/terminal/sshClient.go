@@ -201,9 +201,11 @@ func (receiver *SSHClient) Connect(ws *websocket.Context[SshRequest]) {
 				}
 			})
 			// 处理异常
-			if catch != nil {
-				return
-			}
+			catch.CatchException(func(exp any) {
+				if exp != nil {
+					return
+				}
+			})
 		}()
 
 		// 主循环

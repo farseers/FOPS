@@ -7,8 +7,10 @@ import (
 	"fops/infrastructure/repository/context"
 	"fops/infrastructure/repository/model"
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/mapper"
+	"github.com/farseer-go/rabbit"
 	"time"
 )
 
@@ -74,7 +76,7 @@ func (receiver *monitorRepository) ToListNoticeById(ids []int) collections.List[
 func (receiver *monitorRepository) ToListPageNotice(name string, pageSize, pageIndex int) collections.PageList[monitor.NoticeEO] {
 	ts := context.MysqlContext.MonitorNotice.Desc("id")
 	if len(name) > 0 {
-		ts.Where("name like ?", name)
+		ts.Where("name like ?", "%"+name+"%")
 	}
 	poList := ts.ToPageList(pageSize, pageIndex)
 	return mapper.ToPageList[monitor.NoticeEO](poList)
@@ -154,4 +156,23 @@ func (receiver *monitorRepository) ToListPageNoticeLog(appName string, pageSize,
 func (receiver *monitorRepository) DeleteNoticeLog(startTime time.Time) error {
 	_, err := context.MysqlContext.MonitorNoticeLog.Where("notice_at <= ?", startTime).Delete() //notice_at >= ? and
 	return err
+}
+
+// SendMonitorData 保存监控数据
+func (receiver *monitorRepository) SendMonitorData(do monitor.DataEO) error {
+	return container.Resolve[rabbit.IProduct]("SaveMonitorData").SendJsonKey(do, "fops")
+}
+
+// 同步时间
+func (receiver *monitorRepository) SaveSyncAt(eo monitor.SyncAtEO) error {
+	po := mapper.Single[model.MonitorSyncAtPO](eo)
+	err := context.MysqlContext.MonitorSyncAt.Insert(&po)
+	return err
+}
+func (receiver *monitorRepository) ToSyncAtEntity(appName string) monitor.SyncAtEO {
+	entity := context.MysqlContext.MonitorSyncAt.Where("app_name = ?", appName).ToEntity()
+	return mapper.Single[monitor.SyncAtEO](entity)
+}
+func (receiver *monitorRepository) IsExistSyncAt(appName string) bool {
+	return context.MysqlContext.MonitorSyncAt.Where("app_name = ?", appName).IsExists()
 }

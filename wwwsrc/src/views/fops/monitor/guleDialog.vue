@@ -4,8 +4,8 @@
     <el-dialog :title="title" v-model="isShowDialog" width="800px">
       <el-form ref="ruleFormRef" :model="infoRow" :rules="rules">
         <el-form-item style="display: flex;">
-          <el-form-item label="应用名称" prop="AppName" style="width: 300px;padding-right: 5px;">
-          <el-select v-model="infoRow.AppName" filterable placeholder="请选择" >
+          <el-form-item label="应用名称" prop="AppNames" style="width: 500px;padding-right: 5px;">
+          <el-select v-model="infoRow.AppNames" filterable placeholder="请选择" multiple style="flex: 1;">
             <el-option v-for="item in m_list" :key="item.AppName" :label="item.AppName" :value="item.AppName" />
           </el-select>
         </el-form-item>
@@ -98,12 +98,19 @@ const validators = (e, s) => {
     return false
   }
 }
+const validatorName = (e,s)=>{
+  if (s && s.length > 0) {
+    return true
+  } else {
+    return false
+  }
+}
 export default {
   data() {
     return {
       rules: {
         daterange: [{ required: true, trigger: 'change', type: 'date', message: '请选择时间', validator: validators }],
-        AppName: [{ required: true, trigger: 'change', message: '请选择应用名称', }],
+        AppNames: [{ required: true, trigger: 'change', message: '请选择应用名称',validator: validatorName }],
         TimeType: [{ required: true, trigger: 'change', }],
         Comparison: [{ required: true, trigger: 'blur', message: '请选择比较方式' }],
         KeyName: [{ required: true, trigger: 'blur', message: '请输入键值' }],
@@ -117,6 +124,7 @@ export default {
       isShowDialog: false,
       isTransfer: false,//设置关联人
       infoRow: {
+        "AppNames":[],//应用选中
         "daterange": [],//必传
         "Id": null,
         "AppName": "", //必传
@@ -164,6 +172,7 @@ export default {
       this.m_list = [];
       this.t_list = [];
       this.infoRow = {
+        'AppNames':[],
         "daterange": [],
         "Id": null,
         "AppName": "",
@@ -190,6 +199,10 @@ export default {
       if (daterange && daterange.length > 0) {
         param.StartTime = daterange[0];
         param.EndTime = daterange[1];
+      }
+      const AppNames = param.AppNames;
+      if(AppNames && AppNames.length>0){
+        param.AppName = AppNames.join(',')
       }
       return param
     },
@@ -223,7 +236,13 @@ export default {
         serverApi.monitorInfoRule({ id: id }).then(d => {
           let { Data, Status, StatusMessage } = d;
           if (Status) {
-            this.infoRow = { ...Data, daterange: [Data.StartTime, Data.EndTime] }
+            this.infoRow = { ...Data, daterange: [Data.StartTime, Data.EndTime],AppNames:[] }
+            const AppName = Data.AppName;
+            if(AppName.indexOf(',')==-1){
+              this.infoRow.AppNames = [AppName]
+            }else{
+              this.infoRow.AppNames = AppName.split(',')
+            }
             this.ck_list = [...this.infoRow.NoticeIds]
             this.isShowDialog = true;
           } else {

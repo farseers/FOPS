@@ -25,30 +25,26 @@
             </div>
             <el-table :data="tableData" v-loading="loading" style="width: 100%" size="default">
                 <el-table-column type="index" label="序号" width="60" />
-                <el-table-column prop="AppName" label="应用名称">
+                <el-table-column prop="AppName" label="应用名称" min-width="200px" show-overflow-tooltip>
                     <template #default="scope">
-                        {{ scope.row.AppName }}
                         <el-tag size="small" style="margin-left: 3px;" v-if="scope.row.Enable" type="success">启用</el-tag>
                         <el-tag size="small" style="margin-left: 3px;" v-else type="danger">停用</el-tag>
+                        {{ scope.row.AppName }}
                 </template>
                 </el-table-column>
-                <el-table-column label="起止时间" width="160px">
+                <el-table-column label="起止时间" width="110px">
                     <template #default="scope">
-                        <div>{{ scope.row.StartTime }} </div>
-                        <div>{{ scope.row.EndTime }}</div> 
+                        <div v-if="scope.row.TimeType == 1">{{ scope.row.StartDay }} </div>
+                        <div v-if="scope.row.TimeType == 1">{{ scope.row.EndDay  }}</div> 
+                        <div v-if="scope.row.TimeType == 0">{{ scope.row.StartDate }} </div>
+                        <div v-if="scope.row.TimeType == 0">{{ scope.row.EndDate }}</div>
                     </template>
                 </el-table-column>
-                <el-table-column label="时间类型" width="80px">
-                <template #default="scope">
-                    <span v-if="scope.row.TimeType==0">小时</span>
-                    <span v-if="scope.row.TimeType==1">天</span>
-                </template>
-                </el-table-column>
-                <el-table-column prop="Comparison" label="比较方式" show-overflow-tooltip></el-table-column>
                 <el-table-column label="监控键值" width="180px">
                     <template #default="scope">
-                        <div>K：{{ scope.row.KeyName }} </div>
-                        <div>V：{{ scope.row.KeyValue }}</div> 
+                        <span>{{ scope.row.KeyName }} </span>
+                        <span style="margin: 0 10px;">{{ scope.row.Comparison }} </span>
+                        <span>{{ scope.row.KeyValue }}</span> 
                     </template>
                 </el-table-column>
                 <el-table-column prop="NoticeIds" label="关联人" show-overflow-tooltip>

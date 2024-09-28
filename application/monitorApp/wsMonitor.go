@@ -13,9 +13,8 @@ import (
 // @ws monitor
 func WsReceive(context *websocket.Context[fsMonitor.SendContentVO], monitorRepository monitor.Repository) {
 	// 如果appId为空直接返回
-	for {
-		req := context.Receiver()
-		if len(req.AppId) == 0 {
+	context.ForReceiverFunc(func(req *fsMonitor.SendContentVO) {
+		if len(req.AppId) == 0 || len(req.AppName) == 0 {
 			return
 		}
 		// 所有key值进行处理
@@ -24,5 +23,5 @@ func WsReceive(context *websocket.Context[fsMonitor.SendContentVO], monitorRepos
 			// 添加消息队列
 			queue.Push("monitor", monitor.NewDataEO(req.AppName, *key, parse.ToString(reqVal)))
 		})
-	}
+	})
 }

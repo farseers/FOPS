@@ -2,40 +2,55 @@
 
   <div class="system-role-dialog-container">
     <el-dialog :title="title" v-model="isShowDialog" width="800px">
+      
       <el-form ref="ruleFormRef" :model="infoRow" :rules="rules">
-        <el-form-item style="display: flex;">
-          <el-form-item label="应用名称" prop="AppNames" style="width: 500px;padding-right: 5px;">
+          <el-form-item label="应用名称" prop="AppNames">
           <el-select v-model="infoRow.AppNames" filterable placeholder="请选择" multiple style="flex: 1;">
             <el-option v-for="item in m_list" :key="item.AppName" :label="item.AppName" :value="item.AppName" />
           </el-select>
         </el-form-item>
-        <el-form-item label="时间类型" prop="TimeType" style="flex: 1;">
-          <el-radio-group v-model="infoRow.TimeType" >
+        <el-form-item label="生效时间">
+          <el-form-item  prop="TimeType" style="margin-right: 10px;">
+          <el-radio-group v-model="infoRow.TimeType" @change="radioTimeTypeChange()">
             <el-radio :label="0">小时</el-radio>
             <el-radio :label="1">天</el-radio>
           </el-radio-group>
         </el-form-item>
+        <el-form-item  prop="daterange" v-show="infoRow.TimeType == 1"  style="flex: 1;">
+          <el-date-picker v-model="infoRow.daterange" type="daterange" range-separator="To"
+            start-placeholder="开始时间" end-placeholder="结束时间" value-format="YYYY-MM-DD" format="YYYY-MM-DD"/>
         </el-form-item>
-        <el-form-item label="生效时间" prop="daterange">
-          <el-date-picker v-model="infoRow.daterange" type="datetimerange" range-separator="To"
-            start-placeholder="开始时间" end-placeholder="结束时间" />
+        <el-form-item prop="daterange" v-show="infoRow.TimeType == 0"  style="flex: 1;" >
+          <el-time-picker
+            v-model="infoRow.daterange"
+            is-range
+            format="HH:mm:ss"
+            value-format="HH:mm:ss"
+            range-separator="To"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+          />
         </el-form-item>
+        </el-form-item>
+        
+        
+        
         <el-form-item style="display: flex;">
-          <div style="width: 200px;padding-right: 5px;">
-            <el-form-item label="比较方式" prop="Comparison">
-            <el-select v-model="infoRow.Comparison" filterable placeholder="请选择" style="flex: 1;">
+          
+          <div style="flex: 1;">
+            <el-form-item label="监控键值" required>
+            <el-form-item prop="KeyName" style="flex: 1;">
+              <el-input v-model="infoRow.KeyName" placeholder="键"/>
+            </el-form-item>
+            <div style="width: 120px;padding:0 5px;">
+            <el-form-item prop="Comparison">
+            <el-select v-model="infoRow.Comparison" filterable placeholder="比较方式" style="flex: 1;">
               <el-option v-for="item in t_list" :key="item.Key" :label="item.Value" :value="item.Value" />
             </el-select>
           </el-form-item>
           </div>
-          <div  style="flex: 1;">
-            <el-form-item label="监控键值" required>
-            <el-form-item prop="KeyName" style="flex: 1;">
-              <el-input v-model="infoRow.KeyName" />
-            </el-form-item>
-            <span style="width: 15px;text-align: center;"> : </span>
             <el-form-item prop="KeyValue" style="flex: 1;">
-              <el-input v-model="infoRow.KeyValue" />
+              <el-input v-model="infoRow.KeyValue" placeholder="值"/>
             </el-form-item>
           </el-form-item>
           </div>
@@ -93,7 +108,12 @@ import { ElMessage } from 'element-plus';
 const serverApi = fopsApi();
 const validators = (e, s) => {
   if (s && s.length == 2) {
-    return true
+    if(s[0] && s[1]){
+      return true
+    }else{
+      return false
+    }
+   
   } else {
     return false
   }
@@ -104,6 +124,25 @@ const validatorName = (e,s)=>{
   } else {
     return false
   }
+}
+const defaultRow = {
+       'AppNames':[],
+        "daterange": [],
+        "timerange": [],
+        "Id": null,
+        "AppName": "",
+        "TimeType": 1,
+        "Comparison": "",
+        "KeyName": "",
+        "KeyValue": "",
+        "Remark": "",
+        "NoticeIds": [],
+        "NoticeList": [],
+        "StartDate":'00:00:00',
+        "EndDate":'23:59:59',
+        "StartDay":'',
+        "EndDay":'',
+        "Enable":true
 }
 export default {
   data() {
@@ -124,23 +163,41 @@ export default {
       isShowDialog: false,
       isTransfer: false,//设置关联人
       infoRow: {
-        "AppNames":[],//应用选中
-        "daterange": [],//必传
-        "Id": null,
-        "AppName": "", //必传
-        "TimeType": 1, //必传
-        "StartTime": "",//必传
-        "EndTime": "",//必传
-        "Comparison": "",//必传
-        "KeyName": "",//必传
-        "KeyValue": "",//必传
-        "Remark": "",
-        "NoticeIds": [],
-        "NoticeList": []
+        ...defaultRow
       },
     }
   },
   methods: {
+    getNow(){
+      const now = new Date();
+      const dateTime = now.toLocaleString().split(' ')[0].split('/');
+      const year = parseInt(dateTime[0]);
+      const month = parseInt(dateTime[1]);
+      const day = parseInt(dateTime[2]);
+      return year + '-' + month + '-' + day
+    },
+    daterangeChange(){
+      const daterange = this.infoRow.daterange
+      if(daterange && daterange.length > 0){
+        if(this.infoRow.TimeType == 0){ //小时
+          this.infoRow.StartDate = daterange[0];
+          this.infoRow.EndDate = daterange[1];
+        }else{
+          this.infoRow.StartDay = daterange[0];
+          this.infoRow.EndDay = daterange[1];
+        }
+        }
+      
+    },
+    
+    radioTimeTypeChange(){
+      const { StartDate, EndDate,StartDay,EndDay} = this.infoRow
+        if(this.infoRow.TimeType == 0){ //小时
+          this.infoRow.daterange = [StartDate,EndDate]
+        }else{
+          this.infoRow.daterange = [StartDay,EndDay]
+        }
+    },
     set_name(id, i) {
       const row = this.p_list.find(d => {
         return d.Id == id
@@ -172,20 +229,9 @@ export default {
       this.m_list = [];
       this.t_list = [];
       this.infoRow = {
-        'AppNames':[],
-        "daterange": [],
-        "Id": null,
-        "AppName": "",
-        "TimeType": 1,
-        "StartTime": "",
-        "EndTime": "",
-        "Comparison": "",
-        "KeyName": "",
-        "KeyValue": "",
-        "Remark": "",
-        "NoticeIds": [],
-        "NoticeList": []
+        ...defaultRow
       }
+      this.radioTimeTypeChange()
       this.$refs.ruleFormRef && this.$refs.ruleFormRef.resetFields()
     },
     onCancel() {
@@ -197,8 +243,13 @@ export default {
       let param = { ...this.infoRow };
       const daterange = param.daterange;
       if (daterange && daterange.length > 0) {
-        param.StartTime = daterange[0];
-        param.EndTime = daterange[1];
+        if(param.TimeType == 0){ //小时
+          param.StartDate = daterange[0];
+          param.EndDate = daterange[1];
+        }else{
+          param.StartDay = daterange[0];
+          param.EndDay = daterange[1];
+        }
       }
       const AppNames = param.AppNames;
       if(AppNames && AppNames.length>0){
@@ -232,11 +283,18 @@ export default {
       if (list3) {
         this.t_list = [...list3]
       }
+       this.title = '新增规则'
       if (id) {
+        this.title = '编辑规则'
         serverApi.monitorInfoRule({ id: id }).then(d => {
           let { Data, Status, StatusMessage } = d;
           if (Status) {
-            this.infoRow = { ...Data, daterange: [Data.StartTime, Data.EndTime],AppNames:[] }
+            this.infoRow = { ...Data, daterange: [],AppNames:[] }
+            if(this.infoRow.TimeType == 0){ //小时
+                this.infoRow.daterange = [Data.StartDate||'00:00:00',Data.EndDate||'23:59:59']
+            }else{
+                 this.infoRow.daterange = [Data.StartDay,Data.EndDay]
+            }
             const AppName = Data.AppName;
             if(AppName.indexOf(',')==-1){
               this.infoRow.AppNames = [AppName]

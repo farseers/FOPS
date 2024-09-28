@@ -12,15 +12,17 @@ import (
 // WsReceive 监控数据接收
 // @ws monitor
 func WsReceive(context *websocket.Context[fsMonitor.SendContentVO], monitorRepository monitor.Repository) {
-	req := context.Receiver()
 	// 如果appId为空直接返回
-	if len(req.AppId) == 0 {
-		return
+	for {
+		req := context.Receiver()
+		if len(req.AppId) == 0 {
+			return
+		}
+		// 所有key值进行处理
+		req.Keys.Keys().Foreach(func(key *string) {
+			reqVal := req.Keys.GetValue(*key)
+			// 添加消息队列
+			queue.Push("monitor", monitor.NewDataEO(req.AppName, *key, parse.ToString(reqVal)))
+		})
 	}
-	// 所有key值进行处理
-	req.Keys.Keys().Foreach(func(key *string) {
-		reqVal := req.Keys.GetValue(*key)
-		// 添加消息队列
-		queue.Push("monitor", monitor.NewDataEO(req.AppName, *key, parse.ToString(reqVal)))
-	})
 }

@@ -1,7 +1,7 @@
 <template>
-    <div class="system-user-container layout-padding">
-        <el-card>
-            <div class="system-user-search mb15" style="display: flex;">
+    <div>
+        <LayMain>
+            <template #header>
                 <el-form-item label="姓名">
                     <el-input v-model="name" clearable 
                     placeholder="请输入姓名"
@@ -18,9 +18,9 @@
 						<ele-Plus />
 					</el-icon>
                     新增用户</el-button>
-                    
-            </div>
-            <el-table :data="tableData" size="default" v-loading="loading" style="width: 100%">
+            </template>
+            <template #main>
+                <el-table :data="tableData" size="default" v-loading="loading" style="width: 100%;height: 100%;">
                 <el-table-column type="index" label="序号" width="60" />
                 <el-table-column prop="NoticeType" label="通知类型" width="100px" show-overflow-tooltip>
                     <template #default="scope">
@@ -45,13 +45,16 @@
                     </template>
             </el-table-column>
             </el-table>
-            <InitPagination @sizeChange="onHandleSizeChange" @currentChange="onHandleCurrentChange" :pages="pages" />
-        </el-card>
+            </template>
+            <template #footer>
+                <InitPagination @sizeChange="onHandleSizeChange" @currentChange="onHandleCurrentChange" :pages="pages" />
+            </template>
+        </LayMain>
         <noticeDialog ref="editInfo" :typeList="typeList" @search="getTableData"/>
     </div>
 </template>
 <script>
-
+import LayMain from '/src/views/components/LayMain.vue';
 import { fopsApi } from "/@/api/fops";
 import InitPagination from '/src/views/components/InitPagination.vue';
 import noticeDialog from './noticeDialog.vue';
@@ -66,7 +69,7 @@ import { ElMessageBox, ElMessage } from 'element-plus';
 
 const serverApi = fopsApi();
 export default {
-    components: { InitPagination,noticeDialog },
+    components: { InitPagination,noticeDialog,LayMain },
     data() {
         return {
             tableData: [],

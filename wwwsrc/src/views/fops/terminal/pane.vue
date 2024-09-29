@@ -165,7 +165,7 @@ export default {
         }else{
           this.close()
         }
-        this.$emit('refresh')
+       
       } else {
         ElMessage.error(res.StatusMessage);
       }
@@ -189,6 +189,7 @@ export default {
             param.Id = _this.editId;
             serverApi.terminalClientUpdate(param).then(function (res) {
               _this.save_back(res,fn)
+              _this.$emit('refresh')
             })
           } else {
             serverApi.terminalClientAdd(param).then(function (res) {

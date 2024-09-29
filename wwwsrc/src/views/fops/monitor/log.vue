@@ -1,7 +1,7 @@
 <template>
-    <div class="system-user-container layout-padding">
-        <el-card>
-            <div class="system-user-search mb15" style="display: flex;">
+    <div>
+        <LayMain>
+            <template #header>
                 <el-form-item label="项目名称">
                     <el-select v-model="AppName" style="width: 200px;" @change="onSearch()" clearable filterable  placeholder="请选择项目名称" >
                         <el-option 
@@ -21,8 +21,9 @@
 					<el-icon><ele-Delete /></el-icon>
 					删除七天前数据
 				</el-button>
-            </div>
-            <el-table :data="tableData" v-loading="loading" style="width: 100%" size="default">
+            </template>
+            <template #main>
+                <el-table :data="tableData" v-loading="loading"  style="width: 100%;height: 100%;" size="default">
                 <el-table-column type="index" label="序号" width="60" />
                 <el-table-column prop="AppName" label="项目名称" width="120px"></el-table-column>
                 <el-table-column prop="NoticeName" label="通知人" width="110px"></el-table-column>
@@ -34,13 +35,17 @@
                 <el-table-column prop="NoticeMsg" label="通知消息"></el-table-column>
                 <el-table-column prop="NoticeAt" label="通知时间" width="160px"></el-table-column>
             </el-table>
-            <InitPagination @sizeChange="onHandleSizeChange" @currentChange="onHandleCurrentChange" :pages="pages" />
-        </el-card>
+            </template>
+            <template #footer>
+                <InitPagination @sizeChange="onHandleSizeChange" @currentChange="onHandleCurrentChange" :pages="pages" />
+            </template>
+        </LayMain>
         <noticeDialog ref="editInfo" @search="getTableData"/>
     </div>
+    
 </template>
 <script>
-
+import LayMain from '/src/views/components/LayMain.vue';
 import { fopsApi } from "/@/api/fops";
 import InitPagination from '/src/views/components/InitPagination.vue';
 import noticeDialog from './noticeDialog.vue';
@@ -54,7 +59,7 @@ import { ElMessageBox, ElMessage } from 'element-plus';
 
 const serverApi = fopsApi();
 export default {
-    components: { InitPagination,noticeDialog },
+    components: { InitPagination,noticeDialog,LayMain },
     data() {
         return {
             AppName:'',

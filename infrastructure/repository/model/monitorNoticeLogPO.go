@@ -7,7 +7,7 @@ import (
 
 type MonitorNoticeLogPO struct {
 	Id         int64           `gorm:"primaryKey;autoIncrement;comment:主键"`
-	AppName    string          `gorm:"size:32;not null;comment:项目名称"`
+	AppName    string          `gorm:"size:256;not null;comment:项目名称"`
 	NoticeId   int64           `gorm:"not null;comment:通知Id"`
 	NoticeName string          `gorm:"size:32;not null;comment:通知人"`
 	NoticeType noticeType.Enum `gorm:"type:tinyint;not null;default:0;comment:通知类型：0=whatsapp"`

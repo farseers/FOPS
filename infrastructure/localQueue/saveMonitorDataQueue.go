@@ -72,7 +72,7 @@ func SaveMonitorDataQueue(subscribeName string, lstMessage collections.ListAny, 
 					noticeList.Foreach(func(not *monitor.NoticeEO) {
 						not.Notice(comparisonMsg)
 						// 记录日志
-						addLogs.Add(monitor.NewLog(rule.AppName, not.Id, not.Name, not.NoticeType, comparisonMsg))
+						addLogs.Add(monitor.NewLog(dataEO.AppName, not.Id, not.Name, not.NoticeType, comparisonMsg))
 					})
 				}
 			}

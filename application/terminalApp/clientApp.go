@@ -27,9 +27,10 @@ func ClientList(pageSize, pageIndex int, terminalRepository terminal.Repository)
 // ClientAdd 客户端添加
 // @post clientAdd
 // @filter application.Jwt
-func ClientAdd(req terminal.ClientEO, terminalRepository terminal.Repository) {
+func ClientAdd(req terminal.ClientEO, terminalRepository terminal.Repository) int64 {
 	err := terminalRepository.Add(req)
 	exception.ThrowWebExceptionError(403, err)
+	return req.Id
 }
 
 // ClientUpdate 客户端更新

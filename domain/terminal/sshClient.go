@@ -54,8 +54,16 @@ type SSHClient struct {
 //		return client
 //	}
 type SshRequest struct {
-	Id      int64  // 连接ID
-	Command string // 输入命令
+	Id        int64  // 登录ID
+	LoginIp   string // 登录IP
+	LoginName string // 登录帐号
+	LoginPwd  string // 登录密码
+	LoginPort int    // 登录端口
+	Command   string // 命令
+}
+
+func (receiver *SshRequest) IsNotNil() bool {
+	return len(receiver.LoginIp) > 0 && len(receiver.LoginName) > 0 && len(receiver.LoginPwd) > 0 && receiver.LoginPort > 0
 }
 
 func NewSSHClient() SSHClient {

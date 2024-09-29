@@ -95,5 +95,6 @@ var route = []webapi.Route{
 	{"POST", "/terminal/clientUpdate", terminalApp.ClientUpdate, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
 	{"POST", "/terminal/clientDel", terminalApp.ClientDel, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
 	{"POST", "/terminal/clientInfo", terminalApp.ClientInfo, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
-	{"WS", "/terminal/ws/ssh", terminalApp.WsSsh, "", []context.IFilter{}, []string{"context", ""}},
+	{"WS", "/terminal/ws/ssh", terminalApp.WsSsh, "", []context.IFilter{application.Jwt{}}, []string{"context", ""}},
+	{"WS", "/terminal/ws/sshByLogin", terminalApp.WsSshByLogin, "", []context.IFilter{application.Jwt{}}, []string{"context", ""}},
 }

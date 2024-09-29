@@ -36,7 +36,7 @@ func SaveMonitorDataQueue(subscribeName string, lstMessage collections.ListAny, 
 			appNameList.Add(dataEO.AppName)
 		}
 		rules := ruleList.Where(func(item monitor.RuleEO) bool {
-			return strings.Contains(item.AppName, dataEO.AppName)
+			return strings.Contains(item.AppName, dataEO.AppName) && item.KeyName == dataEO.Key
 		}).ToList()
 		// 规则列表
 		rules.Foreach(func(rule *monitor.RuleEO) {
@@ -61,19 +61,9 @@ func SaveMonitorDataQueue(subscribeName string, lstMessage collections.ListAny, 
 			}
 			if !rule.IsNull() && send {
 				comparisonMsg := ""
-				switch rule.Comparison {
-				case ">":
-					if parse.ToFloat32(reqVal) > parse.ToFloat32(rule.KeyValue) {
-						comparisonMsg = rule.GetTipTemplate(dataEO.AppName, reqVal)
-					}
-				case "<":
-					if parse.ToFloat32(reqVal) < parse.ToFloat32(rule.KeyValue) {
-						comparisonMsg = rule.GetTipTemplate(dataEO.AppName, reqVal)
-					}
-				case "=":
-					if parse.ToFloat32(rule.KeyValue) == parse.ToFloat32(reqVal) {
-						comparisonMsg = rule.GetTipTemplate(dataEO.AppName, reqVal)
-					}
+				// 比较结果
+				if rule.CompareResult(reqVal) {
+					comparisonMsg = rule.GetTipTemplate(dataEO.AppName, reqVal)
 				}
 				// 发送消息 whatsapp
 				if len(comparisonMsg) > 0 && len(rule.NoticeIds) > 0 {
@@ -83,12 +73,12 @@ func SaveMonitorDataQueue(subscribeName string, lstMessage collections.ListAny, 
 						not.Notice(comparisonMsg)
 						// 记录日志
 						addLogs.Add(monitor.NewLog(rule.AppName, not.Id, not.Name, not.NoticeType, comparisonMsg))
-						// 记录数据
-						addDataLogs.Add(*dataEO)
 					})
 				}
 			}
 		})
+		// 记录数据
+		addDataLogs.Add(*dataEO)
 	})
 
 	// 保存日志

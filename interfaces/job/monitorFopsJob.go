@@ -15,6 +15,8 @@ import (
 // MonitorFopsJob 监控fops数据
 func MonitorFopsJob(*tasks.TaskContext) {
 	appsRepository := container.Resolve[apps.Repository]()
+	// 规则
+	monitorRepository := container.Resolve[monitor.Repository]()
 	// apps 信息
 	appList := appsRepository.ToList()
 	// cluster_node 节点信息
@@ -58,9 +60,18 @@ func MonitorFopsJob(*tasks.TaskContext) {
 			CreateAt: dateTime.Now(),
 		})
 	})
+	// 应用规则数据
+	ruleList := monitorRepository.ToListRuleByAppName("fops")
 	// 添加消息队列
 	addMonitorData.Foreach(func(item *monitor.DataEO) {
-		queue.Push("monitor", item)
+		curRuleList := ruleList.Where(func(rule monitor.RuleEO) bool {
+			return rule.KeyName == item.Key
+		}).ToList()
+		curRuleList.Foreach(func(rule *monitor.RuleEO) {
+			if rule.CompareResult(item.Value) {
+				queue.Push("monitor", item)
+			}
+		})
 	})
 
 }

@@ -3,6 +3,7 @@ package monitor
 import (
 	"fops/domain/enum/ruleTimeType"
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/parse"
 	"strings"
 	"time"
 )
@@ -42,4 +43,23 @@ func (receiver *RuleEO) GetTipTemplate(appName, realValue string) string {
 	tips = strings.Replace(receiver.TipTemplate, "{{RealValue}}", realValue, -1)
 	tips = strings.Replace(receiver.TipTemplate, "{{Time}}", time.Now().Format("01-02 15:04:05"), -1)
 	return tips
+}
+
+// CompareResult 比较结果
+func (receiver *RuleEO) CompareResult(reqVal string) bool {
+	switch receiver.Comparison {
+	case ">":
+		if parse.ToFloat32(reqVal) > parse.ToFloat32(receiver.KeyValue) {
+			return true
+		}
+	case "<":
+		if parse.ToFloat32(reqVal) < parse.ToFloat32(receiver.KeyValue) {
+			return true
+		}
+	case "=":
+		if parse.ToFloat32(receiver.KeyValue) == parse.ToFloat32(reqVal) {
+			return true
+		}
+	}
+	return false
 }

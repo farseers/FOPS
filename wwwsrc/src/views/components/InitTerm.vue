@@ -26,6 +26,13 @@ export default {  //终端
                     background: '#181d28'
                 },
                 cols: 30 // 初始化的时候不要设置fit，设置col为较小值（最小为可展示initText初始文字即可）方便屏幕缩放
+            },
+            sshByLogin:false, //走第二个接口
+            initRow:{
+                LoginIp: '',
+                LoginName: '',
+                LoginPwd: '',
+                LoginPort: 22
             }
         }
     },
@@ -34,11 +41,17 @@ export default {  //终端
         this.clearWs()
     },
     methods: {
-        clearInit(id){ //断开 - 重连
+        initStart(row){ //走第二个接口
+            this.sshByLogin = true;
             this.againFlag = false; //不在重新链接
-            this.clearWs(()=>{
-                this.init(id)
-            })
+            this.initRow = {...row}
+            this.init('')
+           
+        },
+        clearInit(id){ //断开 - 重连 
+            this.sshByLogin = false;
+            this.againFlag = false; //不在重新链接
+            this.init(id)
         },
         clearWs(fn) { //清除
             this.ws && this.ws.close();
@@ -76,6 +89,17 @@ export default {  //终端
                 this.initFire(id)
             })    
         },
+        get_row(id){
+            let row = {};
+            if(this.sshByLogin){
+                let initRow = this.initRow;
+                initRow.LoginPort = initRow.LoginPort * 1;
+                row = {...initRow}
+            }else{
+                row.Id = id;
+            }
+            return row
+        },
         initFire(id){
             this.term = new Terminal(this.option)
             this.fitAddon = new FitAddon()
@@ -105,8 +129,9 @@ export default {  //终端
             });
 
             this.term.onData(data => {
+                const row = this.get_row(id);
                 this.ws.send(JSON.stringify({
-                    Id: id,
+                    ...row,
                     Command: data
                 }));
             })
@@ -115,7 +140,7 @@ export default {  //终端
         resizeRemoteTerminal(id) {
             // const { cols, rows } = this.term
             // 调整后端终端大小 使后端与前端终端大小一致
-            // this.isWsOpen() && this.ws.send(JSON.stringify({ Id: id, Command: '' }))
+            // this.isWsOpen() && this.ws.send(JSON.stringify({ Id: id, Command: '' , ...this.initRow,}))
         },
         onResize: debounce(function () {
             this.fitAddon.fit()
@@ -134,8 +159,9 @@ export default {  //终端
             if (process.env.NODE_ENV === 'development') {
                 w_s = this.VITE_WS;
             }
-            const token = `${Session.get('token')}`;
-            const socketUrl = `${w_s}terminal/ws/ssh?Authorization=${token}`;
+            const token = `${Session.get('token')}`; //terminal/ws/sshByLogin
+            const ssh = this.sshByLogin?'sshByLogin':'ssh'
+            const socketUrl = `${w_s}terminal/ws/${ssh}?Authorization=${token}`;
             this.ws = new WebSocket(socketUrl, ['webssh'])
             this.term && this.term.clear()
             this.term && this.term.write('连接中...\r\n')
@@ -150,9 +176,11 @@ export default {  //终端
         onOpenSocket(id) {
             this.againFlag = true;//断开后重新链接
             this.ws.onopen = () => {
-                
                 this.term && this.term.clear()
-                const str = JSON.stringify({ Id: id, Command: '' });
+                const row = this.get_row(id);
+                const str = JSON.stringify({
+                    ...row,
+                     Command: '' });
                 this.ws.send(str);
                 // this.term && this.term.reset()
                 // setTimeout(() => {
@@ -167,7 +195,6 @@ export default {  //终端
                 clearInterval(this.timeClose)
                 if(this.againFlag){
                     this.errorNum ++
-                    this.term.clear()
                     this.term && this.term.write(`第${this.errorNum}次重新链接...\r\n`)
                     this.timeClose = setTimeout(() => {
                         if (this.term) { this.initSocket(id); }

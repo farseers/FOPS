@@ -6,13 +6,13 @@
 			</div>
 			<div class="main">
 				<div class="aside">
-          <div>
-            <h3 class="con_ts">集群节点</h3>
-            <AsyncConly ref="childConly" />
-          </div>
+					<div>
+						<h3 class="con_ts">集群节点</h3>
+						<AsyncConly ref="childConly"/>
+					</div>
 					<div>
 						<h3 class="con_ts">应用</h3>
-					   <AsyncEcfy ref="childEcfy" />
+						<AsyncEcfy ref="childEcfy" />
 					</div>
 				</div>
 				<div class="argid">
@@ -23,21 +23,25 @@
 				</div>
 			</div>
 		</div>
+		
 	</div>
 </template>
 
 <script setup name="fopsTaskTimeOut">
 import { ref, defineAsyncComponent, reactive, onMounted, onUnmounted } from 'vue';
+
+
 // 引入 api 请求接口
 const AsyncConly = defineAsyncComponent(() => import('./components/Conly.vue'))
 const AsyncCount = defineAsyncComponent(() => import('./components/Counts.vue'))
 const AsyncQueTab = defineAsyncComponent(() => import('./components/QueTab.vue'))
 const AsyncLation = defineAsyncComponent(() => import('./components/Lication.vue'))
 const AsyncEcfy = defineAsyncComponent(() => import('./components/Ecfy.vue'))
+
 // 定义变量内容
 const state = reactive({
 	timer: null, //
-	
+
 });
 
 const childConly = ref(null);
@@ -56,7 +60,7 @@ const init = () => {
 		if (childQueTab.value) {
 			childQueTab.value.getData()
 		}
-		
+
 		if (time1 >= 3) { //调用3秒一次的
 			time1 = 0;
 			if (childConly.value) {
@@ -65,9 +69,9 @@ const init = () => {
 			if (childEcfy.value) {
 				childEcfy.value.getData()
 			}
-			if(childLation.value){
-			  childLation.value.getData()
-		    }
+			if (childLation.value) {
+				childLation.value.getData()
+			}
 		}
 		if (time2 >= 10) {
 			if (childCount.value) {
@@ -88,21 +92,26 @@ onMounted(() => {
 
 <style lang="scss">
 .mtor_main {
-	.bg1{
+	.bg1 {
 		background: var(--el-color-primary-light-9);
 	}
-	.bg2{
+
+	.bg2 {
 		background: var(--el-color-success-light-9);
 	}
-	.bg1{
+
+	.bg1 {
 		background: var(--el-color-primary-light-9);
 	}
-	.bg2{
+
+	.bg2 {
 		background: var(--el-color-success-light-9);
 	}
-	.con_ts{
+
+	.con_ts {
 		padding: 5px 5px 0 5px;
 	}
+
 	.content {
 		padding: 0;
 		flex: 1;
@@ -122,6 +131,7 @@ onMounted(() => {
 		display: flex;
 		overflow: hidden;
 	}
+
 	.argid {
 		height: 100%;
 		width: 350px;
@@ -135,6 +145,6 @@ onMounted(() => {
 		height: 100%;
 		overflow: auto
 	}
-	
+
 }
 </style>

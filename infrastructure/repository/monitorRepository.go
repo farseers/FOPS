@@ -26,9 +26,9 @@ func (receiver *monitorRepository) ToListRuleByAppName(appName string) collectio
 }
 
 func (receiver *monitorRepository) DropDownListAppInfo() collections.List[monitor.RuleEO] {
-	sql := `select app_id,app_name from monitor_rule where enable=1
-			group by  app_id, app_name
-			order by app_id desc;`
+	sql := `select app_name from monitor_rule where enable=1
+			group by  app_name
+			order by app_name desc;`
 	list := context.MysqlContext.MonitorRule.ExecuteSqlToList(sql)
 	return mapper.ToList[monitor.RuleEO](list)
 }

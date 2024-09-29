@@ -7,9 +7,11 @@ import (
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/dateTime"
+	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/queue"
 	"github.com/farseer-go/tasks"
+	"time"
 )
 
 // MonitorFopsJob 监控fops数据
@@ -62,6 +64,7 @@ func MonitorFopsJob(*tasks.TaskContext) {
 	})
 	// 应用规则数据
 	ruleList := monitorRepository.ToListRuleByAppName("fops")
+	appNameList := collections.NewList[string]()
 	// 添加消息队列
 	addMonitorData.Foreach(func(item *monitor.DataEO) {
 		curRuleList := ruleList.Where(func(rule monitor.RuleEO) bool {
@@ -72,6 +75,20 @@ func MonitorFopsJob(*tasks.TaskContext) {
 				queue.Push("monitor", item)
 			}
 		})
+		appNameList.Add(item.AppName)
 	})
+	// 刷新时间
+	if appNameList.Count() > 0 {
+		appNameList.Foreach(func(item *string) {
+			if !monitorRepository.IsExistSyncAt(*item) {
+				err := monitorRepository.SaveSyncAt(monitor.NewSyncAtEO(*item))
+				exception.ThrowWebExceptionError(403, err)
+			} else {
+				// 更新时间
+				err := monitorRepository.UpdateSyncAt(*item, time.Now())
+				exception.ThrowWebExceptionError(403, err)
+			}
+		})
+	}
 
 }

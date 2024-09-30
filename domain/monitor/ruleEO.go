@@ -38,10 +38,10 @@ func (receiver *RuleEO) ToAppNameList() collections.List[string] {
 func (receiver *RuleEO) GetTipTemplate(appName, realValue string) string {
 	var tips string
 	tips = strings.Replace(receiver.TipTemplate, "{{AppName}}", appName, -1)
-	tips = strings.Replace(receiver.TipTemplate, "{{Key}}", receiver.KeyName, -1)
-	tips = strings.Replace(receiver.TipTemplate, "{{Value}}", receiver.KeyValue, -1)
-	tips = strings.Replace(receiver.TipTemplate, "{{RealValue}}", realValue, -1)
-	tips = strings.Replace(receiver.TipTemplate, "{{Time}}", time.Now().Format("01-02 15:04:05"), -1)
+	tips = strings.Replace(tips, "{{Key}}", receiver.KeyName, -1)
+	tips = strings.Replace(tips, "{{Value}}", receiver.KeyValue, -1)
+	tips = strings.Replace(tips, "{{RealValue}}", realValue, -1)
+	tips = strings.Replace(tips, "{{Time}}", time.Now().Format("01-02 15:04:05"), -1)
 	return tips
 }
 

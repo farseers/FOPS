@@ -188,12 +188,14 @@ export default {
           if (_this.editId) {
             param.Id = _this.editId;
             serverApi.terminalClientUpdate(param).then(function (res) {
-              _this.save_back(res,fn)
               _this.$emit('refresh')
+              _this.save_back(res,fn)
+             
             })
           } else {
             serverApi.terminalClientAdd(param).then(function (res) {
               if(res.Status){
+                _this.$emit('refresh')
                 _this.close()
               }
             })

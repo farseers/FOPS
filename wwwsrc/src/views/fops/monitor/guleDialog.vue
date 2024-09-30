@@ -75,6 +75,8 @@
             </div>
           </div>
         </el-form-item>
+        
+        <el-form-item label="模版"><el-input v-model="infoRow.TipTemplate" /></el-form-item>
         <el-form-item label="备注"><el-input v-model="infoRow.Remark" /></el-form-item>
       </el-form>
       <template #footer>
@@ -135,6 +137,7 @@ const defaultRow = {
         "Comparison": "",
         "KeyName": "",
         "KeyValue": "",
+        "TipTemplate":'',
         "Remark": "",
         "NoticeIds": [],
         "NoticeList": [],

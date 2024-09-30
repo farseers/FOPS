@@ -52,6 +52,7 @@
                                 :key="index">{{ item.Name }}、</span>
                         </template>
                     </el-table-column>
+                    <el-table-column prop="TipTemplate" label="模版" show-overflow-tooltip></el-table-column>
                     <el-table-column prop="Remark" label="备注" show-overflow-tooltip></el-table-column>
                     <el-table-column label="操作" width="100px" fixed="right" align="center">
                         <template #default="scope">

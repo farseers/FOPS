@@ -32,12 +32,16 @@ func SaveMonitorDataQueue(subscribeName string, lstMessage collections.ListAny, 
 	addDataLogs := collections.NewList[monitor.DataEO]()
 	appNameList := collections.NewList[string]()
 	lstData.Foreach(func(dataEO *monitor.DataEO) {
+		//flog.Info("消息队列处理")
+		//flog.Info(dataEO)
 		if !appNameList.Contains(dataEO.AppName) {
 			appNameList.Add(dataEO.AppName)
 		}
 		rules := ruleList.Where(func(item monitor.RuleEO) bool {
 			return strings.Contains(item.AppName, dataEO.AppName) && item.KeyName == dataEO.Key
 		}).ToList()
+		// 是否保存数据
+		var isSaveData = false
 		// 规则列表
 		rules.Foreach(func(rule *monitor.RuleEO) {
 			// 应用名称集合
@@ -51,12 +55,14 @@ func SaveMonitorDataQueue(subscribeName string, lstMessage collections.ListAny, 
 				nowTime := parse.ToInt(time.Now().Format("150405"))
 				if nowTime >= startTime && nowTime <= endTime {
 					send = true
+					isSaveData = true
 				}
 			case ruleTimeType.Day:
 				startDay := parse.ToTime(rule.StartDay)
 				endDay := parse.ToTime(rule.EndDay)
 				if time.Now().After(startDay) && time.Now().Before(endDay) {
 					send = true
+					isSaveData = true
 				}
 			}
 			if !rule.IsNull() && send {
@@ -78,7 +84,9 @@ func SaveMonitorDataQueue(subscribeName string, lstMessage collections.ListAny, 
 			}
 		})
 		// 记录数据
-		addDataLogs.Add(*dataEO)
+		if isSaveData {
+			addDataLogs.Add(*dataEO)
+		}
 	})
 
 	// 保存日志

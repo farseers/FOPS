@@ -17,6 +17,7 @@ func WsReceive(context *websocket.Context[fsMonitor.SendContentVO], monitorRepos
 		if len(req.AppId) == 0 || len(req.AppName) == 0 {
 			return
 		}
+		//flog.Info(req)
 		// 所有key值进行处理
 		req.Keys.Keys().Foreach(func(key *string) {
 			reqVal := req.Keys.GetValue(*key)

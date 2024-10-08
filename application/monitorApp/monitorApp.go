@@ -188,6 +188,10 @@ func DrpBaseList(baseType string) map[string][]response.KeyValueResponse {
 			Key:   3,
 			Value: "=",
 		})
+		resList.Add(response.KeyValueResponse{
+			Key:   4,
+			Value: "!=",
+		})
 		resMap["CompareList"] = resList.ToArray()
 	}
 	return resMap

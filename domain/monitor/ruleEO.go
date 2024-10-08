@@ -72,6 +72,11 @@ func (receiver *RuleEO) CompareResult(reqVal string) bool {
 				return true
 			}
 		}
+	case "!=":
+		// 字符串判断
+		if strings.ToLower(receiver.KeyValue) != strings.ToLower(reqVal) {
+			return true
+		}
 	}
 	return false
 }

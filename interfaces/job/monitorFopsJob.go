@@ -11,6 +11,7 @@ import (
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/queue"
 	"github.com/farseer-go/tasks"
+	"strings"
 	"time"
 )
 
@@ -81,12 +82,12 @@ func MonitorFopsJob(*tasks.TaskContext) {
 		})
 	})
 	// 应用规则数据
-	ruleList := monitorRepository.ToListRuleByAppName("fops")
+	ruleList := monitorRepository.ToListRule()
 	appNameList := collections.NewList[string]()
 	// 添加消息队列
 	addMonitorData.Foreach(func(item *monitor.DataEO) {
 		curRuleList := ruleList.Where(func(rule monitor.RuleEO) bool {
-			return rule.KeyName == item.Key
+			return rule.KeyName == item.Key && strings.Contains(rule.AppName, item.AppName)
 		}).ToList()
 		curRuleList.Foreach(func(rule *monitor.RuleEO) {
 			if rule.CompareResult(item.Value) {
@@ -97,7 +98,7 @@ func MonitorFopsJob(*tasks.TaskContext) {
 	})
 	// 刷新时间
 	if appNameList.Count() > 0 {
-		appNameList.Foreach(func(item *string) {
+		appNameList.Distinct().Foreach(func(item *string) {
 			if !monitorRepository.IsExistSyncAt(*item) {
 				err := monitorRepository.SaveSyncAt(monitor.NewSyncAtEO(*item))
 				exception.ThrowWebExceptionError(403, err)

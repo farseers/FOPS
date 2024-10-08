@@ -4,6 +4,7 @@ import (
 	"fops/domain/enum/ruleTimeType"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/parse"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -57,9 +58,28 @@ func (receiver *RuleEO) CompareResult(reqVal string) bool {
 			return true
 		}
 	case "=":
-		if parse.ToFloat32(receiver.KeyValue) == parse.ToFloat32(reqVal) {
-			return true
+		if isBool(receiver.KeyValue) {
+			if parse.ToBool(receiver.KeyValue) == parse.ToBool(reqVal) {
+				return true
+			}
+		} else if isFloat(receiver.KeyValue) {
+			if parse.ToFloat32(receiver.KeyValue) == parse.ToFloat32(reqVal) {
+				return true
+			}
+		} else {
+			// 字符串判断
+			if strings.ToLower(receiver.KeyValue) == strings.ToLower(reqVal) {
+				return true
+			}
 		}
 	}
 	return false
+}
+func isBool(s string) bool {
+	s = strings.ToLower(s)
+	return s == "true" || s == "false"
+}
+func isFloat(s string) bool {
+	_, err := strconv.ParseFloat(s, 64)
+	return err == nil
 }

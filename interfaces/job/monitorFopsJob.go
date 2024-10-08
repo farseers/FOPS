@@ -39,6 +39,12 @@ func MonitorFopsJob(*tasks.TaskContext) {
 				Value:    parse.ToString(docker.MemoryUsagePercent),
 				CreateAt: dateTime.Now(),
 			})
+			addMonitorData.Add(monitor.DataEO{
+				AppName:  app.AppName,
+				Key:      "instances",
+				Value:    parse.ToString(app.DockerInstances == app.DockerReplicas),
+				CreateAt: dateTime.Now(),
+			})
 		})
 	})
 	// 节点数据
@@ -59,6 +65,18 @@ func MonitorFopsJob(*tasks.TaskContext) {
 			AppName:  node.NodeName,
 			Key:      "disk",
 			Value:    parse.ToString(node.DiskUsagePercent),
+			CreateAt: dateTime.Now(),
+		})
+		addMonitorData.Add(monitor.DataEO{
+			AppName:  node.NodeName,
+			Key:      "pcStatus",
+			Value:    node.Status,
+			CreateAt: dateTime.Now(),
+		})
+		addMonitorData.Add(monitor.DataEO{
+			AppName:  node.NodeName,
+			Key:      "nodeAvailability",
+			Value:    node.Availability,
 			CreateAt: dateTime.Now(),
 		})
 	})

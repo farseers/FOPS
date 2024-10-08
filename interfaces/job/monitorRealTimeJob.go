@@ -27,7 +27,7 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 			// 监控程序是否正常
 			if time.Now().Sub(maxTime.SyncAt).Minutes() > 10 {
 				time.Sleep(1 * time.Second)
-				var comparisonMsg = fmt.Sprintf("%s %s %s", time.Now().Format("01-02 15:04:05"), rule.AppName, "请检查项目是否已经停止")
+				var comparisonMsg = fmt.Sprintf("%s %s %s", time.Now().Format("01-02 15:04:05"), *appName, "请检查项目是否已经停止")
 				// 通知数据
 				noticeList := monitorRepository.ToListNoticeById(rule.NoticeIds)
 				noticeList.Foreach(func(not *monitor.NoticeEO) {

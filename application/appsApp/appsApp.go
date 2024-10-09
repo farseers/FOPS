@@ -105,7 +105,13 @@ func Delete(appName string, appsRepository apps.Repository) {
 // @post dropDownList
 // @filter application.Jwt
 func DropDownList(isAll bool, appsRepository apps.Repository) collections.List[apps.ShortEO] {
-	return appsRepository.ToShortList(isAll)
+	resList := appsRepository.ToShortList(isAll)
+	// cluster_node 节点信息
+	nodeList := appsRepository.GetClusterNodeList()
+	nodeList.Foreach(func(node *docker.DockerNodeVO) {
+		resList.Add(apps.ShortEO{AppName: node.NodeName})
+	})
+	return resList
 }
 
 // List 应用列表

@@ -2,7 +2,9 @@
 package monitorApp
 
 import (
+	"encoding/json"
 	"fops/domain/monitor"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
 	fsMonitor "github.com/farseer-go/monitor"
 	"github.com/farseer-go/queue"
@@ -17,7 +19,8 @@ func WsReceive(context *websocket.Context[fsMonitor.SendContentVO], monitorRepos
 		if len(req.AppId) == 0 || len(req.AppName) == 0 {
 			return
 		}
-		//flog.Info(req)
+		jsonData, _ := json.Marshal(req)
+		flog.Info("WsReceive:" + string(jsonData))
 		// 所有key值进行处理
 		req.Keys.Keys().Foreach(func(key *string) {
 			reqVal := req.Keys.GetValue(*key)

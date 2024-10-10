@@ -49,9 +49,17 @@ func (repository *buildRepository) SetBuilding(id int64) {
 	})
 }
 
+// UpdateBuilding 更新构建任务
+func (repository *buildRepository) UpdateBuilding(id int64, env apps.EnvVO) {
+	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("cluster_id", "docker_image").Update(model.BuildPO{
+		ClusterId:   env.ClusterId,
+		DockerImage: env.DockerImage,
+	})
+}
+
 // SetSuccess 任务完成
 func (repository *buildRepository) SetSuccess(id int64, env apps.EnvVO) {
-	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at", "env", "log", "docker_image").Update(model.BuildPO{
+	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at", "env", "docker_image").Update(model.BuildPO{
 		Status:      eumBuildStatus.Finish,
 		IsSuccess:   true,
 		FinishAt:    time.Now(),
@@ -71,7 +79,7 @@ func (repository *buildRepository) SetSuccessForFops(id int64) {
 
 // SetCancel 主动取消任务
 func (repository *buildRepository) SetCancel(id int64, env apps.EnvVO) {
-	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at", "env", "log", "docker_image").Update(model.BuildPO{
+	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at", "env", "docker_image").Update(model.BuildPO{
 		Status:      eumBuildStatus.Finish,
 		IsSuccess:   false,
 		FinishAt:    time.Now(),

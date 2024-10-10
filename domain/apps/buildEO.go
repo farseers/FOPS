@@ -80,10 +80,11 @@ func (receiver *BuildEO) StartBuild() {
 
 	// 定义环境变量
 	var projectGitRoot = receiver.appGit.GetAbsolutePath()
-	var dockerHub = receiver.dockerDevice.GetDockerHub(clusterDO.DockerHub)
 	receiver.DockerImage = receiver.dockerDevice.GetDockerImage(clusterDO.DockerHub, receiver.AppName, receiver.BuildNumber)
+	var dockerHub = receiver.dockerDevice.GetDockerHub(clusterDO.DockerHub)
 	receiver.GenerateEnv(projectGitRoot, dockerHub, receiver.DockerImage, receiver.appGit.GetName())
 
+	appsRepository.SetBuilding(receiver.Id)
 	// 把fops、fschedule版本写入到系统参数sysWith
 	//sysWith["fops.ver"] = container.Resolve[Repository]().ToEntity("fops").DockerVer
 	//sysWith["fschedule.ver"] = container.Resolve[Repository]().ToEntity("fschedule").DockerVer
@@ -417,6 +418,7 @@ func (receiver *BuildEO) GenerateEnv(projectGitRoot string, dockerHub string, do
 		BuildNumber: receiver.BuildNumber,
 		AppName:     receiver.AppName,
 		DockerHub:   dockerHub,
+		ClusterId:   receiver.ClusterId,
 		DockerImage: dockerImage,
 		AppGitRoot:  projectGitRoot,
 		GitHub:      receiver.appGit.Hub,

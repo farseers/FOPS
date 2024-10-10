@@ -30,6 +30,7 @@ type buildRepository interface {
 	ToBuildList(appName string, pageSize int, pageIndex int) collections.PageList[BuildEO] // 查询构建列表
 	GetUnBuildInfo() BuildEO                                                               // 获取未构建的任务
 	SetBuilding(id int64)                                                                  // 设置任务为构建中
+	UpdateBuilding(id int64, env EnvVO)                                                    // 更新构建任务
 	SetSuccess(id int64, env EnvVO)                                                        // Success 任务完成
 	SetSuccessForFops(id int64)                                                            // 设置任务为构建成功
 	SetCancel(id int64, env EnvVO)                                                         // Cancel 主动取消任务

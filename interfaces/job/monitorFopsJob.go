@@ -1,6 +1,7 @@
 package job
 
 import (
+	"fmt"
 	"fops/domain/apps"
 	"fops/domain/monitor"
 	"github.com/farseer-go/collections"
@@ -51,31 +52,31 @@ func MonitorFopsJob(*tasks.TaskContext) {
 	// 节点数据
 	nodeList.Foreach(func(node *docker.DockerNodeVO) {
 		addMonitorData.Add(monitor.DataEO{
-			AppName:  node.NodeName,
+			AppName:  fmt.Sprintf("%s(%s)", node.IP, node.NodeName),
 			Key:      "cpu",
 			Value:    parse.ToString(node.CpuUsagePercent),
 			CreateAt: dateTime.Now(),
 		})
 		addMonitorData.Add(monitor.DataEO{
-			AppName:  node.NodeName,
+			AppName:  fmt.Sprintf("%s(%s)", node.IP, node.NodeName),
 			Key:      "memory",
 			Value:    parse.ToString(node.MemoryUsagePercent),
 			CreateAt: dateTime.Now(),
 		})
 		addMonitorData.Add(monitor.DataEO{
-			AppName:  node.NodeName,
+			AppName:  fmt.Sprintf("%s(%s)", node.IP, node.NodeName),
 			Key:      "disk",
 			Value:    parse.ToString(node.DiskUsagePercent),
 			CreateAt: dateTime.Now(),
 		})
 		addMonitorData.Add(monitor.DataEO{
-			AppName:  node.NodeName,
+			AppName:  fmt.Sprintf("%s(%s)", node.IP, node.NodeName),
 			Key:      "pcStatus",
 			Value:    node.Status,
 			CreateAt: dateTime.Now(),
 		})
 		addMonitorData.Add(monitor.DataEO{
-			AppName:  node.NodeName,
+			AppName:  fmt.Sprintf("%s(%s)", node.IP, node.NodeName),
 			Key:      "nodeAvailability",
 			Value:    node.Availability,
 			CreateAt: dateTime.Now(),

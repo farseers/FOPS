@@ -50,33 +50,21 @@ func (receiver *RuleEO) GetTipTemplate(appName, realValue string) string {
 func (receiver *RuleEO) CompareResult(reqVal string) bool {
 	switch receiver.Comparison {
 	case ">":
-		if parse.ToFloat32(reqVal) > parse.ToFloat32(receiver.KeyValue) {
-			return true
-		}
+		return parse.ToFloat32(reqVal) > parse.ToFloat32(receiver.KeyValue)
 	case "<":
-		if parse.ToFloat32(reqVal) < parse.ToFloat32(receiver.KeyValue) {
-			return true
-		}
+		return parse.ToFloat32(reqVal) < parse.ToFloat32(receiver.KeyValue)
 	case "=":
 		if isBool(receiver.KeyValue) {
-			if parse.ToBool(receiver.KeyValue) == parse.ToBool(reqVal) {
-				return true
-			}
+			return parse.ToBool(receiver.KeyValue) == parse.ToBool(reqVal)
 		} else if isFloat(receiver.KeyValue) {
-			if parse.ToFloat32(receiver.KeyValue) == parse.ToFloat32(reqVal) {
-				return true
-			}
+			return parse.ToFloat32(receiver.KeyValue) == parse.ToFloat32(reqVal)
 		} else {
 			// 字符串判断
-			if strings.ToLower(receiver.KeyValue) == strings.ToLower(reqVal) {
-				return true
-			}
+			return strings.ToLower(receiver.KeyValue) == strings.ToLower(reqVal)
 		}
 	case "!=":
 		// 字符串判断
-		if strings.ToLower(receiver.KeyValue) != strings.ToLower(reqVal) {
-			return true
-		}
+		return strings.ToLower(receiver.KeyValue) != strings.ToLower(reqVal)
 	}
 	return false
 }

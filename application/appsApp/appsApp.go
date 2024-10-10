@@ -109,7 +109,7 @@ func DropDownList(isAll bool, appsRepository apps.Repository) collections.List[a
 	// cluster_node 节点信息
 	nodeList := appsRepository.GetClusterNodeList()
 	nodeList.Foreach(func(node *docker.DockerNodeVO) {
-		resList.Add(apps.ShortEO{AppName: node.NodeName})
+		resList.Add(apps.ShortEO{AppName: fmt.Sprintf("%s(%s)", node.IP, node.NodeName)})
 	})
 	return resList
 }

@@ -61,7 +61,7 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 	exception.ThrowRefuseExceptionError(err)
 
 	// 服务存在，才更新，否则自动创建
-	if !createService(client, clusterId, appName, do.DockerImage, appsRepository, clusterRepository) {
+	if !createService(client, appName, do.DockerImage, appsRepository, clusterRepository) {
 		// 更新镜像
 		err = client.Service.SetImages(appName, do.DockerImage)
 		exception.ThrowRefuseExceptionError(err)
@@ -86,10 +86,10 @@ func ClearDockerImage() {
 // RestartDocker 重启容器
 // @post restartDocker
 // @filter application.Jwt
-func RestartDocker(clusterId int64, appName string, clusterRepository cluster.Repository, appsRepository apps.Repository) {
+func RestartDocker(appName string, clusterRepository cluster.Repository, appsRepository apps.Repository) {
 	client := docker.NewClient()
 	// 服务存在，才重启，否则自动创建
-	if !createService(client, clusterId, appName, "", appsRepository, clusterRepository) {
+	if !createService(client, appName, "", appsRepository, clusterRepository) {
 		err := client.Service.Restart(appName)
 		exception.ThrowRefuseExceptionError(err)
 	}
@@ -129,20 +129,20 @@ func DeleteService(appName string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(exists, 403, "服务删除失败")
 }
 
-func createService(client *docker.Client, clusterId int64, appName, dockerImage string, appsRepository apps.Repository, clusterRepository cluster.Repository) bool {
+func createService(client *docker.Client, appName, dockerImage string, appsRepository apps.Repository, clusterRepository cluster.Repository) bool {
+	clusterDO := clusterRepository.GetLocalCluster()
 	// 服务不存在，则创建
 	exists, err := client.Service.Exists(appName)
 	if !exists && err == nil {
 		// 创建容器服务
 		do := appsRepository.ToEntity(appName)
 		if dockerImage == "" {
-			dockerImage = do.GetCurClusterDockerImage(clusterId)
+			dockerImage = do.GetCurClusterDockerImage(clusterDO.Id)
 		}
 		if dockerImage == "" {
 			exception.ThrowWebExceptionf(403, "该集群没有可用的镜像")
 		}
 
-		clusterDO := clusterRepository.ToEntity(clusterId)
 		if clusterDO.IsNil() {
 			clusterDO.DockerNetwork = "net"
 		}

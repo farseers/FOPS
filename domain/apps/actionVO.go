@@ -24,16 +24,15 @@ func (receiver *stepVO) GetActionPath() string {
 }
 
 type ActionVO struct {
-	Name       string  // 工作流名称
-	ClusterIds []int64 // 归属集群Id
-	RunsOn     string  // 基础镜像系统
-	//Proxy      string  // 代理（jobs.build.proxy -> Fops.Proxy）
-	Env   map[string]string
-	With  map[string]any // 全局参数
-	Steps []stepVO       // 步骤
+	Name      string // 工作流名称
+	ClusterId int64  // 使用哪个集群的仓库配置
+	RunsOn    string // 基础镜像系统
+	Env       map[string]string
+	With      map[string]any // 全局参数
+	Steps     []stepVO       // 步骤
 }
 
-func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysWith map[string]any) (ActionVO, error) {
+func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (ActionVO, error) {
 	workflowsYmlContent := file.ReadString(workflowsYmlPath)
 	if workflowsYmlContent == "" {
 		return ActionVO{}, fmt.Errorf("WorkflowsYml没有定义。")
@@ -42,8 +41,6 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 	// 替换项目名称
 	workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "${app_name}", appName)
 	workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "${git_name}", gitName)
-	//workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "{{fops.ver}}", parse.ToString(sysWith["fops.ver"]))
-	//workflowsYmlContent = strings.ReplaceAll(workflowsYmlContent, "{{fschedule.ver}}", parse.ToString(sysWith["fschedule.ver"]))
 
 	workflowsYml := configure.NewYamlConfig("")
 	err := workflowsYml.LoadContent([]byte(workflowsYmlContent))
@@ -52,7 +49,7 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 	}
 
 	name, _ := workflowsYml.Get("name")
-	clusterIds, _ := workflowsYml.GetArray("jobs.clusterId")
+	clusterId, _ := workflowsYml.Get("jobs.clusterId")
 	proxy, _ := workflowsYml.Get("jobs.build.proxy")
 	sysImage, _ := workflowsYml.Get("jobs.build.runs-on")
 	env, _ := workflowsYml.GetSubNodes("jobs.build.env")
@@ -62,7 +59,8 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 	}
 
 	act := ActionVO{
-		Name: strings.TrimSpace(parse.ToString(name)),
+		Name:      strings.TrimSpace(parse.ToString(name)),
+		ClusterId: parse.ToInt64(clusterId),
 		//Proxy:  strings.TrimSpace(parse.ToString(proxy)),
 		RunsOn: strings.TrimSpace(parse.ToString(sysImage)),
 		With:   with,
@@ -73,19 +71,10 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string, sysW
 	if act.With["proxy"] == "" {
 		act.With["proxy"] = configure.GetString("Fops.Proxy")
 	}
-	for _, clusterId := range clusterIds {
-		act.ClusterIds = append(act.ClusterIds, parse.ToInt64(clusterId))
-	}
 
 	for k, v := range env {
 		act.Env[k] = parse.ToString(v)
 	}
-
-	// 移除前缀//
-	//if index := strings.Index(act.Proxy, "//"); index > -1 {
-	//	act.Proxy = act.Proxy[index+2:]
-	//}
-	//act.With["proxy"] = act.Proxy
 
 	// 运行steps
 	if steps, existsSteps := workflowsYml.Get("jobs.build.steps"); existsSteps {

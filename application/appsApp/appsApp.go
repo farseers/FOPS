@@ -202,7 +202,7 @@ func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.
 // Info 查询应用
 // @post info
 // @filter application.Jwt
-func Info(clusterId int64, appName string, appsRepository apps.Repository, clusterRepository cluster.Repository) response.AppsResponse {
+func Info(appName string, appsRepository apps.Repository, clusterRepository cluster.Repository) response.AppsResponse {
 	do := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 

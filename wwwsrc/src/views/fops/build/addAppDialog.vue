@@ -95,7 +95,7 @@ const state = reactive({
 	ruleForm: {
     AppName:'', //应用名称
     DockerVer: '', // 镜像版本
-    ClusterVer: { // 集群版本
+    LocalClusterVer: { // 集群版本
       ClusterId: 0,
       DockerImage: '',
     },

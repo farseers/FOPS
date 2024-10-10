@@ -42,14 +42,15 @@ func Add(req request.AddRequest, appsRepository apps.Repository) {
 // Update 修改应用
 // @post update
 // @filter application.Jwt
-func Update(req request.UpdateRequest, appsRepository apps.Repository) {
+func Update(req request.UpdateRequest, appsRepository apps.Repository, clusterRepository cluster.Repository) {
 	do := appsRepository.ToEntity(req.AppName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
+	clusterDO := clusterRepository.GetLocalCluster()
 
 	client := docker.NewClient()
 	if exists, err := client.Service.Exists(req.AppName); exists || err != nil {
 		// 更新镜像
-		if (req.ClusterDockerImage != "" && do.ClusterVer[req.ClusterId] != nil && req.ClusterDockerImage != do.ClusterVer[req.ClusterId].DockerImage) || do.DockerReplicas != req.DockerReplicas {
+		if (req.ClusterDockerImage != "" && req.ClusterDockerImage != do.ClusterVer.GetValue(clusterDO.Id).DockerImage) || do.DockerReplicas != req.DockerReplicas {
 			err = client.Service.SetImagesAndReplicas(req.AppName, req.ClusterDockerImage, req.DockerReplicas)
 			exception.ThrowWebExceptionError(403, err)
 		} else if do.DockerReplicas != req.DockerReplicas {
@@ -70,12 +71,14 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository) {
 	}
 
 	// 更新部署的镜像
-	if newDO.ClusterVer[req.ClusterId] != nil && req.ClusterDockerImage != "" {
-		newDO.ClusterVer[req.ClusterId].DockerImage = req.ClusterDockerImage
-		newDO.ClusterVer[req.ClusterId].DeploySuccessAt = dateTime.Now()
+	if newDO.ClusterVer.ContainsKey(clusterDO.Id) && req.ClusterDockerImage != "" {
+		clusterVerVO := newDO.ClusterVer.GetValue(clusterDO.Id)
+		clusterVerVO.DockerImage = req.ClusterDockerImage
+		clusterVerVO.DeploySuccessAt = dateTime.Now()
 		if strings.Contains(req.ClusterDockerImage, ":") {
-			newDO.ClusterVer[req.ClusterId].DockerVer = parse.ToInt(strings.Split(req.ClusterDockerImage, ":")[1])
+			clusterVerVO.DockerVer = parse.ToInt(strings.Split(req.ClusterDockerImage, ":")[1])
 		}
+		newDO.ClusterVer.Add(clusterDO.Id, clusterVerVO)
 	}
 
 	err := appsRepository.UpdateApp(newDO)
@@ -117,25 +120,17 @@ func DropDownList(isAll bool, appsRepository apps.Repository) collections.List[a
 // List 应用列表
 // @post list
 // @filter application.Jwt
-func List(clusterId int64, isSys bool, appsRepository apps.Repository, logDataRepository logData.Repository, clusterRepository cluster.Repository, fScheduleHttp fSchedule.Http) collections.List[response.AppsResponse] {
-	lstGit := appsRepository.ToGitListAll(-1)
+func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.Repository, clusterRepository cluster.Repository, fScheduleHttp fSchedule.Http) collections.List[response.AppsResponse] {
 	countList := logDataRepository.StatCount()
-	clusterDO := clusterRepository.ToEntity(clusterId)
-	var taskGroupStatList collections.List[fSchedule.StatTaskEO]
-
 	// 获取任务组的数据统计
-	if clusterDO.FScheduleAddr != "" {
+	var taskGroupStatList collections.List[fSchedule.StatTaskEO]
+	if clusterDO := clusterRepository.GetLocalCluster(); clusterDO.FScheduleAddr != "" {
 		taskGroupStatList = fScheduleHttp.StatList(clusterDO.FScheduleAddr)
 	}
-
+	lstCluster := clusterRepository.ToList()
 	lst := collections.NewList[response.AppsResponse]()
 	appsRepository.ToListBySys(isSys).Foreach(func(item *apps.DomainObject) {
-		appsResponse := doToAppsResponse(clusterId, *item)
-		// Git名称
-		appsResponse.AppGitName = lstGit.Where(func(gitItem apps.GitEO) bool {
-			return item.AppGit == parse.ToInt64(gitItem.Id)
-		}).First().Name
-
+		appsResponse := doToAppsResponse(lstCluster, *item)
 		// 统计日志数量
 		countList.Foreach(func(logItem *logData.LogCountEO) {
 			if item.AppName != logItem.AppName {
@@ -169,20 +164,8 @@ func List(clusterId int64, isSys bool, appsRepository apps.Repository, logDataRe
 			// 读取工作流内容
 			workflowsYml := configure.NewYamlConfig("")
 			_ = workflowsYml.LoadContent([]byte(file.ReadString(workflowsYmlPath)))
-
-			// 取出集群ID
-			clusterIds, _ := workflowsYml.GetArray("jobs.clusterId")
-			if len(clusterIds) == 0 {
-				clusterIds = []any{clusterId}
-			}
-
-			// 只筛选出对应集群Id的工作流
-			for _, cId := range clusterIds {
-				if clusterId == parse.ToInt64(cId) {
-					workflowsYmlPath = filepath.Base(workflowsYmlPath)
-					appsResponse.WorkflowsNames = append(appsResponse.WorkflowsNames, workflowsYmlPath[:strings.Index(workflowsYmlPath, ".yml")])
-				}
-			}
+			workflowsYmlPath = filepath.Base(workflowsYmlPath)
+			appsResponse.WorkflowsNames = append(appsResponse.WorkflowsNames, workflowsYmlPath[:strings.Index(workflowsYmlPath, ".yml")])
 		}
 
 		// 容器资源占用统计
@@ -219,12 +202,22 @@ func List(clusterId int64, isSys bool, appsRepository apps.Repository, logDataRe
 // Info 查询应用
 // @post info
 // @filter application.Jwt
-func Info(clusterId int64, appName string, appsRepository apps.Repository) response.AppsResponse {
+func Info(clusterId int64, appName string, appsRepository apps.Repository, clusterRepository cluster.Repository) response.AppsResponse {
 	do := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
-	rsp := doToAppsResponse(clusterId, do)
-	rsp.AppGitName = appsRepository.ToGitEntity(do.AppGit).Name
-	return rsp
+
+	localCluster := clusterRepository.GetLocalCluster()
+	clusterVerVO := do.ClusterVer.GetValue(localCluster.Id)
+
+	lstCluster := clusterRepository.ToList()
+	appsResponse := doToAppsResponse(lstCluster, do)
+	appsResponse.LocalClusterVer = response.ClusterVerVO{
+		ClusterId:       clusterVerVO.ClusterId,
+		ClusterName:     localCluster.Name,
+		DockerImage:     clusterVerVO.DockerImage,
+		DeploySuccessAt: clusterVerVO.DeploySuccessAt,
+	}
+	return appsResponse
 }
 
 // SyncWorkflows 同步工作流文件
@@ -242,31 +235,28 @@ func SyncWorkflows(appName string, appsRepository apps.Repository, gitDevice app
 	}
 }
 
-func doToAppsResponse(clusterId int64, do apps.DomainObject) response.AppsResponse {
-	if clusterId == 0 {
-		for i := range do.ClusterVer {
-			clusterId = i
-			break
-		}
-	}
-	vo, exists := do.ClusterVer[clusterId]
-	if !exists {
-		vo = &apps.ClusterVerVO{}
-	}
+func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps.DomainObject) response.AppsResponse {
+	clusterVer := collections.NewList[response.ClusterVerVO]()
+	do.ClusterVer.Values().OrderBy(func(item apps.ClusterVerVO) any {
+		return item.ClusterId
+	}).Foreach(func(item *apps.ClusterVerVO) {
+		clusterVerVO := mapper.Single[response.ClusterVerVO](item)
+		clusterVerVO.ClusterName = lstCluster.Where(func(item cluster.DomainObject) bool {
+			return item.Id == clusterVerVO.ClusterId
+		}).First().Name
+		clusterVer.Add(clusterVerVO)
+	})
 	return response.AppsResponse{
-		AppName:           do.AppName,
-		DockerInstances:   do.DockerInstances,
-		DockerVer:         do.DockerVer,
-		DockerImage:       do.DockerImage,
-		ClusterVer:        *vo,
-		AppGit:            do.AppGit,
-		FrameworkGits:     do.FrameworkGits,
-		DockerfilePath:    do.DockerfilePath,
-		DockerNodeRole:    do.DockerNodeRole,
-		DockerReplicas:    do.DockerReplicas,
-		AdditionalScripts: do.AdditionalScripts,
-		IsHealth:          do.DockerInstances >= do.DockerReplicas,
-		LimitCpus:         do.LimitCpus,
-		LimitMemory:       do.LimitMemory,
+		AppName:         do.AppName,
+		DockerInstances: do.DockerInstances,
+		DockerVer:       do.DockerVer,
+		DockerImage:     do.DockerImage,
+		ClusterVer:      clusterVer,
+		FrameworkGits:   do.FrameworkGits,
+		DockerNodeRole:  do.DockerNodeRole,
+		DockerReplicas:  do.DockerReplicas,
+		IsHealth:        do.DockerInstances >= do.DockerReplicas,
+		LimitCpus:       do.LimitCpus,
+		LimitMemory:     do.LimitMemory,
 	}
 }

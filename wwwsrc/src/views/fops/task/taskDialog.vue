@@ -41,7 +41,7 @@
             <el-table-column prop="StartAt" label="时间" width="210" show-overflow-tooltip>
               <template #default="scope">
                 <span>开始: {{scope.row.StartAt}}</span><br>
-                <span>完成: {{scope.row.RunAt}}</span>
+                <span>完成: {{scope.row.FinishAt}}</span>
               </template>
             </el-table-column>
             <el-table-column label="运行情况"  width="150" show-overflow-tooltip>

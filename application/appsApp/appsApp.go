@@ -248,6 +248,7 @@ func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps
 	})
 	return response.AppsResponse{
 		AppName:         do.AppName,
+		AppGit:          do.AppGit,
 		DockerInstances: do.DockerInstances,
 		DockerVer:       do.DockerVer,
 		DockerImage:     do.DockerImage,

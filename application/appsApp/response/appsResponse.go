@@ -18,6 +18,7 @@ type AppsResponse struct {
 	ClusterVer         collections.List[ClusterVerVO] // 集群版本
 	LocalClusterVer    ClusterVerVO                   // 集群版本
 	DockerImage        string                         // 仓库镜像名称
+	AppGit             int64                          // 应用的git仓库
 	FrameworkGits      collections.List[int64]        // 依赖的框架源代码
 	IsHealth           bool                           // 应用是否健康
 	DockerInstances    int                            // 运行的实例数量

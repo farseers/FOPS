@@ -83,11 +83,8 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.DockerImage = receiver.dockerDevice.GetDockerImage(clusterDO.DockerHub, receiver.AppName, receiver.BuildNumber)
 	var dockerHub = receiver.dockerDevice.GetDockerHub(clusterDO.DockerHub)
 	receiver.GenerateEnv(projectGitRoot, dockerHub, receiver.DockerImage, receiver.appGit.GetName())
-
-	appsRepository.SetBuilding(receiver.Id)
-	// 把fops、fschedule版本写入到系统参数sysWith
-	//sysWith["fops.ver"] = container.Resolve[Repository]().ToEntity("fops").DockerVer
-	//sysWith["fschedule.ver"] = container.Resolve[Repository]().ToEntity("fschedule").DockerVer
+	// 更新集群ID、镜像
+	appsRepository.UpdateBuilding(receiver.Id, receiver.Env)
 
 	receiver.ReplaceSysWith(map[string]any{
 		"appName":     receiver.apps.AppName,

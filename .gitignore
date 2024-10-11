@@ -22,3 +22,4 @@ go.work.sum
 /wwwsrc/node_modules/*
 /wwwsrc/dist/*
 /wwwroot/*
+*.DS_Store

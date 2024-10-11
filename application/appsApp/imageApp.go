@@ -13,47 +13,6 @@ import (
 	"strings"
 )
 
-// SyncDockerImage 同步仓库版本
-// @post build/syncDockerImage
-// @filter application.Jwt
-func SyncDockerImage(clusterId int64, appName string, appsRepository apps.Repository, clusterRepository cluster.Repository) {
-	do := appsRepository.ToEntity(appName)
-	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
-
-	clusterDO := clusterRepository.ToEntity(clusterId)
-	exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "集群不存在")
-
-	// 如果仓库和集群的版本一致时，不允许同步
-	if do.ClusterVer[clusterId] != nil && do.DockerVer == do.ClusterVer[clusterId].DockerVer {
-		exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "版本一致，不需要同步")
-	}
-
-	client := docker.NewClient()
-	// 先登陆仓库
-	err := client.Hub.Login(clusterDO.DockerHub, clusterDO.DockerUserName, clusterDO.DockerUserPwd)
-	if err != nil {
-		exception.ThrowWebExceptionf(403, "镜像登陆失败:%s", err.Error())
-	}
-
-	// 先拉取镜像
-	err = client.Images.Pull(do.DockerImage)
-	exception.ThrowRefuseExceptionError(err)
-
-	// 服务存在，才更新，否则自动创建
-	if !createService(client, clusterId, appName, do.DockerImage, appsRepository, clusterRepository) {
-		// 更新镜像
-		err = client.Service.SetImages(appName, do.DockerImage)
-		exception.ThrowRefuseExceptionError(err)
-	}
-
-	// 更新集群版本信息
-	do.UpdateBuildVer(true, clusterId, 0)
-	_, _ = appsRepository.UpdateClusterVer(appName, do.ClusterVer)
-
-	// 更新构建中状态的构建记录
-	_, _ = appsRepository.UpdateFailDockerImage(appName, do.DockerImage)
-}
-
 // UpdateDockerImage 更新仓库版本
 // @post updateDockerImage
 func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buildNumber int, dockerHub, dockerUserName, dockerUserPwd string, appsRepository apps.Repository, clusterRepository cluster.Repository) {
@@ -102,7 +61,7 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 	exception.ThrowRefuseExceptionError(err)
 
 	// 服务存在，才更新，否则自动创建
-	if !createService(client, clusterId, appName, do.DockerImage, appsRepository, clusterRepository) {
+	if !createService(client, appName, do.DockerImage, appsRepository, clusterRepository) {
 		// 更新镜像
 		err = client.Service.SetImages(appName, do.DockerImage)
 		exception.ThrowRefuseExceptionError(err)
@@ -127,10 +86,10 @@ func ClearDockerImage() {
 // RestartDocker 重启容器
 // @post restartDocker
 // @filter application.Jwt
-func RestartDocker(clusterId int64, appName string, clusterRepository cluster.Repository, appsRepository apps.Repository) {
+func RestartDocker(appName string, clusterRepository cluster.Repository, appsRepository apps.Repository) {
 	client := docker.NewClient()
 	// 服务存在，才重启，否则自动创建
-	if !createService(client, clusterId, appName, "", appsRepository, clusterRepository) {
+	if !createService(client, appName, "", appsRepository, clusterRepository) {
 		err := client.Service.Restart(appName)
 		exception.ThrowRefuseExceptionError(err)
 	}
@@ -170,20 +129,20 @@ func DeleteService(appName string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(exists, 403, "服务删除失败")
 }
 
-func createService(client *docker.Client, clusterId int64, appName, dockerImage string, appsRepository apps.Repository, clusterRepository cluster.Repository) bool {
+func createService(client *docker.Client, appName, dockerImage string, appsRepository apps.Repository, clusterRepository cluster.Repository) bool {
+	clusterDO := clusterRepository.GetLocalCluster()
 	// 服务不存在，则创建
 	exists, err := client.Service.Exists(appName)
 	if !exists && err == nil {
 		// 创建容器服务
 		do := appsRepository.ToEntity(appName)
 		if dockerImage == "" {
-			dockerImage = do.GetCurClusterDockerImage(clusterId)
+			dockerImage = do.GetCurClusterDockerImage(clusterDO.Id)
 		}
 		if dockerImage == "" {
 			exception.ThrowWebExceptionf(403, "该集群没有可用的镜像")
 		}
 
-		clusterDO := clusterRepository.ToEntity(clusterId)
 		if clusterDO.IsNil() {
 			clusterDO.DockerNetwork = "net"
 		}

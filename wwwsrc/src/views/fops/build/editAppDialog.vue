@@ -12,10 +12,9 @@
             <el-tag v-else size="small">未构建</el-tag>
           </el-form-item>
           <el-form-item label="集群版本">
-            <el-input v-if="state.ruleForm.ClusterVer.DockerImage!=''" v-model="state.ruleForm.ClusterVer.DockerImage" placeholder="镜像名称" style="max-width: 200px;margin-right: 5px"></el-input>
-            <el-tag v-else size="small">未发布</el-tag>
+            <el-input v-model="state.ruleForm.LocalClusterVer.DockerImage" placeholder="镜像名称" style="max-width: 300px;margin-right: 5px"></el-input>
             部署时间：
-            <el-tag v-if="state.ruleForm.ClusterVer.DockerImage!=''" size="small" style="margin-right: 5px;">{{state.ruleForm.ClusterVer.DeploySuccessAt}}</el-tag>
+            <el-tag v-if="state.ruleForm.LocalClusterVer.DockerImage!=''" size="small" style="margin-right: 5px;">{{state.ruleForm.LocalClusterVer.DeploySuccessAt}}</el-tag>
             <el-tag v-else size="small" style="margin-right: 5px;">未发布</el-tag>
 
             <el-tag v-if="state.ruleForm.IsHealth" size="small" type="success">健康</el-tag>
@@ -112,7 +111,7 @@ const state = reactive({
     ClusterId:0, // 集群ID
     AppName:'', //应用名称
     DockerVer: '', // 镜像版本
-    ClusterVer: { // 集群版本
+    LocalClusterVer: { // 集群版本
       ClusterId: 0,
       DockerImage: '',
     },
@@ -167,6 +166,7 @@ const openDialog = (type: string, row: any, clusterId: number) => {
       state.ruleForm.AppName = row.AppName
       state.ruleForm.DockerVer = row.DockerVer
       state.ruleForm.ClusterVer = row.ClusterVer
+      state.ruleForm.LocalClusterVer = row.LocalClusterVer
       state.ruleForm.AppGit = row.AppGit
       state.ruleForm.FrameworkGits=row.FrameworkGits
       state.ruleForm.DockerfilePath=row.DockerfilePath
@@ -278,8 +278,8 @@ const onDeleteService = () => {
 const onSubmit = () => {
   // 提交数据
   var param={
-    "ClusterId":state.ruleForm.ClusterVer.ClusterId,
-    "ClusterDockerImage":state.ruleForm.ClusterVer.DockerImage,
+    "ClusterId":state.ruleForm.LocalClusterVer.ClusterId,
+    "ClusterDockerImage":state.ruleForm.LocalClusterVer.DockerImage,
     "AppName":state.ruleForm.AppName,
     "AppGit":parseInt(state.ruleForm.AppGit),
     "FrameworkGits":state.ruleForm.FrameworkGits,

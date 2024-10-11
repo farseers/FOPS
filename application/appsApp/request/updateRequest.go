@@ -3,7 +3,6 @@ package request
 import "github.com/farseer-go/collections"
 
 type UpdateRequest struct {
-	ClusterId          int64                   // 集群ID
 	ClusterDockerImage string                  // 集群镜像名称
 	AppName            string                  `validate:"required" label:"应用名称"` // 应用名称
 	AppGit             int64                   // 应用的源代码

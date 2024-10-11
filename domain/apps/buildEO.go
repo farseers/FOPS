@@ -62,25 +62,31 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.apps = appsRepository.ToEntity(receiver.AppName)
 	receiver.appGit = appsRepository.ToGitEntity(receiver.apps.AppGit)
 
+	// 生成Workflows文件
+	receiver.checkResult(receiver.GenerateWorkflowsContent())
+	defer receiver.catch()
+
 	// 集群
 	clusterRepository := container.Resolve[cluster.Repository]()
 	clusterDO := clusterRepository.ToEntity(receiver.ClusterId)
+	if clusterDO.IsNil() {
+		receiver.logQueue.progress <- fmt.Sprintf("集群不存在：%d", receiver.ClusterId)
+		receiver.checkResult(false)
+	}
+	if clusterDO.DockerNetwork == "" {
+		receiver.logQueue.progress <- "集群的容器网络未配置"
+		receiver.checkResult(false)
+	}
 
 	// 定义环境变量
 	var projectGitRoot = receiver.appGit.GetAbsolutePath()
+	receiver.DockerImage = receiver.dockerDevice.GetDockerImage(clusterDO.DockerHub, receiver.AppName, receiver.BuildNumber)
 	var dockerHub = receiver.dockerDevice.GetDockerHub(clusterDO.DockerHub)
-	var dockerImage = receiver.dockerDevice.GetDockerImage(clusterDO.DockerHub, receiver.AppName, receiver.BuildNumber)
-	var gitName = receiver.appGit.GetName()
-	receiver.GenerateEnv(projectGitRoot, dockerHub, dockerImage, gitName)
+	receiver.GenerateEnv(projectGitRoot, dockerHub, receiver.DockerImage, receiver.appGit.GetName())
+	// 更新集群ID、镜像
+	appsRepository.UpdateBuilding(receiver.Id, receiver.Env)
 
-	defer receiver.catch()
-
-	// 把fops、fschedule版本写入到系统参数sysWith
-	//sysWith["fops.ver"] = container.Resolve[Repository]().ToEntity("fops").DockerVer
-	//sysWith["fschedule.ver"] = container.Resolve[Repository]().ToEntity("fschedule").DockerVer
-
-	// 生成Workflows文件
-	receiver.checkResult(receiver.GenerateWorkflowsContent(map[string]any{
+	receiver.ReplaceSysWith(map[string]any{
 		"appName":     receiver.apps.AppName,
 		"buildId":     receiver.Env.BuildId,
 		"buildNumber": receiver.Env.BuildNumber,
@@ -99,7 +105,7 @@ func (receiver *BuildEO) StartBuild() {
 		"clusterId":               receiver.ClusterId,
 		"fopsAddr":                clusterDO.FopsAddr,
 		"fScheduleAddr":           clusterDO.FScheduleAddr,
-	}))
+	})
 
 	// 设置镜像的代理
 	if receiver.WorkflowsAction.With["proxy"] != "" {
@@ -231,17 +237,25 @@ func (receiver *BuildEO) StartBuild() {
 }
 
 // GenerateWorkflowsContent 生成Workflows
-func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
+func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 	// 更新工作流文件到本地
 	receiver.gitDevice.PullWorkflows(receiver.apps.GetWorkflowsRoot(), receiver.appGit.Branch, receiver.appGit.GetAuthHub(), receiver.logQueue.progress)
 
 	// 通过http读取工作流定义的内容
 	var err error
-	receiver.WorkflowsAction, err = LoadWorkflows(receiver.apps.GetWorkflowsDir()+receiver.WorkflowsName+".yml", receiver.AppName, receiver.Env.GitName, sysWith)
+	receiver.WorkflowsAction, err = LoadWorkflows(receiver.apps.GetWorkflowsDir()+receiver.WorkflowsName+".yml", receiver.AppName, receiver.appGit.GetName())
+	receiver.ClusterId = receiver.WorkflowsAction.ClusterId
 	if err != nil {
 		receiver.logQueue.progress <- err.Error()
 		return false
 	}
+
+	// 默认使用本地集群
+	if receiver.ClusterId == 0 {
+		receiver.ClusterId = container.Resolve[cluster.Repository]().GetLocalCluster().Id
+	}
+
+	// 加载Git代理
 	if receiver.WorkflowsAction.With["proxy"] != "" {
 		receiver.WorkflowsAction.Steps = append([]stepVO{
 			{
@@ -254,6 +268,8 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 			},
 		}, receiver.WorkflowsAction.Steps...)
 	}
+
+	// 加载初始化环境
 	receiver.WorkflowsAction.Steps = append([]stepVO{
 		{
 			Name:              "初始化环境",
@@ -267,6 +283,10 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 
 	receiver.logQueue.progress <- "读取到工作流文件：" + receiver.WorkflowsAction.Name
 
+	return true
+}
+
+func (receiver *BuildEO) ReplaceSysWith(sysWith map[string]any) {
 	// 将全局参数 覆盖到 系统参数
 	for k, v := range receiver.WorkflowsAction.With {
 		switch v.(type) {
@@ -309,8 +329,6 @@ func (receiver *BuildEO) GenerateWorkflowsContent(sysWith map[string]any) bool {
 
 		receiver.WorkflowsAction.Steps[i] = step
 	}
-
-	return true
 }
 
 func (receiver *BuildEO) catch() {
@@ -397,6 +415,7 @@ func (receiver *BuildEO) GenerateEnv(projectGitRoot string, dockerHub string, do
 		BuildNumber: receiver.BuildNumber,
 		AppName:     receiver.AppName,
 		DockerHub:   dockerHub,
+		ClusterId:   receiver.ClusterId,
 		DockerImage: dockerImage,
 		AppGitRoot:  projectGitRoot,
 		GitHub:      receiver.appGit.Hub,

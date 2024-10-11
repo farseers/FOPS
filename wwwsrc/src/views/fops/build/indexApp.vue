@@ -2,9 +2,6 @@
   <div class="layout-padding" style="position: relative;">
     <el-card shadow="hover">
       <el-header style="padding: 0;--el-header-height:40px">
-        集群<el-select size="default" v-model="state.clusterId" placeholder="请选择集群" class="ml10" @change="onClusterChange" style="width: 280px;">
-          <el-option v-for="item in state.clusterData" :key="item.Id" :label="item.Name" :value="item.Id"></el-option>
-        </el-select>
         <el-button size="default" type="success" class="ml10" @click="onOpenAdd('add')"><el-icon><ele-FolderAdd /></el-icon>新增应用</el-button>
         <el-button size="default" type="info" class="ml10" @click="onClearDockerImage('add')"><el-icon><ele-Delete /></el-icon>清除镜像</el-button>
 <!--        <el-button size="default" type="warning" class="ml10" @click="onAllBuild()"><el-icon><ele-SwitchButton /></el-icon>全部构建</el-button>-->
@@ -13,7 +10,7 @@
       <el-container>
         <el-main style="padding: 0;overflow: hidden;">
           <el-space wrap style="align-items: unset;">
-            <el-card shadow="hover" v-for="(v, k) in state.tableData.data" :key="k" style="width: 270px;"  class="appItemCard">
+            <el-card shadow="hover" v-for="(v, k) in state.tableData.data" :key="k" style="width: 250px;"  class="appItemCard">
               <template #header>
                 <div class="card-header" style="height: 20px;">
                   <el-tag size="default" @click="onOpenEdit('edit', v)" style="cursor: pointer;text;font-weight: bold">{{ v.AppName }}</el-tag>
@@ -50,17 +47,14 @@
                     <el-tag v-else size="small">未构建</el-tag>
                   </div>
                 </div>
-                <div class="appItem" style="margin-bottom: 10px">部署版本
-                  <el-button v-if="v.DockerImage != v.ClusterVer.DockerImage" size="small" @click="onSyncDockerVer(v)" type="info" style="float:left;position: absolute;margin:-2px 0 0 5px;">同步镜像</el-button>
+              <div v-for="(item, index) in v.ClusterVer">
+                <div class="appItem" style="margin-bottom: 10px">{{ item.ClusterName }} 版本
                   <div class="appItem">
-                    <el-tag v-if="v.ClusterVer.DockerImage !=''" size="small">{{ v.ClusterVer.DockerImage }}</el-tag>
+                    <el-tag v-if="item.DockerImage !=''" size="small" title="{{ item.DeploySuccessAt }}">{{ item.DockerImage }}</el-tag>
                     <el-tag v-else size="small">未发布</el-tag>
                   </div>
                 </div>
-                <div class="appItem" style="margin-bottom: 10px">部署时间
-                  <span v-if="v.ClusterVer.DockerImage !=''">{{ v.ClusterVer.DeploySuccessAt }}</span>
-                  <el-tag v-else size="small">未发布</el-tag>
-                </div>
+              </div>
               <div class="appItem" style="margin-bottom: 10px">应用日志
                 <el-tooltip content="警告数量" slot="label">
                   <el-tag v-if="v.LogWaringCount > 0" @click="showFsLogLevel(3,v.AppName)" type="warning" size="small" style="margin-left: 5px;cursor: pointer">{{ v.LogWaringCount }}</el-tag>
@@ -210,8 +204,6 @@ const state = reactive({
   },
   appName:"",
   buildLogId:0,
-  clusterId:0,
-  clusterData:[],
   showOverlay:false,
   statTask:[],
   autoLog:true,
@@ -227,7 +219,6 @@ const showDockerTag = (row:any,type:any) =>{
 const getTableData = () => {
 	state.tableData.loading = true;
   let param = {
-    "ClusterId": state.clusterId,
     "IsSys": false,
   };
   // 获取应用列表
@@ -261,27 +252,6 @@ const getTableLogData = () => {
     state.tableLogData.loading = false;
   })
 };
-const getTableClusterData = () => {
-  state.tableData.loading = true;
-  // 请求接口
-  serverApi.clusterList({}).then(function (res){
-    if (res.Status){
-      var lst=[]
-      for (let i = 0; i < res.Data.length; i++) {
-        var item=res.Data[i]
-        if (i==0) {
-          state.clusterId=item.Id;
-          getTableData();
-        }
-        item.Name=item.Name+" - "+item.FopsAddr
-        lst.push(item)
-      }
-      state.clusterData = lst;
-    }else{
-      state.tableData.data=[]
-    }
-  })
-};
 
 // 打开FS日志
 const showFsLogLevel=(level:any,appName:any)=>{
@@ -291,11 +261,6 @@ const showFsLogLevel=(level:any,appName:any)=>{
 const showTask=(st:any,appName:any)=>{
   taskDialogRef.value.openDialogApp(st,appName);
 }
-
-const onClusterChange=(value:number)=>{
-  state.clusterId=value
-  getTableData()
-}
 // 打开新增用户弹窗
 const onOpenAdd = (type: string) => {
   appAddDialogRef.value.openDialog(type,null);
@@ -303,7 +268,7 @@ const onOpenAdd = (type: string) => {
 
 // 打开修改用户弹窗
 const onOpenEdit = (type: string, row: any) => {
-  appDialogRef.value.openDialog(type, row, state.clusterId);
+  appDialogRef.value.openDialog(type, row, null);
 };
 
 // 清除镜像
@@ -404,7 +369,6 @@ const onBuildAdd = (row:any,workflowsName:any) => {
         // 提交数据
         var param={
           "AppName" : row.AppName,
-          "ClusterId" : state.clusterId,
           "WorkflowsName" : workflowsName,
         }
         serverApi.buildAdd(param).then(async function(res){
@@ -479,7 +443,6 @@ const onRestartDocker = (row:any) => {
         // 提交数据
         var param={
           "AppName":row.AppName,
-          "ClusterId":state.clusterId,
         }
         serverApi.restartDocker(param).then(async function(res){
           state.showOverlay=false
@@ -496,34 +459,7 @@ const onRestartDocker = (row:any) => {
       .catch(() => {
         state.showOverlay=false});
 };
-// 同步版本
-const onSyncDockerVer = (row:any) => {
-  ElMessageBox.confirm(`请确认是否要同步仓库镜像到集群中?`, '提示', {
-    confirmButtonText: '确认',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-      .then(() => {
-        state.showOverlay=true
-        // 提交数据
-        var param={
-          "appName":row.AppName,
-          "clusterId":state.clusterId,
-        }
-        serverApi.syncDockerImage(param).then(async function(res){
-          state.showOverlay=false
-          if(res.Status){
-            ElMessage.success("同步成功")
-            // 刷新构建日志
-            getTableData()
-          }else{
-            ElMessage.error(res.StatusMessage)
-          }
-        })
-      })
-      .catch(() => {
-        state.showOverlay=false});
-};
+
 // 全部构建
 const onAllBuild=()=>{
   ElMessageBox.confirm(`请确认是否构建全部应用?`, '提示', {
@@ -544,7 +480,6 @@ const onBuildAddFunc = (row:any) => {
     // 提交数据
     var param={
       "AppName":row.AppName,
-      "ClusterId":state.clusterId,
     }
     serverApi.buildAdd(param).then(async function(res){
       if(res.Status){
@@ -583,7 +518,7 @@ let intervalLogId = null;
 let intervalAppId = null;
 // 页面加载时
 onMounted(() => {
-  getTableClusterData();
+  getTableData();
   getTableLogData();
   intervalAppId = setInterval(getTableData, 3000);
   intervalLogId = setInterval(getTableLogData, 3000);

@@ -78,7 +78,9 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		// 如果是本地集群，则更新镜像信息
 		if !localCluster.IsNil() {
 			appDO.InitCluster(localCluster.Id)
-			appDO.ClusterVer[localCluster.Id].DockerImage = dockerService.Image
+			appDO.ClusterVer.Update(localCluster.Id, func(value *apps.ClusterVerVO) {
+				value.DockerImage = dockerService.Image
+			})
 		}
 		// 当系统应用 或 global模式，才要更新副本数量
 		if appDO.IsSys || appDO.DockerNodeRole == "global" {
@@ -147,7 +149,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 }
 
 var agentNotify = make(chan string, 100)
-var mAgent = make(map[string]string)
+var mAgent = collections.NewDictionary[string, string]()
 
 // ListenerAgentNotify 监听新的代理节点IP
 func ListenerAgentNotify() {
@@ -155,14 +157,14 @@ func ListenerAgentNotify() {
 		agentIP := <-agentNotify
 
 		// 获取主机资源
-		if _, exists := mAgent["host_"+agentIP]; !exists {
-			mAgent["host_"+agentIP] = ""
+		if !mAgent.ContainsKey("host_" + agentIP) {
+			mAgent.Add("host_"+agentIP, "")
 			go connectAgentByHostResource(agentIP)
 		}
 
 		// 获取容器资源
-		if _, exists := mAgent["docker_"+agentIP]; !exists {
-			mAgent["docker_"+agentIP] = ""
+		if !mAgent.ContainsKey("docker_" + agentIP) {
+			mAgent.Add("docker_"+agentIP, "")
 			go connectAgentByDockerResource(agentIP)
 		}
 	}
@@ -175,7 +177,7 @@ func connectAgentByHostResource(agentIP string) {
 	// 访问获取主机资源
 	url := fmt.Sprintf("ws://%s:8888/ws/host/resource", agentIP)
 	defer func() {
-		delete(mAgent, "host_"+agentIP)
+		mAgent.Remove("host_" + agentIP)
 		flog.Debugf("代理节点%s，已断开", url)
 	}()
 
@@ -226,7 +228,7 @@ func connectAgentByDockerResource(agentIP string) {
 	// 访问获取主机资源
 	url := fmt.Sprintf("ws://%s:8888/ws/docker/resource", agentIP)
 	defer func() {
-		delete(mAgent, "docker_"+agentIP)
+		mAgent.Remove("docker_" + agentIP)
 		flog.Debugf("代理节点%s，已断开", url)
 	}()
 

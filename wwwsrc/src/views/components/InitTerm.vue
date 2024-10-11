@@ -15,6 +15,7 @@ export default {  //终端
             timeClose: null,
             errorNum:0,//重连次数
             againFlag:true,//断开后是否重新链接
+            fireId:'',//记录id
             option: {
                 cursorBlink: true,
                 cursorStyle: 'underline', // 光标样式 'block' | 'underline' | 'bar'
@@ -36,8 +37,12 @@ export default {  //终端
             }
         }
     },
+    mounted(){
+        // window.addEventListener('keydown', this.handleKeyDown);
+    },
     beforeDestroy() {
         // console.log('beforeDestroy')
+        // window.removeEventListener('keydown', this.handleKeyDown);
         this.clearWs()
     },
     methods: {
@@ -101,6 +106,7 @@ export default {  //终端
             return row
         },
         initFire(id){
+            this.fireId = id;
             this.term = new Terminal(this.option)
             this.fitAddon = new FitAddon()
             // this.term.loadAddon(this.fitAddon)
@@ -120,16 +126,36 @@ export default {  //终端
                 this.onTerminalKeyPress(id)
             }, 300); // 必须延时处理
         },
+        handleKeyDown(event){
+            // if (event.ctrlKey && event.key == 'k') {
+            //    if(this.term){
+            //     const row = this.get_row(this.fireId);
+            //     this.term && this.ws && this.ws.send(JSON.stringify({
+            //         ...row,
+            //         Command: '\f'
+            //     }));
+            //    }
+                
+            //     event.preventDefault(); // 阻止默认行为
+            // }
+        },
         onTerminalKeyPress(id) {
-
+            const row = this.get_row(id);
             this.term && this.term.onKey(e => {
                 if (e.domEvent.ctrlKey && e.domEvent.key === 'c') {
                     this.term.clear();
                 }
+                if (e.domEvent.metaKey && e.domEvent.key === 'k') {
+                //   metaKey 
+                     this.ws.send(JSON.stringify({
+                        ...row,
+                        Command: '\f'
+                    }));
+                }
             });
-
+           
             this.term.onData(data => {
-                const row = this.get_row(id);
+                
                 this.ws.send(JSON.stringify({
                     ...row,
                     Command: data

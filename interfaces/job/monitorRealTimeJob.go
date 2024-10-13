@@ -3,11 +3,12 @@ package job
 import (
 	"fmt"
 	"fops/domain/monitor"
+	"time"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/tasks"
-	"time"
 )
 
 // MonitorRealTimeJob 处理提交过来的监控数据
@@ -25,7 +26,7 @@ func MonitorRealTimeJob(*tasks.TaskContext) {
 			// appid 取最大的时间
 			maxTime := monitorRepository.ToSyncAtEntity(*appName)
 			// 监控程序是否正常
-			if time.Now().Sub(maxTime.SyncAt).Minutes() > 10 {
+			if time.Since(maxTime.SyncAt).Minutes() > 10 {
 				time.Sleep(1 * time.Second)
 				var comparisonMsg = fmt.Sprintf("%s %s %s", time.Now().Format("01-02 15:04:05"), *appName, "请检查项目是否已经停止")
 				// 通知数据

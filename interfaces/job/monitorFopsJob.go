@@ -3,7 +3,11 @@ package job
 import (
 	"fmt"
 	"fops/domain/apps"
+	"fops/domain/clusterNode"
 	"fops/domain/monitor"
+	"strings"
+	"time"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
@@ -12,19 +16,18 @@ import (
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/queue"
 	"github.com/farseer-go/tasks"
-	"strings"
-	"time"
 )
 
 // MonitorFopsJob 监控fops数据
 func MonitorFopsJob(*tasks.TaskContext) {
 	appsRepository := container.Resolve[apps.Repository]()
+	clusterNodeRepository := container.Resolve[clusterNode.Repository]()
 	// 规则
 	monitorRepository := container.Resolve[monitor.Repository]()
 	// apps 信息
 	appList := appsRepository.ToList()
 	// cluster_node 节点信息
-	nodeList := appsRepository.GetClusterNodeList()
+	nodeList := clusterNodeRepository.GetClusterNodeList()
 	addMonitorData := collections.NewList[monitor.DataEO]()
 	// 应用数据
 	appList.Foreach(func(app *apps.DomainObject) {

@@ -7,8 +7,13 @@ import (
 	"fops/application/appsApp/response"
 	"fops/domain/apps"
 	"fops/domain/cluster"
+	"fops/domain/clusterNode"
 	"fops/domain/fSchedule"
 	"fops/domain/logData"
+	"path/filepath"
+	"strconv"
+	"strings"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/configure"
@@ -18,9 +23,6 @@ import (
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/mapper"
 	"github.com/farseer-go/utils/file"
-	"path/filepath"
-	"strconv"
-	"strings"
 )
 
 // Add 添加应用
@@ -107,10 +109,10 @@ func Delete(appName string, appsRepository apps.Repository) {
 // DropDownList 应用列表
 // @post dropDownList
 // @filter application.Jwt
-func DropDownList(isAll bool, appsRepository apps.Repository) collections.List[apps.ShortEO] {
+func DropDownList(isAll bool, appsRepository apps.Repository, clusterNodeRepository clusterNode.Repository) collections.List[apps.ShortEO] {
 	resList := appsRepository.ToShortList(isAll)
 	// cluster_node 节点信息
-	nodeList := appsRepository.GetClusterNodeList()
+	nodeList := clusterNodeRepository.GetClusterNodeList()
 	nodeList.Foreach(func(node *docker.DockerNodeVO) {
 		resList.Add(apps.ShortEO{AppName: fmt.Sprintf("%s(%s)", node.IP, node.NodeName)})
 	})

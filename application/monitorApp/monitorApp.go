@@ -6,11 +6,12 @@ import (
 	"fops/application/monitorApp/response"
 	"fops/domain/enum/noticeType"
 	"fops/domain/monitor"
+	"strings"
+	"time"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/mapper"
-	"strings"
-	"time"
 )
 
 // DropDownListAppInfo 应用下拉框
@@ -136,15 +137,29 @@ func ToListPageData(appName string, pageSize, pageIndex int, monitorRepository m
 // ToListPageNoticeLog 通知消息列表
 // @post noticeLogList
 // @filter application.Jwt
-func ToListPageNoticeLog(appName string, pageSize, pageIndex int, monitorRepository monitor.Repository) collections.PageList[response.NoticeLogResponse] {
+func ToListPageNoticeLog(appName string, pageSize, pageIndex int, monitorRepository monitor.Repository) collections.PageList[monitor.NoticeLogEO] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
 	if pageIndex < 1 {
 		pageIndex = 1
 	}
-	pageList := monitorRepository.ToListPageNoticeLog(appName, pageSize, pageIndex)
-	return mapper.ToPageList[response.NoticeLogResponse](pageList)
+	return monitorRepository.ToListPageNoticeLog(appName, pageSize, pageIndex)
+}
+
+// ToListPageNoticeLog 通知消息未读消息列表
+// @post noticeLogNoReadList
+// @filter application.Jwt
+func ToListPageNoticeLogNoRead(monitorRepository monitor.Repository) collections.List[monitor.NoticeLogEO] {
+	return monitorRepository.ToListPageNoticeLogNoRead()
+}
+
+// UpdateNoticeLogRead 全部已读设置
+// @post allRead
+// @filter application.Jwt
+func UpdateNoticeLogRead(monitorRepository monitor.Repository) {
+	err := monitorRepository.UpdateNoticeLogRead()
+	exception.ThrowRefuseExceptionError(err)
 }
 
 // DeleteNoticeLog 删除通知消息日志

@@ -13,4 +13,5 @@ type MonitorNoticeLogPO struct {
 	NoticeType noticeType.Enum `gorm:"type:tinyint;not null;default:0;comment:通知类型：0=whatsapp"`
 	NoticeMsg  string          `gorm:"size:256;not null;comment:通知消息"`
 	NoticeAt   time.Time       `gorm:"type:timestamp;size:6;not null;default:CURRENT_TIMESTAMP;comment:通知时间"`
+	IsRead     bool            `gorm:"size:1;not null;default:0;comment:是否已读"`
 }

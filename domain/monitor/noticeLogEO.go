@@ -13,6 +13,7 @@ type NoticeLogEO struct {
 	NoticeType noticeType.Enum // 0 whatsapp
 	NoticeMsg  string          // 通知消息
 	NoticeAt   time.Time       // 通知时间
+	IsRead     bool            // 是否已读
 }
 
 // NewLog 添加新日志
@@ -24,5 +25,6 @@ func NewLog(appName string, noticeId int64, noticeName string, notType noticeTyp
 		NoticeType: notType,
 		NoticeMsg:  noticeMsg,
 		NoticeAt:   time.Now(),
+		IsRead:     false,
 	}
 }

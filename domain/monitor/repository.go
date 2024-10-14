@@ -1,8 +1,9 @@
 package monitor
 
 import (
-	"github.com/farseer-go/collections"
 	"time"
+
+	"github.com/farseer-go/collections"
 )
 
 // Repository 仓储接口
@@ -40,7 +41,8 @@ type Repository interface {
 	SaveLog(lstEO collections.List[NoticeLogEO]) error
 	ToListPageNoticeLog(appName string, pageSize, pageIndex int) collections.PageList[NoticeLogEO]
 	DeleteNoticeLog(startTime time.Time) error
-
+	ToListPageNoticeLogNoRead() collections.List[NoticeLogEO]
+	UpdateNoticeLogRead() error
 	// 同步时间
 	SaveSyncAt(eo SyncAtEO) error
 	ToSyncAtEntity(appName string) SyncAtEO

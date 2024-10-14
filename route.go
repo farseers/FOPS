@@ -20,7 +20,7 @@ var route = []webapi.Route{
     {"POST", "/apps/add", appsApp.Add, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
     {"POST", "/apps/update", appsApp.Update, "", []context.IFilter{application.Jwt{}}, []string{"req", "", ""}},
     {"POST", "/apps/delete", appsApp.Delete, "", []context.IFilter{application.Jwt{}}, []string{"appName", ""}},
-    {"POST", "/apps/dropDownList", appsApp.DropDownList, "", []context.IFilter{application.Jwt{}}, []string{"isAll", ""}},
+    {"POST", "/apps/dropDownList", appsApp.DropDownList, "", []context.IFilter{application.Jwt{}}, []string{"isAll", "", ""}},
     {"POST", "/apps/list", appsApp.List, "", []context.IFilter{application.Jwt{}}, []string{"isSys", "", "", "", ""}},
     {"POST", "/apps/info", appsApp.Info, "", []context.IFilter{application.Jwt{}}, []string{"appName", "", ""}},
     {"POST", "/apps/syncWorkflows", appsApp.SyncWorkflows, "", []context.IFilter{application.Jwt{}}, []string{"appName", "", ""}},

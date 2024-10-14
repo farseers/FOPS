@@ -1,11 +1,6 @@
 <template>
   <div class="layout-padding" style="position: relative;">
     <el-card shadow="hover">
-      <el-header style="padding: 0;--el-header-height:40px">
-        <el-button size="default" type="success" class="ml10" @click="onOpenAdd('add')"><el-icon><ele-FolderAdd /></el-icon>新增应用</el-button>
-        <el-button size="default" type="info" class="ml10" @click="onClearDockerImage('add')"><el-icon><ele-Delete /></el-icon>清除镜像</el-button>
-<!--        <el-button size="default" type="warning" class="ml10" @click="onAllBuild()"><el-icon><ele-SwitchButton /></el-icon>全部构建</el-button>-->
-      </el-header>
       <!--应用列表-->
       <el-container>
         <el-main style="padding: 0;overflow: hidden;">
@@ -88,7 +83,14 @@
         </el-main>
         <el-aside width="480px">
           <el-card>
-            <h3 style="padding: 5px;">构建队列 <el-button size="small" type="danger" class="ml10" @click="onStopBuild(0)" style="float: right"><el-icon><ele-SwitchButton /></el-icon>停止</el-button></h3>
+
+      <el-header style="padding: 0;--el-header-height:40px;float: right">
+        <el-button size="small" type="success" class="ml10" @click="onOpenAdd('add')"><el-icon><ele-FolderAdd /></el-icon>新增应用</el-button>
+        <el-button size="small" type="info" class="ml10" @click="onClearDockerImage('add')"><el-icon><ele-Delete /></el-icon>清除镜像</el-button>
+        <!--<el-button size="small" type="warning" class="ml10" @click="onAllBuild()"><el-icon><ele-SwitchButton /></el-icon>全部构建</el-button>-->
+        <el-button size="small" type="danger" class="ml10" @click="onStopBuild(0)" style=""><el-icon><ele-SwitchButton /></el-icon>停止构建</el-button>
+      </el-header>
+            <h3 style="padding: 5px;">构建队列 </h3>
             <template v-if="state.tableLogData.data.length > 0">
               <el-table  :data="state.tableLogData.data" v-loading="state.tableLogData.loading" style="width: 100%;background: #ffffff;" :cell-style="{padding:'2px 0'}">
                 <el-table-column prop="FinishAt" width="140" label="构建时间"></el-table-column>

@@ -4,11 +4,13 @@ import (
 	"fops/domain/accountLogin"
 	"fops/domain/apps"
 	"fops/domain/cluster"
+	"fops/domain/clusterNode"
 	"fops/domain/configure"
 	"fops/domain/linkTrace"
 	"fops/domain/logData"
 	"fops/domain/monitor"
 	"fops/domain/terminal"
+
 	"github.com/farseer-go/fs/container"
 )
 
@@ -16,6 +18,8 @@ import (
 func InitRepository() {
 	// 应用
 	container.Register(func() apps.Repository { return &appsRepository{} })
+	// 集群节点
+	container.Register(func() clusterNode.Repository { return &clusterNodeRepository{} })
 	// 集群
 	container.Register(func() cluster.Repository { return &clusterRepository{} })
 	// 链路追踪

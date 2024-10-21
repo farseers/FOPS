@@ -153,6 +153,8 @@ func CollectsClusterJob(*tasks.TaskContext) {
 				}
 			}
 		})
+		// 实例数量（这个才是真实的）
+		appDO.DockerInstances = appDO.DockerInspect.Count()
 	})
 
 	// 通过事务来更新

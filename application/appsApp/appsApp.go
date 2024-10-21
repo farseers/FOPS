@@ -249,17 +249,18 @@ func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps
 		clusterVer.Add(clusterVerVO)
 	})
 	return response.AppsResponse{
-		AppName:         do.AppName,
-		AppGit:          do.AppGit,
-		DockerInstances: do.DockerInstances,
-		DockerVer:       do.DockerVer,
-		DockerImage:     do.DockerImage,
-		ClusterVer:      clusterVer,
-		FrameworkGits:   do.FrameworkGits,
-		DockerNodeRole:  do.DockerNodeRole,
-		DockerReplicas:  do.DockerReplicas,
-		IsHealth:        do.DockerInstances >= do.DockerReplicas,
-		LimitCpus:       do.LimitCpus,
-		LimitMemory:     do.LimitMemory,
+		AppName:           do.AppName,
+		AppGit:            do.AppGit,
+		DockerInstances:   do.DockerInstances,
+		DockerVer:         do.DockerVer,
+		DockerImage:       do.DockerImage,
+		ClusterVer:        clusterVer,
+		FrameworkGits:     do.FrameworkGits,
+		DockerNodeRole:    do.DockerNodeRole,
+		DockerReplicas:    do.DockerReplicas,
+		IsHealth:          do.DockerInstances >= do.DockerReplicas,
+		LimitCpus:         do.LimitCpus,
+		LimitMemory:       do.LimitMemory,
+		AdditionalScripts: do.AdditionalScripts,
 	}
 }

@@ -7,6 +7,11 @@ import (
 	"fops/domain/_/eumBuildStatus"
 	"fops/domain/apps/event"
 	"fops/domain/cluster"
+	"os"
+	"path"
+	"strings"
+	"time"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/configure"
@@ -16,10 +21,6 @@ import (
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/http"
-	"os"
-	"path"
-	"strings"
-	"time"
 )
 
 // BuildEO 聚合
@@ -52,6 +53,7 @@ func (receiver *BuildEO) IsNil() bool {
 }
 
 func (receiver *BuildEO) StartBuild() {
+	receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 	receiver.dockerClient = docker.NewClient()
 	receiver.dockerDevice = container.Resolve[IDockerDevice]()
 	receiver.gitDevice = container.Resolve[IGitDevice]()
@@ -62,8 +64,8 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.apps = appsRepository.ToEntity(receiver.AppName)
 	receiver.appGit = appsRepository.ToGitEntity(receiver.apps.AppGit)
 
-	// 生成Workflows文件
-	receiver.checkResult(receiver.GenerateWorkflowsContent())
+	// 开启异步监控状态
+	go receiver.WatchStatus()
 	defer receiver.catch()
 
 	// 集群
@@ -78,13 +80,14 @@ func (receiver *BuildEO) StartBuild() {
 		receiver.checkResult(false)
 	}
 
+	// 更新集群ID、镜像
+	appsRepository.UpdateBuilding(receiver.Id, receiver.Env)
+
 	// 定义环境变量
 	var projectGitRoot = receiver.appGit.GetAbsolutePath()
 	receiver.DockerImage = receiver.dockerDevice.GetDockerImage(clusterDO.DockerHub, receiver.AppName, receiver.BuildNumber)
 	var dockerHub = receiver.dockerDevice.GetDockerHub(clusterDO.DockerHub)
 	receiver.GenerateEnv(projectGitRoot, dockerHub, receiver.DockerImage, receiver.appGit.GetName())
-	// 更新集群ID、镜像
-	appsRepository.UpdateBuilding(receiver.Id, receiver.Env)
 
 	receiver.ReplaceSysWith(map[string]any{
 		"appName":     receiver.apps.AppName,
@@ -121,10 +124,12 @@ func (receiver *BuildEO) StartBuild() {
 		}
 	}
 
+	// 生成Workflows文件
+	receiver.checkResult(receiver.GenerateWorkflowsContent())
+
 	// 启动构建系统
 	dockerName := "FOPS-Build"
 	if !receiver.dockerClient.Container.Exists(dockerName) {
-		receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 		receiver.logQueue.progress <- "启动构建系统：" + receiver.WorkflowsAction.RunsOn
 		args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
 		// 添加自定义的挂载
@@ -148,8 +153,6 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 
 	gits := receiver.getGits()
-	// 开启异步监控状态
-	go receiver.WatchStatus()
 
 	// 运行step
 	for index, step := range receiver.WorkflowsAction.Steps {
@@ -239,7 +242,7 @@ func (receiver *BuildEO) StartBuild() {
 // GenerateWorkflowsContent 生成Workflows
 func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 	// 更新工作流文件到本地
-	receiver.gitDevice.PullWorkflows(receiver.apps.GetWorkflowsRoot(), receiver.appGit.Branch, receiver.appGit.GetAuthHub(), receiver.logQueue.progress)
+	receiver.gitDevice.PullWorkflows(receiver.ctx, receiver.apps.GetWorkflowsRoot(), receiver.appGit.Branch, receiver.appGit.GetAuthHub(), receiver.logQueue.progress)
 
 	// 通过http读取工作流定义的内容
 	var err error

@@ -1,8 +1,10 @@
 package device
 
 import (
+	"context"
 	"fmt"
 	"fops/domain/apps"
+
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
@@ -15,13 +17,13 @@ func RegisterGitDevice() {
 type gitDevice struct {
 }
 
-func (receiver *gitDevice) PullWorkflows(gitPath, branch string, gitRemote string, progress chan string) bool {
+func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch string, gitRemote string, progress chan string) bool {
 	if !file.IsExists(gitPath) {
 		file.CreateDir766(gitPath)
-		exec.RunShell("git init", progress, nil, gitPath, true)
-		exec.RunShell(fmt.Sprintf("git remote add -f origin %s", gitRemote), progress, nil, gitPath, true)
-		exec.RunShell("git config core.sparsecheckout true", progress, nil, gitPath, true)
-		exec.RunShell("echo .fops/workflows/ >> .git/info/sparse-checkout", progress, nil, gitPath, true)
+		exec.RunShellContext(ctx, "git init", progress, nil, gitPath, true)
+		exec.RunShellContext(ctx, fmt.Sprintf("git remote add -f origin %s", gitRemote), progress, nil, gitPath, true)
+		exec.RunShellContext(ctx, "git config core.sparsecheckout true", progress, nil, gitPath, true)
+		exec.RunShellContext(ctx, "echo .fops/workflows/ >> .git/info/sparse-checkout", progress, nil, gitPath, true)
 	}
 
 	var exitCode int

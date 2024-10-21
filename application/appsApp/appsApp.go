@@ -2,6 +2,7 @@
 package appsApp
 
 import (
+	"context"
 	"fmt"
 	"fops/application/appsApp/request"
 	"fops/application/appsApp/response"
@@ -231,7 +232,7 @@ func SyncWorkflows(appName string, appsRepository apps.Repository, gitDevice app
 
 	c := make(chan string, 100)
 	gitEO := appsRepository.ToGitEntity(do.AppGit)
-	if !gitDevice.PullWorkflows(do.GetWorkflowsRoot(), gitEO.Branch, gitEO.GetAuthHub(), c) {
+	if !gitDevice.PullWorkflows(context.Background(), do.GetWorkflowsRoot(), gitEO.Branch, gitEO.GetAuthHub(), c) {
 		lstLog := collections.NewListFromChan(c)
 		exception.ThrowWebExceptionf(403, "同步工作流文件失败:<br />%s", lstLog.ToString("<br />"))
 	}

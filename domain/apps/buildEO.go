@@ -68,6 +68,9 @@ func (receiver *BuildEO) StartBuild() {
 	go receiver.WatchStatus()
 	defer receiver.catch()
 
+	// 生成Workflows（并更新集群ID）
+	receiver.checkResult(receiver.GenerateWorkflowsContent())
+
 	// 集群
 	clusterRepository := container.Resolve[cluster.Repository]()
 	clusterDO := clusterRepository.ToEntity(receiver.ClusterId)
@@ -123,9 +126,6 @@ func (receiver *BuildEO) StartBuild() {
 			receiver.logQueue.progress <- fmt.Sprintf("%s=%s", k, v)
 		}
 	}
-
-	// 生成Workflows文件
-	receiver.checkResult(receiver.GenerateWorkflowsContent())
 
 	// 启动构建系统
 	dockerName := "FOPS-Build"
@@ -239,7 +239,7 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.success()
 }
 
-// GenerateWorkflowsContent 生成Workflows
+// GenerateWorkflowsContent 生成Workflows（并更新集群ID）
 func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 	// 更新工作流文件到本地
 	receiver.gitDevice.PullWorkflows(receiver.ctx, receiver.apps.GetWorkflowsRoot(), receiver.appGit.Branch, receiver.appGit.GetAuthHub(), receiver.logQueue.progress)

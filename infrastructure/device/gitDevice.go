@@ -34,7 +34,7 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 			return false
 		default:
 			if exitCode = exec.RunShellContext(ctx, fmt.Sprintf("git pull origin %s", branch), progress, nil, gitPath, true); exitCode == 0 {
-				break
+				return true
 			}
 			if i == 2 {
 				progress <- "同步工作流文件失败，停止构建"

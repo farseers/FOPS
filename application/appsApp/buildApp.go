@@ -6,14 +6,15 @@ import (
 	"fops/application/appsApp/response"
 	"fops/domain/apps"
 	"fops/domain/cluster"
+	"regexp"
+	"strings"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/mapper"
 	"github.com/farseer-go/webapi/action"
-	"regexp"
-	"strings"
 )
 
 // BuildAdd 添加构建
@@ -22,7 +23,6 @@ import (
 func BuildAdd(appName string, workflowsName string, appsRepository apps.Repository, clusterRepository cluster.Repository, dockerDevice apps.IDockerDevice) {
 	appDO := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionfBool(appDO.IsNil(), 403, "应用不存在")
-	exception.ThrowWebExceptionfBool(appDO.DockerNodeRole == "", 403, "应用的容器节点角色未设置")
 	exception.ThrowWebExceptionfBool(workflowsName == "", 403, "工作流名称未设置")
 
 	buildNumber := appsRepository.GetBuildNumber(appName) + 1

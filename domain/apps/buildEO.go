@@ -242,7 +242,9 @@ func (receiver *BuildEO) StartBuild() {
 // GenerateWorkflowsContent 生成Workflows（并更新集群ID）
 func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 	// 更新工作流文件到本地
-	receiver.gitDevice.PullWorkflows(receiver.ctx, receiver.apps.GetWorkflowsRoot(), receiver.appGit.Branch, receiver.appGit.GetAuthHub(), receiver.logQueue.progress)
+	if isSuccess := receiver.gitDevice.PullWorkflows(receiver.ctx, receiver.apps.GetWorkflowsRoot(), receiver.appGit.Branch, receiver.appGit.GetAuthHub(), receiver.logQueue.progress); !isSuccess {
+		return false
+	}
 
 	// 通过http读取工作流定义的内容
 	var err error

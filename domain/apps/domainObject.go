@@ -44,7 +44,7 @@ func (receiver *DomainObject) UpdateBuildVer(isSuccess bool, clusterId int64, bu
 	if receiver.ClusterVer.IsNil() {
 		receiver.ClusterVer = collections.NewDictionary[int64, ClusterVerVO]()
 	}
-	if !receiver.ClusterVer.ContainsKey(clusterId) {
+	if clusterId > 0 && !receiver.ClusterVer.ContainsKey(clusterId) {
 		receiver.ClusterVer.Add(clusterId, ClusterVerVO{ClusterId: clusterId})
 	}
 

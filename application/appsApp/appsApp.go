@@ -167,8 +167,14 @@ func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.
 			// 读取工作流内容
 			workflowsYml := configure.NewYamlConfig("")
 			_ = workflowsYml.LoadContent([]byte(file.ReadString(workflowsYmlPath)))
-			workflowsYmlPath = filepath.Base(workflowsYmlPath)
-			appsResponse.WorkflowsNames = append(appsResponse.WorkflowsNames, workflowsYmlPath[:strings.Index(workflowsYmlPath, ".yml")])
+
+			// 取出限制的名称
+			fopsName, _ := workflowsYml.Get("fopsName")
+			// 只筛选出对应名称的工作流
+			if fopsName == "" || fopsName == item.AppName {
+				workflowsYmlPath = filepath.Base(workflowsYmlPath)
+				appsResponse.WorkflowsNames = append(appsResponse.WorkflowsNames, workflowsYmlPath[:strings.Index(workflowsYmlPath, ".yml")])
+			}
 		}
 
 		// 容器资源占用统计

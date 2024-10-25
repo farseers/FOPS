@@ -171,7 +171,7 @@ func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.
 			// 取出限制的名称
 			fopsName, _ := workflowsYml.Get("fopsName")
 			// 只筛选出对应名称的工作流
-			if fopsName == "" || fopsName == item.AppName {
+			if fopsNameString := parse.ToString(fopsName); fopsNameString == "" || fopsNameString == item.AppName {
 				workflowsYmlPath = filepath.Base(workflowsYmlPath)
 				appsResponse.WorkflowsNames = append(appsResponse.WorkflowsNames, workflowsYmlPath[:strings.Index(workflowsYmlPath, ".yml")])
 			}

@@ -32,6 +32,13 @@ func Info(traceId string, linkTraceRepository linkTrace.Repository) response.Lin
 	entryPO := l.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
 		return item.ParentAppName == "" // 不同服务的机器时间会有差异，不能直接通过start_ts来排序
 	}).First()
+	// 没有取到，则根据start_ts排序，取第一个
+	if entryPO.TraceId == "" {
+		entryPO = l.lstPO.OrderBy(func(item linkTraceCom.TraceContext) any {
+			return item.StartTs
+		}).First()
+	}
+
 	l.startTs = entryPO.StartTs
 	l.TotalUse += float64(entryPO.UseTs.Microseconds())
 	l.addEntry(entryPO)

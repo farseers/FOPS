@@ -180,7 +180,7 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 		if baseDetailPO.CallType == eumCallType.Http || baseDetailPO.CallType == eumCallType.EventPublish || baseDetailPO.CallType == eumCallType.Mq {
 			// 查找串联的服务
 			nextEntry := receiver.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
-				return item.ParentAppName == detailTrace.AppName && (item.TraceLevel == po.TraceLevel+1 || item.TraceLevel == po.TraceLevel)
+				return item.ParentAppName == detailTrace.AppName && (item.TraceLevel == po.TraceLevel+1)
 			}).First()
 			if nextEntry.TraceId != "" {
 				receiver.PreDetail = baseDetailPO

@@ -269,5 +269,6 @@ func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps
 		LimitCpus:         do.LimitCpus,
 		LimitMemory:       do.LimitMemory,
 		AdditionalScripts: do.AdditionalScripts,
+		DockerfilePath:    do.DockerfilePath,
 	}
 }

@@ -30,6 +30,7 @@ type AppsResponse struct {
 	TaskSuccessCount   int                            // 任务成功数量
 	WorkflowsNames     []string                       // 工作流名称
 	AdditionalScripts  string                         // 首次创建应用时附加脚本
+	DockerfilePath     string                         // DockerfilePath路径
 	LimitCpus          float64                        // Cpu核数限制
 	LimitMemory        string                         // 内存限制
 	CpuUsagePercent    float64                        // CPU使用百分比

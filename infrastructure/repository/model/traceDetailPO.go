@@ -1,11 +1,12 @@
 package model
 
 import (
+	"time"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/trace"
 	"github.com/farseer-go/fs/trace/eumCallType"
-	"time"
 )
 
 type BaseTraceDetailPO struct {
@@ -83,4 +84,5 @@ type TraceDetailRedisPO struct {
 	BaseTraceDetailPO `gorm:"embedded"`
 	Key               string `gorm:"not null;default:'';comment:redis key"`
 	Field             string `gorm:"not null;default:'';comment:hash field"`
+	RowsAffected      int    `gorm:"not null;default:0;comment:影响行数"`
 }

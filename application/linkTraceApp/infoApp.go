@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"fops/application/linkTraceApp/response"
 	"fops/domain/linkTrace"
+	"strings"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/trace"
 	"github.com/farseer-go/fs/trace/eumCallType"
 	linkTraceCom "github.com/farseer-go/linkTrace"
 	"github.com/farseer-go/linkTrace/eumTraceType"
 	"github.com/farseer-go/mapper"
-	"strings"
 )
 
 // Info 链路追踪日志详情
@@ -148,7 +149,7 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 			}
 			detailTrace.Desc = fmt.Sprintf("头部：%s 入参：%s 出参：%s", lstHeader.ToString(","), detailPO.RequestBody, detailPO.ResponseBody)
 		case *linkTraceCom.TraceDetailRedis:
-			detailTrace.Caption = fmt.Sprintf("Redis <span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s</span> => <span style='background-color: #ead996;'>%s</span> %s %s", detailPO.Comment, detailPO.MethodName, detailPO.Key, detailPO.Field)
+			detailTrace.Caption = fmt.Sprintf("Redis <span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s</span> => <span style='background-color: #ead996;'>%s</span> %s %s 影响%v行", detailPO.Comment, detailPO.MethodName, detailPO.Key, detailPO.Field, detailPO.RowsAffected)
 			detailTrace.Desc = fmt.Sprintf("%s %s", detailPO.Key, detailPO.Field)
 		case *linkTraceCom.TraceDetailMq:
 			if detailPO.MethodName == "Send" {

@@ -25,6 +25,7 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 		exec.RunShell("git config core.sparsecheckout true", progress, nil, gitPath, true)
 		exec.RunShell("echo .fops/workflows/ >> .git/info/sparse-checkout", progress, nil, gitPath, true)
 	}
+	exec.RunShell("git config --global http.timeout 10", progress, nil, "", true)
 
 	var exitCode int
 	for i := 0; i < 3; i++ {

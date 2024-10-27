@@ -6,7 +6,7 @@ import (
 
 type MonitorRulePO struct {
 	Id          int64             `gorm:"primaryKey;autoIncrement;comment:主键"`
-	AppName     string            `gorm:"size:256;not null;comment:应用名称"`
+	AppName     string            `gorm:"size:64;not null;comment:应用名称"`
 	TimeType    ruleTimeType.Enum `gorm:"not null;comment:规则时间类型 0小时，1天"`
 	StartDate   string            `gorm:"size:32;not null;comment:开始小时"`
 	EndDate     string            `gorm:"size:32;not null;comment:结束小时"`

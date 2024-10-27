@@ -163,7 +163,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		clusterNodeRepository.UpdateClusterNode(nodeList)
 		// 更新服务运行情况
 		if serviceList.Count() > 0 {
-			_, _ = appsRepository.UpdateInsReplicas(lstApp)
+			_, _ = appsRepository.UpdateInspect(lstApp)
 		}
 	})
 }

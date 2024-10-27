@@ -59,8 +59,8 @@ func (receiver *appsRepository) UpdateClusterVer(appName string, dicClusterVer c
 	return context.MysqlContext.Apps.Where("LOWER(app_name) = ?", appName).UpdateValue("cluster_ver", string(marshal))
 }
 
-// UpdateInsReplicas 更新从集群中获取到的实例、副本数量
-func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.DomainObject]) (int64, error) {
+// UpdateInspect 更新从集群中获取到的实例、副本数量
+func (receiver *appsRepository) UpdateInspect(lst collections.List[apps.DomainObject]) (int64, error) {
 	sql := bytes.Buffer{}
 	sql.WriteString("UPDATE apps SET \n")
 
@@ -72,14 +72,17 @@ func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.Doma
 	sql.WriteString("else docker_instances\n")
 	sql.WriteString("end \n")
 
-	// Replicas
-	sql.WriteString(",docker_replicas = case\n")
-	lst.Foreach(func(item *apps.DomainObject) {
-		sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.AppName, item.DockerReplicas))
-	})
-	sql.WriteString("else docker_replicas\n")
-	sql.WriteString("end \n")
-
+	// Replicas（只更新系统应用或全局应用）
+	if lstSysGlobal := lst.Where(func(item apps.DomainObject) bool {
+		return item.IsSys || item.DockerNodeRole == "global"
+	}).ToList(); lstSysGlobal.Any() {
+		sql.WriteString(",docker_replicas = case\n")
+		lstSysGlobal.Foreach(func(item *apps.DomainObject) {
+			sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.AppName, item.DockerReplicas))
+		})
+		sql.WriteString("else docker_replicas\n")
+		sql.WriteString("end \n")
+	}
 	// cluster_ver
 	sql.WriteString(",cluster_ver = case\n")
 	lst.Foreach(func(item *apps.DomainObject) {

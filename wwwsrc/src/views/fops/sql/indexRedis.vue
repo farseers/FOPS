@@ -60,6 +60,7 @@
         </el-table-column>
         <el-table-column prop="Key" label="Key" show-overflow-tooltip></el-table-column>
         <el-table-column prop="Field" label="Field" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="RowsAffected" label="行数" show-overflow-tooltip></el-table-column>
         <el-table-column width="200px" label="异常" show-overflow-tooltip>
           <template #default="scope">
             <el-tag size="small" v-if="scope.row.Exception!=null" type="danger">{{scope.row.Exception.ExceptionCallFile}}:{{scope.row.Exception.ExceptionCallLine}} {{scope.row.Exception.ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.Exception!=null">

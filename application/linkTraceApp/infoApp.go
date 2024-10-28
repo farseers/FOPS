@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"fops/application/linkTraceApp/response"
 	"fops/domain/linkTrace"
+	"strings"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/trace"
 	"github.com/farseer-go/fs/trace/eumCallType"
 	linkTraceCom "github.com/farseer-go/linkTrace"
 	"github.com/farseer-go/linkTrace/eumTraceType"
 	"github.com/farseer-go/mapper"
-	"strings"
 )
 
 // Info 链路追踪日志详情
@@ -31,6 +32,13 @@ func Info(traceId string, linkTraceRepository linkTrace.Repository) response.Lin
 	entryPO := l.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
 		return item.ParentAppName == "" // 不同服务的机器时间会有差异，不能直接通过start_ts来排序
 	}).First()
+	// 没有取到，则根据start_ts排序，取第一个
+	if entryPO.TraceId == "" {
+		entryPO = l.lstPO.OrderBy(func(item linkTraceCom.TraceContext) any {
+			return item.StartTs
+		}).First()
+	}
+
 	l.startTs = entryPO.StartTs
 	l.TotalUse += float64(entryPO.UseTs.Microseconds())
 	l.addEntry(entryPO)
@@ -148,7 +156,7 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 			}
 			detailTrace.Desc = fmt.Sprintf("头部：%s 入参：%s 出参：%s", lstHeader.ToString(","), detailPO.RequestBody, detailPO.ResponseBody)
 		case *linkTraceCom.TraceDetailRedis:
-			detailTrace.Caption = fmt.Sprintf("Redis <span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s</span> => <span style='background-color: #ead996;'>%s</span> %s %s", detailPO.Comment, detailPO.MethodName, detailPO.Key, detailPO.Field)
+			detailTrace.Caption = fmt.Sprintf("Redis <span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s</span> => <span style='background-color: #ead996;'>%s</span> %s %s 影响%v行", detailPO.Comment, detailPO.MethodName, detailPO.Key, detailPO.Field, detailPO.RowsAffected)
 			detailTrace.Desc = fmt.Sprintf("%s %s", detailPO.Key, detailPO.Field)
 		case *linkTraceCom.TraceDetailMq:
 			if detailPO.MethodName == "Send" {
@@ -176,10 +184,10 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 
 		// 在明细执行期间，会穿插下游服务。所以通过查找的方式来获取下游。然后在回到当前明细
 		// a --> b -- > a  --> c -- b
-		if baseDetailPO.CallType == eumCallType.Http || baseDetailPO.CallType == eumCallType.EventPublish {
+		if baseDetailPO.CallType == eumCallType.Http || baseDetailPO.CallType == eumCallType.EventPublish || baseDetailPO.CallType == eumCallType.Mq {
 			// 查找串联的服务
 			nextEntry := receiver.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
-				return item.ParentAppName == detailTrace.AppName && item.TraceLevel == po.TraceLevel+1
+				return item.ParentAppName == detailTrace.AppName && (item.TraceLevel == po.TraceLevel+1)
 			}).First()
 			if nextEntry.TraceId != "" {
 				receiver.PreDetail = baseDetailPO

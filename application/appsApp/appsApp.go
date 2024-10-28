@@ -2,6 +2,7 @@
 package appsApp
 
 import (
+	"context"
 	"fmt"
 	"fops/application/appsApp/request"
 	"fops/application/appsApp/response"
@@ -166,8 +167,14 @@ func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.
 			// 读取工作流内容
 			workflowsYml := configure.NewYamlConfig("")
 			_ = workflowsYml.LoadContent([]byte(file.ReadString(workflowsYmlPath)))
-			workflowsYmlPath = filepath.Base(workflowsYmlPath)
-			appsResponse.WorkflowsNames = append(appsResponse.WorkflowsNames, workflowsYmlPath[:strings.Index(workflowsYmlPath, ".yml")])
+
+			// 取出限制的名称
+			fopsName, _ := workflowsYml.Get("fopsName")
+			// 只筛选出对应名称的工作流
+			if fopsNameString := parse.ToString(fopsName); fopsNameString == "" || fopsNameString == item.AppName {
+				workflowsYmlPath = filepath.Base(workflowsYmlPath)
+				appsResponse.WorkflowsNames = append(appsResponse.WorkflowsNames, workflowsYmlPath[:strings.Index(workflowsYmlPath, ".yml")])
+			}
 		}
 
 		// 容器资源占用统计
@@ -231,7 +238,7 @@ func SyncWorkflows(appName string, appsRepository apps.Repository, gitDevice app
 
 	c := make(chan string, 100)
 	gitEO := appsRepository.ToGitEntity(do.AppGit)
-	if !gitDevice.PullWorkflows(do.GetWorkflowsRoot(), gitEO.Branch, gitEO.GetAuthHub(), c) {
+	if !gitDevice.PullWorkflows(context.Background(), do.GetWorkflowsRoot(), gitEO.Branch, gitEO.GetAuthHub(), c) {
 		lstLog := collections.NewListFromChan(c)
 		exception.ThrowWebExceptionf(403, "同步工作流文件失败:<br />%s", lstLog.ToString("<br />"))
 	}
@@ -249,17 +256,19 @@ func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps
 		clusterVer.Add(clusterVerVO)
 	})
 	return response.AppsResponse{
-		AppName:         do.AppName,
-		AppGit:          do.AppGit,
-		DockerInstances: do.DockerInstances,
-		DockerVer:       do.DockerVer,
-		DockerImage:     do.DockerImage,
-		ClusterVer:      clusterVer,
-		FrameworkGits:   do.FrameworkGits,
-		DockerNodeRole:  do.DockerNodeRole,
-		DockerReplicas:  do.DockerReplicas,
-		IsHealth:        do.DockerInstances >= do.DockerReplicas,
-		LimitCpus:       do.LimitCpus,
-		LimitMemory:     do.LimitMemory,
+		AppName:           do.AppName,
+		AppGit:            do.AppGit,
+		DockerInstances:   do.DockerInstances,
+		DockerVer:         do.DockerVer,
+		DockerImage:       do.DockerImage,
+		ClusterVer:        clusterVer,
+		FrameworkGits:     do.FrameworkGits,
+		DockerNodeRole:    do.DockerNodeRole,
+		DockerReplicas:    do.DockerReplicas,
+		IsHealth:          do.DockerInstances >= do.DockerReplicas,
+		LimitCpus:         do.LimitCpus,
+		LimitMemory:       do.LimitMemory,
+		AdditionalScripts: do.AdditionalScripts,
+		DockerfilePath:    do.DockerfilePath,
 	}
 }

@@ -7,13 +7,14 @@ import (
 	"fops/domain/apps"
 	"fops/domain/apps/event"
 	"fops/interfaces/job"
+	"time"
+
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/modules"
 	"github.com/farseer-go/tasks"
 	"github.com/farseer-go/webapi"
-	"time"
 )
 
 type Module struct {
@@ -46,6 +47,7 @@ func (module Module) PostInitialize() {
 	buildEO := container.Resolve[apps.Repository]().GetLastBuilding()
 	appEO := container.Resolve[apps.Repository]().ToEntity("fops")
 	if buildEO.AppName == appEO.AppName && buildEO.Status == eumBuildStatus.Building && appEO.DockerImage == buildEO.DockerImage {
+		flog.Infof("恭喜，你正在使用最新的FOPS版本：%s", appEO.DockerImage)
 		// 发布事件
 		event.BuildFinishedEvent{AppName: appEO.AppName, BuildId: buildEO.Id, ClusterId: buildEO.ClusterId, IsSuccess: true}.PublishEvent()
 		container.Resolve[apps.Repository]().SetSuccessForFops(buildEO.Id)

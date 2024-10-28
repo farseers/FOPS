@@ -1,6 +1,6 @@
 name: build
 jobs:
-  clusterId: 3 # 使用哪个集群的仓库配置
+  clusterId: 4 # 使用哪个集群的仓库配置
   build:
     runs-on: steden88/cicd:3.0-npm # 工作流运行的环境
     env:
@@ -14,15 +14,6 @@ jobs:
 
       - name: 拉取应用Git
         uses: checkout@v1 # 在fops配置了依赖时，将自动拉取所有依赖Git
-
-      #      - name: 拉取框架fs
-      #        uses: checkout@v1
-      #        with:
-      #          gitHub: https://github.com/farseer-go/fs.git
-      #          gitBranch: main
-      #          gitUserName: test
-      #          gitUserPwd: 123456
-      #          gitPath: farseer-go/fs
 
       - name: 编译
         run:

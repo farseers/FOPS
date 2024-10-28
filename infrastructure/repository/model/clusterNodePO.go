@@ -2,6 +2,7 @@ package model
 
 import (
 	"fops/domain/apps"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/dateTime"
 )
@@ -11,6 +12,7 @@ type ClusterNodePO struct {
 	Status             string                               `gorm:"size:64;not null;comment:主机状态"`
 	Availability       string                               `gorm:"size:64;not null;comment:节点状态"`
 	IsMaster           bool                                 `gorm:"size:1;not null;default:0;comment:是否为主节点"`
+	IsHealth           bool                                 `gorm:"size:1;not null;default:0;comment:应用是否健康"`
 	EngineVersion      string                               `gorm:"size:64;not null;comment:引擎版本"`
 	IP                 string                               `gorm:"size:64;not null;comment:节点IP"`
 	AgentIP            string                               `gorm:"size:64;not null;comment:代理容器IP"`

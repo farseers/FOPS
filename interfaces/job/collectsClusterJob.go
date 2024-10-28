@@ -31,6 +31,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 	nodeList := dockerClient.Node.List()
 	nodeList.Foreach(func(node *docker.DockerNodeVO) {
 		vo := dockerClient.Node.Info(node.NodeName)
+		node.IsHealth = node.Status == "Ready" && node.Availability == "Active"
 		node.IP = vo.IP
 		node.OS = vo.OS
 		node.Architecture = vo.Architecture
@@ -74,7 +75,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		}
 	})
 
-	// 遍历所有应用，获取docker swarm副本、实例数量、镜像
+	// 遍历所有应用，更新实际的docker swarm副本、实例数量、镜像
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
 		dockerService := serviceList.Find(func(item *docker.ServiceListVO) bool {
 			return item.Name == appDO.AppName
@@ -126,29 +127,34 @@ func CollectsClusterJob(*tasks.TaskContext) {
 				node = &docker.DockerNodeVO{}
 			}
 
-			// 通过代理节点同步到的容器资源信息
-			dockerInspectVO := apps.DockerInspectVO{
-				DockerStatsVO: apps.GetDockerStats(containerInspectJson[0].Status.ContainerStatus.ContainerID),
-				ServiceID:     item.ServiceId,
-				Node:          item.Node,
-				NodeIP:        node.IP,
-				CreatedAt:     containerInspectJson[0].CreatedAt.Format(time.DateTime),
-				UpdatedAt:     containerInspectJson[0].UpdatedAt.Format(time.DateTime),
-				State:         containerInspectJson[0].Status.State,
-			}
+			// 只有当节点是健康状态才加入到实例列表中。
+			if node.IsHealth {
+				// 通过代理节点同步到的容器资源信息
+				dockerInspectVO := apps.DockerInspectVO{
+					DockerStatsVO: apps.GetDockerStats(containerInspectJson[0].Status.ContainerStatus.ContainerID),
+					ServiceID:     item.ServiceId,
+					Node:          item.Node,
+					NodeIP:        node.IP,
+					CreatedAt:     containerInspectJson[0].CreatedAt.Format(time.DateTime),
+					UpdatedAt:     containerInspectJson[0].UpdatedAt.Format(time.DateTime),
+					State:         containerInspectJson[0].Status.State,
+				}
 
-			// IP
-			if len(containerInspectJson[0].NetworksAttachments) > 0 && len(containerInspectJson[0].NetworksAttachments[0].Addresses) > 0 {
-				dockerInspectVO.ContainerIP = strings.Split(containerInspectJson[0].NetworksAttachments[0].Addresses[0], "/")[0]
-			}
-			appDO.DockerInspect.Add(dockerInspectVO)
+				// IP
+				if len(containerInspectJson[0].NetworksAttachments) > 0 && len(containerInspectJson[0].NetworksAttachments[0].Addresses) > 0 {
+					dockerInspectVO.ContainerIP = strings.Split(containerInspectJson[0].NetworksAttachments[0].Addresses[0], "/")[0]
+				}
+				appDO.DockerInspect.Add(dockerInspectVO)
 
-			// 如果应用是fops-agent，则给node节点设置agent的容器IP
-			if appDO.AppName == "fops-agent" && dockerInspectVO.ContainerIP != "" {
-				node.AgentIP = dockerInspectVO.ContainerIP
-				agentNotify <- dockerInspectVO.ContainerIP
+				// 如果应用是fops-agent，则给node节点设置agent的容器IP
+				if appDO.AppName == "fops-agent" && dockerInspectVO.ContainerIP != "" {
+					node.AgentIP = dockerInspectVO.ContainerIP
+					agentNotify <- dockerInspectVO.ContainerIP
+				}
 			}
 		})
+		// 实例数量（这个才是真实的）
+		appDO.DockerInstances = appDO.DockerInspect.Count()
 	})
 
 	// 通过事务来更新
@@ -157,7 +163,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		clusterNodeRepository.UpdateClusterNode(nodeList)
 		// 更新服务运行情况
 		if serviceList.Count() > 0 {
-			_, _ = appsRepository.UpdateInsReplicas(lstApp)
+			_, _ = appsRepository.UpdateInspect(lstApp)
 		}
 	})
 }

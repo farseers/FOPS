@@ -14,6 +14,7 @@
               <el-option label="manager" value="manager"></el-option>
               <el-option label="worker" value="worker"></el-option>
               <el-option label="global" value="global"></el-option>
+              <el-option label="不限制" value=""></el-option>
             </el-select>
           </el-form-item>
         <el-form-item label="容器参数">

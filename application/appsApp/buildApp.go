@@ -6,14 +6,15 @@ import (
 	"fops/application/appsApp/response"
 	"fops/domain/apps"
 	"fops/domain/cluster"
+	"regexp"
+	"strings"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/mapper"
 	"github.com/farseer-go/webapi/action"
-	"regexp"
-	"strings"
 )
 
 // BuildAdd 添加构建
@@ -22,7 +23,6 @@ import (
 func BuildAdd(appName string, workflowsName string, appsRepository apps.Repository, clusterRepository cluster.Repository, dockerDevice apps.IDockerDevice) {
 	appDO := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionfBool(appDO.IsNil(), 403, "应用不存在")
-	exception.ThrowWebExceptionfBool(appDO.DockerNodeRole == "", 403, "应用的容器节点角色未设置")
 	exception.ThrowWebExceptionfBool(workflowsName == "", 403, "工作流名称未设置")
 
 	buildNumber := appsRepository.GetBuildNumber(appName) + 1
@@ -59,8 +59,8 @@ func BuildList(appName string, pageSize int, pageIndex int, appsRepository apps.
 
 // 语法高亮
 var chineseTips = collections.NewList(
-	"环境变量：", "前置检查。", "先删除之前编译的目标文件。", "自动创建目录。", "前置检查通过。", "已经是最新的。", "拉取完成。", "登陆镜像仓库。", "镜像仓库登陆成功。",
-	"开始镜像打包。", "镜像打包完成。", "开始上传镜像。", "镜像上传完成。", "开始更新K8S POD的镜像版本。", "更新镜像版本完成。")
+	"前置检查通过。", "执行 ", "登陆镜像仓库。", "镜像仓库登陆成功。",
+	"开始镜像打包。", "更新镜像版本完成。")
 
 // （黄色）
 var cmdPrefix = collections.NewList(
@@ -71,6 +71,7 @@ var cmdPrefix = collections.NewList(
 	"kubectl set image ",
 	"Successfully built ",
 	"Successfully tagged ",
+	"当前go环境正确：",
 	"成功执行。",
 	"构建完成。")
 
@@ -86,10 +87,7 @@ var errorTips = collections.NewList(
 	"error ",
 	"镜像打包出错了。",
 	"镜像仓库登陆失败。",
-	"执行失败，退出构建。",
-	"K8S更新镜像失败。",
-	"Unable to connect",
-	"Cannot connect")
+	"执行失败，退出构建。")
 
 //var globalStr []string
 //var id int64

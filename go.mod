@@ -5,8 +5,6 @@ toolchain go1.22.5
 
 exclude github.com/mitchellh/osext v0.0.0-20151018003038-5e2d6d41470f
 
-exclude github.com/timandy/routine v1.1.3
-
 require (
 	github.com/farseer-go/collections v0.14.0
 	github.com/farseer-go/data v0.14.0
@@ -19,7 +17,6 @@ require (
 	github.com/farseer-go/mapper v0.14.0
 	github.com/farseer-go/monitor v0.0.0-20240913090221-e4f96ce2b7f0 // indirect
 	github.com/farseer-go/queue v0.14.0
-	github.com/farseer-go/redis v0.14.0
 	github.com/farseer-go/tasks v0.14.0
 	github.com/farseer-go/utils v0.14.0
 	github.com/farseer-go/webapi v0.14.0
@@ -68,7 +65,7 @@ require (
 	github.com/secure-systems-lab/go-securesystemslib v0.4.0 // indirect
 	github.com/shibumi/go-pathspec v1.3.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
-	github.com/timandy/routine v1.1.2 // indirect
+	github.com/timandy/routine v1.1.4 // indirect
 	github.com/tonistiigi/fsutil v0.0.0-20240424095704-91a3fc46842c // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.46.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace v0.46.1 // indirect

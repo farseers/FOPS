@@ -14,7 +14,7 @@ type Repository interface {
 	UpdateApp(do DomainObject) error
 	UpdateDockerVer(appName string, dockerVer int, imageName string) (int64, error)                            // UpdateDockerVer 修改镜像版本
 	UpdateClusterVer(appName string, dicClusterVer collections.Dictionary[int64, ClusterVerVO]) (int64, error) // UpdateClusterVer 修改集群的镜像版本
-	UpdateInsReplicas(lst collections.List[DomainObject]) (int64, error)                                       // UpdateInsReplicas 更新从集群中获取到的实例、副本数量
+	UpdateInspect(lst collections.List[DomainObject]) (int64, error)                                           // UpdateInspect 更新从集群中获取到的实例、副本数量
 	ToListBySys(isSys bool) collections.List[DomainObject]
 	ToShortList(isAll bool) collections.List[ShortEO]
 	buildRepository

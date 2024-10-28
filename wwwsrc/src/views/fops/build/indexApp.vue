@@ -14,9 +14,9 @@
                     <el-tag @click="showDockerTag(v,1)" v-if="v.IsHealth" size="small" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                     <el-tag @click="showDockerTag(v,2)" v-else size="small" type="danger" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                   </el-tooltip>
-                  <el-tag v-if="v.DockerNodeRole=='manager'" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
-                  <el-tag v-else-if="v.DockerNodeRole=='global'" type="success" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
-                  <el-tag v-else type="info" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
+                  <el-tag v-if = "v.DockerNodeRole=='manager'" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
+                  <el-tag v-else-if = "v.DockerNodeRole=='global'" type="success" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
+                  <el-tag v-else-if = "v.DockerNodeRole !=''" type="info" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
                 </div>
               </template>
                 <div class="appItem" style="margin-bottom: 10px">

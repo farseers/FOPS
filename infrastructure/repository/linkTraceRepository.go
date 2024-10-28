@@ -7,6 +7,8 @@ import (
 	"fops/domain/linkTrace"
 	"fops/infrastructure/repository/context"
 	"fops/infrastructure/repository/model"
+	"time"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/flog"
@@ -15,7 +17,6 @@ import (
 	linkTraceCom "github.com/farseer-go/linkTrace"
 	"github.com/farseer-go/linkTrace/eumTraceType"
 	"github.com/farseer-go/mapper"
-	"time"
 )
 
 type linkTraceRepository struct{}
@@ -109,16 +110,6 @@ func (receiver *linkTraceRepository) ToWebSocketList(traceId, appName, appIp, re
 	}
 	return collections.NewPageList[linkTraceCom.TraceContext](collections.NewList[linkTraceCom.TraceContext](), 0)
 }
-
-func (receiver *linkTraceRepository) ToTraceListByVisits(startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext] {
-	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceContext.
-			Where("start_ts >= ? and start_ts < ?", startAt.UnixMicro(), endAt.UnixMicro()) // parent_app_name = '' and
-		lstPO := ts.Asc("use_ts").ToList()
-		return mapper.ToList[linkTraceCom.TraceContext](lstPO)
-	}
-	return collections.NewList[linkTraceCom.TraceContext]()
-}
 func (receiver *linkTraceRepository) ToTaskList(traceId, appName, appIp, taskName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceContext] {
 	if linkTrace.Config.Driver == "clickhouse" {
 		ts := context.CHContext.TraceContext.Select("trace_id,app_id,app_name,app_ip,parent_app_name,trace_type,start_ts,end_ts,use_ts,use_desc,trace_count,create_at,exception,task_name").
@@ -209,6 +200,19 @@ func (receiver *linkTraceRepository) ToQueueList(traceId, appName, appIp, queueN
 		return mapper.ToPageList[linkTraceCom.TraceContext](lstPO)
 	}
 	return collections.NewPageList[linkTraceCom.TraceContext](collections.NewList[linkTraceCom.TraceContext](), 0)
+}
+
+func (receiver *linkTraceRepository) ToTraceListByVisits(startAt, endAt time.Time) collections.List[linkTraceCom.TraceContext] {
+	if linkTrace.Config.Driver == "clickhouse" {
+		ts := context.CHContext.TraceContext.Asc("use_ts").
+			Where("start_ts >= ? and start_ts < ?", startAt.UnixMicro(), endAt.UnixMicro()) // parent_app_name = '' and
+		//lstPO := ts.Asc("use_ts").ToList()
+		//return mapper.ToList[linkTraceCom.TraceContext](lstPO)
+		var arr []linkTraceCom.TraceContext
+		ts.Fill(&arr)
+		return collections.NewList(arr...)
+	}
+	return collections.NewList[linkTraceCom.TraceContext]()
 }
 
 func (receiver *linkTraceRepository) DeleteSlow(dbName string, startTime time.Time) error {
@@ -384,6 +388,8 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[linkTraceCom.Tr
 			po.List[index] = m
 		}
 		lst.Add(po)
+		// 减少cpu消耗
+		time.Sleep(10 * time.Millisecond)
 	})
 
 	if linkTrace.Config.Driver == "clickhouse" {

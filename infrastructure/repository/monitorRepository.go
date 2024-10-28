@@ -6,10 +6,11 @@ import (
 	"fops/domain/monitor"
 	"fops/infrastructure/repository/context"
 	"fops/infrastructure/repository/model"
+	"time"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/mapper"
-	"time"
 )
 
 type monitorRepository struct {
@@ -151,6 +152,17 @@ func (receiver *monitorRepository) ToListPageNoticeLog(appName string, pageSize,
 	poList := ts.ToPageList(pageSize, pageIndex)
 	return mapper.ToPageList[monitor.NoticeLogEO](poList)
 }
+func (receiver *monitorRepository) ToListPageNoticeLogNoRead() collections.List[monitor.NoticeLogEO] {
+	ts := context.MysqlContext.MonitorNoticeLog.Where("is_read = 0").Desc("notice_at")
+	poList := ts.ToList()
+	return mapper.ToList[monitor.NoticeLogEO](poList)
+}
+
+func (receiver *monitorRepository) UpdateNoticeLogRead() error {
+	_, err := context.MysqlContext.MonitorNoticeLog.Where("is_read = 0").UpdateValue("is_read", true)
+	return err
+}
+
 func (receiver *monitorRepository) DeleteNoticeLog(startTime time.Time) error {
 	_, err := context.MysqlContext.MonitorNoticeLog.Where("notice_at <= ?", startTime).Delete() //notice_at >= ? and
 	return err

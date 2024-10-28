@@ -8,4 +8,6 @@ type Repository interface {
 	data.IRepository[DomainObject]
 	// 根据帐号获取数据
 	ToEntityByAccountName(loginName string) DomainObject
+	// 修改密码
+	UpdatePwdByAccountName(loginName string, loginPwd string) error
 }

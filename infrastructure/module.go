@@ -10,14 +10,15 @@ import (
 	"fops/infrastructure/localQueue"
 	"fops/infrastructure/repository"
 	"fops/infrastructure/repository/context"
+	"time"
+
 	"github.com/farseer-go/data"
-	"github.com/farseer-go/data/driver/clickhouse"
+	data_clickhouse "github.com/farseer-go/data/driver/clickhouse"
 	"github.com/farseer-go/eventBus"
 	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/modules"
 	"github.com/farseer-go/queue"
-	"time"
 )
 
 type Module struct {
@@ -53,9 +54,10 @@ func (module Module) PostInitialize() {
 	}
 	// 监控数据消息处理
 	queue.Subscribe("monitor", "saveMonitorData", 1000, 5*time.Second, localQueue.SaveMonitorDataQueue)
+
 	// 日志消费
-	queue.Subscribe("flog", "saveFlogDataToCh", 1000, 5*time.Second, localQueue.SaveFlogQueue)
+	queue.Subscribe("flog", "saveFlogDataToCh", 1000, 3*time.Second, localQueue.SaveFlogQueue)
 
 	// 链路追踪日志消费
-	queue.Subscribe("linkTrace", "saveLinkTraceLogToCh", 1000, 5*time.Second, localQueue.SaveLinkTraceQueue)
+	queue.Subscribe("linkTrace", "saveLinkTraceLogToCh", 1000, 1*time.Second, localQueue.SaveLinkTraceQueue)
 }

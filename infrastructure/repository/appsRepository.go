@@ -7,11 +7,9 @@ import (
 	"fops/domain/apps"
 	"fops/infrastructure/repository/context"
 	"fops/infrastructure/repository/model"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/data"
-	"github.com/farseer-go/docker"
-	"github.com/farseer-go/fs/dateTime"
-	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/mapper"
 )
 
@@ -61,8 +59,8 @@ func (receiver *appsRepository) UpdateClusterVer(appName string, dicClusterVer c
 	return context.MysqlContext.Apps.Where("LOWER(app_name) = ?", appName).UpdateValue("cluster_ver", string(marshal))
 }
 
-// UpdateInsReplicas 更新从集群中获取到的实例、副本数量
-func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.DomainObject]) (int64, error) {
+// UpdateInspect 更新从集群中获取到的实例、副本数量
+func (receiver *appsRepository) UpdateInspect(lst collections.List[apps.DomainObject]) (int64, error) {
 	sql := bytes.Buffer{}
 	sql.WriteString("UPDATE apps SET \n")
 
@@ -74,14 +72,17 @@ func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.Doma
 	sql.WriteString("else docker_instances\n")
 	sql.WriteString("end \n")
 
-	// Replicas
-	sql.WriteString(",docker_replicas = case\n")
-	lst.Foreach(func(item *apps.DomainObject) {
-		sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.AppName, item.DockerReplicas))
-	})
-	sql.WriteString("else docker_replicas\n")
-	sql.WriteString("end \n")
-
+	// Replicas（只更新系统应用或全局应用）
+	if lstSysGlobal := lst.Where(func(item apps.DomainObject) bool {
+		return item.IsSys || item.DockerNodeRole == "global"
+	}).ToList(); lstSysGlobal.Any() {
+		sql.WriteString(",docker_replicas = case\n")
+		lstSysGlobal.Foreach(func(item *apps.DomainObject) {
+			sql.WriteString(fmt.Sprintf("when app_name = '%s' then %d\n", item.AppName, item.DockerReplicas))
+		})
+		sql.WriteString("else docker_replicas\n")
+		sql.WriteString("end \n")
+	}
 	// cluster_ver
 	sql.WriteString(",cluster_ver = case\n")
 	lst.Foreach(func(item *apps.DomainObject) {
@@ -103,37 +104,4 @@ func (receiver *appsRepository) UpdateInsReplicas(lst collections.List[apps.Doma
 	// where
 	sql.WriteString("WHERE 1=1;\n")
 	return context.MysqlContext.ExecuteSql(sql.String())
-}
-
-// UpdateClusterNode 更新集群节点信息
-func (receiver *appsRepository) UpdateClusterNode(lst collections.List[docker.DockerNodeVO]) {
-	lstPO := mapper.ToList[model.ClusterNodePO](lst)
-	lstPO.Foreach(func(item *model.ClusterNodePO) {
-		item.UpdateAt = dateTime.Now()
-		// 更新数据
-		count, err := context.MysqlContext.ClusterNode.Where("node_name", item.NodeName).Omit("cpu_usage_percent", "memory_usage_percent", "memory_usage", "disk", "disk_usage_percent", "disk_usage").Update(*item)
-		flog.ErrorIfExists(err)
-
-		// 没有更新到数据时，则插入
-		if count == 0 {
-			err = context.MysqlContext.ClusterNode.InsertIgnore(item)
-			flog.ErrorIfExists(err)
-		}
-	})
-}
-
-func (receiver *appsRepository) GetClusterNodeList() collections.List[docker.DockerNodeVO] {
-	lstPO := context.MysqlContext.ClusterNode.Desc("is_master").ToList()
-	return mapper.ToList[docker.DockerNodeVO](lstPO)
-}
-
-func (receiver *appsRepository) UpdateClusterNodeResourceByAgentIP(agentIP string, cpuUsagePercent, memoryUsagePercent, memoryUsage float64, disk uint64, diskUsagePercent, diskUsage float64) {
-	_, _ = context.MysqlContext.ClusterNode.Where("agent_ip = ?", agentIP).Select("cpu_usage_percent", "memory_usage_percent", "memory_usage", "disk", "disk_usage_percent", "disk_usage").Update(model.ClusterNodePO{
-		CpuUsagePercent:    cpuUsagePercent,
-		MemoryUsagePercent: memoryUsagePercent,
-		MemoryUsage:        memoryUsage,
-		Disk:               disk,
-		DiskUsagePercent:   diskUsagePercent,
-		DiskUsage:          diskUsage,
-	})
 }

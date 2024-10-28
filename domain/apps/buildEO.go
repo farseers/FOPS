@@ -7,6 +7,11 @@ import (
 	"fops/domain/_/eumBuildStatus"
 	"fops/domain/apps/event"
 	"fops/domain/cluster"
+	"os"
+	"path"
+	"strings"
+	"time"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/configure"
@@ -16,10 +21,6 @@ import (
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/http"
-	"os"
-	"path"
-	"strings"
-	"time"
 )
 
 // BuildEO 聚合
@@ -45,6 +46,7 @@ type BuildEO struct {
 	apps            DomainObject
 	appGit          GitEO // 应用的源代码
 	dockerClient    *docker.Client
+	fopsBuildName   string // 构建的容器名称
 }
 
 func (receiver *BuildEO) IsNil() bool {
@@ -52,6 +54,8 @@ func (receiver *BuildEO) IsNil() bool {
 }
 
 func (receiver *BuildEO) StartBuild() {
+	receiver.fopsBuildName = "FOPS-Build"
+	receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 	receiver.dockerClient = docker.NewClient()
 	receiver.dockerDevice = container.Resolve[IDockerDevice]()
 	receiver.gitDevice = container.Resolve[IGitDevice]()
@@ -62,9 +66,12 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.apps = appsRepository.ToEntity(receiver.AppName)
 	receiver.appGit = appsRepository.ToGitEntity(receiver.apps.AppGit)
 
-	// 生成Workflows文件
-	receiver.checkResult(receiver.GenerateWorkflowsContent())
+	// 开启异步监控状态
+	go receiver.WatchStatus()
 	defer receiver.catch()
+
+	// 生成Workflows（并更新集群ID）
+	receiver.checkResult(receiver.GenerateWorkflowsContent())
 
 	// 集群
 	clusterRepository := container.Resolve[cluster.Repository]()
@@ -83,7 +90,7 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.DockerImage = receiver.dockerDevice.GetDockerImage(clusterDO.DockerHub, receiver.AppName, receiver.BuildNumber)
 	var dockerHub = receiver.dockerDevice.GetDockerHub(clusterDO.DockerHub)
 	receiver.GenerateEnv(projectGitRoot, dockerHub, receiver.DockerImage, receiver.appGit.GetName())
-	// 更新集群ID、镜像
+	// 更新集群ID、镜像（需要先生成好Env)
 	appsRepository.UpdateBuilding(receiver.Id, receiver.Env)
 
 	receiver.ReplaceSysWith(map[string]any{
@@ -122,9 +129,7 @@ func (receiver *BuildEO) StartBuild() {
 	}
 
 	// 启动构建系统
-	dockerName := "FOPS-Build"
-	if !receiver.dockerClient.Container.Exists(dockerName) {
-		receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
+	if !receiver.dockerClient.Container.Exists(receiver.fopsBuildName) {
 		receiver.logQueue.progress <- "启动构建系统：" + receiver.WorkflowsAction.RunsOn
 		args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
 		// 添加自定义的挂载
@@ -132,24 +137,22 @@ func (receiver *BuildEO) StartBuild() {
 		for _, arg := range builderArgs {
 			args = append(args, arg)
 		}
-		err := receiver.dockerClient.Container.Run(dockerName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env.ToMap(), receiver.ctx) // , "-v /var/lib/fops:/var/lib/fops"
+		err := receiver.dockerClient.Container.Run(receiver.fopsBuildName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env.ToMap(), receiver.ctx) // , "-v /var/lib/fops:/var/lib/fops"
 		if err != nil {
 			receiver.logQueue.progress <- err.Error()
 			receiver.checkResult(false)
 		}
 	}
-	//defer receiver.dockerClient.Container.Kill(dockerName)
+	//defer receiver.dockerClient.Container.Kill(receiver.fopsBuildName)
 
 	// 获取外网IP
 	if extranetIpUrl := configure.GetString("Fops.ExtranetIpUrl"); extranetIpUrl != "" {
 		receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
-		_ = receiver.dockerClient.Container.Exec(dockerName, fmt.Sprintf("echo '公网IP：$(curl -s %s)'", extranetIpUrl), nil, receiver.logQueue.progress, receiver.ctx)
+		_ = receiver.dockerClient.Container.Exec(receiver.fopsBuildName, fmt.Sprintf("echo '公网IP：$(curl -s %s)'", extranetIpUrl), nil, receiver.logQueue.progress, receiver.ctx)
 	}
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 
 	gits := receiver.getGits()
-	// 开启异步监控状态
-	go receiver.WatchStatus()
 
 	// 运行step
 	for index, step := range receiver.WorkflowsAction.Steps {
@@ -172,7 +175,7 @@ func (receiver *BuildEO) StartBuild() {
 			}
 
 			// 将action文件复制到容器
-			_ = receiver.dockerClient.Container.Cp(dockerName, step.GetActionPath(), step.GetActionPath(), receiver.ctx)
+			_ = receiver.dockerClient.Container.Cp(receiver.fopsBuildName, step.GetActionPath(), step.GetActionPath(), receiver.ctx)
 
 			// 支持checkout默认拉取应用
 			if parse.ToString(step.With["gitHub"]) != "" {
@@ -190,13 +193,13 @@ func (receiver *BuildEO) StartBuild() {
 			file.Delete(WithJsonPath)
 			withContent, _ := json.Marshal(step.With)
 			file.WriteByte(WithJsonPath, withContent)
-			_ = receiver.dockerClient.Container.Cp(dockerName, WithJsonPath, WithJsonPath, receiver.ctx)
+			_ = receiver.dockerClient.Container.Cp(receiver.fopsBuildName, WithJsonPath, WithJsonPath, receiver.ctx)
 
 			// 设置超时
 			receiver.ctx, receiver.cancel = context.WithTimeout(receiver.ctx, time.Duration(step.Timeout)*time.Minute)
 
-			// 执行 docker exec FOPS-Build-hub-fsgit-cc-fops-130 echo aaa
-			err := receiver.dockerClient.Container.Exec(dockerName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx)
+			// 执行 docker exec FOPS-Build-hub-fsgit-cc-fops-130 action
+			err := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx)
 			receiver.checkResult(err == nil)
 
 			switch step.ActionName {
@@ -225,10 +228,10 @@ func (receiver *BuildEO) StartBuild() {
 			}
 			shellPath := fmt.Sprintf("%s%d-%d.sh", ShellRoot, receiver.Env.BuildNumber, index+1)
 			file.WriteString(shellPath, script)
-			_ = receiver.dockerClient.Container.Cp(dockerName, shellPath, shellPath, receiver.ctx)
+			_ = receiver.dockerClient.Container.Cp(receiver.fopsBuildName, shellPath, shellPath, receiver.ctx)
 
 			// 执行脚本
-			receiver.checkResult(receiver.dockerClient.Container.Exec(dockerName, shellPath, receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx) == nil)
+			receiver.checkResult(receiver.dockerClient.Container.Exec(receiver.fopsBuildName, shellPath, receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx) == nil)
 		}
 		receiver.logQueue.progress <- "---------------------------------------------------------"
 	}
@@ -236,10 +239,12 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.success()
 }
 
-// GenerateWorkflowsContent 生成Workflows
+// GenerateWorkflowsContent 生成Workflows（并更新集群ID）
 func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 	// 更新工作流文件到本地
-	receiver.gitDevice.PullWorkflows(receiver.apps.GetWorkflowsRoot(), receiver.appGit.Branch, receiver.appGit.GetAuthHub(), receiver.logQueue.progress)
+	if isSuccess := receiver.gitDevice.PullWorkflows(receiver.ctx, receiver.apps.GetWorkflowsRoot(), receiver.appGit.Branch, receiver.appGit.GetAuthHub(), receiver.logQueue.progress); !isSuccess {
+		return false
+	}
 
 	// 通过http读取工作流定义的内容
 	var err error
@@ -371,6 +376,9 @@ func (receiver *BuildEO) fail() {
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 	receiver.logQueue.progress <- "执行失败，退出构建。"
 
+	// 重启构建环境
+	receiver.dockerClient.Container.Restart(receiver.fopsBuildName)
+
 	// 更新本次构建状态 = 失败
 	container.Resolve[Repository]().SetCancel(receiver.Id, receiver.Env)
 
@@ -382,7 +390,7 @@ func (receiver *BuildEO) success() {
 	if collections.NewList(receiver.WorkflowsAction.Steps...).Where(func(item stepVO) bool {
 		return item.ActionName == "dockerswarmUpdateVer"
 	}).Any() {
-		receiver.logQueue.progress <- "更新部署版本。"
+		receiver.logQueue.progress <- "更新镜像版本完成。"
 		// 发布事件
 		event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: true}.PublishEvent()
 	}

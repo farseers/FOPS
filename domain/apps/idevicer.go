@@ -28,7 +28,7 @@ type IKubectlDevice interface {
 
 type IGitDevice interface {
 	// PullWorkflows 拉取工作流
-	PullWorkflows(gitPath, branch string, gitRemote string, progress chan string) bool
+	PullWorkflows(ctx context.Context, gitPath, branch string, gitRemote string, progress chan string) bool
 }
 
 // DockerLabelVO 标签

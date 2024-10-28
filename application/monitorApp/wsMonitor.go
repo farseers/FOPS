@@ -4,6 +4,9 @@ package monitorApp
 import (
 	"encoding/json"
 	"fops/domain/monitor"
+	"time"
+
+	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
 	fsMonitor "github.com/farseer-go/monitor"
@@ -28,4 +31,19 @@ func WsReceive(context *websocket.Context[fsMonitor.SendContentVO], monitorRepos
 			queue.Push("monitor", monitor.NewDataEO(req.AppName, *key, parse.ToString(reqVal)))
 		})
 	})
+}
+
+// WsNotice 通知消息
+// @ws notice
+func WsNotice(context *websocket.Context[string], monitorRepository monitor.Repository) {
+
+	context.ReceiverMessageFunc(5*time.Second, func(message string) {
+		// 未读消息列表
+		noReadList := ToListPageNoticeLogNoRead(monitorRepository)
+		sendMap := make(map[string]interface{})
+		sendMap["NoReadList"] = noReadList
+		err := context.Send(sendMap)
+		exception.ThrowWebExceptionError(403, err)
+	})
+
 }

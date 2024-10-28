@@ -33,6 +33,7 @@ func Login(req request.LoginRequest, accountLoginRepository accountLogin.Reposit
 // @post /user/passport/changePwd
 // @filter application.Jwt
 func ChangePwd(req request.ChangePwdRequest, accountLoginRepository accountLogin.Repository) {
+	check.IsTrue(len(req.LoginPwd) < 6, 403, "密码不能小于6位")
 	check.IsTrue(req.LoginPwd != req.ConfirmPwd, 403, "密码不一致")
 	curAccount := domain.GetLoginAccount()
 	login := accountLoginRepository.ToEntityByAccountName(curAccount.LoginName)

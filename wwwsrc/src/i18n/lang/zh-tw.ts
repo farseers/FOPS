@@ -97,6 +97,7 @@ export default {
 		dropdown4: '401',
 		dropdown5: '登出',
 		dropdown6: '程式碼倉庫',
+		dropdown7: '修改密碼',
 		searchPlaceholder: '選單蒐索：支援中文、路由路徑',
 		newTitle: '通知',
 		newBtn: '全部已讀',

@@ -533,6 +533,13 @@ export function fopsApi() {
 				data:param,
 			});
 		},
+		monitorAllRead:(param: object) => { // 通知消息全部已读
+			return request({
+				url: '/monitor/allRead',
+				method:'post',
+				data:param,
+			});
+		},
 		monitorNoticeTypeList:(param: object) => { // 通知类型
 			return request({
 				url: '/monitor/noticeTypeList',
@@ -543,6 +550,13 @@ export function fopsApi() {
 		drpBaseList:(param: object) => { // 通知类型 {baseType:'1,2'} 1通知类型 2比较方式
 			return request({
 				url: '/monitor/drpBaseList',
+				method:'post',
+				data:param,
+			});
+		},
+		changePsd:(param: object) => { // 修改密码
+			return request({
+				url: '/user/passport/changePwd',
 				method:'post',
 				data:param,
 			});

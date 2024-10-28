@@ -75,6 +75,7 @@ var route = []webapi.Route{
     {"POST", "/linkTrace/upload", linkTraceApp.Upload, "", []context.IFilter{}, []string{"req", ""}},
     {"GET", "/linkTrace/visits", linkTraceApp.Visits, "", []context.IFilter{}, []string{"request", ""}},
     {"POST", "/user/passport/Login", login.Login, "", []context.IFilter{}, []string{"req", ""}},
+    {"POST", "/user/passport/changePwd", login.ChangePwd, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
     {"POST", "/monitor/appList", monitorApp.DropDownListAppInfo, "", []context.IFilter{application.Jwt{}}, []string{""}},
     {"POST", "/monitor/ruleList", monitorApp.ToListPageRule, "", []context.IFilter{application.Jwt{}}, []string{"appName", "pageSize", "pageIndex", ""}},
     {"POST", "/monitor/delRule", monitorApp.DeleteRule, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},

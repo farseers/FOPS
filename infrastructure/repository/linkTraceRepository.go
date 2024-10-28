@@ -206,11 +206,11 @@ func (receiver *linkTraceRepository) ToTraceListByVisits(startAt, endAt time.Tim
 	if linkTrace.Config.Driver == "clickhouse" {
 		ts := context.CHContext.TraceContext.Asc("use_ts").
 			Where("start_ts >= ? and start_ts < ?", startAt.UnixMicro(), endAt.UnixMicro()) // parent_app_name = '' and
-		//lstPO := ts.Asc("use_ts").ToList()
-		//return mapper.ToList[linkTraceCom.TraceContext](lstPO)
-		var arr []linkTraceCom.TraceContext
-		ts.Fill(&arr)
-		return collections.NewList(arr...)
+		lstPO := ts.Asc("use_ts").ToList()
+		return mapper.ToList[linkTraceCom.TraceContext](lstPO)
+		//var arr []linkTraceCom.TraceContext
+		//ts.Fill(&arr)
+		//return collections.NewList(arr...)
 	}
 	return collections.NewList[linkTraceCom.TraceContext]()
 }

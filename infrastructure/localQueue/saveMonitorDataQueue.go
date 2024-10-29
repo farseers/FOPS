@@ -3,13 +3,14 @@ package localQueue
 import (
 	"fops/domain/enum/ruleTimeType"
 	"fops/domain/monitor"
+	"strings"
+	"time"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/fs/trace"
-	"strings"
-	"time"
 )
 
 func SaveMonitorDataQueue(subscribeName string, lstMessage collections.ListAny, remainingCount int) {

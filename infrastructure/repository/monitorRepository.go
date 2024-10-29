@@ -36,7 +36,7 @@ func (receiver *monitorRepository) DropDownListAppInfo() collections.List[monito
 
 // ToListRule 获取所有规则数据
 func (receiver *monitorRepository) ToListRule() collections.List[monitor.RuleEO] {
-	poList := context.MysqlContext.MonitorRule.ToList()
+	poList := context.MysqlContext.MonitorRule.Where("enable = 1").ToList()
 	return mapper.ToList[monitor.RuleEO](poList)
 }
 

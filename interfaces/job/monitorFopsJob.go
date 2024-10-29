@@ -6,13 +6,11 @@ import (
 	"fops/domain/clusterNode"
 	"fops/domain/monitor"
 	"strings"
-	"time"
 
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/dateTime"
-	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/queue"
 	"github.com/farseer-go/tasks"
@@ -100,18 +98,18 @@ func MonitorFopsJob(*tasks.TaskContext) {
 		})
 		appNameList.Add(item.AppName)
 	})
-	// 刷新时间
-	if appNameList.Count() > 0 {
-		appNameList.Distinct().Foreach(func(item *string) {
-			if !monitorRepository.IsExistSyncAt(*item) {
-				err := monitorRepository.SaveSyncAt(monitor.NewSyncAtEO(*item))
-				exception.ThrowWebExceptionError(403, err)
-			} else {
-				// 更新时间
-				err := monitorRepository.UpdateSyncAt(*item, time.Now())
-				exception.ThrowWebExceptionError(403, err)
-			}
-		})
-	}
+	// // 刷新时间
+	// if appNameList.Count() > 0 {
+	// 	appNameList.Distinct().Foreach(func(item *string) {
+	// 		if !monitorRepository.IsExistSyncAt(*item) {
+	// 			err := monitorRepository.SaveSyncAt(monitor.NewSyncAtEO(*item))
+	// 			exception.ThrowWebExceptionError(403, err)
+	// 		} else {
+	// 			// 更新时间
+	// 			err := monitorRepository.UpdateSyncAt(*item, time.Now())
+	// 			exception.ThrowWebExceptionError(403, err)
+	// 		}
+	// 	})
+	// }
 
 }

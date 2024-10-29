@@ -41,8 +41,8 @@ type Repository interface {
 	SaveLog(lstEO collections.List[NoticeLogEO]) error
 	ToListPageNoticeLog(appName string, pageSize, pageIndex int) collections.PageList[NoticeLogEO]
 	DeleteNoticeLog(startTime time.Time) error
-	ToListPageNoticeLogNoRead() collections.List[NoticeLogEO]
-	UpdateNoticeLogRead() error
+	ToListPageNoticeLogNoRead(top int) collections.List[NoticeLogEO]
+	UpdateNoticeLogRead(ids []int) error
 	// 同步时间
 	SaveSyncAt(eo SyncAtEO) error
 	ToSyncAtEntity(appName string) SyncAtEO

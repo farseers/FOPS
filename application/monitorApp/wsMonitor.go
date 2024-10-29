@@ -39,7 +39,7 @@ func WsNotice(context *websocket.Context[string], monitorRepository monitor.Repo
 
 	context.ReceiverMessageFunc(5*time.Second, func(message string) {
 		// 未读消息列表
-		noReadList := ToListPageNoticeLogNoRead(monitorRepository)
+		noReadList := ToListPageNoticeLogNoRead(20, monitorRepository)
 		sendMap := make(map[string]interface{})
 		sendMap["NoReadList"] = noReadList
 		err := context.Send(sendMap)

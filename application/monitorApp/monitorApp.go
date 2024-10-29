@@ -150,15 +150,15 @@ func ToListPageNoticeLog(appName string, pageSize, pageIndex int, monitorReposit
 // ToListPageNoticeLog 通知消息未读消息列表
 // @post noticeLogNoReadList
 // @filter application.Jwt
-func ToListPageNoticeLogNoRead(monitorRepository monitor.Repository) collections.List[monitor.NoticeLogEO] {
-	return monitorRepository.ToListPageNoticeLogNoRead()
+func ToListPageNoticeLogNoRead(top int, monitorRepository monitor.Repository) collections.List[monitor.NoticeLogEO] {
+	return monitorRepository.ToListPageNoticeLogNoRead(top)
 }
 
 // UpdateNoticeLogRead 全部已读设置
 // @post allRead
 // @filter application.Jwt
-func UpdateNoticeLogRead(monitorRepository monitor.Repository) {
-	err := monitorRepository.UpdateNoticeLogRead()
+func UpdateNoticeLogRead(req request.ReadRequest, monitorRepository monitor.Repository) {
+	err := monitorRepository.UpdateNoticeLogRead(req.Ids)
 	exception.ThrowRefuseExceptionError(err)
 }
 

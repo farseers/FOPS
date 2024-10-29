@@ -152,14 +152,14 @@ func (receiver *monitorRepository) ToListPageNoticeLog(appName string, pageSize,
 	poList := ts.ToPageList(pageSize, pageIndex)
 	return mapper.ToPageList[monitor.NoticeLogEO](poList)
 }
-func (receiver *monitorRepository) ToListPageNoticeLogNoRead() collections.List[monitor.NoticeLogEO] {
+func (receiver *monitorRepository) ToListPageNoticeLogNoRead(top int) collections.List[monitor.NoticeLogEO] {
 	ts := context.MysqlContext.MonitorNoticeLog.Where("is_read = 0").Desc("notice_at")
-	poList := ts.ToList()
-	return mapper.ToList[monitor.NoticeLogEO](poList)
+	poList := ts.ToPageList(top, 1)
+	return mapper.ToList[monitor.NoticeLogEO](poList.List)
 }
 
-func (receiver *monitorRepository) UpdateNoticeLogRead() error {
-	_, err := context.MysqlContext.MonitorNoticeLog.Where("is_read = 0").UpdateValue("is_read", true)
+func (receiver *monitorRepository) UpdateNoticeLogRead(ids []int) error {
+	_, err := context.MysqlContext.MonitorNoticeLog.Where("is_read = 0 and id in ?", ids).UpdateValue("is_read", true)
 	return err
 }
 

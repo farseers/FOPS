@@ -11,7 +11,6 @@ export default {  //终端
     name: 'InitTerm',
     data() {
         return {
-            VITE_WS: import.meta.env.VITE_WS,
             timeClose: null,
             errorNum:0,//重连次数
             againFlag:true,//断开后是否重新链接
@@ -142,9 +141,6 @@ export default {  //终端
         onTerminalKeyPress(id) {
             const row = this.get_row(id);
             this.term && this.term.onKey(e => {
-                if (e.domEvent.ctrlKey && e.domEvent.key === 'c') {
-                    this.term.clear();
-                }
                 if (e.domEvent.metaKey && e.domEvent.key === 'k') {
                 //   metaKey 
                      this.ws.send(JSON.stringify({
@@ -183,7 +179,7 @@ export default {  //终端
             let host = window.location.host;
             let w_s = 'wss://' + host + '/';
             if (process.env.NODE_ENV === 'development') {
-                w_s = this.VITE_WS;
+                w_s = ' wss://fops.test188.cc/';
             }
             const token = `${Session.get('token')}`; //terminal/ws/sshByLogin
             const ssh = this.sshByLogin?'sshByLogin':'ssh'

@@ -1,7 +1,9 @@
 <template>
 	<el-form size="large" class="login-content-form">
 		<el-form-item class="login-animation1">
-			<el-input text :placeholder="$t('message.account.accountPlaceholder1')" v-model="state.ruleForm.userName" clearable autocomplete="off">
+			<el-input text :placeholder="$t('message.account.accountPlaceholder1')" 
+			@keyup.enter="onSignIn"
+			v-model="state.ruleForm.userName" clearable autocomplete="off">
 				<template #prefix>
 					<el-icon class="el-input__icon"><ele-User /></el-icon>
 				</template>
@@ -9,6 +11,7 @@
 		</el-form-item>
 		<el-form-item class="login-animation2">
 			<el-input
+				@keyup.enter="onSignIn"
 				:type="state.isShowPassword ? 'text' : 'password'"
 				:placeholder="$t('message.account.accountPlaceholder2')"
 				v-model="state.ruleForm.password"

@@ -44,7 +44,10 @@ methods:{
 		return date.toLocaleString(); // 使用本地时间格式
 	},
 	allRead(){
-		serverApi.monitorAllRead({}).then((d)=>{
+		const Ids = this.NoReadList.map(obj => obj.Id);
+		serverApi.monitorAllRead({
+			"Ids":Ids
+		}).then((d)=>{
                 if(d.Status){
                     this.$emit('allRead')
                 }else{

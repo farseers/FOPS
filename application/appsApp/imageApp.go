@@ -6,11 +6,12 @@ import (
 	"fops/domain/apps"
 	"fops/domain/apps/event"
 	"fops/domain/cluster"
+	"strings"
+
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
-	"strings"
 )
 
 // UpdateDockerImage 更新仓库版本
@@ -45,7 +46,7 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 	do := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 
-	clusterDO := clusterRepository.ToEntity(clusterId)
+	clusterDO := clusterRepository.GetLocalCluster()
 	exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "集群不存在")
 
 	client := docker.NewClient()
@@ -68,7 +69,7 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 	}
 
 	// 更新集群版本信息
-	do.UpdateBuildVer(true, clusterId, 0)
+	do.UpdateBuildVer(true, clusterDO.Id, 0)
 	_, _ = appsRepository.UpdateClusterVer(appName, do.ClusterVer)
 
 	buildLogEO.IsSuccess = true

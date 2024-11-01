@@ -339,7 +339,7 @@ func (receiver *linkTraceRepository) ToSlowMqList(traceId, appName, appIp, serve
 			WhereIf(appIp != "", "app_ip = ?", appIp).
 			WhereIf(searchUseTs > 0, "use_ts >= ?", searchUseTs*int64(time.Microsecond)).
 			WhereIf(server != "", "server like ?", "%"+server+"%").
-			WhereIf(exchange != "", "url like ?", "%"+exchange+"%").
+			WhereIf(exchange != "", "exchange like ?", "%"+exchange+"%").
 			WhereIf(routingKey != "", "url like ?", "%"+routingKey+"%").
 			WhereIf(onlyViewException, "exception <> ''").
 			WhereIf(startMin > 0, "start_ts >= ?", dateTime.Now().AddMinutes(-startMin).UnixMicro())

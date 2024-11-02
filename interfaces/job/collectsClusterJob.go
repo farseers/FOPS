@@ -40,21 +40,28 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		node.Label = vo.Label
 	})
 
-	if nodeList.Count() > 0 {
-		// 读取数据库的节点列表，删除离开的节点
-		clusterNodeRepository.GetClusterNodeList().Foreach(func(item *docker.DockerNodeVO) {
-			if !nodeList.Where(func(dockerItem docker.DockerNodeVO) bool {
-				return dockerItem.IP == item.IP
-			}).Any() {
-				clusterNodeRepository.Delete(item.IP)
-			}
-		})
+	// 没有读取到集群，则退出
+	if nodeList.Count() == 0 {
+		return
 	}
+
+	// 读取数据库的节点列表，删除离开的节点
+	clusterNodeRepository.GetClusterNodeList().Foreach(func(item *docker.DockerNodeVO) {
+		if !nodeList.Where(func(dockerItem docker.DockerNodeVO) bool {
+			return dockerItem.IP == item.IP
+		}).Any() {
+			clusterNodeRepository.Delete(item.IP)
+		}
+	})
 
 	// 获取本地集群信息
 	localCluster := clusterRepository.GetLocalCluster()
 	// 收集所有服务的运行情况
 	serviceList := dockerClient.Service.List()
+	// 没有读取到应用，则退出
+	if serviceList.Count() == 0 {
+		return
+	}
 	// 如果服务不存在，则添加到列表中，用于更新到数据库中，指明服务的实例为0
 	lstApp := appsRepository.ToList()
 

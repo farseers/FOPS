@@ -116,7 +116,11 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		// 获取应用的详情
 		appDO.DockerInspect = collections.NewList[apps.DockerInspectVO]()
 		// 得到该应用正在运行的实例列表
-		servicePS := dockerClient.Service.PS(appDO.AppName).Where(func(item docker.ServicePsVO) bool {
+		allServiceList := dockerClient.Service.PS(appDO.AppName)
+		if allServiceList.Count() == 0 {
+			return
+		}
+		servicePS := allServiceList.Where(func(item docker.ServicePsVO) bool {
 			return item.State != "Shutdown"
 		}).ToList()
 
@@ -159,9 +163,11 @@ func CollectsClusterJob(*tasks.TaskContext) {
 					agentNotify <- dockerInspectVO.ContainerIP
 				}
 			}
+			time.Sleep(100 * time.Millisecond)
 		})
 		// 实例数量（这个才是真实的）
 		appDO.DockerInstances = appDO.DockerInspect.Count()
+		time.Sleep(100 * time.Millisecond)
 	})
 
 	// 通过事务来更新

@@ -184,15 +184,25 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 
 		// 在明细执行期间，会穿插下游服务。所以通过查找的方式来获取下游。然后在回到当前明细
 		// a --> b -- > a  --> c -- b
-		if baseDetailPO.CallType == eumCallType.Http || baseDetailPO.CallType == eumCallType.EventPublish || baseDetailPO.CallType == eumCallType.Mq {
+		var nextEntry linkTraceCom.TraceContext
+		switch baseDetailPO.CallType {
+		case eumCallType.Http:
 			// 查找串联的服务
-			nextEntry := receiver.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
-				return item.ParentAppName == detailTrace.AppName && (item.TraceLevel == po.TraceLevel+1)
+			nextEntry = receiver.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
+				return item.ParentAppName == detailTrace.AppName && item.TraceType == eumTraceType.WebApi && (item.TraceLevel == po.TraceLevel+1)
 			}).First()
-			if nextEntry.TraceId != "" {
-				receiver.PreDetail = baseDetailPO
-				receiver.addEntry(nextEntry)
-			}
+		case eumCallType.EventPublish:
+			nextEntry = receiver.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
+				return item.ParentAppName == detailTrace.AppName && item.TraceType == eumTraceType.EventConsumer && (item.TraceLevel == po.TraceLevel+1)
+			}).First()
+		case eumCallType.Mq:
+			nextEntry = receiver.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
+				return item.ParentAppName == detailTrace.AppName && item.TraceType == eumTraceType.MqConsumer && (item.TraceLevel == po.TraceLevel+1)
+			}).First()
+		}
+		if nextEntry.TraceId != "" {
+			receiver.PreDetail = baseDetailPO
+			receiver.addEntry(nextEntry)
 		}
 	}
 }

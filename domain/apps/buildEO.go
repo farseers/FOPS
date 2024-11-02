@@ -72,7 +72,6 @@ func (receiver *BuildEO) StartBuild() {
 
 	// 生成Workflows（并更新集群ID）
 	receiver.checkResult(receiver.GenerateWorkflowsContent())
-
 	// 集群
 	clusterRepository := container.Resolve[cluster.Repository]()
 	clusterDO := clusterRepository.ToEntity(receiver.ClusterId)
@@ -110,6 +109,7 @@ func (receiver *BuildEO) StartBuild() {
 		"dockerReplicas":          receiver.apps.DockerReplicas,
 		"dockerAdditionalScripts": receiver.apps.AdditionalScripts,
 		"clusterId":               receiver.ClusterId,
+		"isLocal":                 clusterDO.IsLocal,
 		"fopsAddr":                clusterDO.FopsAddr,
 		"fScheduleAddr":           clusterDO.FScheduleAddr,
 	})
@@ -122,10 +122,16 @@ func (receiver *BuildEO) StartBuild() {
 
 	// 加载环境变量提示
 	if len(receiver.WorkflowsAction.Env) > 0 {
-		receiver.logQueue.progress <- "加载环境变量："
+		receiver.logQueue.progress <- "构建环境变量："
 		for k, v := range receiver.WorkflowsAction.Env {
 			receiver.logQueue.progress <- fmt.Sprintf("%s=%s", k, v)
 		}
+	}
+
+	if clusterDO.IsLocal {
+		receiver.logQueue.progress <- "部署到本地集群"
+	} else {
+		receiver.logQueue.progress <- "部署到远程集群：" + clusterDO.FopsAddr
 	}
 
 	// 启动构建系统
@@ -246,7 +252,7 @@ func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 		return false
 	}
 
-	// 通过http读取工作流定义的内容
+	// 读取工作流定义的内容
 	var err error
 	receiver.WorkflowsAction, err = LoadWorkflows(receiver.apps.GetWorkflowsDir()+receiver.WorkflowsName+".yml", receiver.AppName, receiver.appGit.GetName())
 	receiver.ClusterId = receiver.WorkflowsAction.ClusterId
@@ -291,6 +297,7 @@ func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 	return true
 }
 
+// 将全局参数 覆盖到 系统参数
 func (receiver *BuildEO) ReplaceSysWith(sysWith map[string]any) {
 	// 将全局参数 覆盖到 系统参数
 	for k, v := range receiver.WorkflowsAction.With {

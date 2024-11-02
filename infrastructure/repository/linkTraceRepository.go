@@ -449,6 +449,7 @@ func (receiver *linkTraceRepository) saveDetail(lst collections.List[model.Trace
 				detailPO := mapper.Single[model.TraceDetailHandPO](m)
 				lstTraceDetailHand.Add(detailPO)
 			}
+			time.Sleep(10 * time.Millisecond)
 		}
 	})
 

@@ -16,9 +16,12 @@ import (
 
 // UpdateDockerImage 更新仓库版本
 // @post updateDockerImage
-func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buildNumber int, dockerHub, dockerUserName, dockerUserPwd string, appsRepository apps.Repository, clusterRepository cluster.Repository) {
+func UpdateDockerImage(appName string, dockerImage string, buildNumber int, dockerHub, dockerUserName, dockerUserPwd string, appsRepository apps.Repository, clusterRepository cluster.Repository) {
+	clusterDO := clusterRepository.GetLocalCluster()
+	exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "集群不存在")
+
 	buildLogEO := apps.BuildEO{
-		ClusterId:     clusterId,
+		ClusterId:     clusterDO.Id,
 		BuildNumber:   buildNumber,
 		Status:        eumBuildStatus.Finish,
 		CreateAt:      dateTime.Now(),
@@ -31,11 +34,6 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 	// 更新仓库版本
 	event.DockerPushedEvent{BuildNumber: buildNumber, AppName: appName, ImageName: dockerImage}.PublishEvent()
 
-	// 如果集群ID大于0，则同步应用
-	if clusterId < 1 {
-		return
-	}
-
 	defer func() {
 		// 手动创建一个构建记录
 		buildLogEO.FinishAt = dateTime.Now()
@@ -45,9 +43,6 @@ func UpdateDockerImage(clusterId int64, appName string, dockerImage string, buil
 	// 同步镜像
 	do := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
-
-	clusterDO := clusterRepository.GetLocalCluster()
-	exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "集群不存在")
 
 	client := docker.NewClient()
 

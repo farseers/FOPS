@@ -197,6 +197,7 @@ func (receiver *BuildEO) StartBuild() {
 				}
 				// 修改了应用的分支
 				if branch := parse.ToString(step.With["branch"]); branch != "" {
+					receiver.logQueue.progress <- "切换到" + branch + "分支"
 					appGit := gits.Find(func(item *GitEO) bool {
 						return item.IsApp
 					})

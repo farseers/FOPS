@@ -10,7 +10,6 @@ jobs:
     steps:
       - name: 安装go
         uses: setup-go@v1
-        with:
 
       #- name: 安装npm
       #  uses: setup-npm@v1

@@ -44,6 +44,8 @@ jobs:
 
       - name: 拉取应用Git
         uses: checkout@v1 # 在fops配置了依赖时，将自动拉取所有依赖Git
+        with:
+          branch: main    # 支持不同工作流，切换到不同分支
 
 #      - name: 拉取框架fs
 #        uses: checkout@v1

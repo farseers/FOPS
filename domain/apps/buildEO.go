@@ -184,15 +184,26 @@ func (receiver *BuildEO) StartBuild() {
 			_ = receiver.dockerClient.Container.Cp(receiver.fopsBuildName, step.GetActionPath(), step.GetActionPath(), receiver.ctx)
 
 			// 支持checkout默认拉取应用
-			if parse.ToString(step.With["gitHub"]) != "" {
-				gits = append(gits, GitEO{
-					Hub:      parse.ToString(step.With["gitHub"]),
-					Branch:   parse.ToString(step.With["gitBranch"]),
-					UserName: parse.ToString(step.With["gitUserName"]),
-					UserPwd:  parse.ToString(step.With["gitUserPwd"]),
-					Path:     parse.ToString(step.With["gitPath"]),
-				})
+			if step.ActionName == "checkout" {
+				// 自定义了地址
+				if parse.ToString(step.With["gitHub"]) != "" {
+					gits.Add(GitEO{
+						Hub:      parse.ToString(step.With["gitHub"]),
+						Branch:   parse.ToString(step.With["gitBranch"]),
+						UserName: parse.ToString(step.With["gitUserName"]),
+						UserPwd:  parse.ToString(step.With["gitUserPwd"]),
+						Path:     parse.ToString(step.With["gitPath"]),
+					})
+				}
+				// 修改了应用的分支
+				if branch := parse.ToString(step.With["branch"]); branch != "" {
+					appGit := gits.Find(func(item *GitEO) bool {
+						return item.IsApp
+					})
+					appGit.Branch = branch
+				}
 			}
+
 			step.With["gits"] = gits
 
 			// 生成with.json文件，并复制到容器
@@ -410,16 +421,14 @@ func (receiver *BuildEO) success() {
 }
 
 // 得到所有Git
-func (receiver *BuildEO) getGits() []GitEO {
-	var gits []GitEO
+func (receiver *BuildEO) getGits() collections.List[GitEO] {
+	gits := collections.NewList[GitEO]()
 	if !receiver.appGit.IsNil() {
-		gits = append(gits, receiver.appGit)
+		gits.Add(receiver.appGit)
 	}
 	// 依赖的框架
 	frameworkGits := container.Resolve[Repository]().ToGitList(receiver.apps.FrameworkGits)
-	if frameworkGits.Count() > 0 {
-		gits = append(gits, frameworkGits.ToArray()...)
-	}
+	gits.AddList(frameworkGits)
 	return gits
 }
 

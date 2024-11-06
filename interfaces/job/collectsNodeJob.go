@@ -1,8 +1,6 @@
 package job
 
 import (
-	"fops/domain/apps"
-	"fops/domain/cluster"
 	"fops/domain/clusterNode"
 
 	"github.com/farseer-go/docker"
@@ -11,8 +9,8 @@ import (
 )
 
 func CollectsNodeJob(*tasks.TaskContext) {
-	appsRepository := container.Resolve[apps.Repository]()
-	clusterRepository := container.Resolve[cluster.Repository]()
+	//appsRepository := container.Resolve[apps.Repository]()
+	//clusterRepository := container.Resolve[cluster.Repository]()
 	clusterNodeRepository := container.Resolve[clusterNode.Repository]()
 
 	// 收集所有节点的信息

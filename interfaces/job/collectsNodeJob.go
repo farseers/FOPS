@@ -24,37 +24,41 @@ func CollectsNodeJob(*tasks.TaskContext) {
 	}
 
 	dockerNodeList.Foreach(func(node *docker.DockerNodeVO) {
-		vo := dockerClient.Node.Info(node.NodeName)
+		dockerNode := dockerClient.Node.Info(node.NodeName)
 		node.IsHealth = node.Status == "Ready" && node.Availability == "Active"
-		node.IP = vo.IP
-		node.OS = vo.OS
-		node.Architecture = vo.Architecture
-		node.CPUs = vo.CPUs
-		node.Memory = vo.Memory
-		node.Label = vo.Label
+		node.IP = dockerNode.IP
+		node.OS = dockerNode.OS
+		node.Architecture = dockerNode.Architecture
+		node.CPUs = dockerNode.CPUs
+		node.Memory = dockerNode.Memory
+		node.Label = dockerNode.Label
+
+		// 加入到本地列表
+		dockerNodeVO := clusterNode.NodeList.Find(func(dockerItem *docker.DockerNodeVO) bool {
+			return dockerItem.IP == node.IP
+		})
+		if dockerNodeVO == nil {
+			clusterNode.NodeList.Add(*node)
+		} else {
+			dockerNodeVO.IsHealth = node.IsHealth
+			dockerNodeVO.OS = node.OS
+			dockerNodeVO.Architecture = node.Architecture
+			dockerNodeVO.CPUs = node.CPUs
+			dockerNodeVO.Memory = node.Memory
+			dockerNodeVO.Label = node.Label
+		}
 	})
 
 	// 删除旧的节点
 	clusterNode.NodeList.Foreach(func(dockerNodeVO *docker.DockerNodeVO) {
-		dockerNode := dockerNodeList.Find(func(dockerItem *docker.DockerNodeVO) bool {
-			return dockerItem.IP == dockerNodeVO.IP
-		})
-
 		// 如果不在docker swarm中了，说明机器从集群中删除了。
-		if dockerNode == nil {
+		if !dockerNodeList.Where(func(dockerItem docker.DockerNodeVO) bool {
+			return dockerItem.IP == dockerNodeVO.IP
+		}).Any() {
 			clusterNode.NodeList.RemoveAll(func(item docker.DockerNodeVO) bool {
 				return item.IP == dockerNodeVO.IP
 			})
-			return
 		}
-
-		// 更新状态
-		dockerNodeVO.IsHealth = dockerNode.IsHealth
-		dockerNodeVO.OS = dockerNode.OS
-		dockerNodeVO.Architecture = dockerNode.Architecture
-		dockerNodeVO.CPUs = dockerNode.CPUs
-		dockerNodeVO.Memory = dockerNode.Memory
-		dockerNodeVO.Label = dockerNode.Label
 	})
 
 	// 间隔更新

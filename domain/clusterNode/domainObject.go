@@ -6,4 +6,4 @@ import (
 )
 
 // 当前集群的节点列表（不读库，走本地缓存）
-var NodeList collections.List[docker.DockerNodeVO]
+var NodeList = collections.NewList[docker.DockerNodeVO]()

@@ -6,8 +6,6 @@ import (
 
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
-	"github.com/farseer-go/fs/dateTime"
-	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/mapper"
 )
 
@@ -17,18 +15,8 @@ type clusterNodeRepository struct {
 // UpdateClusterNode 更新集群节点信息
 func (receiver *clusterNodeRepository) UpdateClusterNode(lst collections.List[docker.DockerNodeVO]) {
 	lstPO := mapper.ToList[model.ClusterNodePO](lst)
-	lstPO.Foreach(func(item *model.ClusterNodePO) {
-		item.UpdateAt = dateTime.Now()
-		// 更新数据
-		count, err := context.MysqlContext.ClusterNode.Where("node_name", item.NodeName).Omit("cpu_usage_percent", "memory_usage_percent", "memory_usage", "disk", "disk_usage_percent", "disk_usage").Update(*item)
-		flog.ErrorIfExists(err)
-
-		// 没有更新到数据时，则插入
-		if count == 0 {
-			err = context.MysqlContext.ClusterNode.InsertIgnore(item)
-			flog.ErrorIfExists(err)
-		}
-	})
+	context.MysqlContext.ClusterNode.Where("1=1").Delete()
+	context.MysqlContext.ClusterNode.InsertIgnoreList(lstPO, 100)
 }
 
 func (receiver *clusterNodeRepository) GetClusterNodeList() collections.List[docker.DockerNodeVO] {

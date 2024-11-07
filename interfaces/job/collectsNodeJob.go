@@ -6,6 +6,7 @@ import (
 
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
+	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/tasks"
 )
 
@@ -21,6 +22,7 @@ func CollectsNodeJob(*tasks.TaskContext) {
 	if dockerNodeList.Count() == 0 {
 		return
 	}
+
 	dockerNodeList.Foreach(func(node *docker.DockerNodeVO) {
 		vo := dockerClient.Node.Info(node.NodeName)
 		node.IsHealth = node.Status == "Ready" && node.Availability == "Active"
@@ -33,19 +35,34 @@ func CollectsNodeJob(*tasks.TaskContext) {
 	})
 
 	// 删除旧的节点
-	clusterNodeRepository.GetClusterNodeList().Foreach(func(dockerNodeVO *docker.DockerNodeVO) {
-		if !dockerNodeList.Where(func(dockerItem docker.DockerNodeVO) bool {
+	clusterNode.NodeList.Foreach(func(dockerNodeVO *docker.DockerNodeVO) {
+		dockerNode := dockerNodeList.Find(func(dockerItem *docker.DockerNodeVO) bool {
 			return dockerItem.IP == dockerNodeVO.IP
-		}).Any() {
-			clusterNodeRepository.Delete(dockerNodeVO.IP)
+		})
+
+		// 如果不在docker swarm中了，说明机器从集群中删除了。
+		if dockerNode == nil {
+			clusterNode.NodeList.RemoveAll(func(item docker.DockerNodeVO) bool {
+				return item.IP == dockerNodeVO.IP
+			})
+			return
 		}
+
+		// 更新状态
+		dockerNodeVO.IsHealth = dockerNode.IsHealth
+		dockerNodeVO.OS = dockerNode.OS
+		dockerNodeVO.Architecture = dockerNode.Architecture
+		dockerNodeVO.CPUs = dockerNode.CPUs
+		dockerNodeVO.Memory = dockerNode.Memory
+		dockerNodeVO.Label = dockerNode.Label
 	})
 
-	// 将新的节点加入节点列表
-	clusterNode.NodeList = dockerNodeList
 	// 间隔更新
 	if time.Now().Second()%5 == 0 {
-		// 更新集群节点信息
-		clusterNodeRepository.UpdateClusterNode(dockerNodeList)
+		// 通过事务来更新
+		container.Resolve[core.ITransaction]("default").Transaction(func() {
+			// 更新集群节点信息
+			clusterNodeRepository.UpdateClusterNode(clusterNode.NodeList)
+		})
 	}
 }

@@ -2,6 +2,7 @@ package job
 
 import (
 	"fops/domain/clusterNode"
+	"time"
 
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
@@ -31,29 +32,20 @@ func CollectsNodeJob(*tasks.TaskContext) {
 		node.Label = vo.Label
 	})
 
-	// 数据库的节点列表
-	clusterNodeList := clusterNodeRepository.GetClusterNodeList()
 	// 删除旧的节点
-	clusterNodeList.Foreach(func(dockerNodeVO *docker.DockerNodeVO) {
+	clusterNodeRepository.GetClusterNodeList().Foreach(func(dockerNodeVO *docker.DockerNodeVO) {
 		if !dockerNodeList.Where(func(dockerItem docker.DockerNodeVO) bool {
 			return dockerItem.IP == dockerNodeVO.IP
 		}).Any() {
 			clusterNodeRepository.Delete(dockerNodeVO.IP)
-			clusterNodeList.RemoveAll(func(item docker.DockerNodeVO) bool {
-				return item.IP == dockerNodeVO.IP
-			})
 		}
 	})
 
 	// 将新的节点加入节点列表
-
-	// 读取数据库的节点列表，删除离开的节点
-	clusterNodeRepository.GetClusterNodeList().Foreach(func(item *docker.DockerNodeVO) {
-		if !dockerNodeList.Where(func(dockerItem docker.DockerNodeVO) bool {
-			return dockerItem.IP == item.IP
-		}).Any() {
-			clusterNodeRepository.Delete(item.IP)
-		}
-	})
-
+	clusterNode.NodeList = dockerNodeList
+	// 间隔更新
+	if time.Now().Second()%5 == 0 {
+		// 更新集群节点信息
+		clusterNodeRepository.UpdateClusterNode(dockerNodeList)
+	}
 }

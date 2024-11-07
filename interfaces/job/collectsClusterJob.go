@@ -24,35 +24,9 @@ import (
 func CollectsClusterJob(*tasks.TaskContext) {
 	appsRepository := container.Resolve[apps.Repository]()
 	clusterRepository := container.Resolve[cluster.Repository]()
-	clusterNodeRepository := container.Resolve[clusterNode.Repository]()
 
 	// 收集所有节点的信息
 	dockerClient := docker.NewClient()
-	nodeList := dockerClient.Node.List()
-	nodeList.Foreach(func(node *docker.DockerNodeVO) {
-		vo := dockerClient.Node.Info(node.NodeName)
-		node.IsHealth = node.Status == "Ready" && node.Availability == "Active"
-		node.IP = vo.IP
-		node.OS = vo.OS
-		node.Architecture = vo.Architecture
-		node.CPUs = vo.CPUs
-		node.Memory = vo.Memory
-		node.Label = vo.Label
-	})
-
-	// 没有读取到集群，则退出
-	if nodeList.Count() == 0 {
-		return
-	}
-
-	// 读取数据库的节点列表，删除离开的节点
-	clusterNodeRepository.GetClusterNodeList().Foreach(func(item *docker.DockerNodeVO) {
-		if !nodeList.Where(func(dockerItem docker.DockerNodeVO) bool {
-			return dockerItem.IP == item.IP
-		}).Any() {
-			clusterNodeRepository.Delete(item.IP)
-		}
-	})
 
 	// 获取本地集群信息
 	localCluster := clusterRepository.GetLocalCluster()
@@ -121,17 +95,13 @@ func CollectsClusterJob(*tasks.TaskContext) {
 			return
 		}
 		servicePS := allServiceList.Where(func(item docker.ServicePsVO) bool {
-			return item.State != "Shutdown"
+			return item.State == "Running" //return item.State != "Shutdown"
 		}).ToList()
 
 		// 遍历每个实例，得到容器ID、IP
 		servicePS.Foreach(func(item *docker.ServicePsVO) {
-			containerInspectJson, _ := dockerClient.Container.InspectByServiceId(item.ServiceId)
-			if len(containerInspectJson) == 0 {
-				return
-			}
 			// 匹配对应的节点
-			node := nodeList.Find(func(node *docker.DockerNodeVO) bool {
+			node := clusterNode.NodeList.Find(func(node *docker.DockerNodeVO) bool {
 				return node.NodeName == item.Node
 			})
 			if node == nil {
@@ -140,6 +110,11 @@ func CollectsClusterJob(*tasks.TaskContext) {
 
 			// 只有当节点是健康状态才加入到实例列表中。
 			if node.IsHealth {
+				// 读取单个实例的详情
+				containerInspectJson, _ := dockerClient.Container.InspectByServiceId(item.ServiceId)
+				if len(containerInspectJson) == 0 {
+					return
+				}
 				// 通过代理节点同步到的容器资源信息
 				dockerInspectVO := apps.DockerInspectVO{
 					DockerStatsVO: apps.GetDockerStats(containerInspectJson[0].Status.ContainerStatus.ContainerID),
@@ -151,29 +126,28 @@ func CollectsClusterJob(*tasks.TaskContext) {
 					State:         containerInspectJson[0].Status.State,
 				}
 
-				// IP
+				// 容器IP
 				if len(containerInspectJson[0].NetworksAttachments) > 0 && len(containerInspectJson[0].NetworksAttachments[0].Addresses) > 0 {
 					dockerInspectVO.ContainerIP = strings.Split(containerInspectJson[0].NetworksAttachments[0].Addresses[0], "/")[0]
 				}
-				appDO.DockerInspect.Add(dockerInspectVO)
 
 				// 如果应用是fops-agent，则给node节点设置agent的容器IP
 				if appDO.AppName == "fops-agent" && dockerInspectVO.ContainerIP != "" {
 					node.AgentIP = dockerInspectVO.ContainerIP
 					agentNotify <- dockerInspectVO.ContainerIP
 				}
+				appDO.DockerInspect.Add(dockerInspectVO)
 			}
 			time.Sleep(100 * time.Millisecond)
 		})
 		// 实例数量（这个才是真实的）
-		appDO.DockerInstances = appDO.DockerInspect.Count()
+		//appDO.DockerInstances = appDO.DockerInspect.Count()
+		appDO.DockerInstances = servicePS.Count()
 		time.Sleep(100 * time.Millisecond)
 	})
 
 	// 通过事务来更新
 	container.Resolve[core.ITransaction]("default").Transaction(func() {
-		// 更新集群节点信息
-		clusterNodeRepository.UpdateClusterNode(nodeList)
 		// 更新服务运行情况
 		if serviceList.Count() > 0 {
 			_, _ = appsRepository.UpdateInspect(lstApp)
@@ -187,30 +161,30 @@ var mAgent = collections.NewDictionary[string, string]()
 // ListenerAgentNotify 监听新的代理节点IP
 func ListenerAgentNotify() {
 	for {
-		agentIP := <-agentNotify
+		agentContainerIP := <-agentNotify
 
 		// 获取主机资源
-		if !mAgent.ContainsKey("host_" + agentIP) {
-			mAgent.Add("host_"+agentIP, "")
-			go connectAgentByHostResource(agentIP)
+		if !mAgent.ContainsKey("host_" + agentContainerIP) {
+			mAgent.Add("host_"+agentContainerIP, "")
+			go connectAgentByHostResource(agentContainerIP)
 		}
 
 		// 获取容器资源
-		if !mAgent.ContainsKey("docker_" + agentIP) {
-			mAgent.Add("docker_"+agentIP, "")
-			go connectAgentByDockerResource(agentIP)
+		if !mAgent.ContainsKey("docker_" + agentContainerIP) {
+			mAgent.Add("docker_"+agentContainerIP, "")
+			go connectAgentByDockerResource(agentContainerIP)
 		}
 	}
 }
 
 // 获取主机资源
-func connectAgentByHostResource(agentIP string) {
+func connectAgentByHostResource(agentContainerIP string) {
 	clusterNodeRepository := container.Resolve[clusterNode.Repository]()
 
 	// 访问获取主机资源
-	url := fmt.Sprintf("ws://%s:8888/ws/host/resource", agentIP)
+	url := fmt.Sprintf("ws://%s:8888/ws/host/resource", agentContainerIP)
 	defer func() {
-		mAgent.Remove("host_" + agentIP)
+		mAgent.Remove("host_" + agentContainerIP)
 		flog.Debugf("代理节点%s，已断开", url)
 	}()
 
@@ -227,7 +201,7 @@ func connectAgentByHostResource(agentIP string) {
 		if err = client.Receiver(&resourceResponse); err != nil {
 			if client.IsClose() {
 				// 更新集群节点资源信息
-				clusterNodeRepository.UpdateClusterNodeResourceByAgentIP(agentIP, 0, 0, 0, 0, 0, 0)
+				clusterNodeRepository.UpdateClusterNodeResourceByAgentIP(agentContainerIP, 0, 0, 0, 0, 0, 0)
 				return
 			}
 			flog.Warningf("接收%s 消息失败：%s", url, err.Error())
@@ -245,23 +219,34 @@ func connectAgentByHostResource(agentIP string) {
 		diskUsage, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", diskUsage), 64)
 
 		// 更新集群节点资源信息
-		clusterNodeRepository.UpdateClusterNodeResourceByAgentIP(agentIP,
-			resourceResponse.CpuUsagePercent,
-			resourceResponse.MemoryUsagePercent,
-			memoryUsage,
-			resourceResponse.DiskTotal/1024/1024/1024,
-			resourceResponse.DiskUsagePercent,
-			diskUsage,
-		)
+		node := clusterNode.NodeList.Find(func(item *docker.DockerNodeVO) bool {
+			return item.AgentIP == agentContainerIP
+		})
+		if node != nil {
+			node.CpuUsagePercent = resourceResponse.CpuUsagePercent
+			node.MemoryUsagePercent = resourceResponse.MemoryUsagePercent
+			node.MemoryUsage = memoryUsage
+			node.Disk = resourceResponse.DiskTotal / 1024 / 1024 / 1024
+			node.DiskUsagePercent = resourceResponse.DiskUsagePercent
+			node.DiskUsage = diskUsage
+		}
+		// clusterNodeRepository.UpdateClusterNodeResourceByAgentIP(agentIP,
+		// 	resourceResponse.CpuUsagePercent,
+		// 	resourceResponse.MemoryUsagePercent,
+		// 	memoryUsage,
+		// 	resourceResponse.DiskTotal/1024/1024/1024,
+		// 	resourceResponse.DiskUsagePercent,
+		// 	diskUsage,
+		// )
 	}
 }
 
 // 获取Docker资源
-func connectAgentByDockerResource(agentIP string) {
+func connectAgentByDockerResource(agentContainerIP string) {
 	// 访问获取主机资源
-	url := fmt.Sprintf("ws://%s:8888/ws/docker/resource", agentIP)
+	url := fmt.Sprintf("ws://%s:8888/ws/docker/resource", agentContainerIP)
 	defer func() {
-		mAgent.Remove("docker_" + agentIP)
+		mAgent.Remove("docker_" + agentContainerIP)
 		flog.Debugf("代理节点%s，已断开", url)
 	}()
 
@@ -284,7 +269,7 @@ func connectAgentByDockerResource(agentIP string) {
 		}
 
 		if resourceResponse.Count() > 0 {
-			apps.NodeDockerStatsList[agentIP] = resourceResponse
+			apps.NodeDockerStatsList[agentContainerIP] = resourceResponse
 		}
 	}
 }

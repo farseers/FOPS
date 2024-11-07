@@ -5,6 +5,8 @@ import (
 	"github.com/farseer-go/docker"
 )
 
+// key = agentContainerIP
+// value = container app
 var NodeDockerStatsList = make(map[string]collections.List[docker.DockerStatsVO])
 
 type DockerInspectVO struct {

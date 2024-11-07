@@ -12,6 +12,7 @@ import (
 // @get nodeList
 // @filter application.Jwt
 func NodeList(clusterNodeRepository clusterNode.Repository) collections.List[docker.DockerNodeVO] {
-	lst := clusterNodeRepository.GetClusterNodeList()
-	return lst
+	//lst := clusterNodeRepository.GetClusterNodeList()
+	//return lst
+	return clusterNode.NodeList
 }

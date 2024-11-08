@@ -202,6 +202,14 @@ func (receiver *BuildEO) StartBuild() {
 					})
 					appGit.Branch = branch
 				}
+
+				// 需要自动合并的分支
+				if branch := parse.ToString(step.With["autoMerge"]); branch != "" {
+					appGit := gits.Find(func(item *GitEO) bool {
+						return item.IsApp
+					})
+					appGit.AutoMerge = branch
+				}
 			}
 
 			step.With["gits"] = gits

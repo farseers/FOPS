@@ -1,12 +1,13 @@
 package apps
 
 import (
-	"github.com/farseer-go/fs/dateTime"
-	"github.com/farseer-go/fs/exception"
-	"github.com/farseer-go/utils/str"
 	"net/url"
 	"path/filepath"
 	"strings"
+
+	"github.com/farseer-go/fs/dateTime"
+	"github.com/farseer-go/fs/exception"
+	"github.com/farseer-go/utils/str"
 )
 
 // GitEO git仓库
@@ -20,6 +21,8 @@ type GitEO struct {
 	Path     string            // 存储目录
 	PullAt   dateTime.DateTime // 拉取时间
 	IsApp    bool              // 是否为应用
+
+	AutoMerge string // 自动要合并的分支名称（通常是main）
 }
 
 func (receiver *GitEO) IsNil() bool {

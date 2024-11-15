@@ -39,6 +39,7 @@ func CollectsNodeJob(*tasks.TaskContext) {
 			return dockerItem.IP == node.IP
 		})
 		if dockerNodeVO == nil {
+			flog.Infof("发现新的集群节点：%s", node.IP)
 			clusterNode.NodeList.Add(*node)
 		} else {
 			dockerNodeVO.IsHealth = node.IsHealth
@@ -47,6 +48,7 @@ func CollectsNodeJob(*tasks.TaskContext) {
 			dockerNodeVO.CPUs = node.CPUs
 			dockerNodeVO.Memory = node.Memory
 			dockerNodeVO.Label = node.Label
+			flog.Infof("更新集群节点信息：%s", node.IP)
 		}
 	})
 

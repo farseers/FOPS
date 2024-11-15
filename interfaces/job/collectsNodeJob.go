@@ -7,6 +7,7 @@ import (
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/core"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/tasks"
 )
 
@@ -55,6 +56,7 @@ func CollectsNodeJob(*tasks.TaskContext) {
 		if !dockerNodeList.Where(func(dockerItem docker.DockerNodeVO) bool {
 			return dockerItem.IP == dockerNodeVO.IP
 		}).Any() {
+			flog.Warningf("集群节点：%s 已离开集群", dockerNodeVO.IP)
 			clusterNode.NodeList.RemoveAll(func(item docker.DockerNodeVO) bool {
 				return item.IP == dockerNodeVO.IP
 			})

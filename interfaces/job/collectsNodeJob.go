@@ -21,6 +21,7 @@ func CollectsNodeJob(*tasks.TaskContext) {
 	dockerNodeList := dockerClient.Node.List()
 	// 没有读取到集群，则退出
 	if dockerNodeList.Count() == 0 {
+		flog.Warning("docker node ls 没有读取到集群节点")
 		return
 	}
 
@@ -48,7 +49,6 @@ func CollectsNodeJob(*tasks.TaskContext) {
 			dockerNodeVO.CPUs = node.CPUs
 			dockerNodeVO.Memory = node.Memory
 			dockerNodeVO.Label = node.Label
-			flog.Infof("更新集群节点信息：%s", node.IP)
 		}
 	})
 

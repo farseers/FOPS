@@ -112,6 +112,8 @@ func (receiver *BuildEO) StartBuild() {
 		"isLocal":                 clusterDO.IsLocal,
 		"fopsAddr":                clusterDO.FopsAddr,
 		"fScheduleAddr":           clusterDO.FScheduleAddr,
+		"limitCpus":               receiver.apps.LimitCpus,
+		"limitMemory":             receiver.apps.LimitMemory,
 	})
 
 	// 设置镜像的代理

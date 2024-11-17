@@ -16,7 +16,7 @@ import (
 
 // UpdateDockerImage 更新仓库版本
 // @post updateDockerImage
-func UpdateDockerImage(appName string, dockerImage string, buildNumber int, dockerHub, dockerUserName, dockerUserPwd string, appsRepository apps.Repository, clusterRepository cluster.Repository) {
+func UpdateDockerImage(appName string, dockerImage string, updateDelay int, buildNumber int, dockerHub, dockerUserName, dockerUserPwd string, appsRepository apps.Repository, clusterRepository cluster.Repository) {
 	clusterDO := clusterRepository.GetLocalCluster()
 	exception.ThrowWebExceptionfBool(clusterDO.IsNil(), 403, "集群不存在")
 
@@ -59,7 +59,7 @@ func UpdateDockerImage(appName string, dockerImage string, buildNumber int, dock
 	// 服务存在，才更新，否则自动创建
 	if !createService(client, appName, do.DockerImage, appsRepository, clusterRepository) {
 		// 更新镜像
-		err = client.Service.SetImages(appName, do.DockerImage)
+		err = client.Service.SetImages(appName, do.DockerImage, updateDelay)
 		exception.ThrowRefuseExceptionError(err)
 	}
 

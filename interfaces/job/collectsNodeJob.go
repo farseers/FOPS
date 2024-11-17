@@ -35,6 +35,11 @@ func CollectsNodeJob(*tasks.TaskContext) {
 		node.Memory = dockerNode.Memory
 		node.Label = dockerNode.Label
 
+		if node.IP == "" {
+			flog.Warningf("集群节点：%s，没有读取到IP", node.NodeName)
+			return
+		}
+
 		// 加入到本地列表
 		dockerNodeVO := clusterNode.NodeList.Find(func(dockerItem *docker.DockerNodeVO) bool {
 			return dockerItem.IP == node.IP

@@ -19,9 +19,9 @@ func CollectsNodeJob(*tasks.TaskContext) {
 	// 收集所有节点的信息
 	dockerClient := docker.NewClient()
 	dockerNodeList := dockerClient.Node.List()
+
 	// 没有读取到集群，则退出
 	if dockerNodeList.Count() == 0 {
-		flog.Warning("docker node ls 没有读取到集群节点")
 		return
 	}
 
@@ -56,6 +56,13 @@ func CollectsNodeJob(*tasks.TaskContext) {
 			dockerNodeVO.Label = node.Label
 		}
 	})
+
+	// 存在没有收集到IP的情况时，退出
+	if dockerNodeList.Where(func(item docker.DockerNodeVO) bool {
+		return item.IP == ""
+	}).Any() {
+		return
+	}
 
 	// 删除旧的节点
 	clusterNode.NodeList.Foreach(func(dockerNodeVO *docker.DockerNodeVO) {

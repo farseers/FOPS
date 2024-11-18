@@ -45,6 +45,8 @@ func UpdateDockerImage(appName string, dockerImage string, updateDelay int, buil
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 
 	client := docker.NewClient()
+	c := make(chan string, 10000)
+	client.SetChar(c)
 
 	// 先登陆仓库
 	err := client.Hub.Login(dockerHub, dockerUserName, dockerUserPwd)

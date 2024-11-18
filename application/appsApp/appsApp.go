@@ -133,6 +133,10 @@ func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.
 	lstCluster := clusterRepository.ToList()
 	lst := collections.NewList[response.AppsResponse]()
 	appsRepository.ToListBySys(isSys).Foreach(func(item *apps.DomainObject) {
+		// 在监控中心，副本数量=0的，不显示
+		if isSys && item.DockerReplicas == 0 {
+			return
+		}
 		appsResponse := doToAppsResponse(lstCluster, *item)
 		// 统计日志数量
 		countList.Foreach(func(logItem *logData.LogCountEO) {

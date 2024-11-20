@@ -2,7 +2,7 @@ package apps
 
 import (
 	"context"
-	"encoding/json"
+
 	"fmt"
 	"fops/domain/_/eumBuildStatus"
 	"fops/domain/apps/event"
@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bytedance/sonic"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/configure"
@@ -218,7 +219,7 @@ func (receiver *BuildEO) StartBuild() {
 
 			// 生成with.json文件，并复制到容器
 			file.Delete(WithJsonPath)
-			withContent, _ := json.Marshal(step.With)
+			withContent, _ := sonic.Marshal(step.With)
 			file.WriteByte(WithJsonPath, withContent)
 			_ = receiver.dockerClient.Container.Cp(receiver.fopsBuildName, WithJsonPath, WithJsonPath, receiver.ctx)
 

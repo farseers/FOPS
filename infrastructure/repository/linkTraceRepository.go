@@ -2,13 +2,13 @@ package repository
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"fops/domain/linkTrace"
 	"fops/infrastructure/repository/context"
 	"fops/infrastructure/repository/model"
 	"time"
 
+	"github.com/bytedance/sonic"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/flog"
@@ -457,56 +457,56 @@ func (receiver *linkTraceRepository) saveDetail(lst collections.List[model.Trace
 		// 写入明细
 		if lstTraceDetailDatabase.Count() > 0 {
 			if _, err := context.CHContext.TraceDetailDatabase.InsertList(lstTraceDetailDatabase, 2000); err != nil {
-				b, _ := json.Marshal(lstTraceDetailDatabase)
+				b, _ := sonic.Marshal(lstTraceDetailDatabase)
 				_ = flog.Errorf("TraceDetailDatabase写入ch失败,%s %s", err.Error(), string(b))
 				return err
 			}
 		}
 		if lstTraceDetailEs.Count() > 0 {
 			if _, err := context.CHContext.TraceDetailEs.InsertList(lstTraceDetailEs, 2000); err != nil {
-				b, _ := json.Marshal(lstTraceDetailEs)
+				b, _ := sonic.Marshal(lstTraceDetailEs)
 				_ = flog.Errorf("TraceDetailEs写入ch失败,%s %s", err.Error(), string(b))
 				return err
 			}
 		}
 		if lstTraceDetailEtcd.Count() > 0 {
 			if _, err := context.CHContext.TraceDetailEtcd.InsertList(lstTraceDetailEtcd, 2000); err != nil {
-				b, _ := json.Marshal(lstTraceDetailEtcd)
+				b, _ := sonic.Marshal(lstTraceDetailEtcd)
 				_ = flog.Errorf("TraceDetailEtcd写入ch失败,%s %s", err.Error(), string(b))
 				return err
 			}
 		}
 		if lstTraceDetailHand.Count() > 0 {
 			if _, err := context.CHContext.TraceDetailHand.InsertList(lstTraceDetailHand, 2000); err != nil {
-				b, _ := json.Marshal(lstTraceDetailHand)
+				b, _ := sonic.Marshal(lstTraceDetailHand)
 				_ = flog.Errorf("TraceDetailHand写入ch失败,%s %s", err.Error(), string(b))
 				return err
 			}
 		}
 		if lstTraceDetailHttp.Count() > 0 {
 			if _, err := context.CHContext.TraceDetailHttp.InsertList(lstTraceDetailHttp, 2000); err != nil {
-				b, _ := json.Marshal(lstTraceDetailHttp)
+				b, _ := sonic.Marshal(lstTraceDetailHttp)
 				_ = flog.Errorf("TraceDetailHttp写入ch失败,%s %s", err.Error(), string(b))
 				return err
 			}
 		}
 		if lstTraceDetailGrpc.Count() > 0 {
 			if _, err := context.CHContext.TraceDetailGrpc.InsertList(lstTraceDetailGrpc, 2000); err != nil {
-				b, _ := json.Marshal(lstTraceDetailGrpc)
+				b, _ := sonic.Marshal(lstTraceDetailGrpc)
 				_ = flog.Errorf("TraceDetailGrpc写入ch失败,%s %s", err.Error(), string(b))
 				return err
 			}
 		}
 		if lstTraceDetailMq.Count() > 0 {
 			if _, err := context.CHContext.TraceDetailMq.InsertList(lstTraceDetailMq, 2000); err != nil {
-				b, _ := json.Marshal(lstTraceDetailMq)
+				b, _ := sonic.Marshal(lstTraceDetailMq)
 				_ = flog.Errorf("TraceDetailMq写入ch失败,%s %s", err.Error(), string(b))
 				return err
 			}
 		}
 		if lstTraceDetailRedis.Count() > 0 {
 			if _, err := context.CHContext.TraceDetailRedis.InsertList(lstTraceDetailRedis, 2000); err != nil {
-				b, _ := json.Marshal(lstTraceDetailRedis)
+				b, _ := sonic.Marshal(lstTraceDetailRedis)
 				_ = flog.Errorf("TraceDetailRedis写入ch失败,%s %s", err.Error(), string(b))
 				return err
 			}

@@ -2,8 +2,10 @@ package apps
 
 import (
 	"fmt"
-	"github.com/farseer-go/fs/parse"
 	"os"
+	"strconv"
+
+	"github.com/farseer-go/fs/parse"
 )
 
 const (
@@ -67,7 +69,7 @@ func (env *EnvVO) ToMap() map[string]string {
 		"Git_Root":       GitRoot,
 		"Git_Hub":        env.GitHub,
 		"Build_Id":       parse.ToString(env.BuildId),
-		"Build_Number":   parse.ToString(env.BuildNumber),
+		"Build_Number":   strconv.Itoa(env.BuildNumber),
 		"App_Name":       env.AppName,
 		"App_GitRoot":    env.AppGitRoot,
 		//"App_Domain":     env.ProjectDomain,

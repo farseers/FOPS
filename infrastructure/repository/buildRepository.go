@@ -52,9 +52,10 @@ func (repository *buildRepository) SetBuilding(id int64) {
 
 // UpdateBuilding 更新构建任务
 func (repository *buildRepository) UpdateBuilding(id int64, env apps.EnvVO) {
-	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("cluster_id", "docker_image").Update(model.BuildPO{
+	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("cluster_id", "docker_image", "branch_name").Update(model.BuildPO{
 		ClusterId:   env.ClusterId,
 		DockerImage: env.DockerImage,
+		BranchName:  env.BranchName,
 	})
 }
 

@@ -46,6 +46,7 @@ type EnvVO struct {
 	GitName     string // Git名称（项目的目录名称）
 	DockerHub   string // Docker仓库地址
 	DockerImage string // Docker镜像
+	BranchName  string // 分支名称
 }
 
 // Print 打印环境变量

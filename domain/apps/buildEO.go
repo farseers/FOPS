@@ -209,6 +209,8 @@ func (receiver *BuildEO) StartBuild() {
 					} else {
 						appGit.Branch = branch
 						receiver.BranchName = branch
+						receiver.Env.BranchName = branch
+						appsRepository.UpdateBuilding(receiver.Id, receiver.Env)
 					}
 				}
 
@@ -461,6 +463,7 @@ func (receiver *BuildEO) GenerateEnv(projectGitRoot string, dockerHub string, do
 		AppGitRoot:  projectGitRoot,
 		GitHub:      receiver.appGit.Hub,
 		GitName:     gitName,
+		BranchName:  receiver.BranchName,
 	}
 }
 

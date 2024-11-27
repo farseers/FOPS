@@ -101,6 +101,7 @@
                     <el-tag v-if="scope.row.Status==2 && scope.row.IsSuccess == true" size="small" type="success">成功</el-tag>
                     <el-tag v-else-if="scope.row.Status==2 && scope.row.IsSuccess == false" size="small" type="danger">失败</el-tag>
                     <el-tag size="small" type="info">{{ scope.row.WorkflowsName }}</el-tag>
+                    <el-tag size="small" type="info">{{ scope.row.BranchName }}</el-tag>
                     <span style="margin-left: 5px ">{{ scope.row.AppName }}:{{ scope.row.BuildNumber }}</span>
                   </template>
                 </el-table-column>

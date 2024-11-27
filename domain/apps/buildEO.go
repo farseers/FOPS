@@ -208,6 +208,7 @@ func (receiver *BuildEO) StartBuild() {
 						appGit.Branch = receiver.BranchName
 					} else {
 						appGit.Branch = branch
+						receiver.BranchName = branch
 					}
 				}
 

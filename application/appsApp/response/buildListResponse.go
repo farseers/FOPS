@@ -14,4 +14,5 @@ type BuildListResponse struct {
 	FinishAt      string              // 完成时间
 	AppName       string              // 应用名称
 	WorkflowsName string              // 工作流名称（文件的名称）
+	BranchName    string              // 分支名称
 }

@@ -363,16 +363,17 @@ const onHideOverlay=()=>{
 }
 // 构建
 const onBuildAdd = (row:any,workflowsName:any) => {
-  ElMessageBox.confirm(`请确认是否添加构建`+ workflowsName +`?`, '提示', {
+  const t = '请填写分支名称，并确认构建到本地!'
+  ElMessageBox.prompt(t, '提示', {
     confirmButtonText: '确认',
     cancelButtonText: '取消',
-    type: 'warning',
   })
-      .then(() => {
-        // 提交数据
-        var param={
+    .then(({ value }) => {
+     // 提交数据
+     var param={
           "AppName" : row.AppName,
           "WorkflowsName" : workflowsName,
+          "branchName":value
         }
         serverApi.buildAdd(param).then(async function(res){
           if(res.Status){
@@ -383,8 +384,10 @@ const onBuildAdd = (row:any,workflowsName:any) => {
             ElMessage.error(res.StatusMessage)
           }
         })
-      })
-      .catch(() => {});
+      
+    })
+    .catch(() => {});
+    
 };
 
 // 刷新工作流文件

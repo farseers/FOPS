@@ -20,7 +20,7 @@ import (
 // BuildAdd 添加构建
 // @post build/add
 // @filter application.Jwt
-func BuildAdd(appName string, workflowsName string, appsRepository apps.Repository, clusterRepository cluster.Repository, dockerDevice apps.IDockerDevice) {
+func BuildAdd(appName string, workflowsName string, branchName string, appsRepository apps.Repository, clusterRepository cluster.Repository, dockerDevice apps.IDockerDevice) {
 	appDO := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionfBool(appDO.IsNil(), 403, "应用不存在")
 	exception.ThrowWebExceptionfBool(workflowsName == "", 403, "工作流名称未设置")
@@ -34,6 +34,7 @@ func BuildAdd(appName string, workflowsName string, appsRepository apps.Reposito
 		Env:           apps.EnvVO{},
 		AppName:       appName,
 		WorkflowsName: workflowsName,
+		BranchName:    branchName,
 	}
 	err := appsRepository.AddBuild(buildDO)
 	exception.ThrowWebExceptionError(403, err)

@@ -37,6 +37,7 @@ type BuildEO struct {
 	Env             EnvVO               // 环境变量
 	AppName         string              // 应用名称
 	WorkflowsName   string              // 工作流名称（文件的名称）
+	BranchName      string              // 分支名称
 	DockerImage     string              // Docker镜像
 	WorkflowsAction ActionVO            // 工作流定义的内容（通过读取WorkflowsYmlPath）
 	dockerDevice    IDockerDevice
@@ -199,15 +200,19 @@ func (receiver *BuildEO) StartBuild() {
 					})
 				}
 				// 修改了应用的分支
-				if branch := parse.ToString(step.With["branch"]); branch != "" {
+				if branch := parse.ToString(step.With["branch"]); branch != "" || receiver.BranchName != "" {
 					appGit := gits.Find(func(item *GitEO) bool {
 						return item.IsApp
 					})
-					appGit.Branch = branch
+					if receiver.BranchName != "" {
+						appGit.Branch = receiver.BranchName
+					} else {
+						appGit.Branch = branch
+					}
 				}
 
 				// 需要自动合并的分支
-				if branch := parse.ToString(step.With["autoMerge"]); branch != "" {
+				if branch := parse.ToString(step.With["autoMerge"]); branch != "" || receiver.BranchName != "" {
 					appGit := gits.Find(func(item *GitEO) bool {
 						return item.IsApp
 					})

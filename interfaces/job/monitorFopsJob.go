@@ -5,6 +5,7 @@ import (
 	"fops/domain/apps"
 	"fops/domain/clusterNode"
 	"fops/domain/monitor"
+	"runtime"
 	"strings"
 
 	"github.com/farseer-go/collections"
@@ -112,4 +113,5 @@ func MonitorFopsJob(*tasks.TaskContext) {
 	// 	})
 	// }
 
+	runtime.GC()
 }

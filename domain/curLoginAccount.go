@@ -25,13 +25,11 @@ func GetLoginAccount() accountLogin.DomainObject {
 
 func SetLoginAccount(claims map[string]any) {
 	loginAccount := accountLogin.DomainObject{
-		LoginName: parse.ToString(claims["LoginName"]),
-		CreateAt:  parse.ToTime(claims["CreateAt"]),
+		LoginName:  parse.ToString(claims["LoginName"]),
+		CreateAt:   parse.ToTime(claims["CreateAt"]),
+		ClusterIds: collections.ToList[int](parse.ToString(claims["ClusterIds"])),
 	}
 
 	// 权限
-	if clusterIds, isOk := claims["ClusterIds"].([]int); isOk {
-		loginAccount.ClusterIds = collections.NewList(clusterIds...)
-	}
 	curLoginAccount.Set(loginAccount)
 }

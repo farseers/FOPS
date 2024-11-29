@@ -22,7 +22,7 @@ func Login(req request.LoginRequest, accountLoginRepository accountLogin.Reposit
 	exception.ThrowWebExceptionError(403, err)
 	claims := map[string]any{
 		"LoginName":  login.LoginName,
-		"ClusterIds": login.ClusterIds,
+		"ClusterIds": login.ClusterIds.ToString(","),
 		"DateTime":   time.Now(),
 	}
 	domain.SetLoginAccount(claims) // 登陆事件 用到

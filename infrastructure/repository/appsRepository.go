@@ -7,9 +7,9 @@ import (
 	"fops/infrastructure/repository/context"
 	"fops/infrastructure/repository/model"
 
-	"github.com/bytedance/sonic"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/data"
+	"github.com/farseer-go/fs/snc"
 	"github.com/farseer-go/mapper"
 )
 
@@ -86,7 +86,7 @@ func (receiver *appsRepository) UpdateInspect(lst collections.List[apps.DomainOb
 	// cluster_ver
 	sql.WriteString(",cluster_ver = case\n")
 	lst.Foreach(func(item *apps.DomainObject) {
-		marshal, _ := sonic.Marshal(item.ClusterVer)
+		marshal, _ := snc.Marshal(item.ClusterVer)
 		sql.WriteString(fmt.Sprintf("when app_name = '%s' then '%s'\n", item.AppName, string(marshal)))
 	})
 	sql.WriteString("else cluster_ver\n")
@@ -95,7 +95,7 @@ func (receiver *appsRepository) UpdateInspect(lst collections.List[apps.DomainOb
 	// docker_inspect
 	sql.WriteString(",docker_inspect = case\n")
 	lst.Foreach(func(item *apps.DomainObject) {
-		marshal, _ := sonic.Marshal(item.DockerInspect)
+		marshal, _ := snc.Marshal(item.DockerInspect)
 		sql.WriteString(fmt.Sprintf("when app_name = '%s' then '%s'\n", item.AppName, string(marshal)))
 	})
 	sql.WriteString("else docker_inspect\n")

@@ -5,10 +5,10 @@ import (
 	"fops/domain/monitor"
 	"time"
 
-	"github.com/bytedance/sonic"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
+	"github.com/farseer-go/fs/snc"
 	fsMonitor "github.com/farseer-go/monitor"
 	"github.com/farseer-go/queue"
 	"github.com/farseer-go/webapi/websocket"
@@ -22,7 +22,7 @@ func WsReceive(context *websocket.Context[fsMonitor.SendContentVO], monitorRepos
 		if len(req.AppId) == 0 || len(req.AppName) == 0 {
 			return
 		}
-		jsonData, _ := sonic.Marshal(req)
+		jsonData, _ := snc.Marshal(req)
 		flog.Info("WsReceive:" + string(jsonData))
 		// 所有key值进行处理
 		req.Keys.Keys().Foreach(func(key *string) {

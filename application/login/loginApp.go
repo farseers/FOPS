@@ -21,8 +21,9 @@ func Login(req request.LoginRequest, accountLoginRepository accountLogin.Reposit
 	err := login.CheckLogin(req.LoginPwd)
 	exception.ThrowWebExceptionError(403, err)
 	claims := map[string]any{
-		"LoginName": login.LoginName,
-		"DateTime":  time.Now(),
+		"LoginName":  login.LoginName,
+		"ClusterIds": login.ClusterIds,
+		"DateTime":   time.Now(),
 	}
 	domain.SetLoginAccount(claims) // 登陆事件 用到
 	token, _ := httpContext.Jwt.Build(claims)

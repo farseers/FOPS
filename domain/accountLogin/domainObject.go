@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/utils/encrypt"
 )
 
 type DomainObject struct {
-	Id         uint64    // 主键
-	LoginName  string    // 登陆名称
-	LoginPwd   string    // 登录密码
-	LoginSalt  string    // 盐
-	CreateAt   time.Time // 创建时间
-	ClusterIds []int     // 集群ID
+	Id         uint64                // 主键
+	LoginName  string                // 登陆名称
+	LoginPwd   string                // 登录密码
+	LoginSalt  string                // 盐
+	CreateAt   time.Time             // 创建时间
+	ClusterIds collections.List[int] // 集群ID
 }
 
 // NewLoginEO 添加登录信息

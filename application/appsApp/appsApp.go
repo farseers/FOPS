@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"fops/application/appsApp/request"
 	"fops/application/appsApp/response"
+	"fops/domain"
 	"fops/domain/apps"
 	"fops/domain/cluster"
 	"fops/domain/clusterNode"
@@ -176,8 +177,13 @@ func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.
 			fopsName, _ := workflowsYml.Get("fopsName")
 			// 只筛选出对应名称的工作流
 			if fopsNameString := parse.ToString(fopsName); fopsNameString == "" || fopsNameString == item.AppName {
-				workflowsYmlPath = filepath.Base(workflowsYmlPath)
-				appsResponse.WorkflowsNames = append(appsResponse.WorkflowsNames, workflowsYmlPath[:strings.Index(workflowsYmlPath, ".yml")])
+				// 判断账号权限
+				strClusterId, _ := workflowsYml.Get("jobs.clusterId")
+				clusterId := parse.ToInt(strClusterId)
+				if domain.GetLoginAccount().ClusterIds.Contains(clusterId) {
+					workflowsYmlPath = filepath.Base(workflowsYmlPath)
+					appsResponse.WorkflowsNames = append(appsResponse.WorkflowsNames, workflowsYmlPath[:strings.Index(workflowsYmlPath, ".yml")])
+				}
 			}
 		}
 

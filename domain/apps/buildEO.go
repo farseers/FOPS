@@ -204,9 +204,11 @@ func (receiver *BuildEO) StartBuild() {
 					appGit := gits.Find(func(item *GitEO) bool {
 						return item.IsApp
 					})
+					// UI中传入
 					if receiver.BranchName != "" {
 						appGit.Branch = receiver.BranchName
 					} else {
+						// 使用工作流定义的分支
 						appGit.Branch = branch
 						receiver.BranchName = branch
 						receiver.Env.BranchName = branch

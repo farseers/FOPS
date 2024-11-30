@@ -1,16 +1,20 @@
 package main
 
 import (
+	"fops/application/flogApp/request"
 	"fops/domain/apps"
 	configure2 "fops/domain/configure"
 	"fops/infrastructure"
 	"fops/interfaces"
+	"os"
+	"reflect"
+
+	"github.com/bytedance/sonic"
 	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/modules"
 	"github.com/farseer-go/utils/exec"
-	"os"
 )
 
 type StartupModule struct {
@@ -21,6 +25,8 @@ func (module StartupModule) DependsModule() []modules.FarseerModule {
 }
 
 func (module StartupModule) PreInitialize() {
+	var req request.UploadRequest
+	sonic.Pretouch(reflect.TypeOf(req))
 }
 
 func (module StartupModule) Initialize() {

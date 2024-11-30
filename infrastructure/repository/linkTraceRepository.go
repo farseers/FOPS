@@ -373,29 +373,60 @@ func (receiver *linkTraceRepository) ToSlowRedisList(traceId, appName, appIp, ke
 func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceContext]) error {
 	lst := collections.NewList[model.TraceContextPO]()
 	lstEO.Foreach(func(item *trace.TraceContext) {
-		items := item.List
-		item.List = nil
+		po := model.TraceContextPO{
+			TraceId:       item.TraceId,
+			AppId:         item.AppId,
+			AppName:       item.AppName,
+			AppIp:         item.AppIp,
+			ParentAppName: item.ParentAppName,
+			TraceLevel:    item.TraceLevel,
+			TraceCount:    item.TraceCount,
+			StartTs:       item.StartTs,
+			EndTs:         item.EndTs,
+			UseTs:         item.UseTs,
+			UseDesc:       item.UseDesc,
+			TraceType:     item.TraceType,
+			WebContextPO: model.WebContextPO{
+				WebDomain:       item.WebContext.WebDomain,
+				WebPath:         item.WebContext.WebPath,
+				WebMethod:       item.WebContext.WebMethod,
+				WebContentType:  item.WebContext.WebContentType,
+				WebStatusCode:   item.WebContext.WebStatusCode,
+				WebHeaders:      item.WebContext.WebHeaders,
+				WebRequestBody:  item.WebContext.WebRequestBody,
+				WebResponseBody: item.WebContext.WebResponseBody,
+				WebRequestIp:    item.WebContext.WebRequestIp,
+			},
+			ConsumerContextPO: model.ConsumerContextPO{
+				ConsumerServer:     item.ConsumerContext.ConsumerServer,
+				ConsumerQueueName:  item.ConsumerContext.ConsumerQueueName,
+				ConsumerRoutingKey: item.ConsumerContext.ConsumerRoutingKey,
+			},
+			TaskContextPO: model.TaskContextPO{
+				TaskName:      item.TaskContext.TaskName,
+				TaskGroupName: item.TaskContext.TaskGroupName,
+				TaskId:        item.TaskContext.TaskId,
+				TaskData:      item.TaskContext.TaskData,
+			},
+			WatchKeyContextPO: model.WatchKeyContextPO{
+				WatchKey: item.WatchKeyContext.WatchKey,
+			},
+			CreateAt: item.CreateAt,
+		}
+		if item.Exception != nil {
+			po.Exception = &model.ExceptionStackPO{
+				ExceptionCallFile:     item.Exception.ExceptionCallFile,
+				ExceptionCallLine:     item.Exception.ExceptionCallLine,
+				ExceptionCallFuncName: item.Exception.ExceptionCallFuncName,
+				ExceptionIsException:  item.Exception.ExceptionIsException,
+				ExceptionMessage:      item.Exception.ExceptionMessage,
+			}
+		}
 
-		po := mapper.Single[model.TraceContextPO](item)
-		po.List = items
-		// 后期所有应用更新后，这里3个字段的转换，可以取消了
-		po.CreateAt = dateTime.NewUnixMicro(po.StartTs)
-		po.UseDesc = po.UseTs.String()
-		po.TraceCount = len(items)
-
-		for index, detail := range items {
-			m := detail.(map[string]any)
-			// 后期所有应用更新后，这里2个字段的转换，可以取消了
-			m["UseDesc"] = time.Duration(parse.ToInt64(m["UseTs"])).String()
-			m["CreateAt"] = dateTime.NewUnixMicro(parse.ToInt64(m["StartTs"]))
-			// baseDetailPO := mapper.Single[model.BaseTraceDetailPO](m)
-			// m["UseDesc"] = baseDetailPO.UseTs.String()
-			// m["CreateAt"] = dateTime.NewUnixMicro(baseDetailPO.StartTs)
-			po.List[index] = m
+		for _, detail := range item.List {
+			po.List = append(po.List, detail.(map[string]any))
 		}
 		lst.Add(po)
-		// 减少cpu消耗
-		//time.Sleep(10 * time.Millisecond)
 	})
 
 	if linkTrace.Config.Driver == "clickhouse" {

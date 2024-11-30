@@ -8,6 +8,7 @@ import (
 	"fops/interfaces"
 	"os"
 	"reflect"
+	"runtime/debug"
 
 	"github.com/bytedance/sonic"
 	"github.com/farseer-go/fs/configure"
@@ -27,6 +28,8 @@ func (module StartupModule) DependsModule() []modules.FarseerModule {
 func (module StartupModule) PreInitialize() {
 	var req request.UploadRequest
 	sonic.Pretouch(reflect.TypeOf(req))
+
+	debug.SetGCPercent(50)
 }
 
 func (module StartupModule) Initialize() {

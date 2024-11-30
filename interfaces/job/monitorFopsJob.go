@@ -5,7 +5,6 @@ import (
 	"fops/domain/apps"
 	"fops/domain/clusterNode"
 	"fops/domain/monitor"
-	"runtime"
 	"runtime/debug"
 	"strings"
 
@@ -114,6 +113,5 @@ func MonitorFopsJob(*tasks.TaskContext) {
 	// 	})
 	// }
 
-	runtime.GC()
 	debug.FreeOSMemory()
 }

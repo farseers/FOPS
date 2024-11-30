@@ -2,10 +2,10 @@ package response
 
 import (
 	"github.com/farseer-go/collections"
-	linkTraceCom "github.com/farseer-go/linkTrace"
+	"github.com/farseer-go/fs/trace"
 )
 
 type LinkTraceResponse struct {
-	Entry linkTraceCom.TraceContext
+	Entry trace.TraceContext
 	List  collections.List[LinkTraceVO]
 }

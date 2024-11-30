@@ -3,11 +3,12 @@ package linkTraceApp
 
 import (
 	"fops/domain/linkTrace"
+	"strings"
+	"time"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/exception"
 	linkTraceCom "github.com/farseer-go/linkTrace"
-	"strings"
-	"time"
 )
 
 // DeleteSlow 删除7天之前的日志

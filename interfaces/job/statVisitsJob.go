@@ -10,8 +10,8 @@ import (
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
+	"github.com/farseer-go/fs/trace"
 	"github.com/farseer-go/fs/trace/eumTraceType"
-	linkTraceCom "github.com/farseer-go/linkTrace"
 	"github.com/farseer-go/tasks"
 )
 
@@ -48,8 +48,8 @@ func StatVisitsJob(*tasks.TaskContext) {
 	flog.Debugf("开始同步%s - %s 的数据，共检索到%d条记录", lastVisitsAt.Format(time.DateTime), endAt.Format(time.DateTime), lst.Count())
 
 	// 按链路类型分组
-	var traceTypeGroupBy map[int][]linkTraceCom.TraceContext
-	lst.GroupBy(&traceTypeGroupBy, func(item linkTraceCom.TraceContext) any {
+	var traceTypeGroupBy map[int][]trace.TraceContext
+	lst.GroupBy(&traceTypeGroupBy, func(item trace.TraceContext) any {
 		return int(item.TraceType)
 	})
 
@@ -59,8 +59,8 @@ func StatVisitsJob(*tasks.TaskContext) {
 	// 先按链路类型分组遍历
 	for traceType, traceContexts := range traceTypeGroupBy {
 		// 按分钟做groupBy
-		groupBy := make(map[time.Time][]linkTraceCom.TraceContext)
-		collections.NewList(traceContexts...).GroupBy(&groupBy, func(item linkTraceCom.TraceContext) any {
+		groupBy := make(map[time.Time][]trace.TraceContext)
+		collections.NewList(traceContexts...).GroupBy(&groupBy, func(item trace.TraceContext) any {
 			return time.Date(item.CreateAt.Year(), time.Month(item.CreateAt.Month()), item.CreateAt.Day(), item.CreateAt.Hour(), item.CreateAt.Minute(), 0, 0, time.Local)
 		})
 
@@ -77,12 +77,12 @@ func StatVisitsJob(*tasks.TaskContext) {
 				mPathPrefix["MQ/"] = []any{"", lstTrace}
 				for _, traceContext := range arrTrace {
 					if _, exists := mPathPrefix["MQ/"+traceContext.ConsumerServer+"/"]; !exists {
-						mPathPrefix["MQ/"+traceContext.ConsumerServer+"/"] = []any{"MQ/", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+						mPathPrefix["MQ/"+traceContext.ConsumerServer+"/"] = []any{"MQ/", lstTrace.Where(func(item trace.TraceContext) bool {
 							return item.ConsumerServer == traceContext.ConsumerServer
 						}).ToList()}
 					}
 					if _, exists := mPathPrefix["MQ/"+traceContext.ConsumerServer+"/"+traceContext.ConsumerQueueName]; !exists {
-						mPathPrefix["MQ/"+traceContext.ConsumerServer+"/"+traceContext.ConsumerQueueName] = []any{"MQ/" + traceContext.ConsumerServer + "/", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+						mPathPrefix["MQ/"+traceContext.ConsumerServer+"/"+traceContext.ConsumerQueueName] = []any{"MQ/" + traceContext.ConsumerServer + "/", lstTrace.Where(func(item trace.TraceContext) bool {
 							return item.ConsumerQueueName == traceContext.ConsumerQueueName && item.ConsumerServer == traceContext.ConsumerServer
 						}).ToList()}
 					}
@@ -92,7 +92,7 @@ func StatVisitsJob(*tasks.TaskContext) {
 				for _, traceContext := range arrTrace {
 					qn := strings.ReplaceAll(traceContext.ConsumerQueueName, "/", "_")
 					if _, exists := mPathPrefix["Queue/"+qn]; !exists {
-						mPathPrefix["Queue/"+qn] = []any{"Queue/", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+						mPathPrefix["Queue/"+qn] = []any{"Queue/", lstTrace.Where(func(item trace.TraceContext) bool {
 							return item.ConsumerQueueName == traceContext.ConsumerQueueName
 						}).ToList()}
 					}
@@ -101,7 +101,7 @@ func StatVisitsJob(*tasks.TaskContext) {
 				mPathPrefix["FSchedule/"] = []any{"", lstTrace}
 				for _, traceContext := range arrTrace {
 					if _, exists := mPathPrefix["FSchedule/"+traceContext.TaskGroupName]; !exists {
-						mPathPrefix["FSchedule/"+traceContext.TaskGroupName] = []any{"FSchedule/", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+						mPathPrefix["FSchedule/"+traceContext.TaskGroupName] = []any{"FSchedule/", lstTrace.Where(func(item trace.TraceContext) bool {
 							return item.TaskGroupName == traceContext.TaskGroupName
 						}).ToList()}
 					}
@@ -110,7 +110,7 @@ func StatVisitsJob(*tasks.TaskContext) {
 				mPathPrefix["Task/"] = []any{"", lstTrace}
 				for _, traceContext := range arrTrace {
 					if _, exists := mPathPrefix["Task/"+traceContext.TaskName]; !exists {
-						mPathPrefix["Task/"+traceContext.TaskName] = []any{"Task/", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+						mPathPrefix["Task/"+traceContext.TaskName] = []any{"Task/", lstTrace.Where(func(item trace.TraceContext) bool {
 							return item.TaskName == traceContext.TaskName
 						}).ToList()}
 					}
@@ -119,7 +119,7 @@ func StatVisitsJob(*tasks.TaskContext) {
 				mPathPrefix["Etcd/"] = []any{"", lstTrace}
 				for _, traceContext := range arrTrace {
 					if _, exists := mPathPrefix["Etcd/"+traceContext.WatchKey]; !exists {
-						mPathPrefix["Etcd/"+traceContext.WatchKey] = []any{"Etcd/", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+						mPathPrefix["Etcd/"+traceContext.WatchKey] = []any{"Etcd/", lstTrace.Where(func(item trace.TraceContext) bool {
 							return item.WatchKey == traceContext.WatchKey
 						}).ToList()}
 					}
@@ -128,7 +128,7 @@ func StatVisitsJob(*tasks.TaskContext) {
 				mPathPrefix["Event/"] = []any{"", lstTrace}
 				for _, traceContext := range arrTrace {
 					if _, exists := mPathPrefix["Event/"+traceContext.ConsumerQueueName]; !exists {
-						mPathPrefix["Event/"+traceContext.ConsumerQueueName] = []any{"Event/", lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+						mPathPrefix["Event/"+traceContext.ConsumerQueueName] = []any{"Event/", lstTrace.Where(func(item trace.TraceContext) bool {
 							return item.ConsumerQueueName == traceContext.ConsumerQueueName
 						}).ToList()}
 					}
@@ -138,7 +138,7 @@ func StatVisitsJob(*tasks.TaskContext) {
 			// 按访问节点来遍历
 			for visitsNode, v := range mPathPrefix {
 				visitsNodePrefix := v[0].(string)
-				items := v[1].(collections.List[linkTraceCom.TraceContext])
+				items := v[1].(collections.List[trace.TraceContext])
 
 				totalCount := items.Count()
 				index95 := parse.ToInt(float64(totalCount) * 0.95)
@@ -150,12 +150,12 @@ func StatVisitsJob(*tasks.TaskContext) {
 					CreateAt:         createAt,
 					VisitsNodePrefix: visitsNodePrefix,
 					VisitsNode:       visitsNode,
-					MinMs:            float64(items.Min(func(item linkTraceCom.TraceContext) any { return item.UseTs.Microseconds() }).(int64)) / 1000,
-					MaxMs:            float64(items.Max(func(item linkTraceCom.TraceContext) any { return item.UseTs.Microseconds() }).(int64)) / 1000,
-					AvgMs:            items.Average(func(item linkTraceCom.TraceContext) any { return item.UseTs.Milliseconds() }),
+					MinMs:            float64(items.Min(func(item trace.TraceContext) any { return item.UseTs.Microseconds() }).(int64)) / 1000,
+					MaxMs:            float64(items.Max(func(item trace.TraceContext) any { return item.UseTs.Microseconds() }).(int64)) / 1000,
+					AvgMs:            items.Average(func(item trace.TraceContext) any { return item.UseTs.Milliseconds() }),
 					Line95Ms:         float64(items.Index(index95).UseTs.Microseconds()) / 1000,
 					Line99Ms:         float64(items.Index(index99).UseTs.Microseconds()) / 1000,
-					ErrorCount:       items.Where(func(item linkTraceCom.TraceContext) bool { return item.Exception != nil && !item.Exception.IsNil() }).Count(),
+					ErrorCount:       items.Where(func(item trace.TraceContext) bool { return item.Exception != nil && !item.Exception.IsNil() }).Count(),
 					TotalCount:       totalCount,
 					QPS:              float64(totalCount) / 60,
 				})
@@ -175,7 +175,7 @@ func StatVisitsJob(*tasks.TaskContext) {
 	}
 }
 
-func getWebapiPrefix(lstTrace collections.List[linkTraceCom.TraceContext]) map[string][]any {
+func getWebapiPrefix(lstTrace collections.List[trace.TraceContext]) map[string][]any {
 	mPathPrefix := make(map[string][]any)
 	for _, item := range lstTrace.ToArray() {
 		urlParse, _ := url.Parse(item.WebPath)
@@ -204,7 +204,7 @@ func getWebapiPrefix(lstTrace collections.List[linkTraceCom.TraceContext]) map[s
 				if strings.HasSuffix(visitsNodePrefix, "//") {
 					visitsNodePrefix = ""
 				}
-				mPathPrefix[path] = []any{visitsNodePrefix, lstTrace.Where(func(item linkTraceCom.TraceContext) bool {
+				mPathPrefix[path] = []any{visitsNodePrefix, lstTrace.Where(func(item trace.TraceContext) bool {
 					return strings.HasPrefix(item.WebPath, path)
 				}).ToList()}
 			}

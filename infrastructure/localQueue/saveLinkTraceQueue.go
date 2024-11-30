@@ -2,11 +2,11 @@ package localQueue
 
 import (
 	"fops/domain/linkTrace"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/trace"
-	linkTraceCom "github.com/farseer-go/linkTrace"
 )
 
 func SaveLinkTraceQueue(subscribeName string, lstMessage collections.ListAny, remainingCount int) {
@@ -14,9 +14,9 @@ func SaveLinkTraceQueue(subscribeName string, lstMessage collections.ListAny, re
 		traceContext.Ignore()
 	}
 
-	lst := collections.NewList[linkTraceCom.TraceContext]()
+	lst := collections.NewList[trace.TraceContext]()
 	for _, item := range lstMessage.ToArray() {
-		data := item.(*linkTraceCom.TraceContext)
+		data := item.(*trace.TraceContext)
 		lst.Add(*data)
 	}
 

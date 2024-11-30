@@ -2,9 +2,9 @@ package request
 
 import (
 	"github.com/farseer-go/collections"
-	linkTraceCom "github.com/farseer-go/linkTrace"
+	"github.com/farseer-go/fs/trace"
 )
 
 type UploadRequest struct {
-	List collections.List[linkTraceCom.TraceContext]
+	List collections.List[trace.TraceContext]
 }

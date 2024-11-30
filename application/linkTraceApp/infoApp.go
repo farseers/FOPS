@@ -29,12 +29,12 @@ func Info(traceId string, linkTraceRepository linkTrace.Repository) response.Lin
 
 	// 当A服务调用B服务时，前后均有可能包含数据库之类的操作。因此需要将lstPO重新组织。按实际的调用顺序重新排序
 	// 前端就可以简单的遍历lst显示到页面即可
-	entryPO := l.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
+	entryPO := l.lstPO.Where(func(item trace.TraceContext) bool {
 		return item.ParentAppName == "" // 不同服务的机器时间会有差异，不能直接通过start_ts来排序
 	}).First()
 	// 没有取到，则根据start_ts排序，取第一个
 	if entryPO.TraceId == "" {
-		entryPO = l.lstPO.OrderBy(func(item linkTraceCom.TraceContext) any {
+		entryPO = l.lstPO.OrderBy(func(item trace.TraceContext) any {
 			return item.StartTs
 		}).First()
 	}
@@ -62,15 +62,15 @@ func Info(traceId string, linkTraceRepository linkTrace.Repository) response.Lin
 
 type linkTraceWarp struct {
 	lst       collections.List[response.LinkTraceVO]
-	rgbaIndex int                                         // 实现不同服务的调用，用颜色区分。这里通过服务入口调用时，使用索引（对应数组颜色）
-	lstPO     collections.List[linkTraceCom.TraceContext] // 数据库读的集合
-	startTs   int64                                       // 初始开始时间
-	TotalUse  float64                                     // 总共时间
-	PreDetail trace.BaseTraceDetail                       // 上一次的执行明细。用来解决两个服务间时间不同步（服务器的时间没有同步）
+	rgbaIndex int                                  // 实现不同服务的调用，用颜色区分。这里通过服务入口调用时，使用索引（对应数组颜色）
+	lstPO     collections.List[trace.TraceContext] // 数据库读的集合
+	startTs   int64                                // 初始开始时间
+	TotalUse  float64                              // 总共时间
+	PreDetail trace.BaseTraceDetail                // 上一次的执行明细。用来解决两个服务间时间不同步（服务器的时间没有同步）
 }
 
 // 服务调用入口
-func (receiver *linkTraceWarp) addEntry(po linkTraceCom.TraceContext) {
+func (receiver *linkTraceWarp) addEntry(po trace.TraceContext) {
 	receiver.rgbaIndex++
 	// 添加服务的入口
 	entryTrace := response.LinkTraceVO{
@@ -110,7 +110,7 @@ func (receiver *linkTraceWarp) addEntry(po linkTraceCom.TraceContext) {
 }
 
 // 服务所属的明细
-func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
+func (receiver *linkTraceWarp) addDetail(po trace.TraceContext) {
 	for _, detail := range po.List {
 		m := mapper.ToMap[string, any](detail)
 		baseDetailPO := m["BaseTraceDetail"].(trace.BaseTraceDetail)
@@ -184,19 +184,19 @@ func (receiver *linkTraceWarp) addDetail(po linkTraceCom.TraceContext) {
 
 		// 在明细执行期间，会穿插下游服务。所以通过查找的方式来获取下游。然后在回到当前明细
 		// a --> b -- > a  --> c -- b
-		var nextEntry linkTraceCom.TraceContext
+		var nextEntry trace.TraceContext
 		switch baseDetailPO.CallType {
 		case eumCallType.Http:
 			// 查找串联的服务
-			nextEntry = receiver.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
+			nextEntry = receiver.lstPO.Where(func(item trace.TraceContext) bool {
 				return item.ParentAppName == detailTrace.AppName && item.TraceType == eumTraceType.WebApi && (item.TraceLevel == po.TraceLevel+1)
 			}).First()
 		case eumCallType.EventPublish:
-			nextEntry = receiver.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
+			nextEntry = receiver.lstPO.Where(func(item trace.TraceContext) bool {
 				return item.ParentAppName == detailTrace.AppName && item.TraceType == eumTraceType.EventConsumer && (item.TraceLevel == po.TraceLevel+1)
 			}).First()
 		case eumCallType.Mq:
-			nextEntry = receiver.lstPO.Where(func(item linkTraceCom.TraceContext) bool {
+			nextEntry = receiver.lstPO.Where(func(item trace.TraceContext) bool {
 				return item.ParentAppName == detailTrace.AppName && item.TraceType == eumTraceType.MqConsumer && (item.TraceLevel == po.TraceLevel+1)
 			}).First()
 		}

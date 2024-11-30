@@ -8,6 +8,7 @@ import (
 
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/exception"
+	"github.com/farseer-go/fs/trace"
 	linkTraceCom "github.com/farseer-go/linkTrace"
 )
 
@@ -78,7 +79,7 @@ func SlowEtcdList(traceId, appName, appIp, key string, leaseID int64, searchUseT
 // SlowHandList 慢手动列表
 // @get slowHandList
 // @filter application.Jwt
-func SlowHandList(traceId, appName, appIp, name string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailHand] {
+func SlowHandList(traceId, appName, appIp, name string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceDetailHand] {
 	if pageSize < 1 {
 		pageSize = 20
 	}

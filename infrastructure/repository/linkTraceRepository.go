@@ -56,7 +56,7 @@ func (receiver *linkTraceRepository) ToEntity(traceId string) collections.List[t
 				traceDetail := mapper.Single[linkTraceCom.TraceDetailEtcd](detail)
 				do.List = append(do.List, &traceDetail)
 			case eumCallType.Hand:
-				traceDetail := mapper.Single[linkTraceCom.TraceDetailHand](detail)
+				traceDetail := mapper.Single[trace.TraceDetailHand](detail)
 				do.List = append(do.List, &traceDetail)
 			}
 		}
@@ -295,7 +295,7 @@ func (receiver *linkTraceRepository) ToSlowEtcdList(traceId, appName, appIp, key
 	}
 	return collections.NewPageList[linkTraceCom.TraceDetailEtcd](collections.NewList[linkTraceCom.TraceDetailEtcd](), 0)
 }
-func (receiver *linkTraceRepository) ToSlowHandList(traceId, appName, appIp, name string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailHand] {
+func (receiver *linkTraceRepository) ToSlowHandList(traceId, appName, appIp, name string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[trace.TraceDetailHand] {
 	if linkTrace.Config.Driver == "clickhouse" {
 		ts := context.CHContext.TraceDetailHand.
 			WhereIf(traceId != "", "trace_id = ?", traceId).
@@ -307,10 +307,10 @@ func (receiver *linkTraceRepository) ToSlowHandList(traceId, appName, appIp, nam
 			WhereIf(startMin > 0, "start_ts >= ?", dateTime.Now().AddMinutes(-startMin).UnixMicro())
 
 		lstPO := ts.DescIfElse(startMin > 0, "use_ts", "start_ts").ToPageList(pageSize, pageIndex)
-		lst := mapper.ToPageList[linkTraceCom.TraceDetailHand](lstPO)
+		lst := mapper.ToPageList[trace.TraceDetailHand](lstPO)
 		return lst
 	}
-	return collections.NewPageList[linkTraceCom.TraceDetailHand](collections.NewList[linkTraceCom.TraceDetailHand](), 0)
+	return collections.NewPageList[trace.TraceDetailHand](collections.NewList[trace.TraceDetailHand](), 0)
 }
 func (receiver *linkTraceRepository) ToSlowHttpList(traceId, appName, appIp, method, url, body string, statusCode int, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailHttp] {
 	if linkTrace.Config.Driver == "clickhouse" {

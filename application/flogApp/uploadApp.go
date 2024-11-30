@@ -4,16 +4,22 @@ package flogApp
 import (
 	"fops/application/flogApp/request"
 	"fops/domain/logData"
-	"github.com/farseer-go/fs/flog"
+
+	"github.com/farseer-go/fs/trace"
 	"github.com/farseer-go/queue"
 )
 
 // Upload 上传链路记录
 // @post upload
 func Upload(req request.UploadRequest, logDataRepository logData.Repository) {
-	// 写入到本地队列
-	req.List.Foreach(func(item *flog.LogData) {
-		queue.Push("flog", item)
-	})
-	req.List.Clear()
+	if t := trace.CurTraceContext.Get(); t != nil {
+		t.Ignore()
+	}
+
+	// 先发送到本地队列
+	for _, item := range req.List {
+		queue.Push("flog", &item)
+	}
+
+	req.List = nil
 }

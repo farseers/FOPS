@@ -6,6 +6,7 @@ import (
 	"fops/domain/clusterNode"
 	"fops/domain/monitor"
 	"runtime"
+	"runtime/debug"
 	"strings"
 
 	"github.com/farseer-go/collections"
@@ -114,4 +115,5 @@ func MonitorFopsJob(*tasks.TaskContext) {
 	// }
 
 	runtime.GC()
+	debug.FreeOSMemory()
 }

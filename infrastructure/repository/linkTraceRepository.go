@@ -377,11 +377,14 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[linkTraceCom.Tr
 
 		po := mapper.Single[model.TraceContextPO](item)
 		po.List = items
-		po.UseDesc = po.UseTs.String()
+		// 后期所有应用更新后，这里3个字段的转换，可以取消了
 		po.CreateAt = dateTime.NewUnixMicro(po.StartTs)
+		po.UseDesc = po.UseTs.String()
 		po.TraceCount = len(items)
+
 		for index, detail := range items {
 			m := detail.(map[string]any)
+			// 后期所有应用更新后，这里2个字段的转换，可以取消了
 			m["UseDesc"] = time.Duration(parse.ToInt64(m["UseTs"])).String()
 			m["CreateAt"] = dateTime.NewUnixMicro(parse.ToInt64(m["StartTs"]))
 			// baseDetailPO := mapper.Single[model.BaseTraceDetailPO](m)

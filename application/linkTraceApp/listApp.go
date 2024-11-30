@@ -3,12 +3,13 @@ package linkTraceApp
 
 import (
 	"fops/domain/linkTrace"
-	"github.com/farseer-go/collections"
-	"github.com/farseer-go/fs/exception"
-	linkTraceCom "github.com/farseer-go/linkTrace"
-	"github.com/farseer-go/linkTrace/eumTraceType"
 	"strings"
 	"time"
+
+	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/exception"
+	"github.com/farseer-go/fs/trace/eumTraceType"
+	linkTraceCom "github.com/farseer-go/linkTrace"
 )
 
 // WebApiList WebApi链路追踪列表

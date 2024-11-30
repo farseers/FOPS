@@ -1,10 +1,11 @@
 package model
 
 import (
+	"time"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/dateTime"
-	"github.com/farseer-go/linkTrace/eumTraceType"
-	"time"
+	"github.com/farseer-go/fs/trace/eumTraceType"
 )
 
 type TraceContextPO struct {

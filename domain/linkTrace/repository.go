@@ -1,10 +1,11 @@
 package linkTrace
 
 import (
-	"github.com/farseer-go/collections"
-	linkTraceCom "github.com/farseer-go/linkTrace"
-	"github.com/farseer-go/linkTrace/eumTraceType"
 	"time"
+
+	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/trace/eumTraceType"
+	linkTraceCom "github.com/farseer-go/linkTrace"
 )
 
 // Repository 仓储接口

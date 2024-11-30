@@ -10,8 +10,8 @@ import (
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/trace"
 	"github.com/farseer-go/fs/trace/eumCallType"
+	"github.com/farseer-go/fs/trace/eumTraceType"
 	linkTraceCom "github.com/farseer-go/linkTrace"
-	"github.com/farseer-go/linkTrace/eumTraceType"
 	"github.com/farseer-go/mapper"
 )
 

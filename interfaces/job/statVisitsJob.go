@@ -2,16 +2,17 @@ package job
 
 import (
 	"fops/domain/linkTrace"
+	"net/url"
+	"strings"
+	"time"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
+	"github.com/farseer-go/fs/trace/eumTraceType"
 	linkTraceCom "github.com/farseer-go/linkTrace"
-	"github.com/farseer-go/linkTrace/eumTraceType"
 	"github.com/farseer-go/tasks"
-	"net/url"
-	"strings"
-	"time"
 )
 
 var lastVisitsAt time.Time

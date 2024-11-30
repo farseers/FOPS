@@ -1,8 +1,9 @@
 package model
 
 import (
-	"github.com/farseer-go/linkTrace/eumTraceType"
 	"time"
+
+	"github.com/farseer-go/fs/trace/eumTraceType"
 )
 
 type VisitsPO struct {

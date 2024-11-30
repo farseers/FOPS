@@ -66,7 +66,7 @@ func (receiver *linkTraceRepository) ToEntity(traceId string) collections.List[l
 
 func (receiver *linkTraceRepository) Delete(traceType eumTraceType.Enum, startTime time.Time) error {
 	if linkTrace.Config.Driver == "clickhouse" {
-		_, err := context.CHContext.TraceContext.Where("trace_type = ? and create_at <= ?", traceType, startTime).Delete()
+		_, err := context.CHContext.TraceContext.Where("create_at <= ?", traceType, startTime).Delete() // trace_type = ? and
 		return err
 	}
 	return nil

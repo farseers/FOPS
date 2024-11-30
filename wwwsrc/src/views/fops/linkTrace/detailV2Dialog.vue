@@ -31,7 +31,7 @@
               </span>
               <!--FSchedule--> <!--Task-->
               <span v-else-if="state.TraceType == 3 || state.TraceType == 4">
-                <el-tag v-if="state.TaskGroupId >0" size="small">任务组Id：{{state.TaskGroupId}}</el-tag>
+                <el-tag v-if="state.tgn >0" size="small">任务组Id：{{state.tgn}}</el-tag>
                 <el-tag v-if="state.TaskId >0" size="small" type="success">任务Id：{{state.TaskId}}</el-tag>
                 {{state.TaskName}}
               </span>
@@ -68,8 +68,6 @@
                   <el-tag  size="small" style="max-width: 65px;" type="success">{{info.StartTs / 1000}}ms</el-tag>
                 </span> -->
 
-              
-     
               <!--详情-->
               <li style="clear: both;padding:2px 0;height:21px" v-for="(info, index) in state.tableData" :key="index">
                 <div>
@@ -198,7 +196,7 @@ const state = reactive({
   WebHeaders:'',
   WebRequestBody:'',
   WebResponseBody:'',
-  TaskGroupId:0,
+  tgn:0,
   TaskId:0,
   TaskName:'',
   ConsumerServer:'',
@@ -220,11 +218,11 @@ const state = reactive({
 const openDialog = (row2: any) => {
   state.loading=true
   //state.ruleForm = row;
-  state.dialog.title = '链路追踪详情(TraceId：'+row2.TraceId+')';
+  state.dialog.title = '链路追踪详情(TraceId：'+row2.tid+')';
   state.traceInfo=row2
 
   // 详情
-  serverApi.linkTraceInfo(row2.TraceId).then(function (res){
+  serverApi.linkTraceInfo(row2.tid).then(function (res){
     state.loading=false
     if (res.Status){
       // 计算宽度
@@ -235,27 +233,21 @@ const openDialog = (row2: any) => {
       } else{
         state.spacePx = 60
       }
-
-      if (res.Data.Entry.TraceType == 0) {
-
-      }
       let originalArray = [...res.Data.List]
       const set_arr = function(StartRate,index){
         let row = null
           for(var i=0;i<originalArray.length;i++){
-            if(i>=index){
+            if (i>=index){
               var n_StartRate = originalArray[i].StartRate
-              if(n_StartRate>=StartRate+6){ 
-              row = {
-                StartRate:n_StartRate,
-                StartTs:originalArray[i].StartTs,
-                index:i
+              if(n_StartRate >= StartRate+6){ 
+                row = {
+                  StartRate: n_StartRate,
+                  StartTs: originalArray[i].StartTs,
+                  index:i
+                }
+                break
               }
-              break
             }
-            }
-            
-            
           }
           return row
       }
@@ -282,31 +274,30 @@ const openDialog = (row2: any) => {
       // 绑定数据
       state.timeDatas = crr
       state.tableData=res.Data.List
-      state.AppId=res.Data.Entry.AppId
-      state.AppIp=res.Data.Entry.AppIp
-      state.AppName=res.Data.Entry.AppName
+      state.AppId=res.Data.Entry.aid
+      state.AppIp=res.Data.Entry.aip
+      state.AppName=res.Data.Entry.an
       state.Desc=res.Data.Entry.Desc
-      state.UseDesc=res.Data.Entry.UseDesc
-      state.TraceId=res.Data.Entry.TraceId
-      state.UseTs=res.Data.Entry.UseTs
-      state.UseDesc=res.Data.Entry.UseDesc
-      state.TraceType=res.Data.Entry.TraceType
-      state.WebStatusCode=res.Data.Entry.WebStatusCode
-      state.WebRequestIp=res.Data.Entry.WebRequestIp
-      state.WebMethod=res.Data.Entry.WebMethod
-      state.WebContentType=res.Data.Entry.WebContentType
-      state.WebPath=res.Data.Entry.WebPath
-      state.WebHeaders=res.Data.Entry.WebHeaders
-      state.WebRequestBody=res.Data.Entry.WebRequestBody
-      state.WebResponseBody=res.Data.Entry.WebResponseBody
-      state.TaskGroupId=res.Data.Entry.TaskGroupId
-      state.TaskId=res.Data.Entry.TaskId
-      state.TaskName=res.Data.Entry.TaskName
-      state.ConsumerServer=res.Data.Entry.ConsumerServer
-      state.ConsumerRoutingKey=res.Data.Entry.ConsumerRoutingKey
-      state.ConsumerQueueName=res.Data.Entry.ConsumerQueueName
-      state.CreateAt=res.Data.Entry.CreateAt
-      state.Exception=res.Data.Entry.Exception
+      state.UseDesc=res.Data.Entry.ud
+      state.TraceId=res.Data.Entry.tid
+      state.UseTs=res.Data.Entry.ut
+      state.TraceType=res.Data.Entry.tt
+      state.WebStatusCode=res.Data.Entry.wsc
+      state.WebRequestIp=res.Data.Entry.wip
+      state.WebMethod=res.Data.Entry.wm
+      state.WebContentType=res.Data.Entry.wct
+      state.WebPath=res.Data.Entry.wp
+      state.WebHeaders=res.Data.Entry.wh
+      state.WebRequestBody=res.Data.Entry.wrb
+      state.WebResponseBody=res.Data.Entry.wpb
+      state.tgn=res.Data.Entry.tgn
+      state.TaskId=res.Data.Entry.tid
+      state.TaskName=res.Data.Entry.tn
+      state.ConsumerServer=res.Data.Entry.cs
+      state.ConsumerRoutingKey=res.Data.Entry.cr
+      state.ConsumerQueueName=res.Data.Entry.cq
+      state.CreateAt=res.Data.Entry.ca
+      state.Exception=res.Data.Entry.e
     }
   })
 	state.dialog.isShowDialog = true;

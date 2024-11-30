@@ -142,7 +142,7 @@ const onDetail=(row: any)=>{
 }
 const openDialog = (row: any) => {
   state.dialog.isShowDialog = true;
-  state.traceId=row.TraceId
+  state.traceId=row.tid
   getTableData()
   getAppData();
 }

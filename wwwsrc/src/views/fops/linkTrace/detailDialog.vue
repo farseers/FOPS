@@ -207,7 +207,7 @@ const openDialog = (row2: any) => {
   state.dialog.title = '链路追踪详情';
   //state.dialog.submitTxt = '修 改';
   // 详情
-  serverApi.linkTraceInfo(row2.TraceId).then(function (res){
+  serverApi.linkTraceInfo(row2.tid).then(function (res){
     if (res.Status){
       // 绑定数据
       state.ruleForm=res.Data

@@ -43,39 +43,39 @@
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
         <el-table-column width="180px" label="TraceID" show-overflow-tooltip>
           <template #default="scope">
-            <span @click="onDetail(scope.row)">{{scope.row.TraceId}}</span>
+            <span @click="onDetail(scope.row)">{{scope.row.tid}}</span>
           </template>
         </el-table-column>
         <el-table-column width="200px" label="应用" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small">{{scope.row.AppName}} {{scope.row.AppIp}}</el-tag><br>
-            {{scope.row.AppId}}
+            <el-tag size="small">{{scope.row.an}} {{scope.row.aip}}</el-tag><br>
+            {{scope.row.aid}}
           </template>
         </el-table-column>
         <el-table-column width="120px" prop="UseDesc" label="执行耗时" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small" v-if="scope.row.UseTs > 100000000" type="danger">{{scope.row.UseDesc}}</el-tag>
-            <el-tag size="small" v-else-if="scope.row.UseTs > 50000000" type="warning">{{scope.row.UseDesc}}</el-tag>
-            <el-tag size="small" v-else-if="scope.row.UseTs > 1000000">{{scope.row.UseDesc}}</el-tag>
-            <el-tag size="small" v-else type="success">{{scope.row.UseDesc}}</el-tag>
+            <el-tag size="small" v-if="scope.row.ut > 100000000" type="danger">{{scope.row.ud}}</el-tag>
+            <el-tag size="small" v-else-if="scope.row.ut > 50000000" type="warning">{{scope.row.ud}}</el-tag>
+            <el-tag size="small" v-else-if="scope.row.ut > 1000000">{{scope.row.ud}}</el-tag>
+            <el-tag size="small" v-else type="success">{{scope.row.ud}}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="请求内容" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small">{{scope.row.WebStatusCode}}</el-tag> {{scope.row.WebRequestIp}} <el-tag type="success" size="small">{{scope.row.WebMethod}}</el-tag>
-            <el-tag v-if="scope.row.WebContentType!=''" type="info" size="small">{{scope.row.WebContentType}}</el-tag>
-            <br />{{scope.row.WebPath}}
+            <el-tag size="small">{{scope.row.wsc}}</el-tag> {{scope.row.wip}} <el-tag type="success" size="small">{{scope.row.wm}}</el-tag>
+            <el-tag v-if="scope.row.wct!=''" type="info" size="small">{{scope.row.wct}}</el-tag>
+            <br />{{scope.row.wp}}
           </template>
         </el-table-column>
         <el-table-column width="200px" label="异常" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small" v-if="scope.row.Exception!=null" type="danger">{{scope.row.Exception.ExceptionCallFile}}:{{scope.row.Exception.ExceptionCallLine}} {{scope.row.Exception.ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.Exception!=null">
-            <el-tag size="small" v-if="scope.row.Exception!=null" type="danger">{{scope.row.Exception.ExceptionMessage}}</el-tag>
+            <el-tag size="small" v-if="scope.row.e!=null" type="danger">{{scope.row.e.ExceptionCallFile}}:{{scope.row.e.ExceptionCallLine}} {{scope.row.e.ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.e!=null">
+            <el-tag size="small" v-if="scope.row.e!=null" type="danger">{{scope.row.e.ExceptionMessage}}</el-tag>
             <el-tag size="small" v-else type="info">无</el-tag>
           </template>
         </el-table-column>
-        <el-table-column width="100px" prop="TraceCount" label="追踪数量" show-overflow-tooltip></el-table-column>
-        <el-table-column width="180px" prop="CreateAt" label="请求时间" show-overflow-tooltip></el-table-column>
+        <el-table-column width="100px" prop="tc" label="追踪数量" show-overflow-tooltip></el-table-column>
+        <el-table-column width="180px" prop="ca" label="请求时间" show-overflow-tooltip></el-table-column>
 				<el-table-column label="操作" width="100">
 					<template #default="scope">
 						<el-button size="small" text type="primary" @click="onDetail(scope.row)">追踪</el-button>

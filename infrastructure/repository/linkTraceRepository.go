@@ -382,14 +382,16 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[linkTraceCom.Tr
 		po.TraceCount = len(items)
 		for index, detail := range items {
 			m := detail.(map[string]any)
-			baseDetailPO := mapper.Single[model.BaseTraceDetailPO](m)
-			m["UseDesc"] = baseDetailPO.UseTs.String()
-			m["CreateAt"] = dateTime.NewUnixMicro(baseDetailPO.StartTs)
+			m["UseDesc"] = time.Duration(parse.ToInt64(m["UseTs"])).String()
+			m["CreateAt"] = dateTime.NewUnixMicro(parse.ToInt64(m["StartTs"]))
+			// baseDetailPO := mapper.Single[model.BaseTraceDetailPO](m)
+			// m["UseDesc"] = baseDetailPO.UseTs.String()
+			// m["CreateAt"] = dateTime.NewUnixMicro(baseDetailPO.StartTs)
 			po.List[index] = m
 		}
 		lst.Add(po)
 		// 减少cpu消耗
-		time.Sleep(10 * time.Millisecond)
+		//time.Sleep(10 * time.Millisecond)
 	})
 
 	if linkTrace.Config.Driver == "clickhouse" {

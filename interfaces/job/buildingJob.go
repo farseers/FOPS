@@ -2,6 +2,7 @@ package job
 
 import (
 	"fops/domain/apps"
+
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/trace"
 	"github.com/farseer-go/tasks"

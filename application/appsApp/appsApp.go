@@ -176,13 +176,13 @@ func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.
 
 			// 取出限制的名称
 			fopsName, _ := workflowsYml.Get("fopsName")
-			flog.Infof("appName=%s,fopsName=%s", item.AppName, parse.ToString(fopsName))
+			flog.Infof("appName=%s,fopsName=%s,%s", item.AppName, parse.ToString(fopsName), workflowsYmlPath)
 			// 只筛选出对应名称的工作流
 			if fopsNameString := parse.ToString(fopsName); fopsNameString == "" || fopsNameString == item.AppName {
 				// 判断账号权限
 				strClusterId, _ := workflowsYml.Get("jobs.clusterId")
 				clusterId := parse.ToInt(strClusterId)
-				flog.Infof("appName=%s,fopsName=%s,clusterId=%d,%+v", item.AppName, parse.ToString(fopsName), clusterId, domain.GetLoginAccount().ClusterIds)
+				flog.Infof("appName=%s,fopsName=%s,%s,clusterId=%d,%s", item.AppName, parse.ToString(fopsName), workflowsYmlPath, clusterId, domain.GetLoginAccount().ClusterIds.ToString(","))
 				if domain.GetLoginAccount().ClusterIds.Contains(clusterId) {
 					workflowsYmlPath = filepath.Base(workflowsYmlPath)
 					appsResponse.WorkflowsNames = append(appsResponse.WorkflowsNames, workflowsYmlPath[:strings.Index(workflowsYmlPath, ".yml")])

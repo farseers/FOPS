@@ -225,6 +225,10 @@ func (receiver *BuildEO) StartBuild() {
 				}
 			}
 
+			// 需要对{{branch}}替换（因为receiver.BranchName在执行checkout后才能拿到）
+			if step.ActionName == "newBuild" {
+				step.With["branch"] = strings.ReplaceAll(parse.ToString(step.With["branch"]), "{{branch}}", receiver.BranchName)
+			}
 			step.With["gits"] = gits
 
 			// 生成with.json文件，并复制到容器

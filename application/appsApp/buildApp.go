@@ -17,9 +17,8 @@ import (
 	"github.com/farseer-go/webapi/action"
 )
 
-// BuildAdd 添加构建
+// BuildAdd 添加构建  这里不能加JWT，否则无法实现自动创建新的构建// @filter application.Jwt
 // @post build/add
-// @filter application.Jwt
 func BuildAdd(appName string, workflowsName string, branchName string, appsRepository apps.Repository, clusterRepository cluster.Repository, dockerDevice apps.IDockerDevice) {
 	appDO := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionfBool(appDO.IsNil(), 403, "应用不存在")

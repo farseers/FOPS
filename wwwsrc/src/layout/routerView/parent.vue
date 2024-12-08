@@ -2,7 +2,7 @@
 	<div class="layout-parent">
 		<router-view v-slot="{ Component }">
 			<transition :name="setTransitionName" mode="out-in">
-				<keep-alive >
+				<keep-alive :include="getKeepAliveNames">
 					<component :is="Component" :key="state.refreshRouterViewKey" class="w100" v-show="!isIframePage" />
 				</keep-alive>
 			</transition>

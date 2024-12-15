@@ -1,16 +1,13 @@
 package main
 
 import (
-	"fops/application/flogApp/request"
 	"fops/domain/apps"
 	configure2 "fops/domain/configure"
 	"fops/infrastructure"
 	"fops/interfaces"
 	"os"
-	"reflect"
 	"runtime/debug"
 
-	"github.com/bytedance/sonic"
 	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
@@ -26,9 +23,6 @@ func (module StartupModule) DependsModule() []modules.FarseerModule {
 }
 
 func (module StartupModule) PreInitialize() {
-	var req request.UploadRequest
-	sonic.Pretouch(reflect.TypeOf(req))
-
 	debug.SetGCPercent(50)
 }
 

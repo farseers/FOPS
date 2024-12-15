@@ -7,7 +7,6 @@ toolchain go1.22.5
 exclude github.com/mitchellh/osext v0.0.0-20151018003038-5e2d6d41470f
 
 require (
-	github.com/bytedance/sonic v1.12.4
 	github.com/farseer-go/collections v0.15.0
 	github.com/farseer-go/data v0.15.0
 	github.com/farseer-go/data/driver/clickhouse v0.15.0
@@ -30,7 +29,6 @@ require (
 	github.com/ClickHouse/ch-go v0.63.1 // indirect
 	github.com/ClickHouse/clickhouse-go/v2 v2.30.0 // indirect
 	github.com/andybalholm/brotli v1.1.1 // indirect
-	github.com/bytedance/sonic/loader v0.2.1 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.6 // indirect

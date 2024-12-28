@@ -423,8 +423,7 @@ func (receiver *BuildEO) fail() {
 	receiver.dockerClient.Container.Restart(receiver.fopsBuildName)
 
 	// 更新本次构建状态 = 失败
-	container.Resolve[Repository]().SetCancel(receiver.Id, receiver.Env)
-
+	container.Resolve[Repository]().SetFail(receiver.Id, receiver.Env)
 }
 
 // 设置任务成功

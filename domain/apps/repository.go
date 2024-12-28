@@ -31,6 +31,7 @@ type buildRepository interface {
 	SetSuccess(id int64, env EnvVO)                                                        // Success 任务完成
 	SetSuccessForFops(id int64)                                                            // 设置任务为构建成功
 	SetCancel(id int64, env EnvVO)                                                         // Cancel 主动取消任务
+	SetFail(id int64, env EnvVO)                                                           // SetFail 任务失败
 	GetStatus(id int64) eumBuildStatus.Enum                                                // GetStatus 获取构建状态
 	UpdateFailDockerImage(appName string, dockerImage string) (int64, error)               // UpdateFailDockerImage 更新构建中状态的构建记录
 	GetLastBuilding() BuildEO                                                              // 获取最后一次构建

@@ -82,7 +82,7 @@ func (repository *buildRepository) SetSuccessForFops(id int64) {
 // SetCancel 主动取消任务
 func (repository *buildRepository) SetCancel(id int64, env apps.EnvVO) {
 	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at", "env", "docker_image").Update(model.BuildPO{
-		Status:      eumBuildStatus.Finish,
+		Status:      eumBuildStatus.Cancel,
 		IsSuccess:   false,
 		FinishAt:    time.Now(),
 		Env:         env,

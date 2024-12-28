@@ -98,8 +98,9 @@
                   <template #default="scope">
                     <el-tag v-if="scope.row.Status==0" size="small" type="info">未开始</el-tag>
                     <el-tag v-else-if="scope.row.Status==1" size="small" type="warning">构建中</el-tag>
-                    <el-tag v-if="scope.row.Status==2 && scope.row.IsSuccess == true" size="small" type="success">成功</el-tag>
+                    <el-tag v-else-if="scope.row.Status==2 && scope.row.IsSuccess == true" size="small" type="success">成功</el-tag>
                     <el-tag v-else-if="scope.row.Status==2 && scope.row.IsSuccess == false" size="small" type="danger">失败</el-tag>
+                    <el-tag v-else-if="scope.row.Status==3" size="small" type="info">取消</el-tag>
                     <el-tag size="small" type="info">{{ scope.row.WorkflowsName }}</el-tag>
                     <el-tag v-if="scope.row.BranchName !=''" size="small">{{ scope.row.BranchName }}</el-tag>
                     <span style="margin-left: 5px ">{{ scope.row.AppName }}:{{ scope.row.BuildNumber }}</span>

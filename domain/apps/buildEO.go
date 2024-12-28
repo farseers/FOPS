@@ -402,7 +402,7 @@ func (receiver *BuildEO) catch() {
 // CheckResult 检查结构
 func (receiver *BuildEO) checkResult(result bool) {
 	status := container.Resolve[Repository]().GetStatus(receiver.Id)
-	if status == eumBuildStatus.Finish {
+	if status == eumBuildStatus.Cancel {
 		exception.ThrowRefuseException("手动取消，退出构建。")
 	}
 
@@ -484,7 +484,7 @@ func (receiver *BuildEO) WatchStatus() {
 	for {
 		time.Sleep(3 * time.Second)
 		curBuildEO := container.Resolve[Repository]().ToBuildEntity(receiver.Id)
-		if curBuildEO.Status == eumBuildStatus.Finish {
+		if curBuildEO.Status == eumBuildStatus.Cancel {
 			if receiver.cancel != nil && !curBuildEO.IsSuccess {
 				receiver.cancel()
 			}

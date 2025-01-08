@@ -1,0 +1,40 @@
+Database:
+  default: "DataType=mysql,PoolMaxSize=50,PoolMinSize=1,ConnectionString=root:steden@123@tcp(192.168.1.8:3306)/fops?charset=utf8&parseTime=True&loc=Local"
+Redis:
+  default: "Server=192.168.1.8:6379,DB=0,Password=steden@123,ConnectTimeout=600000,SyncTimeout=10000,ResponseTimeout=10000"
+WebApi:
+  Url: ":8889"
+  Jwt:
+    Key: "uwzp4ASMYjgs"
+  Session:
+    Store: "Redis"
+    StoreConfigName: "default"
+    Age: 1800
+Fops:
+  Proxy: "global.proxy" # global.proxy值代表由配置管理中的global.proxy替换
+  Server: "http://127.0.0.1:8889"
+  LinkTrace:
+    Driver: "clickhouse"
+    ConnString: "DataType=clickhouse,PoolMaxSize=50,PoolMinSize=1,ConnectionString=clickhouse://root:steden@192.168.1.8:9000/linkTrace?dial_timeout=10s&read_timeout=20s"
+  ExtranetIpUrl: "ipv4.ip.sb"
+  Builder:
+    - "-v /home/go/pkg/mod:/root/go/pkg/mod"
+    - "-v /home/go/go-build:/root/.cache/go-build"
+LinkTrace:
+  Enable: true
+  PrintLog: true
+Log:
+  Default:
+    LogLevel: "info"          # 只记录级别>=info的日志内容
+    Format: "json"            # 默认使用json格式输出
+  Console:
+    LogLevel: "info"          # 只记录级别>=info的日志内容
+    Format: "text"            # 控制台打印，使用text格式输出
+  Component:
+    task: true                # 打印task组件的日志
+    cacheManage: true         # 打印cacheManage组件的日志
+    webapi: true              # 打印webapi组件的日志
+    event: true               # 打印event组件的日志
+    httpRequest: true         # 打印httpRequest组件的日志
+    queue: true               # 打印queue组件的日志
+    fSchedule: true           # 打印fSchedule组件的日志

@@ -24,6 +24,8 @@ var route = []webapi.Route{
     {"POST", "/apps/list", appsApp.List, "", []context.IFilter{application.Jwt{}}, []string{"isSys", "", "", "", ""}},
     {"POST", "/apps/info", appsApp.Info, "", []context.IFilter{application.Jwt{}}, []string{"appName", "", ""}},
     {"POST", "/apps/syncWorkflows", appsApp.SyncWorkflows, "", []context.IFilter{application.Jwt{}}, []string{"appName", "", ""}},
+    {"POST", "/apps/autobuild/list", appsApp.BranchList, "", []context.IFilter{application.Jwt{}}, []string{""}},
+    {"POST", "/apps/autobuild/resetCommitId", appsApp.ResetCommitId, "", []context.IFilter{application.Jwt{}}, []string{"commitId", ""}},
     {"POST", "/apps/build/add", appsApp.BuildAdd, "", []context.IFilter{}, []string{"appName", "workflowsName", "branchName", "", "", ""}},
     {"POST", "/apps/build/list", appsApp.BuildList, "", []context.IFilter{application.Jwt{}}, []string{"appName", "buildType", "pageSize", "pageIndex", ""}},
     {"GET", "/apps/build/view-{buildId}", appsApp.View, "", []context.IFilter{}, []string{"buildId"}},

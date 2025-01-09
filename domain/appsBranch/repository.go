@@ -8,6 +8,8 @@ type Repository interface {
 	data.IRepository[DomainObject]
 	// UpdateByBranch 更新
 	UpdateByBranch(do DomainObject) error
+	// 重置构建错误
+	ResetCommitId(commitId string) error
 	// 删除分支
 	DeleteBranch(appName, branchName string) error
 	// GetUnRunUT 获取未运行UT的分支

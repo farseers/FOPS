@@ -27,9 +27,8 @@ func (repository *buildRepository) AddBuild(eo *apps.BuildEO) error {
 	eo.Id = po.Id
 	return err
 }
-
-func (repository *buildRepository) ToBuildList(appName string, pageSize int, pageIndex int) collections.PageList[apps.BuildEO] {
-	ts := context.MysqlContext.Build.Desc("id")
+func (repository *buildRepository) ToBuildList(appName string, buildType eumBuildType.Enum, pageSize int, pageIndex int) collections.PageList[apps.BuildEO] {
+	ts := context.MysqlContext.Build.Desc("id").Where("build_type = ?", buildType)
 	// 筛选appName
 	appName = strings.TrimSpace(appName)
 	if appName != "" {

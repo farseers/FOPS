@@ -42,14 +42,14 @@ func BuildAdd(appName string, workflowsName string, branchName string, appsRepos
 // BuildList 构建列表
 // @post build/list
 // @filter application.Jwt
-func BuildList(appName string, pageSize int, pageIndex int, appsRepository apps.Repository) collections.PageList[response.BuildListResponse] {
+func BuildList(appName string, buildType eumBuildType.Enum, pageSize int, pageIndex int, appsRepository apps.Repository) collections.PageList[response.BuildListResponse] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
 	if pageIndex < 1 {
 		pageIndex = 1
 	}
-	lst := appsRepository.ToBuildList(appName, pageSize, pageIndex)
+	lst := appsRepository.ToBuildList(appName, buildType, pageSize, pageIndex)
 	return mapper.ToPageList[response.BuildListResponse](lst, func(r *response.BuildListResponse, a any) {
 		buildEO := a.(apps.BuildEO)
 		r.CreateAt = buildEO.CreateAt.ToString("MM-dd HH:mm:ss")

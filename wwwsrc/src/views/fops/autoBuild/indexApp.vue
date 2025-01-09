@@ -242,6 +242,7 @@ const getTableLogData = () => {
   state.tableLogData.loading = true;
   const data = {
     appName:"",//state.appName
+    buildType:1,
     pageIndex:state.tableLogData.param.pageNum,
     pageSize:state.tableLogData.param.pageSize,
   };

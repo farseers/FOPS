@@ -508,7 +508,7 @@ const onStopBuild=(rowId: any)=>{
   })
       .then(() => {
         // 提交数据
-        var param={ "buildId": rowId }
+        var param={ "buildId": rowId,"buildType":0 }
         serverApi.buildStop(param).then(async function(res){
           if(res.Status){
             ElMessage.success("成功停止")

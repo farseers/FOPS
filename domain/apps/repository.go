@@ -36,7 +36,7 @@ type buildRepository interface {
 	SetFail(id int64, env EnvVO)                                                                                        // SetFail 任务失败
 	GetStatus(id int64) eumBuildStatus.Enum                                                                             // GetStatus 获取构建状态
 	UpdateFailDockerImage(appName string, dockerImage string) (int64, error)                                            // UpdateFailDockerImage 更新构建中状态的构建记录
-	GetLastBuilding() BuildEO                                                                                           // 获取最后一次构建
+	GetLastBuilding(buildType eumBuildType.Enum) BuildEO                                                                // 获取最后一次构建
 	ToBuildEntity(id int64) BuildEO                                                                                     // 获取构建对象
 }
 

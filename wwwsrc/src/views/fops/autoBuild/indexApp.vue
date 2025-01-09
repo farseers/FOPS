@@ -85,9 +85,7 @@
           <el-card>
 
       <el-header style="padding: 0;--el-header-height:40px;float: right">
-        <el-button size="small" type="success" class="ml10" @click="onOpenAdd('add')"><el-icon><ele-FolderAdd /></el-icon>新增应用</el-button>
         <el-button size="small" type="info" class="ml10" @click="onClearDockerImage('add')"><el-icon><ele-Delete /></el-icon>清除镜像</el-button>
-        <!--<el-button size="small" type="warning" class="ml10" @click="onAllBuild()"><el-icon><ele-SwitchButton /></el-icon>全部构建</el-button>-->
         <el-button size="small" type="danger" class="ml10" @click="onStopBuild(0)" style=""><el-icon><ele-SwitchButton /></el-icon>停止构建</el-button>
       </el-header>
             <h3 style="padding: 5px;">构建队列 </h3>
@@ -266,15 +264,8 @@ const showFsLogLevel=(level:any,appName:any)=>{
 const showTask=(st:any,appName:any)=>{
   taskDialogRef.value.openDialogApp(st,appName);
 }
-// 打开新增用户弹窗
-const onOpenAdd = (type: string) => {
-  appAddDialogRef.value.openDialog(type,null);
-};
 
-// 打开修改用户弹窗
-const onOpenEdit = (type: string, row: any) => {
-  appDialogRef.value.openDialog(type, row, null);
-};
+
 
 // 清除镜像
 const onClearDockerImage = () => {
@@ -508,7 +499,7 @@ const onStopBuild=(rowId: any)=>{
   })
       .then(() => {
         // 提交数据
-        var param={ "buildId": rowId }
+        var param={ "buildId": rowId ,"buildType":1}
         serverApi.buildStop(param).then(async function(res){
           if(res.Status){
             ElMessage.success("成功停止")

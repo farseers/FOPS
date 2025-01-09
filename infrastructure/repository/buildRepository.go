@@ -118,8 +118,8 @@ func (repository *buildRepository) UpdateFailDockerImage(appName string, dockerI
 		})
 }
 
-func (repository *buildRepository) GetLastBuilding() apps.BuildEO {
-	po := context.MysqlContext.Build.Where("status = ?", eumBuildStatus.Building).Desc("id").ToEntity()
+func (repository *buildRepository) GetLastBuilding(buildType eumBuildType.Enum) apps.BuildEO {
+	po := context.MysqlContext.Build.Where("status = ? and build_type = ?", eumBuildStatus.Building, buildType).Desc("id").ToEntity()
 	return mapper.Single[apps.BuildEO](po)
 }
 

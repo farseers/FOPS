@@ -145,13 +145,13 @@ func View(buildId int64) action.IResult {
 // Stop 停止构建
 // @post build/stop
 // @filter application.Jwt
-func Stop(buildId int64, appsRepository apps.Repository) {
+func Stop(buildId int64, buildType eumBuildType.Enum, appsRepository apps.Repository) {
 	var buildEO apps.BuildEO
 	if buildId > 0 {
 		buildEO = appsRepository.ToBuildEntity(buildId)
 	} else {
 		// 找到最后一个正在building的构建任务
-		buildEO = appsRepository.GetLastBuilding()
+		buildEO = appsRepository.GetLastBuilding(buildType)
 	}
 	buildEO.SetCancel()
 }

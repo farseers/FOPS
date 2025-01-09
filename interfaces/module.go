@@ -4,6 +4,7 @@ import (
 	"context"
 	"fops/application"
 	"fops/domain/_/eumBuildStatus"
+	"fops/domain/_/eumBuildType"
 	"fops/domain/apps"
 	"fops/domain/apps/event"
 	"fops/interfaces/job"
@@ -46,7 +47,7 @@ func (module Module) PostInitialize() {
 	go job.ListenerAgentNotify()
 
 	// 如果最后一次构建是fops，且状态=构建中，同时fops的仓库=最后一次构建的镜像，则强制做一次同步操作
-	buildEO := container.Resolve[apps.Repository]().GetLastBuilding()
+	buildEO := container.Resolve[apps.Repository]().GetLastBuilding(eumBuildType.Manual)
 	appEO := container.Resolve[apps.Repository]().ToEntity("fops")
 	if buildEO.AppName == appEO.AppName && buildEO.Status == eumBuildStatus.Building && appEO.DockerImage == buildEO.DockerImage {
 		flog.Infof("恭喜，你正在使用最新的FOPS版本：%s", appEO.DockerImage)

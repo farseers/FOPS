@@ -63,7 +63,7 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 			// 远程分支不存在，说明已经被删了
 			if !lstBranch.Where(func(item apps.RemoteBranchVO) bool {
 				return item.BranchName == utDO.BranchName
-			}).Any() {
+			}).Any() && dateTime.Now().Sub(utDO.BuildAt).Hours() > 168 {
 				flog.Infof("应用：%s的远程分支：%s不存在了，删除本地分支", utDO.AppName, utDO.BranchName)
 				appsBranchRepository.DeleteBranch(utDO.AppName, utDO.BranchName)
 			}

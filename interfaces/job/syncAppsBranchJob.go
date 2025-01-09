@@ -7,6 +7,7 @@ import (
 	"github.com/farseer-go/fs"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/dateTime"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/tasks"
 )
 
@@ -40,7 +41,7 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 			if dbUT == nil {
 				do := appsBranch.DomainObject{AppName: appDO.AppName, BranchName: remoteBranchVO.BranchName, CommitId: remoteBranchVO.CommitId, CommitMessage: remoteBranchVO.CommitMessage, CommitAt: dateTime.Now(), BuildAt: dateTime.Now()}
 				appsBranchRepository.Add(do)
-				lstUT.Add(do)
+				//lstUT.Add(do)
 				return
 			}
 
@@ -63,6 +64,7 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 			if !lstBranch.Where(func(item apps.RemoteBranchVO) bool {
 				return item.BranchName == utDO.BranchName
 			}).Any() {
+				flog.Infof("应用：%s的远程分支：%s不存在了，删除本地分支", utDO.AppName, utDO.BranchName)
 				appsBranchRepository.DeleteBranch(utDO.AppName, utDO.BranchName)
 			}
 		})

@@ -9,6 +9,8 @@ import (
 	"regexp"
 	"strings"
 
+	"fops/domain/_/eumBuildType"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/fs/dateTime"

@@ -2,6 +2,7 @@
 package appsApp
 
 import (
+	"fops/application/appsApp/response"
 	"fops/domain/appsBranch"
 
 	"github.com/farseer-go/collections"
@@ -11,12 +12,20 @@ import (
 // BuildList 获取分支列表
 // @post autobuild/list
 // @filter application.Jwt
-func BranchList(appsBranchRepository appsBranch.Repository) map[string]collections.List[appsBranch.DomainObject] {
+func BranchList(appsBranchRepository appsBranch.Repository) collections.List[response.BranchListResponse] {
 	var mGroupBy map[string]collections.List[appsBranch.DomainObject]
 	appsBranchRepository.ToList().GroupBy(&mGroupBy, func(item appsBranch.DomainObject) any {
 		return item.AppName
 	})
-	return mGroupBy
+
+	lst := collections.NewList[response.BranchListResponse]()
+	for appName, list := range mGroupBy {
+		lst.Add(response.BranchListResponse{
+			AppName: appName,
+			List:    list,
+		})
+	}
+	return lst
 }
 
 // ResetCommitId 重置错误次数

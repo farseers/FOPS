@@ -25,7 +25,10 @@ func BranchList(appsBranchRepository appsBranch.Repository) collections.List[res
 			List:    list,
 		})
 	}
-	return lst
+
+	return lst.OrderBy(func(item response.BranchListResponse) any {
+		return item.AppName
+	}).ToList()
 }
 
 // ResetCommitId 重置错误次数

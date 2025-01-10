@@ -23,8 +23,8 @@
                   </li>
                   <li style="display: flex;align-items: center;padding: 5px 10px;">构建时间：{{ item.BuildAt }}</li>
                   <!-- v-if="item.BuildErrorCount == 3 && !item.BuildSuccess" -->
-                  <li style="display: flex;align-items: center;justify-content: center;padding: 0 10px;">
-                  <el-button size="small" @click="goBuild(item,v)" type="info" style="width:100%"><el-icon class="iconfont icon-wenducanshu-05"></el-icon>构建</el-button>
+                  <li style="height: 20px;padding: 0;display: flex;align-items: center;">
+                  <el-button  v-show="item.BuildErrorCount == 3 && !item.BuildSuccess" size="small" @click="goBuild(item,v)" type="info" style="width:100%"><el-icon class="iconfont icon-wenducanshu-05"></el-icon>构建</el-button>
                 </li>
                 </ul>
               </div>
@@ -415,13 +415,11 @@ flex: 1 1 auto;
 ._divs{
   box-sizing: border-box;
   display: flex;
-      flex-flow: wrap;
+  flex-flow: wrap;
   ._uls1{
     border: 1px solid #ccc;
-  
   }
   ._uls{
-    box-sizing: border-box;
     font-size: 12px;
     align-items: center; 
     flex: 1 1 auto; 

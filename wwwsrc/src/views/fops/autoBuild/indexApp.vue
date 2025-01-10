@@ -4,23 +4,25 @@
       <!--应用列表-->
       <el-container>
         <el-main class="buildMain">
-          <div class="buildItem" v-for="(v, k) in state.tableData.data" :key="k" >
+          <div :class="buildItemCls(v)" v-for="(v, k) in state.tableData.data" :key="k" >
             <el-card shadow="hover" style="flex: 1;" >
               <div class="title">{{ v.AppName }}</div>
               <div class="_divs">
-                <ul class="_uls" v-for="(item, index) in v.List" :key="item.CommitId">
-                  <li>
-                    <el-tag size="small" style="margin-right: 3px;">{{ item.BranchName }}</el-tag>
-                    <span>git提交时间：{{ item.CommitAt }}</span>
-                    <span v-if="item.CommitMessage">git提交信息：{{ item.CommitMessage }}</span>
-                  </li>
+                <ul :class="v.List.length>1?'_uls _uls1':'_uls'" v-for="(item, index) in v.List" :key="item.CommitId">
+                  <li><el-tag size="small" style="margin-right: 3px;">{{ item.BranchName }}</el-tag><span>git提交时间：{{ item.CommitAt }}</span></li>
+                  <li v-if="item.CommitMessage"><span>git提交信息：{{ item.CommitMessage }}</span></li>
                   <li>
                     <el-tag size="small" style="margin-right: 3px;" type="success" v-show="item.BuildSuccess">成功</el-tag>
                     <el-tag size="small" style="margin-right: 3px;" type="danger" v-show="!item.BuildSuccess">失败</el-tag>
                     <span style="margin-right: 3px;">构建ID:{{ item.BuildId }}</span> 
-                    失败次数:{{ item.BuildErrorCount }} {{ item.BuildAt }}
+                    <span>
+                      失败次数:
+                    <el-tag size="small" style="margin-right: 3px;" :type="item.BuildErrorCount > 0?'danger':'info'" >{{item.BuildErrorCount}}</el-tag> 
+                    </span>
+                  
                   </li>
-                  <!-- v-if="item.BuildErrorCount == 3" -->
+                  <li style="display: flex;align-items: center;padding: 5px 10px;">构建时间：{{ item.BuildAt }}</li>
+                  <!-- v-if="item.BuildErrorCount == 3 && !item.BuildSuccess" -->
                   <li style="display: flex;align-items: center;justify-content: center;padding: 0 10px;">
                   <el-button size="small" @click="goBuild(item,v)" type="info" style="width:100%"><el-icon class="iconfont icon-wenducanshu-05"></el-icon>构建</el-button>
                 </li>
@@ -149,7 +151,22 @@ const state = reactive({
   statTask:[],
   autoLog:true,
 });
-
+const buildItemCls =(row:any)=>{
+  // return 'buildItem'
+  const List = row.List;
+  if(List){
+    const len = List.length;
+    if(len <=1){
+      return 'buildItem'
+    }else if(len == 2){
+       return 'buildItem w5'
+    }else if(len == 3){
+       return 'buildItem w3'
+    }else{
+       return 'buildItem w10'
+    }
+  }
+}
 // 初始化表格数据
 const getTableData = () => {
 	state.tableData.loading = true;
@@ -199,7 +216,7 @@ const goBuild = (item: any) => {
   })
       .then(() => {
         // 提交数据
-        var param={ "buildId": item.CommitId }
+        var param={ "commitId": item.CommitId }
         serverApi.autobuildResetCommitId(param).then(async function(res){
           if(res.Status){
             ElMessage.success("自动构建成功")
@@ -336,7 +353,7 @@ let intervalAppId = null;
 onMounted(() => {
   getTableData();
   getTableLogData();
-  // intervalAppId = setInterval(getTableData, 3000);
+  intervalAppId = setInterval(getTableData, 3000);
   intervalLogId = setInterval(getTableLogData, 3000);
 });
 // 页面注销的时候
@@ -353,10 +370,19 @@ onUnmounted(()=>{
   flex-wrap: wrap; 
   justify-content: flex-start;
   align-items: flex-start;
+  .w5{
+    width: 50%;
+  }
+  .w3{
+    width: 33%;
+  }
+  .w10{
+    width: 100%;
+  }
 }
 .buildItem{
 padding-right: 5px;
-padding-bottom: 10px;
+// padding-bottom: 10px;
 box-sizing: border-box;
 display: flex;
 align-items: center; 
@@ -371,8 +397,13 @@ flex: 1 1 auto;
     height: 20px;
     --el-icon-size: 12px;
 }
+.el-card {
+  background-color:#f9f9e3;
+  margin-bottom: 5px;
+}
 .el-card__body{
   padding: 0;
+  
 }
 .title{
   background-color: #545c64;
@@ -383,18 +414,32 @@ flex: 1 1 auto;
 }
 ._divs{
   box-sizing: border-box;
-  background-color:#f9f9e3;
-  padding-bottom: 10px;
+  display: flex;
+      flex-flow: wrap;
+  ._uls1{
+    border: 1px solid #ccc;
+  
+  }
   ._uls{
     box-sizing: border-box;
     font-size: 12px;
-    width: 100%;
     align-items: center; 
+    flex: 1 1 auto; 
+    margin: 5px;
+    padding: 5px;
+    border-radius: 5px;
+    box-sizing: border-box;
+    width: 25%;
     li{
       padding: 5px 3px;
       display: flex;
       flex-wrap: wrap;
       align-items: center; 
+      span{
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center; 
+      }
     }
   }
 }

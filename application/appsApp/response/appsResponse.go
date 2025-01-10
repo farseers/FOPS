@@ -37,4 +37,5 @@ type AppsResponse struct {
 	MemoryUsagePercent float64                        // 内存使用百分比
 	MemoryUsage        uint64                         // 内存已使用（MB）
 	MemoryLimit        uint64                         // 内存限制（MB）
+	UTWorkflowsName    string                         // UT工作流名称（文件的名称）
 }

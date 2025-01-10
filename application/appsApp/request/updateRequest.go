@@ -15,4 +15,5 @@ type UpdateRequest struct {
 	WorkflowsYmlPath   string                  // 工作流定义的路径（默认：/.fops/workflows/build.yml）
 	LimitCpus          float64                 // Cpu核数限制
 	LimitMemory        string                  // 内存限制
+	UTWorkflowsName    string                  // UT工作流名称（文件的名称）
 }

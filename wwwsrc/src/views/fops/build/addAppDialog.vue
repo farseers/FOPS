@@ -26,6 +26,9 @@
         <el-form-item label="内存限制">
           <el-input v-model="state.ruleForm.LimitMemory" placeholder="请输入内存"></el-input>
         </el-form-item>
+          <el-form-item label="自动构建">
+            <el-input v-model="state.ruleForm.UTWorkflowsName" placeholder="请输入工作流的文件名称" clearable></el-input>
+          </el-form-item>
         <el-form-item label="Dockerfile">
           <el-input v-model="state.ruleForm.DockerfilePath" placeholder="请输入Dockerfile路径，默认为：./Dockerfile" clearable></el-input>
         </el-form-item>
@@ -110,6 +113,7 @@ const state = reactive({
     DockerNodeRole:'',// 容器节点角色 manager or worker
     AdditionalScripts:'',// 多行内容，用多行文本框
     WorkflowsYmlPath:'',// 工作流定义的路径,
+    UTWorkflowsName:'',// UT工作流名称（文件的名称）
     LimitCpus:0,        // Cpu核数限制
     LimitMemory:'',      // 内存限制
 	},
@@ -154,6 +158,7 @@ const openDialog = (type: string, row: any) => {
   state.ruleForm.DockerNodeRole=''
   state.ruleForm.AdditionalScripts=''
   state.ruleForm.WorkflowsYmlPath=''
+  state.ruleForm.UTWorkflowsName=''
   state.SelectItem=[] // 清空
   state.tableData.data=[]
 	state.dialog.isShowDialog = true;
@@ -206,6 +211,7 @@ const onSubmit = () => {
     "DockerNodeRole":state.ruleForm.DockerNodeRole,
     "AdditionalScripts":state.ruleForm.AdditionalScripts,
     "WorkflowsYmlPath":state.ruleForm.WorkflowsYmlPath,
+    "UTWorkflowsName":state.ruleForm.UTWorkflowsName,
     "LimitCpus":parseFloat(state.ruleForm.LimitCpus),
     "LimitMemory":state.ruleForm.LimitMemory,
   }

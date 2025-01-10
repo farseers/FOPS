@@ -280,5 +280,6 @@ func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps
 		LimitMemory:       do.LimitMemory,
 		AdditionalScripts: do.AdditionalScripts,
 		DockerfilePath:    do.DockerfilePath,
+		UTWorkflowsName:   do.UTWorkflowsName,
 	}
 }

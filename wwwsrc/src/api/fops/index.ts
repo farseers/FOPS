@@ -547,6 +547,20 @@ export function fopsApi() {
 				data:param,
 			});
 		},
+		autobuildList:(param: object) => { // 自动构建列表
+			return request({
+				url: '/apps/autobuild/list',
+				method:'post',
+				data:param,
+			});
+		},
+		autobuildResetCommitId:(param: object) => { // 自动构建
+			return request({
+				url: '/apps/autobuild/resetCommitId',
+				method:'post',
+				data:param,
+			});
+		},
 		drpBaseList:(param: object) => { // 通知类型 {baseType:'1,2'} 1通知类型 2比较方式
 			return request({
 				url: '/monitor/drpBaseList',

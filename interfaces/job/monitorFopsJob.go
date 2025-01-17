@@ -90,7 +90,7 @@ func MonitorFopsJob(*tasks.TaskContext) {
 	// 添加消息队列
 	addMonitorData.Foreach(func(item *monitor.DataEO) {
 		curRuleList := ruleList.Where(func(rule monitor.RuleEO) bool {
-			return rule.KeyName == item.Key && strings.Contains(rule.AppName, item.AppName)
+			return rule.KeyName == item.Key && strings.Contains(strings.ToLower(rule.AppName), strings.ToLower(item.AppName))
 		}).ToList()
 		curRuleList.Foreach(func(rule *monitor.RuleEO) {
 			if rule.CompareResult(item.Value) {

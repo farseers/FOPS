@@ -1,9 +1,10 @@
 package monitor
 
 import (
-	"github.com/farseer-go/fs/dateTime"
 	"regexp"
 	"strings"
+
+	"github.com/farseer-go/fs/dateTime"
 )
 
 type DataEO struct {
@@ -18,7 +19,7 @@ func NewDataEO(appName string, key, value string) *DataEO {
 	return &DataEO{
 		AppName:  FilterElement(appName),
 		Key:      FilterElement(key),
-		Value:    FilterElement(value),
+		Value:    value,
 		CreateAt: dateTime.Now(),
 	}
 }

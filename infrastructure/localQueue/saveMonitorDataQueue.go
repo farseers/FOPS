@@ -33,8 +33,6 @@ func SaveMonitorDataQueue(subscribeName string, lstMessage collections.ListAny, 
 	addDataLogs := collections.NewList[monitor.DataEO]()
 	appNameList := collections.NewList[string]()
 	lstData.Foreach(func(dataEO *monitor.DataEO) {
-		//flog.Info("消息队列处理")
-		//flog.Info(dataEO)
 		if !appNameList.Contains(dataEO.AppName) {
 			appNameList.Add(dataEO.AppName)
 		}

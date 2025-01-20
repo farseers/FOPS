@@ -15,6 +15,7 @@ type Repository interface {
 	ToListRule() collections.List[RuleEO]
 	ToListPageRule(appName string, pageSize, pageIndex int) collections.PageList[RuleEO]
 	DeleteRule(id int64) error
+	UpdateRuleEnable(id int64, enable bool) error
 	ToEntityRule(id int64) RuleEO
 	UpdateRule(id int64, rule RuleEO) error
 	AddRule(rule RuleEO) error

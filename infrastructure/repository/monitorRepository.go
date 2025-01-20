@@ -48,6 +48,10 @@ func (receiver *monitorRepository) ToListPageRule(appName string, pageSize, page
 	poList := ts.ToPageList(pageSize, pageIndex)
 	return mapper.ToPageList[monitor.RuleEO](poList)
 }
+func (receiver *monitorRepository) UpdateRuleEnable(id int64, enable bool) error {
+	_, err := context.MysqlContext.MonitorRule.Where("id = ?", id).UpdateValue("enable", enable)
+	return err
+}
 func (receiver *monitorRepository) DeleteRule(id int64) error {
 	_, err := context.MysqlContext.MonitorRule.Where("id = ?", id).Delete()
 	return err

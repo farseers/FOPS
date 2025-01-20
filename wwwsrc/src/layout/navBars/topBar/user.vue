@@ -302,16 +302,16 @@ const infoConnect =() =>{ //
 		if(state.NoReadList.length > 0){
 			state.isDot = true;
 			ElNotification.closeAll()
-			if(!state.manualVisible){
-				ElNotification({
-				title: '提示',
-				message: '有新的日志信息',
-				type: 'warning',
-				duration:0,
-				position: 'bottom-right',
-				onClick:elNotClick
-			});
-			}
+			// if(!state.manualVisible){
+			// 	ElNotification({
+			// 	title: '提示',
+			// 	message: '有新的日志信息',
+			// 	type: 'warning',
+			// 	duration:0,
+			// 	position: 'bottom-right',
+			// 	onClick:elNotClick
+			// });
+			// }
 			
 		}else{
 			state.isDot = false;

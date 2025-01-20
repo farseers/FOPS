@@ -33,13 +33,11 @@ func SaveMonitorDataQueue(subscribeName string, lstMessage collections.ListAny, 
 	addDataLogs := collections.NewList[monitor.DataEO]()
 	appNameList := collections.NewList[string]()
 	lstData.Foreach(func(dataEO *monitor.DataEO) {
-		//flog.Info("消息队列处理")
-		//flog.Info(dataEO)
 		if !appNameList.Contains(dataEO.AppName) {
 			appNameList.Add(dataEO.AppName)
 		}
 		rules := ruleList.Where(func(item monitor.RuleEO) bool {
-			return strings.Contains(item.AppName, dataEO.AppName) && item.KeyName == dataEO.Key
+			return strings.Contains(strings.ToLower(item.AppName), strings.ToLower(dataEO.AppName)) && item.KeyName == dataEO.Key
 		}).ToList()
 		// 是否保存数据
 		var isSaveData = false

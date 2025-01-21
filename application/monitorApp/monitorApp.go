@@ -62,6 +62,14 @@ func ToEntityRule(id int64, monitorRepository monitor.Repository) response.RuleR
 	return resInfo
 }
 
+// SaveRule 更新规则启用状态
+// @post updateRuleEnable
+// @filter application.Jwt
+func UpdateRuleEnable(req request.SaveRuleRequest, monitorRepository monitor.Repository) {
+	err := monitorRepository.UpdateRuleEnable(req.Id, req.Enable)
+	exception.ThrowWebExceptionError(403, err)
+}
+
 // SaveRule 保存规则
 // @post saveRule
 // @filter application.Jwt

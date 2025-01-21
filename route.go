@@ -82,6 +82,7 @@ var route = []webapi.Route{
     {"POST", "/monitor/ruleList", monitorApp.ToListPageRule, "", []context.IFilter{application.Jwt{}}, []string{"appName", "pageSize", "pageIndex", ""}},
     {"POST", "/monitor/delRule", monitorApp.DeleteRule, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
     {"POST", "/monitor/infoRule", monitorApp.ToEntityRule, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
+    {"POST", "/monitor/updateRuleEnable", monitorApp.UpdateRuleEnable, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
     {"POST", "/monitor/saveRule", monitorApp.SaveRule, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
     {"POST", "/monitor/noticeList", monitorApp.ToListPageNotice, "", []context.IFilter{application.Jwt{}}, []string{"name", "pageSize", "pageIndex", ""}},
     {"POST", "/monitor/delNotice", monitorApp.DeleteNotice, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},

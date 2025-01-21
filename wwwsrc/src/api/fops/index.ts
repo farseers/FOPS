@@ -470,6 +470,13 @@ export function fopsApi() {
 				data:param,
 			});
 		},
+		monitorUpdateRuleEnable:(param: object) => { // 规则开启关闭
+			return request({
+				url: '/monitor/updateRuleEnable',
+				method:'post',
+				data:param,
+			});
+		},
 		monitorInfoRule:(param: object) => { // 规则详情
 			return request({
 				url: '/monitor/infoRule',

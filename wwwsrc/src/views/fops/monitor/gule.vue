@@ -54,8 +54,10 @@
                     </el-table-column>
                     <el-table-column prop="TipTemplate" label="模版" show-overflow-tooltip></el-table-column>
                     <el-table-column prop="Remark" label="备注" show-overflow-tooltip></el-table-column>
-                    <el-table-column label="操作" width="100px" fixed="right" align="center">
+                    <el-table-column label="操作" width="150px" fixed="right" align="center">
                         <template #default="scope">
+                            <el-button @click="set_ch(scope.row)" type="primary" v-if="!scope.row.Enable" text size="small">开启</el-button>
+                            <el-button @click="set_ch(scope.row)" type="primary" v-if="scope.row.Enable" text size="small">关闭</el-button>
                             <el-button @click="set_edit(scope.row)" type="primary" text size="small">编辑</el-button>
                             <el-button @click="set_del(scope.row)" type="danger" text size="small">删除</el-button>
                         </template>
@@ -136,6 +138,29 @@ export default {
             if (row.Id) {
                 this.$refs.editInfo && this.$refs.editInfo.info(row.Id, this.p_list, this.m_list, this.typeList)
             }
+        },
+        set_ch(row){
+            let str = '确定开启?'
+            if (row.Enable) {
+                str = `确定关闭?`;
+            }
+            const _this = this;
+            ElMessageBox.confirm(`${str}`, '提示', {
+                confirmButtonText: '确认',
+                cancelButtonText: '取消',
+                type: 'warning',
+            })
+                .then(() => {
+                    serverApi.monitorUpdateRuleEnable({ "Id": row.Id,'Enable':!row.Enable}).then(function (res) {
+                        if (res.Status) {
+                            ElMessage.success('成功');
+                            _this.getTableData()
+                        } else {
+                            ElMessage.error(res.StatusMessage)
+                        }
+                    })
+                })
+                .catch(() => { });
         },
         set_del(row) { //删除
             let str = '确定删除此数据?'

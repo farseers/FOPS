@@ -51,8 +51,6 @@ func (module StartupModule) PostInitialize() {
 
 	// 初始化目录
 	apps.InitFopsDir()
-
-	//appsApp.BuildAdd("lbn", 1, "本地", container.Resolve[apps.Repository](), container.Resolve[cluster.Repository]())
 }
 
 func (module StartupModule) Shutdown() {

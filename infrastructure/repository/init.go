@@ -4,6 +4,7 @@ import (
 	"fops/domain/accountLogin"
 	"fops/domain/apps"
 	"fops/domain/appsBranch"
+	"fops/domain/backupData"
 	"fops/domain/cluster"
 	"fops/domain/clusterNode"
 	"fops/domain/configure"
@@ -37,4 +38,6 @@ func InitRepository() {
 	container.Register(func() terminal.Repository { return &terminalRepository{} })
 	// 应用分支
 	container.Register(func() appsBranch.Repository { return &appsBranchRepository{} })
+	// 数据备份
+	container.Register(func() backupData.Repository { return &backupDataRepository{} })
 }

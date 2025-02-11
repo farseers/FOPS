@@ -4,6 +4,7 @@ import (
 	"fops/domain/accountLogin"
 	"fops/domain/apps"
 	"fops/domain/appsBranch"
+	"fops/domain/backupData"
 	"fops/domain/cluster"
 	"fops/domain/configure"
 	"fops/domain/monitor"
@@ -52,6 +53,8 @@ type mysqlContext struct {
 	TerminalClient data.DomainSet[model.TerminalClientPO, terminal.ClientEO] `data:"name=terminal_client;migrate;"`
 	// 应用分支
 	AppsBranch data.DomainSet[model.AppsBranchPO, appsBranch.DomainObject] `data:"name=apps_branch;migrate;"`
+	// backupData表
+	BackupData data.DomainSet[model.BackupDataPO, backupData.DomainObject] `data:"name=backupData"`
 }
 
 // InitMysqlContext 初始化上下文

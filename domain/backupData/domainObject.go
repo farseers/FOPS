@@ -88,7 +88,11 @@ func (receiver *DomainObject) backupMySQL() collections.List[BackupHistoryData] 
 			continue
 		}
 		flog.Info("3.4 ")
-		fileInfo, _ := os.Stat(filePath)
+		fileInfo, err := os.Stat(filePath)
+		if err != nil {
+			flog.Warningf("获取备份文件信息:%s,失败： %s", filePath, err.Error())
+			continue
+		}
 		lstBackupHistoryData.Add(BackupHistoryData{
 			BackupId:  receiver.Id,
 			FileName:  filePath,

@@ -78,7 +78,8 @@ func (receiver *DomainObject) backupMySQL() collections.List[BackupHistoryData] 
 	lstBackupHistoryData := collections.NewList[BackupHistoryData]()
 	// 备份数据库
 	for _, database := range receiver.Database {
-		filePath := apps.BackupRoot + receiver.Host + "_" + database + "_$(date +%Y%m%d_%H_%M).sql.gz"
+
+		filePath := apps.BackupRoot + receiver.Host + "_" + database + "_" + time.Now().Format("20060102_15_04") + ".sql.gz"
 		mysqldumpCmd := fmt.Sprintf("mysqldump -h %s -P %d -u%s -p%s %s | gzip > %s", receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, filePath)
 		code, result := exec.RunShellCommand(mysqldumpCmd, nil, "", false)
 		// 备份失败时删除备份文件

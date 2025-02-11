@@ -22,6 +22,7 @@ require (
 	github.com/farseer-go/utils v0.15.0
 	github.com/farseer-go/webapi v0.15.0
 	golang.org/x/crypto v0.29.0
+	github.com/robfig/cron/v3 v3.0.1
 )
 
 require (

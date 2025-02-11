@@ -4,6 +4,7 @@ package main
 import (
 	"fops/application"
 	"fops/application/appsApp"
+	"fops/application/backupDataApp"
 	"fops/application/clusterApp"
 	"fops/application/configureApp"
 	"fops/application/flogApp"
@@ -36,6 +37,10 @@ var route = []webapi.Route{
     {"POST", "/apps/setReplicas", appsApp.SetReplicas, "", []context.IFilter{application.Jwt{}}, []string{"appName", "dockerReplicas", ""}},
     {"POST", "/apps/deleteService", appsApp.DeleteService, "", []context.IFilter{application.Jwt{}}, []string{"appName", ""}},
     {"POST", "/apps/logs/dockerSwarm", appsApp.DockerSwarm, "", []context.IFilter{application.Jwt{}}, []string{"appName", "tailCount"}},
+    {"POST", "/backupData/add", backupDataApp.Add, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
+    {"POST", "/backupData/update", backupDataApp.Update, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
+    {"POST", "/backupData/list", backupDataApp.List, "", []context.IFilter{application.Jwt{}}, []string{""}},
+    {"POST", "/backupData/info", backupDataApp.Info, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
     {"POST", "/cluster/add", clusterApp.Add, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
     {"POST", "/cluster/update", clusterApp.Update, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
     {"POST", "/cluster/list", clusterApp.List, "", []context.IFilter{application.Jwt{}}, []string{""}},

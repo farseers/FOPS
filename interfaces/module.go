@@ -40,6 +40,7 @@ func (module Module) PostInitialize() {
 
 		tasks.Run("fops监控数据处理", time.Minute*1, job.MonitorFopsJob, context.Background())
 		tasks.Run("同步Git分支", time.Second*30, job.SyncAppsBranchJob, context.Background())
+		tasks.Run("执行备份计划", time.Minute*1, job.SyncBackupDataJob, context.Background())
 
 		// 监听agent的IP变化
 		go job.ListenerAgentNotify()

@@ -20,6 +20,7 @@ const (
 	ShellRoot        = "/var/lib/fops/shell/"             // 生成Shell脚本的存放路径
 	ActionsRoot      = "/var/lib/fops/actions/"           // 执行Actions的缓存目录
 	WorkflowsRoot    = "/var/lib/fops/workflows/"         // 存放工作流文件的目录
+	BackupRoot       = "/var/lib/fops/backup/"            // 存放备份文件的目录
 )
 
 // InitFopsDir 初始化目录
@@ -33,6 +34,7 @@ func InitFopsDir() {
 	_ = os.MkdirAll(ShellRoot, 0777)
 	_ = os.MkdirAll(ActionsRoot, 0777)
 	_ = os.MkdirAll(WorkflowsRoot, 0777)
+	_ = os.MkdirAll(BackupRoot, 0777)
 }
 
 // EnvVO 构建时的环境变量

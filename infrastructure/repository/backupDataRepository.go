@@ -5,6 +5,7 @@ import (
 	"fops/infrastructure/repository/context"
 	"fops/infrastructure/repository/model"
 
+	"github.com/farseer-go/collections"
 	"github.com/farseer-go/data"
 	"github.com/farseer-go/mapper"
 )
@@ -23,4 +24,16 @@ func (receiver *backupDataRepository) GetCountById(id string) int64 {
 func (receiver *backupDataRepository) Update(id any, do backupData.DomainObject) (int64, error) {
 	po := mapper.Single[model.BackupDataPO](do)
 	return context.MysqlContext.BackupData.Where("id = ?", id).Omit("id", "backup_data_type", "store_type", "last_backup_at").Update(po)
+}
+
+// 获取即将备份的数据
+func (receiver *backupDataRepository) ToNextBackupData() backupData.DomainObject {
+	po := context.MysqlContext.BackupData.Asc("next_backup_at").ToEntity()
+	return mapper.Single[backupData.DomainObject](po)
+}
+
+// 添加备份文件列表
+func (receiver *backupDataRepository) AddHistory(lst collections.List[backupData.BackupHistoryData]) {
+	lstPO := mapper.ToList[model.BackupHistoryDataPO](lst)
+	context.MysqlContext.BackupHistoryData.InsertList(lstPO, 2000)
 }

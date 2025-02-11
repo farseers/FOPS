@@ -54,7 +54,8 @@ type mysqlContext struct {
 	// 应用分支
 	AppsBranch data.DomainSet[model.AppsBranchPO, appsBranch.DomainObject] `data:"name=apps_branch;migrate;"`
 	// backupData表
-	BackupData data.DomainSet[model.BackupDataPO, backupData.DomainObject] `data:"name=backupData"`
+	BackupData        data.DomainSet[model.BackupDataPO, backupData.DomainObject]             `data:"name=backup_Data"`
+	BackupHistoryData data.DomainSet[model.BackupHistoryDataPO, backupData.BackupHistoryData] `data:"name=backup_History_Data"`
 }
 
 // InitMysqlContext 初始化上下文

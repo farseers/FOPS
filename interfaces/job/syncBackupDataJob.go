@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/farseer-go/fs/container"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/tasks"
 )
 
@@ -28,7 +29,11 @@ func SyncBackupDataJob(*tasks.TaskContext) {
 	if lstBackupHistoryData.Count() > 0 {
 		// 更新时间字段，并生成下一次执行时间。
 		do.LastBackupAt = time.Now()
-		cornSchedule, _ := backupData.StandardParser.Parse(do.Cron)
+		cornSchedule, err := backupData.StandardParser.Parse(do.Cron)
+		if err != nil {
+			flog.Error("同步备份计划时，do.Cron的值不正确导致错误: %s %v", do.Cron, err)
+			return
+		}
 		do.NextBackupAt = cornSchedule.Next(time.Now())
 		backupDataRepository.Update(do.Id, do)
 

@@ -88,7 +88,6 @@ func (receiver *DomainObject) backupMySQL() collections.List[BackupHistoryData] 
 			flog.Warningf("备份%s数据库失败：%s", database, collections.NewList(result...).ToString(","))
 			continue
 		}
-		flog.Info("3.4 ")
 		fileInfo, err := os.Stat(filePath)
 		if err != nil {
 			flog.Warningf("获取备份文件信息:%s,失败： %s", filePath, err.Error())
@@ -101,7 +100,6 @@ func (receiver *DomainObject) backupMySQL() collections.List[BackupHistoryData] 
 			CreateAt:  time.Now(),
 			Size:      fileInfo.Size() / 1024,
 		})
-		flog.Info("3.5 ")
 	}
 	return lstBackupHistoryData
 }

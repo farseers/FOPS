@@ -26,6 +26,12 @@ func (receiver *backupDataRepository) Update(id any, do backupData.DomainObject)
 	return context.MysqlContext.BackupData.Where("id = ?", id).Omit("id", "backup_data_type", "store_type", "last_backup_at").Update(po)
 }
 
+// 更新备份计划的时间
+func (receiver *backupDataRepository) UpdateAt(id any, do backupData.DomainObject) (int64, error) {
+	po := mapper.Single[model.BackupDataPO](do)
+	return context.MysqlContext.BackupData.Where("id = ?", id).Select("last_backup_at", "next_backup_at").Update(po)
+}
+
 // 获取即将备份的数据
 func (receiver *backupDataRepository) ToNextBackupData() backupData.DomainObject {
 	po := context.MysqlContext.BackupData.Asc("next_backup_at").ToEntity()

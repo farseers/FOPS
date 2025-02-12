@@ -103,7 +103,7 @@ func (receiver *DomainObject) Backup() collections.List[BackupHistoryData] {
 				flog.Warningf("上传文件：%s 时，发生错误：%v", item.FileName, err)
 				lstBackupHistoryData.RemoveAt(index)
 			}
-			fmt.Printf("put object sucessfully, ETag :%v\n", result.ETag)
+			flog.Infof("put object sucessfully, ETag :%v\n", result.ETag)
 		}
 	case eumBackupStoreType.LocalDirectory:
 		//fileStoreConfig := mapper.Single[FileStoreConfig](receiver.StoreConfig)

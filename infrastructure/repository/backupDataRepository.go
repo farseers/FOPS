@@ -43,3 +43,9 @@ func (receiver *backupDataRepository) AddHistory(lst collections.List[backupData
 	lstPO := mapper.ToList[model.BackupHistoryDataPO](lst)
 	context.MysqlContext.BackupHistoryData.InsertList(lstPO, 2000)
 }
+
+// 获取备份文件列表
+func (receiver *backupDataRepository) ToBackupList(backupId string) collections.List[backupData.BackupHistoryData] {
+	lstPO := context.MysqlContext.BackupHistoryData.Where("backup_id = ?", backupId).Desc("create_at").Limit(144).ToList()
+	return mapper.ToList[backupData.BackupHistoryData](lstPO)
+}

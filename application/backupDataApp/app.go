@@ -2,11 +2,14 @@
 package backupDataApp
 
 import (
+	"fmt"
 	"fops/application/backupDataApp/request"
+	"fops/domain/_/eumBackupDataType"
 	"fops/domain/backupData"
 	"time"
 
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/data"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/mapper"
@@ -65,6 +68,43 @@ func List(backupDataRepository backupData.Repository) collections.List[backupDat
 // Info 备份计划查询
 // @post info
 // @filter application.Jwt
-func Info(id string, backupDataRepository backupData.Repository) backupData.DomainObject {
-	return backupDataRepository.ToEntity(id)
+func Info(backupId string, backupDataRepository backupData.Repository) backupData.DomainObject {
+	return backupDataRepository.ToEntity(backupId)
+}
+
+// GetDatabaseList 获取数据库列表
+// @post getDatabaseList
+// @filter application.Jwt
+func GetDatabaseList(req request.GetDatabaseListRequest) []string {
+	var dbConnectionString string
+	switch req.BackupDataType {
+	case eumBackupDataType.Mysql:
+		dbConnectionString = fmt.Sprintf("DataType=mysql,ConnectionString=%s:%s@tcp(%s:%d)/?charset=utf8mb4&parseTime=True&loc=Local", req.Username, req.Password, req.Host, req.Port)
+	case eumBackupDataType.Clickhouse:
+		dbConnectionString = fmt.Sprintf("DataType=clickhouse,ConnectionString=tcp://%s:%d?username=%s&password=%s&read_timeout=10&write_timeout=20", req.Host, req.Port, req.Username, req.Password)
+	}
+	return data.NewInternalContext(dbConnectionString).GetDatabaseList()
+}
+
+// BackupList 备份文件列表
+// @post backupList
+// @filter application.Jwt
+func BackupList(backupId string, backupDataRepository backupData.Repository) collections.List[backupData.BackupHistoryData] {
+	return backupDataRepository.ToBackupList(backupId)
+}
+
+// DeleteHistory 删除备份文件
+// @post deleteHistory
+// @filter application.Jwt
+func DeleteBackupFile(backupId string, filePath string, backupDataRepository backupData.Repository) {
+	do := backupDataRepository.ToEntity(backupId)
+	do.DeleteBackupFile(filePath)
+}
+
+// RecoverBackupFile 恢复备份文件
+// @post recoverBackupFile
+// @filter application.Jwt
+func RecoverBackupFile(backupId string, filePath string, backupDataRepository backupData.Repository) {
+	do := backupDataRepository.ToEntity(backupId)
+	do.RecoverBackupFile(filePath)
 }

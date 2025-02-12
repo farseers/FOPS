@@ -65,46 +65,7 @@ func (receiver *DomainObject) Backup() collections.List[BackupHistoryData] {
 	// 上传备份文件
 	switch receiver.StoreType {
 	case eumBackupStoreType.OSS:
-		var ossStoreConfig OSSStoreConfig
-		err := snc.Unmarshal([]byte(receiver.StoreConfig), &ossStoreConfig)
-		if err != nil {
-			flog.Warningf("OSS上传的配置解析失败：%v", err)
-			return collections.NewList[BackupHistoryData]()
-		}
-
-		// 从环境变量中获取访问凭证。运行本代码示例之前，请确保已设置环境变量OSS_ACCESS_KEY_ID和OSS_ACCESS_KEY_SECRET。
-		cfg := oss.LoadDefaultConfig().WithCredentialsProvider(credentials.NewStaticCredentialsProvider(ossStoreConfig.AccessKeyID, ossStoreConfig.AccessKeySecret))
-		if ossStoreConfig.Region != "" {
-			cfg.WithRegion(ossStoreConfig.Region)
-		}
-		if ossStoreConfig.Endpoint != "" {
-			cfg.WithEndpoint(ossStoreConfig.Endpoint)
-		}
-
-		client := oss.NewClient(cfg)
-
-		// 批量上传
-		for index, item := range lstBackupHistoryData.ToArray() {
-			file, err := os.Open(item.FileName)
-			if err != nil {
-				flog.Warningf("打开上传文件：%s 时，发生错误：%v", item.FileName, err)
-				lstBackupHistoryData.RemoveAt(index)
-				continue
-			}
-			defer file.Close()
-
-			result, err := client.PutObject(context.TODO(), &oss.PutObjectRequest{
-				Bucket: oss.Ptr(ossStoreConfig.BucketName),
-				Key:    oss.Ptr(filepath.Base(item.FileName)),
-				Body:   file,
-			})
-
-			if err != nil {
-				flog.Warningf("上传文件：%s 时，发生错误：%v", item.FileName, err)
-				lstBackupHistoryData.RemoveAt(index)
-			}
-			flog.Infof("put object sucessfully, ETag :%v\n", result.ETag)
-		}
+		return receiver.uploadOSS(lstBackupHistoryData)
 	case eumBackupStoreType.LocalDirectory:
 		//fileStoreConfig := mapper.Single[FileStoreConfig](receiver.StoreConfig)
 	}
@@ -121,19 +82,18 @@ func (receiver *DomainObject) backupMySQL() collections.List[BackupHistoryData] 
 	lstBackupHistoryData := collections.NewList[BackupHistoryData]()
 	// 备份数据库
 	for _, database := range receiver.Database {
-
-		filePath := apps.BackupRoot + receiver.Host + "_" + database + "_" + time.Now().Format("2006_01_02_15_04") + ".sql.gz"
-		mysqldumpCmd := fmt.Sprintf("mysqldump -h %s -P %d -u%s -p%s %s | gzip > %s", receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, filePath)
+		filePath := receiver.Host + "_" + database + "_" + time.Now().Format("2006_01_02_15_04") + ".sql.gz"
+		mysqldumpCmd := fmt.Sprintf("mysqldump -h %s -P %d -u%s -p%s %s | gzip > %s", receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, apps.BackupRoot+filePath)
 		code, result := exec.RunShellCommand(mysqldumpCmd, nil, "", false)
 		// 备份失败时删除备份文件
 		if code != 0 {
-			file.Delete(filePath)
+			file.Delete(apps.BackupRoot + filePath)
 			flog.Warningf("备份%s数据库失败：%s", database, collections.NewList(result...).ToString(","))
 			continue
 		}
-		fileInfo, err := os.Stat(filePath)
+		fileInfo, err := os.Stat(apps.BackupRoot + filePath)
 		if err != nil {
-			flog.Warningf("获取备份文件信息:%s,失败： %s", filePath, err.Error())
+			flog.Warningf("获取备份文件信息:%s,失败： %s", apps.BackupRoot+filePath, err.Error())
 			continue
 		}
 		lstBackupHistoryData.Add(BackupHistoryData{
@@ -145,6 +105,86 @@ func (receiver *DomainObject) backupMySQL() collections.List[BackupHistoryData] 
 		})
 	}
 	return lstBackupHistoryData
+}
+
+// 获取OSS客户端
+func (receiver *DomainObject) getOssClient() (*oss.Client, string) {
+	var ossStoreConfig OSSStoreConfig
+	err := snc.Unmarshal([]byte(receiver.StoreConfig), &ossStoreConfig)
+	if err != nil {
+		flog.Warningf("OSS的配置解析失败：%v", err)
+		return nil, ""
+	}
+
+	// 从环境变量中获取访问凭证。运行本代码示例之前，请确保已设置环境变量OSS_ACCESS_KEY_ID和OSS_ACCESS_KEY_SECRET。
+	cfg := oss.LoadDefaultConfig().WithCredentialsProvider(credentials.NewStaticCredentialsProvider(ossStoreConfig.AccessKeyID, ossStoreConfig.AccessKeySecret))
+	if ossStoreConfig.Region != "" {
+		cfg.WithRegion(ossStoreConfig.Region)
+	}
+	if ossStoreConfig.Endpoint != "" {
+		cfg.WithEndpoint(ossStoreConfig.Endpoint)
+	}
+
+	return oss.NewClient(cfg), ossStoreConfig.BucketName
+}
+
+// 上传备份文件到OSS
+func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[BackupHistoryData]) collections.List[BackupHistoryData] {
+	client, bucketName := receiver.getOssClient()
+
+	// 批量上传
+	for index, item := range lstBackupHistoryData.ToArray() {
+		f, err := os.Open(apps.BackupRoot + item.FileName)
+		if err != nil {
+			flog.Warningf("打开上传文件：%s 时，发生错误：%v", item.FileName, err)
+			lstBackupHistoryData.RemoveAt(index)
+			continue
+		}
+		defer f.Close()
+
+		result, err := client.PutObject(context.TODO(), &oss.PutObjectRequest{
+			Bucket: oss.Ptr(bucketName),
+			Key:    oss.Ptr(filepath.Base(item.FileName)),
+			Body:   f,
+		})
+
+		if err != nil {
+			flog.Warningf("上传文件：%s 时，发生错误：%v", item.FileName, err)
+			lstBackupHistoryData.RemoveAt(index)
+		}
+
+		// 上传成功后，删除本地文件
+		file.Delete(apps.BackupRoot + item.FileName)
+		flog.Infof("put object sucessfully, ETag :%v\n", result.ETag)
+	}
+	return lstBackupHistoryData
+}
+
+// 删除备份文件
+func (receiver *DomainObject) DeleteBackupFile(fileName string) {
+	// 删除本地文件
+	file.Delete(apps.BackupRoot + fileName)
+	// 删除OSS文件
+	if receiver.StoreType == eumBackupStoreType.OSS {
+		client, bucketName := receiver.getOssClient()
+
+		// 执行删除对象的操作并处理结果
+		result, err := client.DeleteObject(context.TODO(), &oss.DeleteObjectRequest{
+			Bucket: oss.Ptr(bucketName), // 存储空间名称
+			Key:    oss.Ptr(fileName),   // 对象名称
+		})
+		if err != nil {
+			flog.Warningf("删除文件：%s 时，发生错误：%v", fileName, err)
+		}
+
+		// 打印删除对象的结果
+		flog.Infof("delete object result:%#v\n", result)
+	}
+}
+
+// 恢复备份文件
+func (receiver *DomainObject) RecoverBackupFile(fileName string) {
+
 }
 
 // 检查 mysqldump 是否已安装

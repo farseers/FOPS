@@ -1,7 +1,6 @@
 package request
 
 import (
-	"fops/domain/_/eumBackupDataType"
 	"fops/domain/_/eumBackupStoreType"
 	"fops/domain/backupData"
 	"strings"
@@ -11,15 +10,11 @@ import (
 )
 
 type AddRequest struct {
-	BackupDataType eumBackupDataType.Enum  // 备份数据类型
-	Host           string                  // 主机
-	Port           int                     // 端口
-	Username       string                  // 用户名
-	Password       string                  // 密码
-	Database       []string                // 数据库
-	Cron           string                  // 备份间隔
-	StoreType      eumBackupStoreType.Enum // 备份存储类型
-	StoreConfig    string                  // 备份存储配置
+	GetDatabaseListRequest
+	Database    []string                // 数据库
+	Cron        string                  // 备份间隔
+	StoreType   eumBackupStoreType.Enum // 备份存储类型
+	StoreConfig string                  // 备份存储配置
 }
 
 func (receiver *AddRequest) Check() {

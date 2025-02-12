@@ -7,11 +7,11 @@
                             <ele-Search />
                         </el-icon>
                         查询</el-button>
-                    <el-button size="default" type="warning" class="ml10" @click="set_add()">
+                    <!-- <el-button size="default" type="warning" class="ml10" @click="set_add()">
                         <el-icon>
                             <ele-Plus />
                         </el-icon>
-                        新增</el-button>
+                        新增</el-button> -->
             </template>
             <template #main>
                 <el-table default-expand-all :data="tableData" v-loading="loading" style="width: 100%;max-height: 100%;" size="default">

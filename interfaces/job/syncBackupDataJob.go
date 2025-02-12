@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/farseer-go/fs/container"
+	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/tasks"
 )
@@ -17,7 +18,7 @@ func SyncBackupDataJob(*tasks.TaskContext) {
 		return
 	}
 	// 超过60秒的不处理
-	s := time.Until(do.NextBackupAt)
+	s := do.NextBackupAt.Sub(dateTime.Now())
 	if s.Seconds() > 60 {
 		return
 	}
@@ -31,8 +32,8 @@ func SyncBackupDataJob(*tasks.TaskContext) {
 			return
 		}
 		// 更新时间字段，并生成下一次执行时间。
-		do.LastBackupAt = time.Now()
-		do.NextBackupAt = cornSchedule.Next(time.Now())
+		do.LastBackupAt = dateTime.Now()
+		do.NextBackupAt = dateTime.New(cornSchedule.Next(time.Now()))
 		backupDataRepository.UpdateAt(do.Id, do)
 
 		// 添加历史记录

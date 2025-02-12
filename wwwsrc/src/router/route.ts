@@ -643,6 +643,39 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					}
 				]
 			},
+			{
+				path:'/Replication',
+				name:'Replication',
+				component: () => import('/@/views/home/index.vue'),
+				meta: {
+					title: 'message.router.Replication',
+					isLink: '',
+					isHide: false,
+					isKeepAlive: true,
+					isAffix: false,
+					isIframe: false,
+					roles: ['admin', 'common'],
+					icon: 'iconfont icon-shuju',
+				},
+				children:[
+					   {
+						path: '/replication/schedule',
+						name: 'schedule',
+						component: () => import('/@/views/fops/replication/schedule.vue'),
+						meta: {
+							title: 'message.router.schedule',
+							isLink: '',
+							isHide: false,
+							isKeepAlive: true,
+							isAffix: false,
+							isIframe: false,
+							roles: ['admin', 'common'],
+							icon: 'iconfont icon-zidingyibuju',
+					   }
+					},
+					
+				]
+			},
 		],
 	},
 ];

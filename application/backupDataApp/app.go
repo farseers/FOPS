@@ -10,6 +10,7 @@ import (
 
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/data"
+	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/mapper"
@@ -26,7 +27,7 @@ func Add(req request.AddRequest, backupDataRepository backupData.Repository) {
 	if err != nil {
 		exception.ThrowWebExceptionf(403, "Cron格式错误:%s", do.Cron)
 	}
-	do.NextBackupAt = cornSchedule.Next(time.Now())
+	do.NextBackupAt = dateTime.New(cornSchedule.Next(time.Now()))
 
 	// 生成ID
 	do.GenerateId()
@@ -51,7 +52,7 @@ func Update(req request.UpdateRequest, backupDataRepository backupData.Repositor
 	if err != nil {
 		exception.ThrowWebExceptionf(403, "Cron格式错误:%s", do.Cron)
 	}
-	do.NextBackupAt = cornSchedule.Next(time.Now())
+	do.NextBackupAt = dateTime.New(cornSchedule.Next(time.Now()))
 
 	// 修改
 	_, err = backupDataRepository.Update(req.Id, do)

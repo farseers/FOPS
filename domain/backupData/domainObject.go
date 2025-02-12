@@ -14,6 +14,7 @@ import (
 	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
 	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss/credentials"
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/fs/snc"
@@ -33,8 +34,8 @@ type DomainObject struct {
 	Username       string                  // 用户名
 	Password       string                  // 密码
 	Database       []string                // 数据库
-	LastBackupAt   time.Time               // 上次备份时间
-	NextBackupAt   time.Time               // 下次备份时间
+	LastBackupAt   dateTime.DateTime       // 上次备份时间
+	NextBackupAt   dateTime.DateTime       // 下次备份时间
 	Cron           string                  // 备份间隔
 	StoreType      eumBackupStoreType.Enum // 备份存储类型
 	StoreConfig    string                  // 备份存储配置
@@ -100,7 +101,7 @@ func (receiver *DomainObject) backupMySQL() collections.List[BackupHistoryData] 
 			BackupId:  receiver.Id,
 			FileName:  filePath,
 			StoreType: receiver.StoreType,
-			CreateAt:  time.Now(),
+			CreateAt:  dateTime.Now(),
 			Size:      fileInfo.Size() / 1024,
 		})
 	}
@@ -221,6 +222,6 @@ type BackupHistoryData struct {
 	BackupId  string                  // 备份计划的ID
 	FileName  string                  // 文件名
 	StoreType eumBackupStoreType.Enum // 备份存储类型
-	CreateAt  time.Time               // 备份时间
+	CreateAt  dateTime.DateTime       // 备份时间
 	Size      int64                   // 备份文件大小（KB）
 }

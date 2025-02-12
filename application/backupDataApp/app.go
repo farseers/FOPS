@@ -97,15 +97,15 @@ func BackupList(backupId string, backupDataRepository backupData.Repository) col
 // DeleteHistory 删除备份文件
 // @post deleteHistory
 // @filter application.Jwt
-func DeleteBackupFile(backupId string, filePath string, backupDataRepository backupData.Repository) {
+func DeleteBackupFile(backupId string, fileName string, backupDataRepository backupData.Repository) {
 	do := backupDataRepository.ToEntity(backupId)
-	do.DeleteBackupFile(filePath)
+	do.DeleteBackupFile(fileName)
 }
 
 // RecoverBackupFile 恢复备份文件
 // @post recoverBackupFile
 // @filter application.Jwt
-func RecoverBackupFile(backupId string, filePath string, backupDataRepository backupData.Repository) {
+func RecoverBackupFile(backupId string, fileName string, backupDataRepository backupData.Repository) {
 	do := backupDataRepository.ToEntity(backupId)
-	do.RecoverBackupFile(filePath)
+	do.RecoverBackupFile(fileName)
 }

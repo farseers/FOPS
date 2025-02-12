@@ -1,17 +1,22 @@
 package backupData
 
 import (
+	"context"
 	"fmt"
 	"fops/domain/_/eumBackupDataType"
 	"fops/domain/_/eumBackupStoreType"
 	"fops/domain/apps"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
+	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss/credentials"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
+	"github.com/farseer-go/fs/snc"
 	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
 	"github.com/robfig/cron/v3"
@@ -60,8 +65,46 @@ func (receiver *DomainObject) Backup() collections.List[BackupHistoryData] {
 	// 上传备份文件
 	switch receiver.StoreType {
 	case eumBackupStoreType.OSS:
-		//ossStoreConfig := mapper.Single[OSSStoreConfig](receiver.StoreConfig)
+		var ossStoreConfig OSSStoreConfig
+		err := snc.Unmarshal([]byte(receiver.StoreConfig), &ossStoreConfig)
+		if err != nil {
+			flog.Warningf("OSS上传的配置解析失败：%v", err)
+			return collections.NewList[BackupHistoryData]()
+		}
 
+		// 从环境变量中获取访问凭证。运行本代码示例之前，请确保已设置环境变量OSS_ACCESS_KEY_ID和OSS_ACCESS_KEY_SECRET。
+		cfg := oss.LoadDefaultConfig().WithCredentialsProvider(credentials.NewStaticCredentialsProvider(ossStoreConfig.AccessKeyID, ossStoreConfig.AccessKeySecret))
+		if ossStoreConfig.Region != "" {
+			cfg.WithRegion(ossStoreConfig.Region)
+		}
+		if ossStoreConfig.Endpoint != "" {
+			cfg.WithEndpoint(ossStoreConfig.Endpoint)
+		}
+
+		client := oss.NewClient(cfg)
+
+		// 批量上传
+		for index, item := range lstBackupHistoryData.ToArray() {
+			file, err := os.Open(item.FileName)
+			if err != nil {
+				flog.Warningf("打开上传文件：%s 时，发生错误：%v", item.FileName, err)
+				lstBackupHistoryData.RemoveAt(index)
+				continue
+			}
+			defer file.Close()
+
+			result, err := client.PutObject(context.TODO(), &oss.PutObjectRequest{
+				Bucket: oss.Ptr(ossStoreConfig.BucketName),
+				Key:    oss.Ptr(filepath.Base(item.FileName)),
+				Body:   file,
+			})
+
+			if err != nil {
+				flog.Warningf("上传文件：%s 时，发生错误：%v", item.FileName, err)
+				lstBackupHistoryData.RemoveAt(index)
+			}
+			fmt.Printf("put object sucessfully, ETag :%v\n", result.ETag)
+		}
 	case eumBackupStoreType.LocalDirectory:
 		//fileStoreConfig := mapper.Single[FileStoreConfig](receiver.StoreConfig)
 	}
@@ -123,7 +166,8 @@ func installMysqldump() {
 type OSSStoreConfig struct {
 	AccessKeyID     string // AccessKeyID
 	AccessKeySecret string // AccessKeySecret
-	Endpoint        string // Endpoint
+	Endpoint        string // 填写Bucket对应的Endpoint，以华东1（杭州）为例，填写为https://oss-cn-hangzhou.aliyuncs.com。其它Region请按实际情况填写。
+	Region          string // 填写Bucket所在地域，以华东1（杭州）为例，填写为cn-hangzhou。其它Region请按实际情况填写。
 	BucketName      string // BucketName
 }
 

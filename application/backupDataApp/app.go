@@ -14,6 +14,7 @@ import (
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/mapper"
+	"github.com/farseer-go/webapi/check"
 )
 
 // Add 添加备份计划
@@ -64,14 +65,22 @@ func Update(req request.UpdateRequest, backupDataRepository backupData.Repositor
 // @post list
 // @filter application.Jwt
 func List(backupDataRepository backupData.Repository) collections.List[backupData.DomainObject] {
-	return backupDataRepository.ToList()
+	lst := backupDataRepository.ToList()
+	lst.Foreach(func(item *backupData.DomainObject) {
+		item.Password = ""
+	})
+	return lst
 }
 
 // Info 备份计划查询
 // @post info
 // @filter application.Jwt
 func Info(id string, backupDataRepository backupData.Repository) backupData.DomainObject {
-	return backupDataRepository.ToEntity(id)
+	do := backupDataRepository.ToEntity(id)
+	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
+
+	do.Password = ""
+	return do
 }
 
 // Delete 删除备份计划
@@ -79,6 +88,8 @@ func Info(id string, backupDataRepository backupData.Repository) backupData.Doma
 // @filter application.Jwt
 func Delete(id string, backupDataRepository backupData.Repository) {
 	do := backupDataRepository.ToEntity(id)
+	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
+
 	lstHistoryData := backupDataRepository.ToBackupList(id)
 	lstHistoryData.Foreach(func(item *backupData.BackupHistoryData) {
 		do.DeleteBackupFile(item.FileName)
@@ -114,6 +125,8 @@ func BackupList(backupId string, backupDataRepository backupData.Repository) col
 // @filter application.Jwt
 func DeleteBackupFile(backupId string, fileName string, backupDataRepository backupData.Repository) {
 	do := backupDataRepository.ToEntity(backupId)
+	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
+
 	do.DeleteBackupFile(fileName)
 	backupDataRepository.DeleteHistory(backupId, fileName)
 }
@@ -123,5 +136,7 @@ func DeleteBackupFile(backupId string, fileName string, backupDataRepository bac
 // @filter application.Jwt
 func RecoverBackupFile(backupId string, fileName string, backupDataRepository backupData.Repository) {
 	do := backupDataRepository.ToEntity(backupId)
+	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
+
 	do.RecoverBackupFile(fileName)
 }

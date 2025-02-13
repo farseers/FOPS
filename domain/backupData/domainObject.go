@@ -99,6 +99,7 @@ func (receiver *DomainObject) backupMySQL() collections.List[BackupHistoryData] 
 		}
 		lstBackupHistoryData.Add(BackupHistoryData{
 			BackupId:  receiver.Id,
+			Database:  database,
 			FileName:  filePath,
 			StoreType: receiver.StoreType,
 			CreateAt:  dateTime.Now(),
@@ -156,7 +157,7 @@ func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[Ba
 
 		// 上传成功后，删除本地文件
 		file.Delete(apps.BackupRoot + item.FileName)
-		flog.Infof("put object sucessfully, ETag :%v\n", result.ETag)
+		flog.Infof("数据库：%s，OSS上传文件：%s 成功, ETag :%v\n", item.Database, item.FileName, result.ETag)
 	}
 	return lstBackupHistoryData
 }
@@ -175,11 +176,11 @@ func (receiver *DomainObject) DeleteBackupFile(fileName string) {
 			Key:    oss.Ptr(fileName),   // 对象名称
 		})
 		if err != nil {
-			flog.Warningf("删除文件：%s 时，发生错误：%v", fileName, err)
+			flog.Warningf("OSS删除文件：%s 时，发生错误：%v", fileName, err)
+		} else {
+			// 打印删除对象的结果
+			flog.Infof("OSS删除文件：%s 成功, ETag :%v\n", fileName, result)
 		}
-
-		// 打印删除对象的结果
-		flog.Infof("delete object result:%#v\n", result)
 	}
 }
 
@@ -221,6 +222,7 @@ type FileStoreConfig struct {
 type BackupHistoryData struct {
 	BackupId  string                  // 备份计划的ID
 	FileName  string                  // 文件名
+	Database  string                  // 数据库
 	StoreType eumBackupStoreType.Enum // 备份存储类型
 	CreateAt  dateTime.DateTime       // 备份时间
 	Size      int64                   // 备份文件大小（KB）

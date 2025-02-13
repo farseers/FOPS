@@ -11,6 +11,7 @@ import (
 type BackupHistoryDataPO struct {
 	BackupId  string                  `gorm:"primaryKey;size:128;not null;comment:备份计划的ID"`
 	FileName  string                  `gorm:"primaryKey;size:128;not null;comment:文件名"`
+	Database  string                  `gorm:"size:128;not null;comment:数据库"`
 	StoreType eumBackupStoreType.Enum `gorm:"type:tinyint;not null;default:0;comment:备份存储类型"`
 	CreateAt  time.Time               `gorm:"type:timestamp;size:6;not null;comment:备份时间"`
 	Size      int64                   `gorm:"not null;comment:备份文件大小（KB）"`

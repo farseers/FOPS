@@ -23,7 +23,11 @@ func (receiver *backupDataRepository) GetCountById(id string) int64 {
 // 修改备份计划
 func (receiver *backupDataRepository) Update(id any, do backupData.DomainObject) (int64, error) {
 	po := mapper.Single[model.BackupDataPO](do)
-	return context.MysqlContext.BackupData.Where("id = ?", id).Omit("id", "backup_data_type", "store_type", "last_backup_at").Update(po)
+	ts := context.MysqlContext.BackupData.Where("id = ?", id).Omit("id", "backup_data_type", "store_type", "last_backup_at")
+	if po.Password == "" {
+		ts = ts.Omit("password")
+	}
+	return ts.Update(po)
 }
 
 // 更新备份计划的时间

@@ -610,6 +610,13 @@ export function fopsApi() {
 				data:param,
 			});
 		},
+		backupData_delete:(param: object) => { // 备份计划 - 删除备份计划接口
+			return request({
+				url: '/backupData/delete',
+				method:'post',
+				data:param,
+			});
+		},
 		backupData_backupList:(param: object) => { // 备份计划 - 点备份详细，显示备份列表
 			return request({
 				url: '/backupData/backupList',

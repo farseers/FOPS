@@ -21,9 +21,9 @@
                            <div class="reps_expand">
                             <el-row style="margin-bottom: 5px;display:flex">
                                 <el-col :span="4">用户名：{{ scope.row.Username }}</el-col>
-                                <el-col :span="4">密码：{{ scope.row.Password }}</el-col>
-                                <el-col :span="8">上次备份时间：{{ scope.row.LastBackupAt }}</el-col>
-                                <el-col :span="8">下次执行时间：{{ scope.row.NextBackupAt }}</el-col>
+                                <!-- <el-col :span="4">密码：{{ scope.row.Password }}</el-col> -->
+                                <el-col :span="10">上次备份时间：{{ scope.row.LastBackupAt }}</el-col>
+                                <el-col :span="10">下次执行时间：{{ scope.row.NextBackupAt }}</el-col>
                             </el-row>
                             <el-row>
                                 <el-col :span="24">数据库：<span v-if="scope.row.Database && scope.row.Database.length > 0">{{ scope.row.Database.join(',') }}</span></el-col>

@@ -67,7 +67,7 @@ const serverApi = fopsApi();
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                serverApi.backupData_add({
+                serverApi.backupData_deleteHistory({
                     "backupId": row.backupId,   
                     "FileName": row.FileName   
                 }).then(d => {

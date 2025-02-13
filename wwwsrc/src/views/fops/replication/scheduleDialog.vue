@@ -215,7 +215,7 @@ export default {
         "StoreType": StoreType, // 存储类型：0 = OSS， 1= 本地目录
         "StoreConfig": JSON.stringify(StoreConfig)// 存储配置（根据存储类型0或1，对应的配置会不同） 列表页不展示
       }
-          serverApi.backupData_deleteHistory(param).then(d => {
+          serverApi.backupData_add(param).then(d => {
             let { Status, StatusMessage } = d;
             if (Status) {
               this.onCancel()
@@ -229,7 +229,7 @@ export default {
        this.title = '新增'
       if (id) {
         this.title = '编辑'
-        serverApi.backupData_info({ backupId: id }).then(d => {
+        serverApi.backupData_info({ id: id }).then(d => {
           let { Data, Status, StatusMessage } = d;
           if (Status) {
             const row = Data;

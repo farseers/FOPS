@@ -144,7 +144,7 @@ export default {
                 type: 'warning'
             }).then(() => {
                 serverApi.backupData_delete({
-                    "backupId": row.Id,   
+                    "id": row.Id,   
                 }).then(d => {
             let { Status, StatusMessage } = d;
             if (Status) {

@@ -8,7 +8,7 @@
             :before-close="handleClose">
             <div style="display: flex;flex-flow: column;height: 100%;">
                 <div style="flex: 1;"  ref="navHe">
-                    <el-table :data="dataList" size="mini" :max-height="mhs">
+                    <el-table :data="dataList"  :max-height="mhs">
                         <el-table-column type="index" width="50" label="#"></el-table-column>
                         <el-table-column property="FileName" label="文件名" min-width="280"></el-table-column>
                         <el-table-column prop="StoreType" label="存储类型" min-width="100px">

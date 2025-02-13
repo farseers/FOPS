@@ -44,6 +44,11 @@ func (receiver *backupDataRepository) AddHistory(lst collections.List[backupData
 	context.MysqlContext.BackupHistoryData.InsertList(lstPO, 2000)
 }
 
+// 删除备份文件
+func (receiver *backupDataRepository) DeleteHistory(backupId string, fileName string) (int64, error) {
+	return context.MysqlContext.BackupHistoryData.Where("backup_id = ? and file_name = ?", backupId, fileName).Delete()
+}
+
 // 获取备份文件列表
 func (receiver *backupDataRepository) ToBackupList(backupId string) collections.List[backupData.BackupHistoryData] {
 	lstPO := context.MysqlContext.BackupHistoryData.Where("backup_id = ?", backupId).Desc("create_at").Limit(144).ToList()

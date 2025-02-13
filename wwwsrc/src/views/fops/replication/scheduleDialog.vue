@@ -221,6 +221,7 @@ export default {
       }
       if(this.Id){
         param.id = this.Id;
+        param.Id = this.Id;
         serverApi.backupData_update(param).then(d => {
             let { Status, StatusMessage } = d;
             if (Status) {

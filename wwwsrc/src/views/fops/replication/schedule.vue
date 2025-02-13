@@ -2,7 +2,7 @@
     <div>
         <LayMain>
             <template #header>
-                <el-button size="default" type="primary" class="ml10" @click="onSearch()">
+                <el-button size="default" type="primary" class="ml10" @click="getTableData()">
                         <el-icon>
                             <ele-Search />
                         </el-icon>
@@ -19,7 +19,7 @@
                     <el-table-column type="expand">
                         <template #default="scope">
                            <div class="reps_expand">
-                            <el-row style="margin-bottom: 5px;">
+                            <el-row style="margin-bottom: 5px;display:flex">
                                 <el-col :span="4">用户名：{{ scope.row.Username }}</el-col>
                                 <el-col :span="4">密码：{{ scope.row.Password }}</el-col>
                                 <el-col :span="8">上次备份时间：{{ scope.row.LastBackupAt }}</el-col>
@@ -152,7 +152,7 @@ export default {
                     type: 'success',
                     message: '删除成功'
                 });
-              this.search()
+              this.getTableData()
             } else {
               ElMessage.error(StatusMessage)
             }
@@ -171,11 +171,6 @@ export default {
         // 分页改变
         onHandleCurrentChange(val) {
             this.pageNum = val;
-            this.getTableData();
-        },
-
-        onSearch() {
-
             this.getTableData();
         },
         getTableData() {

@@ -64,14 +64,20 @@ func Update(req request.UpdateRequest, backupDataRepository backupData.Repositor
 // @post list
 // @filter application.Jwt
 func List(backupDataRepository backupData.Repository) collections.List[backupData.DomainObject] {
-	return backupDataRepository.ToList()
+	lst := backupDataRepository.ToList()
+	lst.Foreach(func(item *backupData.DomainObject) {
+		item.Password = ""
+	})
+	return lst
 }
 
 // Info 备份计划查询
 // @post info
 // @filter application.Jwt
 func Info(id string, backupDataRepository backupData.Repository) backupData.DomainObject {
-	return backupDataRepository.ToEntity(id)
+	do := backupDataRepository.ToEntity(id)
+	do.Password = ""
+	return do
 }
 
 // Delete 删除备份计划

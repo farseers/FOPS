@@ -61,16 +61,18 @@ const serverApi = fopsApi();
             this.search(page)
         },
         del(row){
-            const str = "确定删除["+row.FileName+"]?"
+           
+            const str = "确定删除["+row.FileName+"]?";
+            var par = {
+                    "backupId": row.BackupId,   
+                    "FileName": row.FileName   
+                }
             this.$confirm(str, '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                serverApi.backupData_deleteHistory({
-                    "backupId": row.backupId,   
-                    "FileName": row.FileName   
-                }).then(d => {
+                serverApi.backupData_deleteHistory(par).then(d => {
             let { Status, StatusMessage } = d;
             if (Status) {
                 this.$message({
@@ -90,16 +92,18 @@ const serverApi = fopsApi();
             });
         },
         rest(row){
-            const str = "确定恢复["+row.FileName+"]?"
+           
+            const str = "确定恢复["+row.FileName+"]?";
+            var par = {
+                    "backupId": row.BackupId,   
+                    "FileName": row.FileName   
+                }
             this.$confirm(str, '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                serverApi.backupData_recoverBackupFile({
-                    "backupId": row.backupId,   
-                    "FileName": row.FileName   
-                }).then(d => {
+                serverApi.backupData_recoverBackupFile(par).then(d => {
             let { Status, StatusMessage } = d;
             if (Status) {
                 this.$message({

@@ -130,11 +130,11 @@ export default {
     backupChange(){
           if(this.BackupDataType == 0){
             if(!this.Username){this.Username = 'root'}
-            if(!this.Port){this.Port = 3306}
+            if(!this.Port || this.Port == 9000){this.Port = 3306}
           }
           if(this.BackupDataType == 1){
             if(!this.Username){this.Username = 'root'}
-            if(!this.Port){this.Port = 9000}
+            if(!this.Port || this.Port == 3306){this.Port = 9000}
           }
     },
     oAddBase(){

@@ -1,12 +1,13 @@
 package request
 
 import (
+	"fmt"
 	"fops/domain/_/eumBackupStoreType"
 	"fops/domain/backupData"
 	"strings"
 
 	"github.com/farseer-go/fs/container"
-	"github.com/farseer-go/mapper"
+	"github.com/farseer-go/fs/snc"
 	"github.com/farseer-go/webapi/check"
 )
 
@@ -49,13 +50,19 @@ func (receiver *UpdateRequest) Check() {
 
 	switch do.StoreType {
 	case eumBackupStoreType.OSS:
-		oSSStoreConfig := mapper.Single[backupData.OSSStoreConfig](receiver.StoreConfig)
-		check.IsTrue(len(oSSStoreConfig.AccessKeyID) == 0, 403, "AccessKeyID不能为空")
-		check.IsTrue(len(oSSStoreConfig.AccessKeySecret) == 0, 403, "AccessKeySecret不能为空")
-		check.IsTrue(len(oSSStoreConfig.BucketName) == 0, 403, "BucketName不能为空")
+		var ossStoreConfig backupData.OSSStoreConfig
+		err := snc.Unmarshal([]byte(receiver.StoreConfig), &ossStoreConfig)
+		check.IsTrue(err != nil, 403, fmt.Sprintf("OSS配置解析失败：%v", err))
+
+		check.IsTrue(len(ossStoreConfig.AccessKeyID) == 0, 403, "AccessKeyID不能为空")
+		check.IsTrue(len(ossStoreConfig.AccessKeySecret) == 0, 403, "AccessKeySecret不能为空")
+		check.IsTrue(len(ossStoreConfig.BucketName) == 0, 403, "BucketName不能为空")
 
 	case eumBackupStoreType.LocalDirectory:
-		fileStoreConfig := mapper.Single[backupData.FileStoreConfig](receiver.StoreConfig)
+		var fileStoreConfig backupData.FileStoreConfig
+		err := snc.Unmarshal([]byte(receiver.StoreConfig), &fileStoreConfig)
+		check.IsTrue(err != nil, 403, fmt.Sprintf("目录配置解析失败：%v", err))
+
 		check.IsTrue(len(fileStoreConfig.Directory) == 0, 403, "目录不能为空")
 	}
 }

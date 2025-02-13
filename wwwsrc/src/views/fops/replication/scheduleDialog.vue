@@ -155,14 +155,14 @@ export default {
         }).then(d => {
             let { Status, StatusMessage,Data } = d;
             if (Status) {
-              console.log(Data)
+              // console.log(Data)
               this.baseData = [...Data]
             } else {
               ElMessage.error(StatusMessage)
             }
           })
     },
-    onCancel() {
+    init(){
       this.Id = null;
       this.baseData = []
       this.BackupDataType = 0;
@@ -171,6 +171,7 @@ export default {
       this.Port = '';
       this.Username = '';
       this.Password = '';
+      this.checkBase = [];
       this.addBases = [];
       this.Cron = '';
       this.StoreType = 0;
@@ -180,6 +181,9 @@ export default {
       this.Endpoint = '';
       this.Region = '';
       this.BucketName = '';
+    },
+    onCancel() {
+      this.init()
       this.isShowDialog = false;
      
       this.$emit('search')
@@ -204,7 +208,7 @@ export default {
         
       }
       let param = {
-        Id:this.Id ,
+       
         "BackupDataType": this.BackupDataType * 1,// 数据库类型：0 = Mysql, 1 = Clickhouse
         "Host": this.Host, // 主机
         "Port": this.Port * 1, // 端口
@@ -215,7 +219,9 @@ export default {
         "StoreType": StoreType, // 存储类型：0 = OSS， 1= 本地目录
         "StoreConfig": JSON.stringify(StoreConfig)// 存储配置（根据存储类型0或1，对应的配置会不同） 列表页不展示
       }
-          serverApi.backupData_add(param).then(d => {
+      if(this.Id){
+        param.id = this.Id;
+        serverApi.backupData_update(param).then(d => {
             let { Status, StatusMessage } = d;
             if (Status) {
               this.onCancel()
@@ -223,9 +229,20 @@ export default {
               ElMessage.error(StatusMessage)
             }
           })
+      }else{
+        serverApi.backupData_add(param).then(d => {
+            let { Status, StatusMessage } = d;
+            if (Status) {
+              this.onCancel()
+            } else {
+              ElMessage.error(StatusMessage)
+            }
+          })
+      }
+         
     },
     info(id) {
-      this.baseData = []
+      this.init()
        this.title = '新增'
       if (id) {
         this.title = '编辑'

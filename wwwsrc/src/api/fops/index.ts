@@ -596,6 +596,13 @@ export function fopsApi() {
 				data:param,
 			});
 		},
+		backupData_update:(param: object) => { // 备份计划 - 添加
+			return request({
+				url: '/backupData/update',
+				method:'post',
+				data:param,
+			});
+		},
 		backupData_getDatabaseList:(param: object) => { // 备份计划 - 动态选择数据库
 			return request({
 				url: '/backupData/getDatabaseList',

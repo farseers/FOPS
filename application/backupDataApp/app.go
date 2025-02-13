@@ -69,19 +69,19 @@ func List(backupDataRepository backupData.Repository) collections.List[backupDat
 // Info 备份计划查询
 // @post info
 // @filter application.Jwt
-func Info(backupId string, backupDataRepository backupData.Repository) backupData.DomainObject {
-	return backupDataRepository.ToEntity(backupId)
+func Info(id string, backupDataRepository backupData.Repository) backupData.DomainObject {
+	return backupDataRepository.ToEntity(id)
 }
 
 // Delete 删除备份计划
 // @post delete
 // @filter application.Jwt
-func Delete(backupId string, backupDataRepository backupData.Repository) {
-	do := backupDataRepository.ToEntity(backupId)
-	lstHistoryData := backupDataRepository.ToBackupList(backupId)
+func Delete(id string, backupDataRepository backupData.Repository) {
+	do := backupDataRepository.ToEntity(id)
+	lstHistoryData := backupDataRepository.ToBackupList(id)
 	lstHistoryData.Foreach(func(item *backupData.BackupHistoryData) {
 		do.DeleteBackupFile(item.FileName)
-		backupDataRepository.DeleteHistory(backupId, item.FileName)
+		backupDataRepository.DeleteHistory(id, item.FileName)
 	})
 }
 

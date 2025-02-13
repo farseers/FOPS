@@ -218,24 +218,13 @@ func (receiver *linkTraceRepository) ToTraceListByVisits(startAt, endAt time.Tim
 
 func (receiver *linkTraceRepository) DeleteSlow(dbName string, startTime time.Time) error {
 	if linkTrace.Config.Driver == "clickhouse" {
-		var err error
-		switch dbName {
-		case "Db":
-			_, err = context.CHContext.TraceDetailDatabase.Where("create_at <= ?", startTime).Delete()
-		case "Es":
-			_, err = context.CHContext.TraceDetailEs.Where("create_at <= ?", startTime).Delete()
-		case "Etcd":
-			_, err = context.CHContext.TraceDetailEtcd.Where("create_at <= ?", startTime).Delete()
-		case "Hand":
-			_, err = context.CHContext.TraceDetailHand.Where("create_at <= ?", startTime).Delete()
-		case "Http":
-			_, err = context.CHContext.TraceDetailHttp.Where("create_at <= ?", startTime).Delete()
-		case "Mq":
-			_, err = context.CHContext.TraceDetailMq.Where("create_at <= ?", startTime).Delete()
-		case "Redis":
-			_, err = context.CHContext.TraceDetailRedis.Where("create_at <= ?", startTime).Delete()
-		}
-		return err
+		context.CHContext.TraceDetailDatabase.Where("create_at <= ?", startTime).Delete()
+		context.CHContext.TraceDetailEs.Where("create_at <= ?", startTime).Delete()
+		context.CHContext.TraceDetailEtcd.Where("create_at <= ?", startTime).Delete()
+		context.CHContext.TraceDetailHand.Where("create_at <= ?", startTime).Delete()
+		context.CHContext.TraceDetailHttp.Where("create_at <= ?", startTime).Delete()
+		context.CHContext.TraceDetailMq.Where("create_at <= ?", startTime).Delete()
+		context.CHContext.TraceDetailRedis.Where("create_at <= ?", startTime).Delete()
 	}
 	return nil
 }

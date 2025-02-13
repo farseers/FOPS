@@ -97,7 +97,9 @@ func GetDatabaseList(req request.GetDatabaseListRequest) []string {
 	case eumBackupDataType.Clickhouse:
 		dbConnectionString = fmt.Sprintf("DataType=clickhouse,ConnectionString=tcp://%s:%d?username=%s&password=%s&read_timeout=10&write_timeout=20", req.Host, req.Port, req.Username, req.Password)
 	}
-	return data.NewInternalContext(dbConnectionString).GetDatabaseList()
+	databases, err := data.NewInternalContext(dbConnectionString).GetDatabaseList()
+	exception.ThrowRefuseExceptionError(err)
+	return databases
 }
 
 // BackupList 备份文件列表

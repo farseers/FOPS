@@ -244,21 +244,22 @@ export default {
             this.BackupDataType = row.BackupDataType;
             this.BackupDataType = row.BackupDataType;
             if(row.StoreConfig){
+              var StoreConfig = JSON.parse(row.StoreConfig)
               if(this.StoreType == 0){
-                this.AccessKeyID=row.StoreConfig.AccessKeyID; // AccessKeyID
-                this.AccessKeySecret= row.StoreConfig.AccessKeySecret;// AccessKeySecret
-                this.Endpoint=row.StoreConfig.Endpoint; // 访问结点，如：https://oss-cn-hangzhou.aliyuncs.com
-                this.Region=row.StoreConfig.Region; // 区域,如：cn-hangzhou
-                this.BucketName=row.StoreConfig.BucketName;// BucketName
+                this.AccessKeyID=StoreConfig.AccessKeyID; // AccessKeyID
+                this.AccessKeySecret= StoreConfig.AccessKeySecret;// AccessKeySecret
+                this.Endpoint=StoreConfig.Endpoint; // 访问结点，如：https://oss-cn-hangzhou.aliyuncs.com
+                this.Region=StoreConfig.Region; // 区域,如：cn-hangzhou
+                this.BucketName=StoreConfig.BucketName;// BucketName
               }
               if(this.StoreType == 1){
-                this.Directory = row.StoreConfig.Directory
+                this.Directory = StoreConfig.Directory
               }
             }
             
             // Database
             this.checkBase = row.Database;
-            this.checkBase = row.addBases;
+            this.addBases = row.Database;
             this.isShowDialog = true;
           } else {
             ElMessage.error(StatusMessage)

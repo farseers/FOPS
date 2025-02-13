@@ -27,6 +27,7 @@ func Add(req request.AddRequest, backupDataRepository backupData.Repository) {
 	if err != nil {
 		exception.ThrowWebExceptionf(403, "Cron格式错误:%s", do.Cron)
 	}
+	do.LastBackupAt = dateTime.Now()
 	do.NextBackupAt = dateTime.New(cornSchedule.Next(time.Now()))
 
 	// 生成ID

@@ -8,7 +8,7 @@
             :before-close="handleClose">
             <div style="display: flex;flex-flow: column;height: 100%;">
                 <div style="flex: 1;"  ref="navHe">
-                    <el-table :data="dataList" size="mini" :max-height="mhs">
+                    <el-table :data="dataList"  :max-height="mhs">
                         <el-table-column type="index" width="50" label="#"></el-table-column>
                         <el-table-column property="FileName" label="文件名" min-width="280"></el-table-column>
                         <el-table-column prop="StoreType" label="存储类型" min-width="100px">
@@ -61,16 +61,18 @@ const serverApi = fopsApi();
             this.search(page)
         },
         del(row){
-            const str = "确定删除["+row.FileName+"]?"
+           
+            const str = "确定删除["+row.FileName+"]?";
+            var par = {
+                    "backupId": row.BackupId,   
+                    "FileName": row.FileName   
+                }
             this.$confirm(str, '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                serverApi.backupData_deleteHistory({
-                    "backupId": row.backupId,   
-                    "FileName": row.FileName   
-                }).then(d => {
+                serverApi.backupData_deleteHistory(par).then(d => {
             let { Status, StatusMessage } = d;
             if (Status) {
                 this.$message({
@@ -90,16 +92,18 @@ const serverApi = fopsApi();
             });
         },
         rest(row){
-            const str = "确定恢复["+row.FileName+"]?"
+           
+            const str = "确定恢复["+row.FileName+"]?";
+            var par = {
+                    "backupId": row.BackupId,   
+                    "FileName": row.FileName   
+                }
             this.$confirm(str, '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                serverApi.backupData_recoverBackupFile({
-                    "backupId": row.backupId,   
-                    "FileName": row.FileName   
-                }).then(d => {
+                serverApi.backupData_recoverBackupFile(par).then(d => {
             let { Status, StatusMessage } = d;
             if (Status) {
                 this.$message({

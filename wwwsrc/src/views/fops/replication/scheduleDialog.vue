@@ -4,7 +4,7 @@
     <el-dialog :title="title" v-model="isShowDialog" width="800px">
       <el-form ref="ruleFormRef">
           <el-form-item label="数据库类型">
-            <el-radio-group v-model="BackupDataType">
+            <el-radio-group v-model="BackupDataType" :disabled="Id" @change="backupChange">
             <el-radio :label="0">Mysql</el-radio>
             <el-radio :label="1">Clickhouse</el-radio>
           </el-radio-group>
@@ -40,8 +40,8 @@
           </div>
           <div style="width: 100%;display: flex;">
             <span v-show="addBases.length<=0" style="color: #909399;">请添加或选择数据库</span>
-            <el-checkbox-group v-model="checkBase" size="small" style="margin-top: 5px;">
-              <el-checkbox v-for="t,i in addBases" border  :label="t" :key="i">{{ t }}</el-checkbox>
+            <el-checkbox-group v-model="checkBase" size="small">
+              <el-checkbox  style="margin-top: 5px;" v-for="t,i in addBases" border  :label="t" :key="i">{{ t }}</el-checkbox>
             </el-checkbox-group>
           
          </div>
@@ -110,8 +110,8 @@ export default {
       baseTit:'',//数据库输入
       "BackupDataType": 0,// 数据库类型：0 = Mysql, 1 = Clickhouse
       "Host": "", // 主机
-      "Port": 0, // 端口
-      "Username": "", // 用户名
+      "Port": 3306, // 端口
+      "Username": "root", // 用户名
       "Password": "", // 密码
       "Cron": "",  // Cron (字符串，文本框，如：0 0 0/1 * * ?）
       "StoreType": 0, // 存储类型：0 = OSS， 1= 本地目录
@@ -127,6 +127,16 @@ export default {
     }
   },
   methods: {
+    backupChange(){
+          if(this.BackupDataType == 0){
+            if(!this.Username){this.Username = 'root'}
+            if(!this.Port || this.Port == 9000){this.Port = 3306}
+          }
+          if(this.BackupDataType == 1){
+            if(!this.Username){this.Username = 'root'}
+            if(!this.Port || this.Port == 3306){this.Port = 9000}
+          }
+    },
     oAddBase(){
       if(this.baseTit && !this.addBases.includes(this.baseTit)){
         this.checkBase.push(this.baseTit)
@@ -156,7 +166,8 @@ export default {
             let { Status, StatusMessage,Data } = d;
             if (Status) {
               // console.log(Data)
-              this.baseData = [...Data]
+              this.addBases =[...new Set([...Data, ...this.addBases])];
+              
             } else {
               ElMessage.error(StatusMessage)
             }
@@ -164,7 +175,6 @@ export default {
     },
     init(){
       this.Id = null;
-      this.baseData = []
       this.BackupDataType = 0;
       this.baseTit = '';
       this.Host = '';
@@ -181,6 +191,7 @@ export default {
       this.Endpoint = '';
       this.Region = '';
       this.BucketName = '';
+      this.backupChange()
     },
     onCancel() {
       this.init()

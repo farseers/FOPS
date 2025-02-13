@@ -254,7 +254,7 @@ export default {
          
     },
     info(id) {
-      this.init()
+       this.init()
        this.title = '新增'
       if (id) {
         this.title = '编辑'
@@ -296,6 +296,7 @@ export default {
         })
       } else {
         this.isShowDialog = true;
+        this.Cron = '0 0 0/1 * * ?'
       }
 
     }

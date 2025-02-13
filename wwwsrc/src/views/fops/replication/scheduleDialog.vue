@@ -40,8 +40,8 @@
           </div>
           <div style="width: 100%;display: flex;">
             <span v-show="addBases.length<=0" style="color: #909399;">请添加或选择数据库</span>
-            <el-checkbox-group v-model="checkBase" size="small" style="margin-top: 5px;">
-              <el-checkbox v-for="t,i in addBases" border  :label="t" :key="i">{{ t }}</el-checkbox>
+            <el-checkbox-group v-model="checkBase" size="small">
+              <el-checkbox  style="margin-top: 5px;" v-for="t,i in addBases" border  :label="t" :key="i">{{ t }}</el-checkbox>
             </el-checkbox-group>
           
          </div>
@@ -166,7 +166,8 @@ export default {
             let { Status, StatusMessage,Data } = d;
             if (Status) {
               // console.log(Data)
-              this.baseData = [...Data]
+              this.addBases =[...new Set([...Data, ...this.addBases])];
+              
             } else {
               ElMessage.error(StatusMessage)
             }
@@ -174,7 +175,6 @@ export default {
     },
     init(){
       this.Id = null;
-      this.baseData = []
       this.BackupDataType = 0;
       this.baseTit = '';
       this.Host = '';

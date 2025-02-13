@@ -582,5 +582,54 @@ export function fopsApi() {
 				data:param,
 			});
 		},
+		backupData_list:(param: object) => { // 备份计划
+			return request({
+				url: '/backupData/list',
+				method:'post',
+				data:param,
+			});
+		},
+		backupData_add:(param: object) => { // 备份计划 - 添加
+			return request({
+				url: '/backupData/add',
+				method:'post',
+				data:param,
+			});
+		},
+		backupData_getDatabaseList:(param: object) => { // 备份计划 - 动态选择数据库
+			return request({
+				url: '/backupData/getDatabaseList',
+				method:'post',
+				data:param,
+			});
+		},
+		backupData_info:(param: object) => { // 备份计划 - 修改时查询
+			return request({
+				url: '/backupData/info',
+				method:'post',
+				data:param,
+			});
+		},
+		backupData_backupList:(param: object) => { // 备份计划 - 点备份详细，显示备份列表
+			return request({
+				url: '/backupData/backupList',
+				method:'post',
+				data:param,
+			});
+		},
+		backupData_deleteHistory:(param: object) => { // 备份计划 - 备份列表中，删除备份文件
+			return request({
+				url: '/backupData/deleteHistory',
+				method:'post',
+				data:param,
+			});
+		},
+		backupData_recoverBackupFile:(param: object) => { // 备份计划 - 备份列表中，恢复操作
+			return request({
+				url: '/backupData/recoverBackupFile',
+				method:'post',
+				data:param,
+			});
+		},
 	};
 }

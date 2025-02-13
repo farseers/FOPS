@@ -94,6 +94,7 @@ export default {
 		Client:'客户端列表',
 		SlowQuery:'慢查询',
 		Monitor:'监控',
+		Replication:'数据库备份',
 		DataBase:'数据库',
 		Redis:'Redis',
 		MQ:'MQ',
@@ -121,6 +122,7 @@ export default {
 		madata:'监控数据',
 		manotice:'通知用户',
 		malog:'通知日志',
+		schedule:'备份计划',
 	},
 	staticRoutes: {
 		signIn: '登录',

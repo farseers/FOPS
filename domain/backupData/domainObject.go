@@ -99,6 +99,7 @@ func (receiver *DomainObject) backupMySQL() collections.List[BackupHistoryData] 
 		}
 		lstBackupHistoryData.Add(BackupHistoryData{
 			BackupId:  receiver.Id,
+			Database:  database,
 			FileName:  filePath,
 			StoreType: receiver.StoreType,
 			CreateAt:  dateTime.Now(),
@@ -156,7 +157,7 @@ func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[Ba
 
 		// 上传成功后，删除本地文件
 		file.Delete(apps.BackupRoot + item.FileName)
-		flog.Infof("put object sucessfully, ETag :%v\n", result.ETag)
+		flog.Infof("上传文件:%s, ETag :%v\n", item.FileName, result.ETag)
 	}
 	return lstBackupHistoryData
 }
@@ -221,6 +222,7 @@ type FileStoreConfig struct {
 type BackupHistoryData struct {
 	BackupId  string                  // 备份计划的ID
 	FileName  string                  // 文件名
+	Database  string                  // 数据库
 	StoreType eumBackupStoreType.Enum // 备份存储类型
 	CreateAt  dateTime.DateTime       // 备份时间
 	Size      int64                   // 备份文件大小（KB）

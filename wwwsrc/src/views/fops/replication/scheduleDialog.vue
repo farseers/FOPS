@@ -155,14 +155,14 @@ export default {
         }).then(d => {
             let { Status, StatusMessage,Data } = d;
             if (Status) {
-              console.log(Data)
+              // console.log(Data)
               this.baseData = [...Data]
             } else {
               ElMessage.error(StatusMessage)
             }
           })
     },
-    onCancel() {
+    init(){
       this.Id = null;
       this.baseData = []
       this.BackupDataType = 0;
@@ -171,6 +171,7 @@ export default {
       this.Port = '';
       this.Username = '';
       this.Password = '';
+      this.checkBase = [];
       this.addBases = [];
       this.Cron = '';
       this.StoreType = 0;
@@ -180,6 +181,9 @@ export default {
       this.Endpoint = '';
       this.Region = '';
       this.BucketName = '';
+    },
+    onCancel() {
+      this.init()
       this.isShowDialog = false;
      
       this.$emit('search')
@@ -204,7 +208,7 @@ export default {
         
       }
       let param = {
-        Id:this.Id ,
+       
         "BackupDataType": this.BackupDataType * 1,// 数据库类型：0 = Mysql, 1 = Clickhouse
         "Host": this.Host, // 主机
         "Port": this.Port * 1, // 端口
@@ -215,7 +219,9 @@ export default {
         "StoreType": StoreType, // 存储类型：0 = OSS， 1= 本地目录
         "StoreConfig": JSON.stringify(StoreConfig)// 存储配置（根据存储类型0或1，对应的配置会不同） 列表页不展示
       }
-          serverApi.backupData_deleteHistory(param).then(d => {
+      if(this.Id){
+        param.id = this.Id;
+        serverApi.backupData_update(param).then(d => {
             let { Status, StatusMessage } = d;
             if (Status) {
               this.onCancel()
@@ -223,13 +229,24 @@ export default {
               ElMessage.error(StatusMessage)
             }
           })
+      }else{
+        serverApi.backupData_add(param).then(d => {
+            let { Status, StatusMessage } = d;
+            if (Status) {
+              this.onCancel()
+            } else {
+              ElMessage.error(StatusMessage)
+            }
+          })
+      }
+         
     },
     info(id) {
-      this.baseData = []
+      this.init()
        this.title = '新增'
       if (id) {
         this.title = '编辑'
-        serverApi.backupData_info({ backupId: id }).then(d => {
+        serverApi.backupData_info({ id: id }).then(d => {
           let { Data, Status, StatusMessage } = d;
           if (Status) {
             const row = Data;
@@ -244,21 +261,22 @@ export default {
             this.BackupDataType = row.BackupDataType;
             this.BackupDataType = row.BackupDataType;
             if(row.StoreConfig){
+              var StoreConfig = JSON.parse(row.StoreConfig)
               if(this.StoreType == 0){
-                this.AccessKeyID=row.StoreConfig.AccessKeyID; // AccessKeyID
-                this.AccessKeySecret= row.StoreConfig.AccessKeySecret;// AccessKeySecret
-                this.Endpoint=row.StoreConfig.Endpoint; // 访问结点，如：https://oss-cn-hangzhou.aliyuncs.com
-                this.Region=row.StoreConfig.Region; // 区域,如：cn-hangzhou
-                this.BucketName=row.StoreConfig.BucketName;// BucketName
+                this.AccessKeyID=StoreConfig.AccessKeyID; // AccessKeyID
+                this.AccessKeySecret= StoreConfig.AccessKeySecret;// AccessKeySecret
+                this.Endpoint=StoreConfig.Endpoint; // 访问结点，如：https://oss-cn-hangzhou.aliyuncs.com
+                this.Region=StoreConfig.Region; // 区域,如：cn-hangzhou
+                this.BucketName=StoreConfig.BucketName;// BucketName
               }
               if(this.StoreType == 1){
-                this.Directory = row.StoreConfig.Directory
+                this.Directory = StoreConfig.Directory
               }
             }
             
             // Database
             this.checkBase = row.Database;
-            this.checkBase = row.addBases;
+            this.addBases = row.Database;
             this.isShowDialog = true;
           } else {
             ElMessage.error(StatusMessage)

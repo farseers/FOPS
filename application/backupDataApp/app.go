@@ -73,6 +73,18 @@ func Info(backupId string, backupDataRepository backupData.Repository) backupDat
 	return backupDataRepository.ToEntity(backupId)
 }
 
+// Delete 删除备份计划
+// @post delete
+// @filter application.Jwt
+func Delete(backupId string, backupDataRepository backupData.Repository) {
+	do := backupDataRepository.ToEntity(backupId)
+	lstHistoryData := backupDataRepository.ToBackupList(backupId)
+	lstHistoryData.Foreach(func(item *backupData.BackupHistoryData) {
+		do.DeleteBackupFile(item.FileName)
+		backupDataRepository.DeleteHistory(backupId, item.FileName)
+	})
+}
+
 // GetDatabaseList 获取数据库列表
 // @post getDatabaseList
 // @filter application.Jwt
@@ -100,6 +112,7 @@ func BackupList(backupId string, backupDataRepository backupData.Repository) col
 func DeleteBackupFile(backupId string, fileName string, backupDataRepository backupData.Repository) {
 	do := backupDataRepository.ToEntity(backupId)
 	do.DeleteBackupFile(fileName)
+	backupDataRepository.DeleteHistory(backupId, fileName)
 }
 
 // RecoverBackupFile 恢复备份文件

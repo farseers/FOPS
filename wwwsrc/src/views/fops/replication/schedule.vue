@@ -26,7 +26,18 @@
                                 <el-col :span="10">下次执行时间：{{ scope.row.NextBackupAt }}</el-col>
                             </el-row>
                             <el-row>
-                                <el-col :span="24">数据库：<span v-if="scope.row.Database && scope.row.Database.length > 0">{{ scope.row.Database.join(',') }}</span></el-col>
+                                <el-col :span="24">
+                                    <div style="display: flex;">
+                                        数据库：
+                                        <div style="flex: 1;" v-if="scope.row.Database && scope.row.Database.length > 0">
+                                        <el-button size="small" style="margin-right: 5px;" 
+                                        type="primary" 
+                                        v-for="r,index in scope.row.Database" :key="index" @click="get_base_data_dr(r, scope.row)">{{ r }}</el-button>
+                                    </div>
+                                    </div>
+                                   
+                                    
+                                </el-col>
                             </el-row>
                            </div>
                         </template>
@@ -37,8 +48,11 @@
                            <span v-show="scope.row.BackupDataType == 1">Clickhouse</span>
                         </template>
                     </el-table-column>
-                    <el-table-column label="主机" prop="Host" min-width="100"></el-table-column>
-                    <el-table-column label="端口" prop="Port" min-width="100"></el-table-column>
+                    <el-table-column label="主机" prop="Host" min-width="100">
+                        <template #default="scope">
+                          <span>{{ scope.row.Host }}  {{ scope.row.Port }}</span>
+                        </template>
+                    </el-table-column>
                     <el-table-column label="Cron" prop="Cron" min-width="100"></el-table-column>
                    
                     <el-table-column prop="StoreType" label="存储类型" min-width="100px">
@@ -126,7 +140,12 @@ export default {
             })
         },
         base_info(row){
-            this.$refs.scheduleDrawer.handleNav(row)
+           if(row.Database && row.Database.length>0){
+            this.$refs.scheduleDrawer.handleNav(row.Database[0],row)
+           }
+        },
+        get_base_data_dr(t,row){
+            this.$refs.scheduleDrawer.handleNav(t,row)
         },
         set_add() {
             this.$refs.editInfo && this.$refs.editInfo.info(null)

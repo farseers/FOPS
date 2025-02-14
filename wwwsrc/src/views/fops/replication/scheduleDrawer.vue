@@ -8,6 +8,9 @@
             :before-close="handleClose">
             <div style="display: flex;flex-flow: column;height: 100%;">
                 <div style="flex: 1;"  ref="navHe">
+                    <div style="margin-top: 10px;">
+                        <el-tag v-for="t,index in baseData" :key="index" :type="ck_t==t?'':'info'" style="cursor: pointer;margin-left: 5px;" @click="ck_ts(t)">{{ t }}</el-tag>
+                    </div>
                     <el-table :data="dataList"  :max-height="mhs">
                         <el-table-column type="index" width="50" label="#"></el-table-column>
                         <el-table-column property="FileName" label="文件名" min-width="280"></el-table-column>
@@ -47,6 +50,8 @@ const serverApi = fopsApi();
         name:'lineNav',
         data(){
             return {
+                baseData:[],
+                ck_t:'',
                 dialogVisible:false,
                 mhs:'600px',
                 direction: 'rtl',
@@ -55,10 +60,9 @@ const serverApi = fopsApi();
             }
         },
         methods:{
-            handleChange(page, size) { //分页变化
-            this.pagRow.currentPage = page;
-            this.pagRow.pageSize = size;
-            this.search(page)
+        ck_ts(t){
+            this.ck_t = t;
+            this.search()
         },
         del(row){
            
@@ -122,25 +126,28 @@ const serverApi = fopsApi();
                 });
             });
         },
-        handleNav(row){ //线路列表
+        handleNav(t,row){ //线路列表
                 this.dataList = [];
                 this.Id = '';
+                this.ck_t = t;
                 if(row){
                     this.Id = row.Id;
+                    this.baseData = row.Database
                     this.search()
                 }
             },
             search(){
                
                 serverApi.backupData_backupList({
-                    backupId:this.Id
+                    backupId:this.Id,
+                    database:this.ck_t
                     }).then(d => {
                         let { Status, StatusMessage,Data } = d;
                         if (Status) {
                             this.dataList = Data;
                             this.dialogVisible = true
                             this.$nextTick(() => {
-                                const divHeight = this.$refs.navHe.clientHeight - 40;
+                                const divHeight = this.$refs.navHe.clientHeight - 70;
                                 this.mhs = divHeight + 'px'
                             });
                         } else {

@@ -6,6 +6,7 @@ import (
 	"fops/domain/_/eumBackupDataType"
 	"fops/domain/_/eumBackupStoreType"
 	"fops/domain/apps"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -52,10 +53,13 @@ func (receiver *DomainObject) IsNil() bool {
 func (receiver *DomainObject) Backup() collections.List[BackupHistoryData] {
 	var lstBackupHistoryData collections.List[BackupHistoryData]
 
+	// 确定本地存储目录
+	backupRoot := receiver.getBackupRoot()
+
 	// 备份数据
 	switch receiver.BackupDataType {
 	case eumBackupDataType.Mysql:
-		lstBackupHistoryData = receiver.backupMySQL()
+		lstBackupHistoryData = receiver.backupMySQL(backupRoot)
 	}
 
 	if lstBackupHistoryData.Count() == 0 {
@@ -63,17 +67,14 @@ func (receiver *DomainObject) Backup() collections.List[BackupHistoryData] {
 	}
 
 	// 上传备份文件
-	switch receiver.StoreType {
-	case eumBackupStoreType.OSS:
+	if receiver.StoreType == eumBackupStoreType.OSS {
 		return receiver.uploadOSS(lstBackupHistoryData)
-	case eumBackupStoreType.LocalDirectory:
-		//fileStoreConfig := mapper.Single[FileStoreConfig](receiver.StoreConfig)
 	}
 	return lstBackupHistoryData
 }
 
 // 备份MySQL
-func (receiver *DomainObject) backupMySQL() collections.List[BackupHistoryData] {
+func (receiver *DomainObject) backupMySQL(backupRoot string) collections.List[BackupHistoryData] {
 	// 安装 mysqldump
 	if !isMysqldumpInstalled() {
 		installMysqldump()
@@ -84,22 +85,22 @@ func (receiver *DomainObject) backupMySQL() collections.List[BackupHistoryData] 
 	for _, database := range receiver.Database {
 		filePath := receiver.Id + "/" + database + "/"
 		// 创建备份目录
-		if !file.IsExists(apps.BackupRoot + filePath) {
-			file.CreateDir766(apps.BackupRoot + filePath)
+		if !file.IsExists(backupRoot + filePath) {
+			file.CreateDir766(backupRoot + filePath)
 		}
 
 		fileName := filePath + database + "_" + time.Now().Format("2006_01_02_15_04") + ".sql.gz"
-		mysqldumpCmd := fmt.Sprintf("mysqldump -h %s -P %d -u%s -p%s %s | gzip > %s", receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, apps.BackupRoot+fileName)
+		mysqldumpCmd := fmt.Sprintf("mysqldump -h %s -P %d -u%s -p%s %s | gzip > %s", receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, backupRoot+fileName)
 		code, result := exec.RunShellCommand(mysqldumpCmd, nil, "", false)
 		// 备份失败时删除备份文件
 		if code != 0 {
-			file.Delete(apps.BackupRoot + fileName)
+			file.Delete(backupRoot + fileName)
 			flog.Warningf("备份%s数据库失败：%s", database, collections.NewList(result...).ToString(","))
 			continue
 		}
-		fileInfo, err := os.Stat(apps.BackupRoot + fileName)
+		fileInfo, err := os.Stat(backupRoot + fileName)
 		if err != nil {
-			flog.Warningf("获取备份文件信息:%s,失败： %s", apps.BackupRoot+fileName, err.Error())
+			flog.Warningf("获取备份文件信息:%s,失败： %s", backupRoot+fileName, err.Error())
 			continue
 		}
 		lstBackupHistoryData.Add(BackupHistoryData{
@@ -138,10 +139,10 @@ func (receiver *DomainObject) getOssClient() (*oss.Client, string) {
 // 上传备份文件到OSS
 func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[BackupHistoryData]) collections.List[BackupHistoryData] {
 	client, bucketName := receiver.getOssClient()
-
+	backupRoot := receiver.getBackupRoot()
 	// 批量上传
 	for index, item := range lstBackupHistoryData.ToArray() {
-		f, err := os.Open(apps.BackupRoot + item.FileName)
+		f, err := os.Open(backupRoot + item.FileName)
 		if err != nil {
 			flog.Warningf("打开上传文件：%s 时，发生错误：%v", item.FileName, err)
 			lstBackupHistoryData.RemoveAt(index)
@@ -161,7 +162,7 @@ func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[Ba
 		}
 
 		// 上传成功后，删除本地文件
-		file.Delete(apps.BackupRoot + item.FileName)
+		file.Delete(backupRoot + item.FileName)
 		flog.Infof("数据库：%s，OSS上传文件：%s 成功, ETag :%v\n", item.Database, item.FileName, result.ETag)
 	}
 	return lstBackupHistoryData
@@ -170,7 +171,7 @@ func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[Ba
 // 删除备份文件
 func (receiver *DomainObject) DeleteBackupFile(fileName string) {
 	// 删除本地文件
-	file.Delete(apps.BackupRoot + fileName)
+	file.Delete(receiver.getBackupRoot() + fileName)
 	// 删除OSS文件
 	if receiver.StoreType == eumBackupStoreType.OSS {
 		client, bucketName := receiver.getOssClient()
@@ -192,6 +193,76 @@ func (receiver *DomainObject) DeleteBackupFile(fileName string) {
 // 恢复备份文件
 func (receiver *DomainObject) RecoverBackupFile(fileName string) {
 
+}
+
+// 备份的根目录
+func (receiver *DomainObject) getBackupRoot() string {
+	backupRoot := apps.BackupRoot
+	if receiver.StoreType == eumBackupStoreType.LocalDirectory {
+		var fileStoreConfig FileStoreConfig
+		err := snc.Unmarshal([]byte(receiver.StoreConfig), &fileStoreConfig)
+		if err != nil {
+			flog.Warningf("备份%s时，目录配置解析失败：%v", receiver.Id, err)
+		} else {
+			backupRoot = fileStoreConfig.Directory
+		}
+	}
+	return backupRoot
+}
+
+// 获取备份历史数据
+func (receiver *DomainObject) GetHistoryData(database string) collections.List[BackupHistoryData] {
+	filePath := receiver.Id + "/" + database + "/"
+
+	lstBackupHistoryData := collections.NewList[BackupHistoryData]()
+	// 通过oss获取
+	switch receiver.StoreType {
+	case eumBackupStoreType.OSS:
+		client, bucketName := receiver.getOssClient()
+
+		// 执行列举所有文件的操作
+		lsRes, err := client.ListObjectsV2(context.TODO(), &oss.ListObjectsV2Request{
+			Bucket:            oss.Ptr(bucketName),
+			ContinuationToken: oss.Ptr(""),
+			Prefix:            oss.Ptr(filePath), // 列举指定目录下的所有对象
+			MaxKeys:           144,
+		})
+
+		if err != nil {
+			flog.Warningf("OSS读取文件列表：%s 时，发生错误：%v", database, err)
+		}
+
+		// 打印列举结果
+		for _, object := range lsRes.Contents {
+			lstBackupHistoryData.Add(BackupHistoryData{
+				BackupId:  receiver.Id,
+				Database:  database,
+				FileName:  *object.Key,
+				StoreType: receiver.StoreType,
+				CreateAt:  dateTime.New(*object.LastModified),
+				Size:      object.Size / 1024,
+			})
+			log.Printf("Object Key: %s, Type: %s, Size: %d, ETag: %s, LastModified: %s, StorageClass: %s\n",
+				*object.Key, *object.Type, object.Size, *object.ETag, object.LastModified.Format(time.RFC3339), *object.StorageClass)
+		}
+	case eumBackupStoreType.LocalDirectory:
+		filePath = receiver.getBackupRoot() + filePath
+		lst := file.GetFiles(filePath, "*", true)
+		for _, file := range lst {
+			fileInfo, _ := os.Stat(file)
+			if fileInfo != nil {
+				lstBackupHistoryData.Add(BackupHistoryData{
+					BackupId:  receiver.Id,
+					Database:  database,
+					FileName:  file[len(receiver.getBackupRoot()):],
+					StoreType: receiver.StoreType,
+					CreateAt:  dateTime.New(fileInfo.ModTime()),
+					Size:      fileInfo.Size() / 1024 / 1024,
+				})
+			}
+		}
+	}
+	return lstBackupHistoryData
 }
 
 // 检查 mysqldump 是否已安装

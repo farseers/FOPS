@@ -90,11 +90,16 @@ func Delete(id string, backupDataRepository backupData.Repository) {
 	do := backupDataRepository.ToEntity(id)
 	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
 
-	lstHistoryData := backupDataRepository.ToBackupList(id)
-	lstHistoryData.Foreach(func(item *backupData.BackupHistoryData) {
-		do.DeleteBackupFile(item.FileName)
-		backupDataRepository.DeleteHistory(id, item.FileName)
-	})
+	// 遍历数据库
+	for _, database := range do.Database {
+		lstHistoryData := do.GetHistoryData(database)
+		for lstHistoryData.Count() > 0 {
+			lstHistoryData.Foreach(func(item *backupData.BackupHistoryData) {
+				do.DeleteBackupFile(item.FileName)
+			})
+			lstHistoryData = do.GetHistoryData(database)
+		}
+	}
 }
 
 // GetDatabaseList 获取数据库列表
@@ -116,8 +121,11 @@ func GetDatabaseList(req request.GetDatabaseListRequest) []string {
 // BackupList 备份文件列表
 // @post backupList
 // @filter application.Jwt
-func BackupList(backupId string, backupDataRepository backupData.Repository) collections.List[backupData.BackupHistoryData] {
-	return backupDataRepository.ToBackupList(backupId)
+func BackupList(backupId string, database string, backupDataRepository backupData.Repository) collections.List[backupData.BackupHistoryData] {
+	do := backupDataRepository.ToEntity(backupId)
+	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
+
+	return do.GetHistoryData(database)
 }
 
 // DeleteHistory 删除备份文件
@@ -128,7 +136,6 @@ func DeleteBackupFile(backupId string, fileName string, backupDataRepository bac
 	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
 
 	do.DeleteBackupFile(fileName)
-	backupDataRepository.DeleteHistory(backupId, fileName)
 }
 
 // RecoverBackupFile 恢复备份文件

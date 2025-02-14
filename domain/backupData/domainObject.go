@@ -136,15 +136,18 @@ func (receiver *DomainObject) getOssClient() (*oss.Client, string) {
 }
 
 // 上传备份文件到OSS
-func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[BackupHistoryData]) collections.List[BackupHistoryData] {
+func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[BackupHistoryData]) {
 	client, bucketName := receiver.getOssClient()
+	if client == nil {
+		return
+	}
 	backupRoot := receiver.getBackupRoot()
 	// 批量上传
-	for index, item := range lstBackupHistoryData.ToArray() {
+	for _, item := range lstBackupHistoryData.ToArray() {
 		f, err := os.Open(backupRoot + item.FileName)
 		if err != nil {
 			flog.Warningf("打开上传文件：%s 时，发生错误：%v", item.FileName, err)
-			lstBackupHistoryData.RemoveAt(index)
+			//lstBackupHistoryData.RemoveAt(index)
 			continue
 		}
 		defer f.Close()
@@ -157,14 +160,13 @@ func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[Ba
 
 		if err != nil {
 			flog.Warningf("上传文件：%s 时，发生错误：%v", item.FileName, err)
-			lstBackupHistoryData.RemoveAt(index)
+			//lstBackupHistoryData.RemoveAt(index)
 		}
 
 		// 上传成功后，删除本地文件
 		file.Delete(backupRoot + item.FileName)
 		flog.Infof("数据库：%s，OSS上传文件：%s 成功, ETag :%v\n", item.Database, item.FileName, result.ETag)
 	}
-	return lstBackupHistoryData
 }
 
 // 删除备份文件
@@ -174,6 +176,9 @@ func (receiver *DomainObject) DeleteBackupFile(fileName string) {
 	// 删除OSS文件
 	if receiver.StoreType == eumBackupStoreType.OSS {
 		client, bucketName := receiver.getOssClient()
+		if client == nil {
+			return
+		}
 
 		// 执行删除对象的操作并处理结果
 		result, err := client.DeleteObject(context.TODO(), &oss.DeleteObjectRequest{
@@ -218,6 +223,9 @@ func (receiver *DomainObject) GetHistoryData(database string) collections.List[B
 	switch receiver.StoreType {
 	case eumBackupStoreType.OSS:
 		client, bucketName := receiver.getOssClient()
+		if client == nil {
+			return lstBackupHistoryData
+		}
 
 		// 执行列举所有文件的操作
 		lsRes, err := client.ListObjectsV2(context.TODO(), &oss.ListObjectsV2Request{

@@ -30,7 +30,7 @@ func Add(req request.AddRequest, backupDataRepository backupData.Repository) {
 	}
 	do.LastBackupAt = dateTime.Now()
 	do.NextBackupAt = dateTime.New(cornSchedule.Next(time.Now()))
-
+	do.NextBackupAt = dateTime.Now() // 先改成立即备份
 	// 生成ID
 	do.GenerateId()
 	count := backupDataRepository.GetCountById(do.Id)

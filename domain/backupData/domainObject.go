@@ -82,7 +82,7 @@ func (receiver *DomainObject) backupMySQL() collections.List[BackupHistoryData] 
 	lstBackupHistoryData := collections.NewList[BackupHistoryData]()
 	// 备份数据库
 	for _, database := range receiver.Database {
-		filePath := receiver.Host + "/" + database + "/"
+		filePath := receiver.Id + "/" + database + "/"
 		// 创建备份目录
 		if !file.IsExists(apps.BackupRoot + filePath) {
 			file.CreateDir766(apps.BackupRoot + filePath)

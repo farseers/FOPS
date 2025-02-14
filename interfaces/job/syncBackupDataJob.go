@@ -35,8 +35,5 @@ func SyncBackupDataJob(*tasks.TaskContext) {
 		do.LastBackupAt = dateTime.Now()
 		do.NextBackupAt = dateTime.New(cornSchedule.Next(time.Now()))
 		backupDataRepository.UpdateAt(do.Id, do)
-
-		// 添加历史记录
-		backupDataRepository.AddHistory(lstBackupHistoryData)
 	}
 }

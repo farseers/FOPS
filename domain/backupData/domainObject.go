@@ -115,12 +115,11 @@ func (receiver *DomainObject) backupMySQL(backupRoot string) collections.List[Ba
 }
 
 // 获取OSS客户端
-func (receiver *DomainObject) getOssClient() (*oss.Client, string) {
+func (receiver *DomainObject) GetOssClient() (*oss.Client, string, error) {
 	var ossStoreConfig OSSStoreConfig
 	err := snc.Unmarshal([]byte(receiver.StoreConfig), &ossStoreConfig)
 	if err != nil {
-		flog.Warningf("OSS的配置解析失败：%v", err)
-		return nil, ""
+		return nil, "", fmt.Errorf("OSS的配置解析失败：%v", err)
 	}
 
 	// 从环境变量中获取访问凭证。运行本代码示例之前，请确保已设置环境变量OSS_ACCESS_KEY_ID和OSS_ACCESS_KEY_SECRET。
@@ -132,12 +131,16 @@ func (receiver *DomainObject) getOssClient() (*oss.Client, string) {
 		cfg.WithEndpoint(ossStoreConfig.Endpoint)
 	}
 
-	return oss.NewClient(cfg), ossStoreConfig.BucketName
+	return oss.NewClient(cfg), ossStoreConfig.BucketName, nil
 }
 
 // 上传备份文件到OSS
 func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[BackupHistoryData]) {
-	client, bucketName := receiver.getOssClient()
+	client, bucketName, err := receiver.GetOssClient()
+	if err != nil {
+		flog.Warning(err.Error())
+		return
+	}
 	if client == nil {
 		return
 	}
@@ -175,7 +178,11 @@ func (receiver *DomainObject) DeleteBackupFile(fileName string) {
 	file.Delete(receiver.getBackupRoot() + fileName)
 	// 删除OSS文件
 	if receiver.StoreType == eumBackupStoreType.OSS {
-		client, bucketName := receiver.getOssClient()
+		client, bucketName, err := receiver.GetOssClient()
+		if err != nil {
+			flog.Warning(err.Error())
+			return
+		}
 		if client == nil {
 			return
 		}
@@ -215,16 +222,16 @@ func (receiver *DomainObject) getBackupRoot() string {
 }
 
 // 获取备份历史数据
-func (receiver *DomainObject) GetHistoryData(database string) collections.List[BackupHistoryData] {
+func (receiver *DomainObject) GetHistoryData(database string) (collections.List[BackupHistoryData], error) {
 	filePath := receiver.Id + "/" + database + "/"
 
 	lstBackupHistoryData := collections.NewList[BackupHistoryData]()
 	// 通过oss获取
 	switch receiver.StoreType {
 	case eumBackupStoreType.OSS:
-		client, bucketName := receiver.getOssClient()
-		if client == nil {
-			return lstBackupHistoryData
+		client, bucketName, err := receiver.GetOssClient()
+		if client == nil || err != nil {
+			return lstBackupHistoryData, err
 		}
 
 		// 执行列举所有文件的操作
@@ -269,7 +276,7 @@ func (receiver *DomainObject) GetHistoryData(database string) collections.List[B
 			}
 		}
 	}
-	return lstBackupHistoryData
+	return lstBackupHistoryData, nil
 }
 
 // 检查 mysqldump 是否已安装

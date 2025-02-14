@@ -7,7 +7,6 @@ import (
 	"fops/domain/_/eumBackupStoreType"
 	"fops/domain/apps"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
@@ -83,24 +82,30 @@ func (receiver *DomainObject) backupMySQL() collections.List[BackupHistoryData] 
 	lstBackupHistoryData := collections.NewList[BackupHistoryData]()
 	// 备份数据库
 	for _, database := range receiver.Database {
-		filePath := receiver.Host + "_" + database + "_" + time.Now().Format("2006_01_02_15_04") + ".sql.gz"
-		mysqldumpCmd := fmt.Sprintf("mysqldump -h %s -P %d -u%s -p%s %s | gzip > %s", receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, apps.BackupRoot+filePath)
+		filePath := receiver.Host + "/" + database + "/"
+		// 创建备份目录
+		if !file.IsExists(apps.BackupRoot + filePath) {
+			file.CreateDir766(apps.BackupRoot + filePath)
+		}
+
+		fileName := filePath + database + "_" + time.Now().Format("2006_01_02_15_04") + ".sql.gz"
+		mysqldumpCmd := fmt.Sprintf("mysqldump -h %s -P %d -u%s -p%s %s | gzip > %s", receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, apps.BackupRoot+fileName)
 		code, result := exec.RunShellCommand(mysqldumpCmd, nil, "", false)
 		// 备份失败时删除备份文件
 		if code != 0 {
-			file.Delete(apps.BackupRoot + filePath)
+			file.Delete(apps.BackupRoot + fileName)
 			flog.Warningf("备份%s数据库失败：%s", database, collections.NewList(result...).ToString(","))
 			continue
 		}
-		fileInfo, err := os.Stat(apps.BackupRoot + filePath)
+		fileInfo, err := os.Stat(apps.BackupRoot + fileName)
 		if err != nil {
-			flog.Warningf("获取备份文件信息:%s,失败： %s", apps.BackupRoot+filePath, err.Error())
+			flog.Warningf("获取备份文件信息:%s,失败： %s", apps.BackupRoot+fileName, err.Error())
 			continue
 		}
 		lstBackupHistoryData.Add(BackupHistoryData{
 			BackupId:  receiver.Id,
 			Database:  database,
-			FileName:  filePath,
+			FileName:  fileName,
 			StoreType: receiver.StoreType,
 			CreateAt:  dateTime.Now(),
 			Size:      fileInfo.Size() / 1024,
@@ -146,7 +151,7 @@ func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[Ba
 
 		result, err := client.PutObject(context.TODO(), &oss.PutObjectRequest{
 			Bucket: oss.Ptr(bucketName),
-			Key:    oss.Ptr(filepath.Base(item.FileName)),
+			Key:    oss.Ptr(item.FileName),
 			Body:   f,
 		})
 

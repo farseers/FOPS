@@ -19,26 +19,19 @@
                     <el-table-column type="expand">
                         <template #default="scope">
                            <div class="reps_expand">
-                            <el-row style="margin-bottom: 5px;display:flex">
-                                <el-col :span="4">用户名：{{ scope.row.Username }}</el-col>
-                                <!-- <el-col :span="4">密码：{{ scope.row.Password }}</el-col> -->
-                                <el-col :span="10">上次备份时间：{{ scope.row.LastBackupAt }}</el-col>
-                                <el-col :span="10">下次执行时间：{{ scope.row.NextBackupAt }}</el-col>
-                            </el-row>
-                            <el-row>
-                                <el-col :span="24">
-                                    <div style="display: flex;">
-                                        数据库：
-                                        <div style="flex: 1;" v-if="scope.row.Database && scope.row.Database.length > 0">
+                            <div style="display: flex;align-items: center;margin-bottom: 5px;">
+                                <span style="margin-right: 10px;">用户名：{{ scope.row.Username }}</span>
+                                <span style="margin-right: 10px;">上次备份时间：{{ scope.row.LastBackupAt }}</span>
+                                <span style="margin-right: 10px;">下次执行时间：{{ scope.row.NextBackupAt }}</span>
+                            </div>
+                            <div style="display: flex;align-items: center;">
+                                数据库：
+                                <div style="flex: 1;" v-if="scope.row.Database && scope.row.Database.length > 0">
                                         <el-button size="small" style="margin-right: 5px;" 
                                         type="primary" 
                                         v-for="r,index in scope.row.Database" :key="index" @click="get_base_data_dr(r, scope.row)">{{ r }}</el-button>
                                     </div>
-                                    </div>
-                                   
-                                    
-                                </el-col>
-                            </el-row>
+                            </div>
                            </div>
                         </template>
                     </el-table-column>

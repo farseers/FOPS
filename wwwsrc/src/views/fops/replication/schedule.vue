@@ -61,9 +61,9 @@
                            <span v-show="scope.row.StoreType == 1">本地目录</span>
                         </template>
                     </el-table-column>
-                    <el-table-column label="操作" width="160px" fixed="right" align="center">
+                    <el-table-column label="操作" width="120px" fixed="right" align="center">
                         <template #default="scope">
-                            <el-button @click="base_info(scope.row)" type="primary" text size="small">备份详细</el-button>
+                            <!-- <el-button @click="base_info(scope.row)" type="primary" text size="small">备份详细</el-button> -->
                             <el-button @click="set_edit(scope.row)" type="primary" text size="small">编辑</el-button>
                             <el-button @click="set_del(scope.row)" type="primary" text size="small">删除</el-button>
                         </template>

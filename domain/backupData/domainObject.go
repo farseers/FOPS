@@ -50,7 +50,7 @@ func (receiver *DomainObject) IsNil() bool {
 }
 
 // 备份
-func (receiver *DomainObject) Backup() collections.List[BackupHistoryData] {
+func (receiver *DomainObject) Backup() {
 	var lstBackupHistoryData collections.List[BackupHistoryData]
 
 	// 确定本地存储目录
@@ -63,14 +63,13 @@ func (receiver *DomainObject) Backup() collections.List[BackupHistoryData] {
 	}
 
 	if lstBackupHistoryData.Count() == 0 {
-		return lstBackupHistoryData
+		return
 	}
 
 	// 上传备份文件
 	if receiver.StoreType == eumBackupStoreType.OSS {
-		return receiver.uploadOSS(lstBackupHistoryData)
+		receiver.uploadOSS(lstBackupHistoryData)
 	}
-	return lstBackupHistoryData
 }
 
 // 备份MySQL

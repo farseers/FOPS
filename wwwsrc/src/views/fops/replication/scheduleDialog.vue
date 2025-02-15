@@ -49,7 +49,7 @@
         
         <el-form-item label="存储类型">
            <div style="width: 100%;">
-            <el-radio-group v-model="StoreType">
+            <el-radio-group v-model="StoreType" :disabled="Id">
               <el-radio :label="0">OSS</el-radio>
               <el-radio :label="1">本地目录</el-radio>
           </el-radio-group>

@@ -157,7 +157,7 @@ func GetDatabaseList(req request.GetDatabaseListRequest) []string {
 	case eumBackupDataType.Mysql:
 		dbConnectionString = fmt.Sprintf("DataType=mysql,ConnectionString=%s:%s@tcp(%s:%d)/?charset=utf8mb4&parseTime=True&loc=Local", req.Username, req.Password, req.Host, req.Port)
 	case eumBackupDataType.Clickhouse:
-		dbConnectionString = fmt.Sprintf("DataType=clickhouse,ConnectionString=tcp://%s:%d?username=%s&password=%s&read_timeout=10&write_timeout=20", req.Host, req.Port, req.Username, req.Password)
+		dbConnectionString = fmt.Sprintf("DataType=clickhouse,ConnectionString=clickhouse://%s:%s@%s:%d/?dial_timeout=10s&read_timeout=20s", req.Username, req.Password, req.Host, req.Port)
 	}
 	databases, err := data.NewInternalContext(dbConnectionString).GetDatabaseList()
 	exception.ThrowRefuseExceptionError(err)

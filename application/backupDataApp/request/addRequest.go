@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/farseer-go/fs/snc"
+	"github.com/farseer-go/utils/cloud/aliyun"
 	"github.com/farseer-go/webapi/check"
 )
 
@@ -41,7 +42,7 @@ func (receiver *AddRequest) Check() {
 
 	switch receiver.StoreType {
 	case eumBackupStoreType.OSS:
-		var ossStoreConfig backupData.OSSStoreConfig
+		var ossStoreConfig aliyun.OSSConfig
 		err := snc.Unmarshal([]byte(receiver.StoreConfig), &ossStoreConfig)
 		check.IsTrue(err != nil, 403, fmt.Sprintf("OSS配置解析失败：%v", err))
 

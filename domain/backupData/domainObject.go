@@ -1,24 +1,20 @@
 package backupData
 
 import (
-	"context"
 	"fmt"
 	"fops/domain/_/eumBackupDataType"
 	"fops/domain/_/eumBackupStoreType"
 	"fops/domain/apps"
-	"log"
 	"os"
-	"strings"
 	"time"
 
-	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
-	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss/credentials"
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/fs/snc"
-	"github.com/farseer-go/utils/exec"
+	"github.com/farseer-go/utils/cloud/aliyun"
+	"github.com/farseer-go/utils/db"
 	"github.com/farseer-go/utils/file"
 	"github.com/robfig/cron/v3"
 )
@@ -41,8 +37,19 @@ type DomainObject struct {
 	StoreConfig    string                  // 备份存储配置
 }
 
+// 生成ID
 func (receiver *DomainObject) GenerateId() {
 	receiver.Id = receiver.Host + "_" + parse.ToString(receiver.Port) + "_" + receiver.Username
+}
+
+// 获取OSS配置
+func (receiver *DomainObject) GetOSSConfig() (*aliyun.OSSConfig, error) {
+	var ossConfig aliyun.OSSConfig
+	err := snc.Unmarshal([]byte(receiver.StoreConfig), &ossConfig)
+	if err != nil {
+		return nil, fmt.Errorf("OSS的配置解析失败：%v", err)
+	}
+	return &ossConfig, nil
 }
 
 func (receiver *DomainObject) IsNil() bool {
@@ -50,7 +57,7 @@ func (receiver *DomainObject) IsNil() bool {
 }
 
 // 备份
-func (receiver *DomainObject) Backup() {
+func (receiver *DomainObject) Backup() error {
 	var lstBackupHistoryData collections.List[BackupHistoryData]
 
 	// 确定本地存储目录
@@ -63,20 +70,30 @@ func (receiver *DomainObject) Backup() {
 	}
 
 	if lstBackupHistoryData.Count() == 0 {
-		return
+		return nil
 	}
 
 	// 上传备份文件
 	if receiver.StoreType == eumBackupStoreType.OSS {
-		receiver.uploadOSS(lstBackupHistoryData)
+		ossConfig, err := receiver.GetOSSConfig()
+		if err != nil {
+			return err
+		}
+
+		var fileNames []string
+		lstBackupHistoryData.Select(&fileNames, func(item BackupHistoryData) any {
+			return item.FileName
+		})
+		return ossConfig.UploadOSS(backupRoot, fileNames)
 	}
+	return nil
 }
 
 // 备份MySQL
 func (receiver *DomainObject) backupMySQL(backupRoot string) collections.List[BackupHistoryData] {
 	// 安装 mysqldump
-	if !isMysqldumpInstalled() {
-		installMysqldump()
+	if !db.IsMysqldumpInstalled() {
+		db.InstallMysqldump()
 	}
 
 	lstBackupHistoryData := collections.NewList[BackupHistoryData]()
@@ -89,123 +106,57 @@ func (receiver *DomainObject) backupMySQL(backupRoot string) collections.List[Ba
 		}
 
 		fileName := filePath + database + "_" + time.Now().Format("2006_01_02_15_04") + ".sql.gz"
-		mysqldumpCmd := fmt.Sprintf("mysqldump -h %s -P %d -u%s -p%s %s | gzip > %s", receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, backupRoot+fileName)
-		code, result := exec.RunShellCommand(mysqldumpCmd, nil, "", false)
-		// 备份失败时删除备份文件
-		if code != 0 {
-			file.Delete(backupRoot + fileName)
-			flog.Warningf("备份%s数据库失败：%s", database, collections.NewList(result...).ToString(","))
-			continue
-		}
-		fileInfo, err := os.Stat(backupRoot + fileName)
+		fileSize, err := db.BackupMysql(receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, backupRoot+fileName)
 		if err != nil {
-			flog.Warningf("获取备份文件信息:%s,失败： %s", backupRoot+fileName, err.Error())
+			flog.Warning(err.Error())
 			continue
 		}
+
 		lstBackupHistoryData.Add(BackupHistoryData{
 			BackupId:  receiver.Id,
 			Database:  database,
 			FileName:  fileName,
 			StoreType: receiver.StoreType,
 			CreateAt:  dateTime.Now(),
-			Size:      fileInfo.Size() / 1024,
+			Size:      fileSize,
 		})
 	}
 	return lstBackupHistoryData
 }
 
-// 获取OSS客户端
-func (receiver *DomainObject) GetOssClient() (*oss.Client, string, error) {
-	var ossStoreConfig OSSStoreConfig
-	err := snc.Unmarshal([]byte(receiver.StoreConfig), &ossStoreConfig)
-	if err != nil {
-		return nil, "", fmt.Errorf("OSS的配置解析失败：%v", err)
-	}
-
-	// 从环境变量中获取访问凭证。运行本代码示例之前，请确保已设置环境变量OSS_ACCESS_KEY_ID和OSS_ACCESS_KEY_SECRET。
-	cfg := oss.LoadDefaultConfig().WithCredentialsProvider(credentials.NewStaticCredentialsProvider(ossStoreConfig.AccessKeyID, ossStoreConfig.AccessKeySecret))
-	if ossStoreConfig.Region != "" {
-		cfg.WithRegion(ossStoreConfig.Region)
-	}
-	if ossStoreConfig.Endpoint != "" {
-		cfg.WithEndpoint(ossStoreConfig.Endpoint)
-	}
-
-	return oss.NewClient(cfg), ossStoreConfig.BucketName, nil
-}
-
-// 上传备份文件到OSS
-func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[BackupHistoryData]) {
-	client, bucketName, err := receiver.GetOssClient()
-	if err != nil {
-		flog.Warning(err.Error())
-		return
-	}
-	if client == nil {
-		return
-	}
-	backupRoot := receiver.getBackupRoot()
-	// 批量上传
-	for _, item := range lstBackupHistoryData.ToArray() {
-		f, err := os.Open(backupRoot + item.FileName)
-		if err != nil {
-			flog.Warningf("打开上传文件：%s 时，发生错误：%v", item.FileName, err)
-			//lstBackupHistoryData.RemoveAt(index)
-			continue
-		}
-		defer f.Close()
-
-		result, err := client.PutObject(context.TODO(), &oss.PutObjectRequest{
-			Bucket: oss.Ptr(bucketName),
-			Key:    oss.Ptr(item.FileName),
-			Body:   f,
-		})
-
-		if err != nil {
-			flog.Warningf("上传文件：%s 时，发生错误：%v", item.FileName, err)
-			//lstBackupHistoryData.RemoveAt(index)
-		}
-
-		if result != nil && err == nil {
-			flog.Infof("数据库：%s，OSS上传文件：%s 成功, ETag :%v\n", item.Database, item.FileName, result.ETag)
-			// 上传成功后，删除本地文件
-			file.Delete(backupRoot + item.FileName)
-		}
-	}
-}
-
 // 删除备份文件
-func (receiver *DomainObject) DeleteBackupFile(fileName string) {
+func (receiver *DomainObject) DeleteBackupFile(fileName string) error {
 	// 删除本地文件
 	file.Delete(receiver.getBackupRoot() + fileName)
 	// 删除OSS文件
 	if receiver.StoreType == eumBackupStoreType.OSS {
-		client, bucketName, err := receiver.GetOssClient()
+		ossConfig, err := receiver.GetOSSConfig()
 		if err != nil {
-			flog.Warning(err.Error())
-			return
+			return err
 		}
-		if client == nil {
-			return
-		}
-
-		// 执行删除对象的操作并处理结果
-		result, err := client.DeleteObject(context.TODO(), &oss.DeleteObjectRequest{
-			Bucket: oss.Ptr(bucketName), // 存储空间名称
-			Key:    oss.Ptr(fileName),   // 对象名称
-		})
+		err = ossConfig.DeleteFile(fileName)
 		if err != nil {
-			flog.Warningf("OSS删除文件：%s 时，发生错误：%v", fileName, err)
-		} else {
-			// 打印删除对象的结果
-			flog.Infof("OSS删除文件：%s 成功, ETag :%v\n", fileName, result)
+			return err
 		}
 	}
+	return nil
 }
 
 // 恢复备份文件
-func (receiver *DomainObject) RecoverBackupFile(database string, fileName string) {
+func (receiver *DomainObject) RecoverBackupFile(database string, fileName string) error {
+	// 确定本地存储目录
+	backupRoot := receiver.getBackupRoot()
 
+	switch receiver.StoreType {
+	// 通过oss获取，需先下载文件到本地目录
+	case eumBackupStoreType.OSS:
+		ossConfig, err := receiver.GetOSSConfig()
+		if err != nil {
+			flog.Warning(err.Error())
+		}
+		return ossConfig.DownloadFile(backupRoot, fileName)
+	}
+	return nil
 }
 
 // 备份的根目录
@@ -231,36 +182,24 @@ func (receiver *DomainObject) GetHistoryData(database string) (collections.List[
 	// 通过oss获取
 	switch receiver.StoreType {
 	case eumBackupStoreType.OSS:
-		client, bucketName, err := receiver.GetOssClient()
-		if client == nil || err != nil {
+		ossConfig, err := receiver.GetOSSConfig()
+		if err != nil {
 			return lstBackupHistoryData, err
 		}
-
-		// 执行列举所有文件的操作
-		lsRes, err := client.ListObjectsV2(context.TODO(), &oss.ListObjectsV2Request{
-			Bucket:            oss.Ptr(bucketName),
-			ContinuationToken: oss.Ptr(""),
-			Prefix:            oss.Ptr(filePath), // 列举指定目录下的所有对象
-			MaxKeys:           144,
-		})
-
+		fileObjects, err := ossConfig.GetFileList(filePath)
 		if err != nil {
-			flog.Warningf("OSS读取文件列表：%s 时，发生错误：%v", database, err)
+			return lstBackupHistoryData, err
 		}
-
-		// 打印列举结果
-		for _, object := range lsRes.Contents {
+		fileObjects.Foreach(func(item *aliyun.FileObject) {
 			lstBackupHistoryData.Add(BackupHistoryData{
 				BackupId:  receiver.Id,
 				Database:  database,
-				FileName:  *object.Key,
+				FileName:  item.FileName,
 				StoreType: receiver.StoreType,
-				CreateAt:  dateTime.New(*object.LastModified),
-				Size:      object.Size / 1024,
+				CreateAt:  item.CreateAt,
+				Size:      item.Size,
 			})
-			log.Printf("Object Key: %s, Type: %s, Size: %d, ETag: %s, LastModified: %s, StorageClass: %s\n",
-				*object.Key, *object.Type, object.Size, *object.ETag, object.LastModified.Format(time.RFC3339), *object.StorageClass)
-		}
+		})
 	case eumBackupStoreType.LocalDirectory:
 		filePath = receiver.getBackupRoot() + filePath
 		lst := file.GetFiles(filePath, "*", true)
@@ -279,30 +218,6 @@ func (receiver *DomainObject) GetHistoryData(database string) (collections.List[
 		}
 	}
 	return lstBackupHistoryData, nil
-}
-
-// 检查 mysqldump 是否已安装
-func isMysqldumpInstalled() bool {
-	code, result := exec.RunShellCommand("mysqldump --version", nil, "", false)
-	if code != 0 || len(result) == 0 {
-		return false
-	}
-	// 检查输出中是否包含 "mysqldump" 关键字
-	return strings.Contains(result[0], "mysqldump")
-}
-
-// 安装 mysqldump
-func installMysqldump() {
-	exec.RunShellCommand("apk add --no-cache mariadb-client", nil, "", false)
-}
-
-// 阿里云OSS存储配置
-type OSSStoreConfig struct {
-	AccessKeyID     string // AccessKeyID
-	AccessKeySecret string // AccessKeySecret
-	Endpoint        string // 填写Bucket对应的Endpoint，以华东1（杭州）为例，填写为https://oss-cn-hangzhou.aliyuncs.com。其它Region请按实际情况填写。
-	Region          string // 填写Bucket所在地域，以华东1（杭州）为例，填写为cn-hangzhou。其它Region请按实际情况填写。
-	BucketName      string // BucketName
 }
 
 // 本地目录存储配置

@@ -100,7 +100,8 @@ const serverApi = fopsApi();
             const str = "确定恢复["+row.FileName+"]?";
             var par = {
                     "backupId": row.BackupId,   
-                    "FileName": row.FileName   
+                    "FileName": row.FileName,   
+                    "database": row.Database   
                 }
             this.$confirm(str, '提示', {
                 confirmButtonText: '确定',

@@ -54,10 +54,11 @@
                            <span v-show="scope.row.StoreType == 1">本地目录</span>
                         </template>
                     </el-table-column>
-                    <el-table-column label="操作" width="120px" fixed="right" align="center">
+                    <el-table-column label="操作" width="180px" fixed="right" align="center">
                         <template #default="scope">
-                            <!-- <el-button @click="base_info(scope.row)" type="primary" text size="small">备份详细</el-button> -->
+                            <el-button @click="base_info(scope.row)" type="primary" text size="small">备份</el-button>
                             <el-button @click="set_edit(scope.row)" type="primary" text size="small">编辑</el-button>
+                            <el-button @click="em_info(scope.row)" type="primary" text size="small">清空</el-button>
                             <el-button @click="set_del(scope.row)" type="primary" text size="small">删除</el-button>
                         </template>
                     </el-table-column>
@@ -132,10 +133,62 @@ export default {
                 }
             })
         },
+
+        em_info(row){
+            const str = "确定清空此计划?"
+            this.$confirm(str, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                serverApi.backupData_clear({
+                    "id": row.Id,   
+                }).then(d => {
+            let { Status, StatusMessage } = d;
+            if (Status) {
+                this.$message({
+                    type: 'success',
+                    message: '清空成功'
+                });
+              this.getTableData()
+            } else {
+              ElMessage.error(StatusMessage)
+            }
+          })
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消清空'
+                });
+            });
+        },
         base_info(row){
-           if(row.Database && row.Database.length>0){
-            this.$refs.scheduleDrawer.handleNav(row.Database[0],row)
-           }
+            const str = "确定备份此计划?"
+            this.$confirm(str, '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                serverApi.backupData_backup({
+                    "id": row.Id,   
+                }).then(d => {
+            let { Status, StatusMessage } = d;
+            if (Status) {
+                this.$message({
+                    type: 'success',
+                    message: '备份成功'
+                });
+              this.getTableData()
+            } else {
+              ElMessage.error(StatusMessage)
+            }
+          })
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消备份'
+                });
+            });
         },
         get_base_data_dr(t,row){
             this.$refs.scheduleDrawer.handleNav(t,row)

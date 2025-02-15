@@ -645,5 +645,19 @@ export function fopsApi() {
 				data:param,
 			});
 		},
+		backupData_backup:(param: object) => { // 备份计划 - 立即备份
+			return request({
+				url: '/backupData/backup',
+				method:'post',
+				data:param,
+			});
+		},
+		backupData_clear:(param: object) => { // 备份计划 - 清空
+			return request({
+				url: '/backupData/clear',
+				method:'post',
+				data:param,
+			});
+		},
 	};
 }

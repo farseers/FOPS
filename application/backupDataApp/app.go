@@ -94,6 +94,19 @@ func Info(id string, backupDataRepository backupData.Repository) backupData.Doma
 	return do
 }
 
+// Backup 立即备份
+// @post backup
+// @filter application.Jwt
+func Backup(id string, backupDataRepository backupData.Repository) {
+	do := backupDataRepository.ToEntity(id)
+	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
+
+	if err := do.Backup(); err != nil {
+		exception.ThrowRefuseExceptionError(err)
+	}
+	backupDataRepository.UpdateAt(do.Id, do)
+}
+
 // Delete 删除备份计划
 // @post delete
 // @filter application.Jwt

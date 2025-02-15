@@ -24,14 +24,8 @@ func SyncBackupDataJob(*tasks.TaskContext) {
 	}
 	time.Sleep(s)
 	// 时间到了，开始执行
-	do.Backup()
-	cornSchedule, err := backupData.StandardParser.Parse(do.Cron)
-	if err != nil {
-		flog.Error("同步备份计划时，do.Cron的值不正确导致错误: %s %v", do.Cron, err)
-		return
+	if err := do.Backup(); err != nil {
+		flog.Warning(err.Error())
 	}
-	// 更新时间字段，并生成下一次执行时间。
-	do.LastBackupAt = dateTime.Now()
-	do.NextBackupAt = dateTime.New(cornSchedule.Next(time.Now()))
 	backupDataRepository.UpdateAt(do.Id, do)
 }

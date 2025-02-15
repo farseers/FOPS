@@ -58,8 +58,16 @@ func (receiver *DomainObject) IsNil() bool {
 
 // 备份
 func (receiver *DomainObject) Backup() error {
-	var lstBackupHistoryData collections.List[BackupHistoryData]
+	// 更新时间，放在前面处理是节省后面多个return时的逻辑处理，这里更简单
+	cornSchedule, err := StandardParser.Parse(receiver.Cron)
+	if err != nil {
+		return fmt.Errorf("同步备份计划时，do.Cron的值不正确导致错误: %s %v", receiver.Cron, err)
+	}
+	// 更新时间字段，并生成下一次执行时间。
+	receiver.LastBackupAt = dateTime.Now()
+	receiver.NextBackupAt = dateTime.New(cornSchedule.Next(time.Now()))
 
+	var lstBackupHistoryData collections.List[BackupHistoryData]
 	// 确定本地存储目录
 	backupRoot := receiver.getBackupRoot()
 
@@ -154,9 +162,19 @@ func (receiver *DomainObject) RecoverBackupFile(database string, fileName string
 		if err != nil {
 			flog.Warning(err.Error())
 		}
-		return ossConfig.DownloadFile(backupRoot, fileName)
+		err = ossConfig.DownloadFile(backupRoot, fileName)
+		if err != nil {
+			return err
+		}
 	}
-	return nil
+
+	// 恢复数据库
+	err := db.RecoverMysql(receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, backupRoot+fileName)
+	// 如果是oss下载的，则删除原文件
+	if receiver.StoreType == eumBackupStoreType.OSS {
+		file.Delete(backupRoot + fileName)
+	}
+	return err
 }
 
 // 备份的根目录

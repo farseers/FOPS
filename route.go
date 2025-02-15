@@ -41,6 +41,7 @@ var route = []webapi.Route{
     {"POST", "/backupData/update", backupDataApp.Update, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
     {"POST", "/backupData/list", backupDataApp.List, "", []context.IFilter{application.Jwt{}}, []string{""}},
     {"POST", "/backupData/info", backupDataApp.Info, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
+    {"POST", "/backupData/backup", backupDataApp.Backup, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
     {"POST", "/backupData/delete", backupDataApp.Delete, "", []context.IFilter{application.Jwt{}}, []string{"id", ""}},
     {"POST", "/backupData/getDatabaseList", backupDataApp.GetDatabaseList, "", []context.IFilter{application.Jwt{}}, []string{"req"}},
     {"POST", "/backupData/backupList", backupDataApp.BackupList, "", []context.IFilter{application.Jwt{}}, []string{"backupId", "database", ""}},

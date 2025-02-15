@@ -13,7 +13,6 @@ import (
 	"github.com/farseer-go/data"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
-	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/mapper"
 	"github.com/farseer-go/webapi/check"
@@ -42,11 +41,13 @@ func Add(req request.AddRequest, backupDataRepository backupData.Repository) {
 
 	if do.StoreType == eumBackupStoreType.OSS {
 		ossConfig, err := do.GetOSSConfig()
-		if err != nil {
-			flog.Warning(err.Error())
-		}
+		exception.ThrowWebExceptionError(403, err)
+
 		client, _, err := ossConfig.GetOssClient()
-		check.IsTrue(client == nil || err != nil, 403, "OSS尝试连接失败，请确认鉴权是否正确:"+err.Error())
+		check.IsTrue(client == nil, 403, "OSS尝试连接失败，请确认鉴权是否正确")
+		if err != nil {
+			exception.ThrowRefuseExceptionf("OSS尝试连接失败，请确认鉴权是否正确:%v", err)
+		}
 	}
 
 	// 添加

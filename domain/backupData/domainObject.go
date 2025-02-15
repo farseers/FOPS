@@ -166,9 +166,11 @@ func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[Ba
 			//lstBackupHistoryData.RemoveAt(index)
 		}
 
-		// 上传成功后，删除本地文件
-		file.Delete(backupRoot + item.FileName)
-		flog.Infof("数据库：%s，OSS上传文件：%s 成功, ETag :%v\n", item.Database, item.FileName, result.ETag)
+		if result != nil && err == nil {
+			flog.Infof("数据库：%s，OSS上传文件：%s 成功, ETag :%v\n", item.Database, item.FileName, result.ETag)
+			// 上传成功后，删除本地文件
+			file.Delete(backupRoot + item.FileName)
+		}
 	}
 }
 
@@ -202,7 +204,7 @@ func (receiver *DomainObject) DeleteBackupFile(fileName string) {
 }
 
 // 恢复备份文件
-func (receiver *DomainObject) RecoverBackupFile(fileName string) {
+func (receiver *DomainObject) RecoverBackupFile(database string, fileName string) {
 
 }
 

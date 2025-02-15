@@ -150,9 +150,9 @@ func DeleteBackupFile(backupId string, fileName string, backupDataRepository bac
 // RecoverBackupFile 恢复备份文件
 // @post recoverBackupFile
 // @filter application.Jwt
-func RecoverBackupFile(backupId string, fileName string, backupDataRepository backupData.Repository) {
+func RecoverBackupFile(backupId string, database string, fileName string, backupDataRepository backupData.Repository) {
 	do := backupDataRepository.ToEntity(backupId)
 	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
 
-	do.RecoverBackupFile(fileName)
+	do.RecoverBackupFile(database, fileName)
 }

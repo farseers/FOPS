@@ -99,11 +99,6 @@ func (receiver *DomainObject) Backup() error {
 
 // 备份MySQL
 func (receiver *DomainObject) backupMySQL(backupRoot string) collections.List[BackupHistoryData] {
-	// 安装 mysqldump
-	if !db.IsMysqldumpInstalled() {
-		db.InstallMysqldump()
-	}
-
 	lstBackupHistoryData := collections.NewList[BackupHistoryData]()
 	// 备份数据库
 	for _, database := range receiver.Database {

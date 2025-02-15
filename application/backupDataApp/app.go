@@ -114,7 +114,29 @@ func Delete(id string, backupDataRepository backupData.Repository) {
 	do := backupDataRepository.ToEntity(id)
 	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
 
-	// 遍历数据库
+	// 遍历数据库，删除备份文件
+	for _, database := range do.Database {
+		lstHistoryData, err := do.GetHistoryData(database)
+		for lstHistoryData.Count() > 0 && err == nil {
+			lstHistoryData.Foreach(func(item *backupData.BackupHistoryData) {
+				do.DeleteBackupFile(item.FileName)
+			})
+			lstHistoryData, err = do.GetHistoryData(database)
+		}
+	}
+
+	// 删除备份计划
+	backupDataRepository.Delete(id)
+}
+
+// Clear 清空备份计划中的所有备份文件
+// @post clear
+// @filter application.Jwt
+func Clear(id string, backupDataRepository backupData.Repository) {
+	do := backupDataRepository.ToEntity(id)
+	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
+
+	// 遍历数据库，删除备份文件
 	for _, database := range do.Database {
 		lstHistoryData, err := do.GetHistoryData(database)
 		for lstHistoryData.Count() > 0 && err == nil {

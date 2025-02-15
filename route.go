@@ -45,7 +45,7 @@ var route = []webapi.Route{
     {"POST", "/backupData/getDatabaseList", backupDataApp.GetDatabaseList, "", []context.IFilter{application.Jwt{}}, []string{"req"}},
     {"POST", "/backupData/backupList", backupDataApp.BackupList, "", []context.IFilter{application.Jwt{}}, []string{"backupId", "database", ""}},
     {"POST", "/backupData/deleteHistory", backupDataApp.DeleteBackupFile, "", []context.IFilter{application.Jwt{}}, []string{"backupId", "fileName", ""}},
-    {"POST", "/backupData/recoverBackupFile", backupDataApp.RecoverBackupFile, "", []context.IFilter{application.Jwt{}}, []string{"backupId", "fileName", ""}},
+    {"POST", "/backupData/recoverBackupFile", backupDataApp.RecoverBackupFile, "", []context.IFilter{application.Jwt{}}, []string{"backupId", "database", "fileName", ""}},
     {"POST", "/cluster/add", clusterApp.Add, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
     {"POST", "/cluster/update", clusterApp.Update, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
     {"POST", "/cluster/list", clusterApp.List, "", []context.IFilter{application.Jwt{}}, []string{""}},

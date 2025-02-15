@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"fops/application/backupDataApp/request"
 	"fops/domain/_/eumBackupDataType"
+	"fops/domain/_/eumBackupStoreType"
 	"fops/domain/backupData"
 	"time"
 
@@ -30,12 +31,17 @@ func Add(req request.AddRequest, backupDataRepository backupData.Repository) {
 	}
 	do.LastBackupAt = dateTime.Now()
 	do.NextBackupAt = dateTime.New(cornSchedule.Next(time.Now()))
-
+	do.NextBackupAt = dateTime.Now() // 先改成立即备份
 	// 生成ID
 	do.GenerateId()
 	count := backupDataRepository.GetCountById(do.Id)
 	if count > 0 {
 		do.Id += "_" + parse.ToString(count)
+	}
+
+	if do.StoreType == eumBackupStoreType.OSS {
+		client, _, err := do.GetOssClient()
+		check.IsTrue(client == nil || err != nil, 403, "OSS尝试连接失败，请确认鉴权是否正确:"+err.Error())
 	}
 
 	// 添加
@@ -92,12 +98,12 @@ func Delete(id string, backupDataRepository backupData.Repository) {
 
 	// 遍历数据库
 	for _, database := range do.Database {
-		lstHistoryData := do.GetHistoryData(database)
-		for lstHistoryData.Count() > 0 {
+		lstHistoryData, err := do.GetHistoryData(database)
+		for lstHistoryData.Count() > 0 && err == nil {
 			lstHistoryData.Foreach(func(item *backupData.BackupHistoryData) {
 				do.DeleteBackupFile(item.FileName)
 			})
-			lstHistoryData = do.GetHistoryData(database)
+			lstHistoryData, err = do.GetHistoryData(database)
 		}
 	}
 }
@@ -125,7 +131,10 @@ func BackupList(backupId string, database string, backupDataRepository backupDat
 	do := backupDataRepository.ToEntity(backupId)
 	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
 
-	return do.GetHistoryData(database)
+	lst, err := do.GetHistoryData(database)
+	exception.ThrowRefuseExceptionError(err)
+
+	return lst
 }
 
 // DeleteHistory 删除备份文件
@@ -141,9 +150,9 @@ func DeleteBackupFile(backupId string, fileName string, backupDataRepository bac
 // RecoverBackupFile 恢复备份文件
 // @post recoverBackupFile
 // @filter application.Jwt
-func RecoverBackupFile(backupId string, fileName string, backupDataRepository backupData.Repository) {
+func RecoverBackupFile(backupId string, database string, fileName string, backupDataRepository backupData.Repository) {
 	do := backupDataRepository.ToEntity(backupId)
 	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
 
-	do.RecoverBackupFile(fileName)
+	do.RecoverBackupFile(database, fileName)
 }

@@ -146,9 +146,9 @@ func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.
 			}
 			switch logItem.LogLevel {
 			case eumLogLevel.Error: // 日志异常数量
-				appsResponse.LogErrorCount++
+				appsResponse.LogErrorCount += logItem.LogCount
 			case eumLogLevel.Warning: // 日志警告数量
-				appsResponse.LogWaringCount++
+				appsResponse.LogWaringCount += logItem.LogCount
 			default:
 			}
 		})
@@ -160,9 +160,9 @@ func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.
 			}
 			switch statTaskEO.ExecuteStatus {
 			case 3: // 任务组执行失败数量
-				appsResponse.TaskFailCount++
+				appsResponse.TaskFailCount += statTaskEO.Count
 			case 2: // 任务组执行成功数量
-				appsResponse.TaskSuccessCount++
+				appsResponse.TaskSuccessCount += statTaskEO.Count
 			}
 		})
 

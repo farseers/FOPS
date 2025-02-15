@@ -115,12 +115,11 @@ func (receiver *DomainObject) backupMySQL(backupRoot string) collections.List[Ba
 }
 
 // 获取OSS客户端
-func (receiver *DomainObject) getOssClient() (*oss.Client, string) {
+func (receiver *DomainObject) GetOssClient() (*oss.Client, string, error) {
 	var ossStoreConfig OSSStoreConfig
 	err := snc.Unmarshal([]byte(receiver.StoreConfig), &ossStoreConfig)
 	if err != nil {
-		flog.Warningf("OSS的配置解析失败：%v", err)
-		return nil, ""
+		return nil, "", fmt.Errorf("OSS的配置解析失败：%v", err)
 	}
 
 	// 从环境变量中获取访问凭证。运行本代码示例之前，请确保已设置环境变量OSS_ACCESS_KEY_ID和OSS_ACCESS_KEY_SECRET。
@@ -132,19 +131,26 @@ func (receiver *DomainObject) getOssClient() (*oss.Client, string) {
 		cfg.WithEndpoint(ossStoreConfig.Endpoint)
 	}
 
-	return oss.NewClient(cfg), ossStoreConfig.BucketName
+	return oss.NewClient(cfg), ossStoreConfig.BucketName, nil
 }
 
 // 上传备份文件到OSS
-func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[BackupHistoryData]) collections.List[BackupHistoryData] {
-	client, bucketName := receiver.getOssClient()
+func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[BackupHistoryData]) {
+	client, bucketName, err := receiver.GetOssClient()
+	if err != nil {
+		flog.Warning(err.Error())
+		return
+	}
+	if client == nil {
+		return
+	}
 	backupRoot := receiver.getBackupRoot()
 	// 批量上传
-	for index, item := range lstBackupHistoryData.ToArray() {
+	for _, item := range lstBackupHistoryData.ToArray() {
 		f, err := os.Open(backupRoot + item.FileName)
 		if err != nil {
 			flog.Warningf("打开上传文件：%s 时，发生错误：%v", item.FileName, err)
-			lstBackupHistoryData.RemoveAt(index)
+			//lstBackupHistoryData.RemoveAt(index)
 			continue
 		}
 		defer f.Close()
@@ -157,14 +163,15 @@ func (receiver *DomainObject) uploadOSS(lstBackupHistoryData collections.List[Ba
 
 		if err != nil {
 			flog.Warningf("上传文件：%s 时，发生错误：%v", item.FileName, err)
-			lstBackupHistoryData.RemoveAt(index)
+			//lstBackupHistoryData.RemoveAt(index)
 		}
 
-		// 上传成功后，删除本地文件
-		file.Delete(backupRoot + item.FileName)
-		flog.Infof("数据库：%s，OSS上传文件：%s 成功, ETag :%v\n", item.Database, item.FileName, result.ETag)
+		if result != nil && err == nil {
+			flog.Infof("数据库：%s，OSS上传文件：%s 成功, ETag :%v\n", item.Database, item.FileName, result.ETag)
+			// 上传成功后，删除本地文件
+			file.Delete(backupRoot + item.FileName)
+		}
 	}
-	return lstBackupHistoryData
 }
 
 // 删除备份文件
@@ -173,7 +180,14 @@ func (receiver *DomainObject) DeleteBackupFile(fileName string) {
 	file.Delete(receiver.getBackupRoot() + fileName)
 	// 删除OSS文件
 	if receiver.StoreType == eumBackupStoreType.OSS {
-		client, bucketName := receiver.getOssClient()
+		client, bucketName, err := receiver.GetOssClient()
+		if err != nil {
+			flog.Warning(err.Error())
+			return
+		}
+		if client == nil {
+			return
+		}
 
 		// 执行删除对象的操作并处理结果
 		result, err := client.DeleteObject(context.TODO(), &oss.DeleteObjectRequest{
@@ -190,7 +204,7 @@ func (receiver *DomainObject) DeleteBackupFile(fileName string) {
 }
 
 // 恢复备份文件
-func (receiver *DomainObject) RecoverBackupFile(fileName string) {
+func (receiver *DomainObject) RecoverBackupFile(database string, fileName string) {
 
 }
 
@@ -210,14 +224,17 @@ func (receiver *DomainObject) getBackupRoot() string {
 }
 
 // 获取备份历史数据
-func (receiver *DomainObject) GetHistoryData(database string) collections.List[BackupHistoryData] {
+func (receiver *DomainObject) GetHistoryData(database string) (collections.List[BackupHistoryData], error) {
 	filePath := receiver.Id + "/" + database + "/"
 
 	lstBackupHistoryData := collections.NewList[BackupHistoryData]()
 	// 通过oss获取
 	switch receiver.StoreType {
 	case eumBackupStoreType.OSS:
-		client, bucketName := receiver.getOssClient()
+		client, bucketName, err := receiver.GetOssClient()
+		if client == nil || err != nil {
+			return lstBackupHistoryData, err
+		}
 
 		// 执行列举所有文件的操作
 		lsRes, err := client.ListObjectsV2(context.TODO(), &oss.ListObjectsV2Request{
@@ -261,7 +278,7 @@ func (receiver *DomainObject) GetHistoryData(database string) collections.List[B
 			}
 		}
 	}
-	return lstBackupHistoryData
+	return lstBackupHistoryData, nil
 }
 
 // 检查 mysqldump 是否已安装

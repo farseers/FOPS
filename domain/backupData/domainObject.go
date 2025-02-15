@@ -167,7 +167,7 @@ func (receiver *DomainObject) RecoverBackupFile(database string, fileName string
 	err := db.RecoverMysql(receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, backupRoot+fileName)
 	// 如果是oss下载的，则删除原文件
 	if receiver.StoreType == eumBackupStoreType.OSS {
-		file.Delete(backupRoot + fileName)
+		//file.Delete(backupRoot + fileName)
 	}
 	return err
 }

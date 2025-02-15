@@ -43,7 +43,7 @@
                     </el-table-column>
                     <el-table-column label="主机" prop="Host" min-width="100">
                         <template #default="scope">
-                          <span>{{ scope.row.Host }} ： {{ scope.row.Port }}</span>
+                          <span>{{ scope.row.Host }}:{{ scope.row.Port }}</span>
                         </template>
                     </el-table-column>
                     <el-table-column label="Cron" prop="Cron" min-width="100"></el-table-column>

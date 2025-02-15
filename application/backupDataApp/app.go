@@ -149,7 +149,8 @@ func DeleteBackupFile(backupId string, fileName string, backupDataRepository bac
 	do := backupDataRepository.ToEntity(backupId)
 	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
 
-	do.DeleteBackupFile(fileName)
+	err := do.DeleteBackupFile(fileName)
+	exception.ThrowRefuseExceptionError(err)
 }
 
 // RecoverBackupFile 恢复备份文件
@@ -159,5 +160,6 @@ func RecoverBackupFile(backupId string, database string, fileName string, backup
 	do := backupDataRepository.ToEntity(backupId)
 	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
 
-	do.RecoverBackupFile(database, fileName)
+	err := do.RecoverBackupFile(database, fileName)
+	exception.ThrowRefuseExceptionError(err)
 }

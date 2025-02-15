@@ -16,7 +16,7 @@ type BackupDataPO struct {
 	Port           int                     `gorm:"type:int;not null;comment:端口"`
 	Username       string                  `gorm:"size:32;not null;comment:用户名"`
 	Password       string                  `gorm:"size:128;not null;comment:密码"`
-	Database       []string                `gorm:"size:64;json;not null;comment:数据库"`
+	Database       []string                `gorm:"size:1024;json;not null;comment:数据库"`
 	LastBackupAt   time.Time               `gorm:"type:timestamp;size:6;not null;comment:上次备份时间"`
 	NextBackupAt   time.Time               `gorm:"type:timestamp;size:6;not null;comment:下次备份时间"`
 	Cron           string                  `gorm:"size:32;not null;comment:备份间隔"`

@@ -8,6 +8,7 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"regexp"
 	"time"
 
 	"github.com/farseer-go/collections"
@@ -16,6 +17,7 @@ import (
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/fs/snc"
+	"github.com/farseer-go/fs/stopwatch"
 	"github.com/farseer-go/utils/cloud/aliyun"
 	"github.com/farseer-go/utils/db"
 	"github.com/farseer-go/utils/exec"
@@ -71,164 +73,189 @@ func (receiver *DomainObject) Backup() error {
 	receiver.LastBackupAt = dateTime.Now()
 	receiver.NextBackupAt = dateTime.New(cornSchedule.Next(time.Now()))
 
-	var lstBackupHistoryData collections.List[BackupHistoryData]
 	// 确定本地存储目录
 	backupRoot := receiver.getBackupRoot()
 
-	// 备份数据
-	switch receiver.BackupDataType {
-	case eumBackupDataType.Mysql:
-		lstBackupHistoryData, err = receiver.backupMySQL(backupRoot)
-	case eumBackupDataType.Clickhouse:
-		lstBackupHistoryData, err = receiver.backupClickhouse(backupRoot)
-	}
-
-	if err != nil {
-		return err
-	}
-	if lstBackupHistoryData.Count() == 0 {
-		return nil
-	}
-
-	// 上传备份文件
-	if receiver.StoreType == eumBackupStoreType.OSS {
-		ossConfig, err := receiver.GetOSSConfig()
-		if err != nil {
-			return err
+	lstErrorContent := collections.NewList[string]()
+	for _, database := range receiver.Database {
+		var lstBackupHistoryData collections.List[BackupHistoryData]
+		// 备份数据
+		switch receiver.BackupDataType {
+		case eumBackupDataType.Mysql:
+			lstBackupHistoryData, err = receiver.backupMySQL(backupRoot, database)
+		case eumBackupDataType.Clickhouse:
+			lstBackupHistoryData, err = receiver.backupClickhouse(backupRoot, database)
 		}
 
-		var fileNames []string
-		lstBackupHistoryData.Select(&fileNames, func(item BackupHistoryData) any {
-			return item.FileName
-		})
-		return ossConfig.UploadOSS(backupRoot, fileNames)
+		if err != nil {
+			lstErrorContent.Add(fmt.Sprintf("在备份%s时，发生错误：%v", database, err))
+			continue
+		}
+		if lstBackupHistoryData.Count() == 0 {
+			continue
+		}
+
+		// 上传备份文件
+		if receiver.StoreType == eumBackupStoreType.OSS {
+			ossConfig, err := receiver.GetOSSConfig()
+			if err != nil {
+				lstErrorContent.Add(fmt.Sprintf("在上传备份文件%s时，发生错误：%v", database, err))
+				continue
+			}
+
+			var fileNames []string
+			lstBackupHistoryData.Select(&fileNames, func(item BackupHistoryData) any {
+				return item.FileName
+			})
+			err = ossConfig.UploadOSS(backupRoot, fileNames)
+			if err != nil {
+				lstErrorContent.Add(fmt.Sprintf("在上传备份文件%s时，发生错误：%v", database, err))
+				continue
+			}
+		}
+	}
+
+	if lstErrorContent.Count() > 0 {
+		return fmt.Errorf("%s", lstErrorContent.ToString("\n"))
 	}
 	return nil
 }
 
 // 备份MySQL
-func (receiver *DomainObject) backupMySQL(backupRoot string) (collections.List[BackupHistoryData], error) {
+func (receiver *DomainObject) backupMySQL(backupRoot, database string) (collections.List[BackupHistoryData], error) {
 	lstBackupHistoryData := collections.NewList[BackupHistoryData]()
-	// 备份数据库
-	for _, database := range receiver.Database {
-		filePath := receiver.Id + "/" + database + "/"
-		// 创建备份目录
-		if !file.IsExists(backupRoot + filePath) {
-			file.CreateDir766(backupRoot + filePath)
-		}
-
-		fileName := filePath + database + "_" + time.Now().Format("2006_01_02_15_04") + ".sql.gz"
-		fileSize, err := db.BackupMysql(receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, backupRoot+fileName)
-		if err != nil {
-			return lstBackupHistoryData, err
-		}
-
-		lstBackupHistoryData.Add(BackupHistoryData{
-			BackupId:  receiver.Id,
-			Database:  database,
-			FileName:  fileName,
-			StoreType: receiver.StoreType,
-			CreateAt:  dateTime.Now(),
-			Size:      fileSize,
-		})
+	filePath := receiver.Id + "/" + database + "/"
+	// 创建备份目录
+	if !file.IsExists(backupRoot + filePath) {
+		file.CreateDir766(backupRoot + filePath)
 	}
+
+	fileName := filePath + database + "_" + time.Now().Format("2006_01_02_15_04") + ".sql.gz"
+	fileSize, err := db.BackupMysql(receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, backupRoot+fileName)
+	if err != nil {
+		return lstBackupHistoryData, err
+	}
+
+	lstBackupHistoryData.Add(BackupHistoryData{
+		BackupId:  receiver.Id,
+		Database:  database,
+		FileName:  fileName,
+		StoreType: receiver.StoreType,
+		CreateAt:  dateTime.Now(),
+		Size:      fileSize,
+	})
 	return lstBackupHistoryData, nil
 }
 
 // 备份Clickhouse
-func (receiver *DomainObject) backupClickhouse(backupRoot string) (collections.List[BackupHistoryData], error) {
+func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (collections.List[BackupHistoryData], error) {
 	lstBackupHistoryData := collections.NewList[BackupHistoryData]()
 
 	// 备份数据库
-	for _, database := range receiver.Database {
-		filePath := receiver.Id + "/" + database + "/"
-		// 创建备份目录
-		if !file.IsExists(backupRoot + filePath) {
-			file.CreateDir766(backupRoot + filePath)
+	filePath := receiver.Id + "/" + database + "/"
+	// 创建备份目录
+	if !file.IsExists(backupRoot + filePath) {
+		file.CreateDir766(backupRoot + filePath)
+	}
+
+	fileName := filePath + database + "_" + time.Now().Format("2006_01_02_15_04") + ".sql"
+	path := filepath.Dir(backupRoot + fileName)
+	file.CreateDir766(path)
+
+	// 读取表列表
+	dbConnectionString := data.CreateConnectionString(receiver.BackupDataType.ToString(), receiver.Host, receiver.Port, database, receiver.Username, receiver.Password)
+	dbContext := data.NewInternalContext(dbConnectionString)
+	tables, err := dbContext.GetTableList(database)
+	if err != nil {
+		return lstBackupHistoryData, err
+	}
+
+	// 删除文件（如果有）
+	file.Delete(backupRoot + fileName)
+	file.WriteString(backupRoot+fileName, "")
+
+	for _, tableName := range tables {
+		// 删除表
+		file.AppendLine(backupRoot+fileName, fmt.Sprintf("DROP TABLE IF EXISTS %s.%s;", database, tableName))
+
+		// 创建表
+		var createTableSql string
+		_, err = dbContext.ExecuteSqlToValue(&createTableSql, fmt.Sprintf("SHOW CREATE TABLE %s.%s", database, tableName))
+		if err != nil {
+			return lstBackupHistoryData, err
+		}
+		file.AppendLine(backupRoot+fileName, createTableSql+";")
+
+		// 找到排序键
+		var orderBy string
+		re := regexp.MustCompile(`ORDER BY \((.*?)\)`)
+		matches := re.FindStringSubmatch(createTableSql)
+		if len(matches) > 0 {
+			orderBy = matches[0]
 		}
 
-		fileName := filePath + database + "_" + time.Now().Format("2006_01_02_15_04") + ".sql"
-		path := filepath.Dir(backupRoot + fileName)
-		file.CreateDir766(path)
-
-		// 读取表列表
-		dbConnectionString := data.CreateConnectionString(receiver.BackupDataType.ToString(), receiver.Host, receiver.Port, database, receiver.Username, receiver.Password)
-		dbContext := data.NewInternalContext(dbConnectionString)
-		tables, err := dbContext.GetTableList(database)
+		// 得到总的数据量（用于分页计算）
+		var totalCount float64
+		_, err = dbContext.ExecuteSqlToValue(&totalCount, fmt.Sprintf("SELECT count() FROM %s.%s;", database, tableName))
 		if err != nil {
 			return lstBackupHistoryData, err
 		}
 
-		// 删除文件（如果有）
-		file.Delete(backupRoot + fileName)
-		file.WriteString(backupRoot+fileName, "")
+		// 导出数据
+		var realTotalCount float64
+		pageSize := float64(10000)
+		pageCount := math.Ceil(totalCount / pageSize)
+		for pageIndex := float64(1); pageIndex <= pageCount; pageIndex++ {
+			// 第二页起，休眠500ms
+			if pageIndex > 1 {
+				time.Sleep(500 * time.Millisecond)
+			}
 
-		for _, tableName := range tables {
-			// 删除表
-			file.AppendLine(backupRoot+fileName, fmt.Sprintf("DROP TABLE IF EXISTS %s.%s;", database, tableName))
+			sw := stopwatch.StartNew()
 
-			// 创建表
-			var createTableSql string
-			_, err = dbContext.ExecuteSqlToValue(&createTableSql, fmt.Sprintf("SHOW CREATE TABLE %s.%s", database, tableName))
+			offset := (pageIndex - 1) * pageSize
+
+			var results []string
+			query := fmt.Sprintf("SELECT toString(tuple(*)) FROM %s.%s %s LIMIT %d OFFSET %d FORMAT SQLInsert;", database, tableName, orderBy, int(pageSize), int(offset))
+			_, err := dbContext.ExecuteSqlToResult(&results, query)
 			if err != nil {
 				return lstBackupHistoryData, err
 			}
-			file.AppendLine(backupRoot+fileName, createTableSql+";")
 
-			// 得到总的数据量（用于分页计算）
-			var totalCount float64
-			_, err = dbContext.ExecuteSqlToValue(&totalCount, fmt.Sprintf("SELECT count() FROM %s.%s;", database, tableName))
-			if err != nil {
-				return lstBackupHistoryData, err
+			for index, result := range results {
+				results[index] = fmt.Sprintf("INSERT INTO %s.%s VALUES %s;", database, tableName, result)
 			}
+			realTotalCount += float64(len(results))
+			file.AppendAllLine(backupRoot+fileName, results)
 
-			// 导出数据
-			var realTotalCount float64
-			pageSize := float64(10000)
-			pageCount := math.Ceil(totalCount / pageSize)
-			for pageIndex := float64(1); pageIndex <= pageCount; pageIndex++ {
-				offset := (pageIndex - 1) * pageSize
-
-				var results []string
-				query := fmt.Sprintf("SELECT toString(tuple(*)) FROM %s.%s LIMIT %d OFFSET %d FORMAT SQLInsert;", database, tableName, int(pageSize), int(offset))
-				_, err := dbContext.ExecuteSqlToResult(&results, query)
-				if err != nil {
-					return lstBackupHistoryData, err
-				}
-
-				for index, result := range results {
-					results[index] = fmt.Sprintf("INSERT INTO %s.%s VALUES %s;", database, tableName, result)
-				}
-				realTotalCount += float64(len(results))
-				file.AppendAllLine(backupRoot+fileName, results)
-			}
-			// 导出的数据与查到的数据数量不一致
-			if totalCount != realTotalCount {
-				return lstBackupHistoryData, fmt.Errorf("%s.%s 导出的数据与查到的数据数量不一致", database, tableName)
-			}
+			flog.Infof("导出%s.%s 第%d/%d页 %d条数据 使用了：%s", database, tableName, int64(pageIndex), int64(pageCount), len(results), sw.GetMillisecondsText())
 		}
-
-		// 压缩
-		cmd := fmt.Sprintf("gzip %s", backupRoot+fileName)
-		code, result := exec.RunShellCommand(cmd, nil, path, false)
-		if code != 0 {
-			return lstBackupHistoryData, fmt.Errorf("压纹文件%s 时失败：%s", cmd, collections.NewList(result...).ToString(","))
+		// 导出的数据与查到的数据数量不一致
+		if totalCount != realTotalCount {
+			return lstBackupHistoryData, fmt.Errorf("%s.%s 导出的数据与查到的数据数量不一致", database, tableName)
 		}
-		fileName += ".gz"
-		fileInfo, err := os.Stat(backupRoot + fileName)
-		if err != nil {
-			return lstBackupHistoryData, fmt.Errorf("获取备份文件信息:%s,失败： %s", fileName, err.Error())
-		}
-
-		lstBackupHistoryData.Add(BackupHistoryData{
-			BackupId:  receiver.Id,
-			Database:  database,
-			FileName:  fileName,
-			StoreType: receiver.StoreType,
-			CreateAt:  dateTime.Now(),
-			Size:      fileInfo.Size() / 1024,
-		})
 	}
+
+	// 压缩
+	cmd := fmt.Sprintf("gzip %s", backupRoot+fileName)
+	code, result := exec.RunShellCommand(cmd, nil, path, false)
+	if code != 0 {
+		return lstBackupHistoryData, fmt.Errorf("压纹文件%s 时失败：%s", cmd, collections.NewList(result...).ToString(","))
+	}
+	fileName += ".gz"
+	fileInfo, err := os.Stat(backupRoot + fileName)
+	if err != nil {
+		return lstBackupHistoryData, fmt.Errorf("获取备份文件信息:%s,失败： %s", fileName, err.Error())
+	}
+
+	lstBackupHistoryData.Add(BackupHistoryData{
+		BackupId:  receiver.Id,
+		Database:  database,
+		FileName:  fileName,
+		StoreType: receiver.StoreType,
+		CreateAt:  dateTime.Now(),
+		Size:      fileInfo.Size() / 1024,
+	})
 	return lstBackupHistoryData, nil
 }
 

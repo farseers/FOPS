@@ -2,9 +2,7 @@
 package backupDataApp
 
 import (
-	"fmt"
 	"fops/application/backupDataApp/request"
-	"fops/domain/_/eumBackupDataType"
 	"fops/domain/_/eumBackupStoreType"
 	"fops/domain/backupData"
 	"time"
@@ -153,13 +151,7 @@ func Clear(id string, backupDataRepository backupData.Repository) {
 // @post getDatabaseList
 // @filter application.Jwt
 func GetDatabaseList(req request.GetDatabaseListRequest) []string {
-	var dbConnectionString string
-	switch req.BackupDataType {
-	case eumBackupDataType.Mysql:
-		dbConnectionString = fmt.Sprintf("DataType=mysql,ConnectionString=%s:%s@tcp(%s:%d)/?charset=utf8mb4&parseTime=True&loc=Local", req.Username, req.Password, req.Host, req.Port)
-	case eumBackupDataType.Clickhouse:
-		dbConnectionString = fmt.Sprintf("DataType=clickhouse,ConnectionString=clickhouse://%s:%s@%s:%d/?dial_timeout=10s&read_timeout=20s", req.Username, req.Password, req.Host, req.Port)
-	}
+	dbConnectionString := data.CreateConnectionString(req.BackupDataType.ToString(), req.Host, req.Port, "", req.Username, req.Password)
 	databases, err := data.NewInternalContext(dbConnectionString).GetDatabaseList()
 	exception.ThrowRefuseExceptionError(err)
 	return databases

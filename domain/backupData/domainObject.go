@@ -1,6 +1,7 @@
 package backupData
 
 import (
+	"bufio"
 	"fmt"
 	"fops/domain/_/eumBackupDataType"
 	"fops/domain/_/eumBackupStoreType"
@@ -9,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/farseer-go/collections"
@@ -224,7 +226,7 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (col
 
 			realTotalCount += float64(len(results))
 
-			insertSql := fmt.Sprintf("INSERT INTO %s.%s VALUES %s;", database, tableName, collections.NewList(results...).ToString(","))
+			insertSql := fmt.Sprintf("INSERT INTO %s.%s VALUES %s;", database, tableName, collections.NewList(results...).ToString(",\n"))
 			file.AppendLine(backupRoot+fileName, insertSql)
 
 			flog.Infof("导出%s.%s 第%d/%d页 %d条数据 使用了：%s", database, tableName, int64(pageIndex), int64(pageCount), len(results), sw.GetMillisecondsText())
@@ -281,6 +283,7 @@ func (receiver *DomainObject) RecoverBackupFile(database string, fileName string
 	// 确定本地存储目录
 	backupRoot := receiver.getBackupRoot()
 
+	var err error
 	switch receiver.StoreType {
 	// 通过oss获取，需先下载文件到本地目录
 	case eumBackupStoreType.OSS:
@@ -294,13 +297,67 @@ func (receiver *DomainObject) RecoverBackupFile(database string, fileName string
 		}
 	}
 
+	// 解压文件
+	path := filepath.Dir(backupRoot + fileName)
+	cmd := fmt.Sprintf("gzip -df %s", backupRoot+fileName)
+	code, result := exec.RunShellCommand(cmd, nil, path, false)
+	if code != 0 {
+		return fmt.Errorf("解压文件：%s 时失败：%s", cmd, collections.NewList(result...).ToString(","))
+	}
+	fileName = fileName[:len(fileName)-3]
+	defer file.Delete(backupRoot + fileName)
+
 	// 恢复数据库
-	err := db.RecoverMysql(receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, backupRoot+fileName)
-	// 如果是oss下载的，则删除原文件
-	if receiver.StoreType == eumBackupStoreType.OSS {
-		//file.Delete(backupRoot + fileName)
+	switch receiver.BackupDataType {
+	case eumBackupDataType.Mysql:
+		err = db.RecoverMysql(receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, backupRoot+fileName)
+	case eumBackupDataType.Clickhouse:
+		err = receiver.RecoverClickhouse(database, backupRoot+fileName)
 	}
 	return err
+}
+
+// 恢复clickhouse
+func (receiver *DomainObject) RecoverClickhouse(database string, fileName string) error {
+	// 读取表列表
+	dbConnectionString := data.CreateConnectionString(receiver.BackupDataType.ToString(), receiver.Host, receiver.Port, database, receiver.Username, receiver.Password)
+	dbContext := data.NewInternalContext(dbConnectionString)
+	fSql, err := os.Open(fileName)
+	if err != nil {
+		return fmt.Errorf("打开 %s 的SQL 文件失败: %v", fileName, err)
+	}
+	defer fSql.Close()
+
+	// 逐行读取 SQL 文件
+	scanner := bufio.NewScanner(fSql)
+	var sqlBuilder strings.Builder
+	for scanner.Scan() {
+		line := scanner.Text()
+		// 忽略空行和注释
+		if strings.TrimSpace(line) == "" || strings.HasPrefix(line, "--") {
+			continue
+		}
+
+		// 拼接 SQL 语句
+		sqlBuilder.WriteString(line + "\n")
+
+		// 如果遇到分号，表示一个完整的 SQL 语句
+		if strings.HasSuffix(line, ";") {
+			sqlStatement := sqlBuilder.String()
+			sqlBuilder.Reset()
+
+			// 执行 SQL 语句
+			if _, err := dbContext.ExecuteSql(sqlStatement); err != nil {
+				return fmt.Errorf("执行 %s 的SQL 失败: %v", fileName, err)
+			}
+		}
+	}
+
+	// 检查文件读取错误
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("读取 %s SQL 的文件失败: %v", fileName, err)
+	}
+	return nil
 }
 
 // 备份的根目录

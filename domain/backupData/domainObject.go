@@ -226,7 +226,7 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (col
 
 			realTotalCount += float64(len(results))
 
-			insertSql := fmt.Sprintf("INSERT INTO %s.%s VALUES %s;", database, tableName, collections.NewList(results...).ToString(",\n"))
+			insertSql := fmt.Sprintf("INSERT INTO %s.%s VALUES %s;", database, tableName, strings.Join(results, ",\r\n"))
 			file.AppendLine(backupRoot+fileName, insertSql)
 
 			flog.Infof("导出%s.%s 第%d/%d页 %d条数据 使用了：%s", database, tableName, int64(pageIndex), int64(pageCount), len(results), sw.GetMillisecondsText())

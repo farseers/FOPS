@@ -81,7 +81,6 @@ import InitPagination from '/src/views/components/InitPagination.vue';
 import ScheduleDialog from './scheduleDialog.vue';
 import  ScheduleDrawer from './scheduleDrawer.vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import { NextLoading } from '/@/utils/loading';
 const serverApi = fopsApi();
 export default {
     components: { InitPagination, ScheduleDialog,ScheduleDrawer, LayMain },
@@ -142,12 +141,12 @@ export default {
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                NextLoading.start();
+                this.loading = true;
                 serverApi.backupData_clear({
                     "id": row.Id,   
                 }).then(d => {
             let { Status, StatusMessage } = d;
-            NextLoading.done();
+            this.loading = false;
             if (Status) {
                 this.$message({
                     type: 'success',
@@ -172,12 +171,12 @@ export default {
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                NextLoading.start();
+                this.loading = true;
                 serverApi.backupData_backup({
                     "id": row.Id,   
                 }).then(d => {
             let { Status, StatusMessage } = d;
-            NextLoading.done();
+            this.loading = false;
             if (Status) {
               
                 this.$message({
@@ -215,12 +214,12 @@ export default {
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
-                NextLoading.start();
+                this.loading = true;
                 serverApi.backupData_delete({
                     "id": row.Id,   
                 }).then(d => {
             let { Status, StatusMessage } = d;
-            NextLoading.done();
+            this.loading = false;
             if (Status) {
                
                 this.$message({

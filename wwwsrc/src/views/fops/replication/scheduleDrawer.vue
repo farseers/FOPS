@@ -6,7 +6,7 @@
             :direction="direction"
              size="85%"
             :before-close="handleClose">
-            <div style="display: flex;flex-flow: column;height: 100%;">
+            <div style="display: flex;flex-flow: column;height: 100%;" v-loading="loading">
                 <div style="flex: 1;"  ref="navHe">
                     <div style="margin-top: 10px;display: flex;align-items: center;">
                         <el-input size="medium" v-model="prefix" placeholder="prefix" clearable style="width: 300px;margin-left: 5px;"></el-input>
@@ -54,6 +54,7 @@ const serverApi = fopsApi();
         name:'lineNav',
         data(){
             return {
+                loading:false,
                 baseData:[],
                 ck_t:'',
                 prefix:'',
@@ -81,8 +82,10 @@ const serverApi = fopsApi();
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
+                this.loading = true;
                 serverApi.backupData_deleteHistory(par).then(d => {
             let { Status, StatusMessage } = d;
+            this.loading = false;
             if (Status) {
                 this.$message({
                     type: 'success',
@@ -94,6 +97,7 @@ const serverApi = fopsApi();
             }
           })
             }).catch(() => {
+                this.loading = false;
                 this.$message({
                     type: 'info',
                     message: '已取消删除'
@@ -113,7 +117,9 @@ const serverApi = fopsApi();
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
+                this.loading = true;
                 serverApi.backupData_recoverBackupFile(par).then(d => {
+                    this.loading = false;
             let { Status, StatusMessage } = d;
             if (Status) {
                 this.$message({
@@ -126,6 +132,7 @@ const serverApi = fopsApi();
             }
           })
             }).catch(() => {
+                this.loading = false;
                 this.$message({
                     type: 'info',
                     message: '已取消恢复'
@@ -145,13 +152,14 @@ const serverApi = fopsApi();
                 }
             },
             search(){
-               
+                this.loading = true;
                 serverApi.backupData_backupList({
                     backupId:this.Id,
                     database:this.ck_t,
                     prefix:this.prefix
                     }).then(d => {
                         let { Status, StatusMessage,Data } = d;
+                        this.loading = false;
                         if (Status) {
                             this.dataList = Data;
                             this.dialogVisible = true
@@ -162,6 +170,8 @@ const serverApi = fopsApi();
                         } else {
                         ElMessage.error(StatusMessage)
                         }
+                    }).catch(()=>{
+                        this.loading = false;
                     })
             },
             handleClose(){

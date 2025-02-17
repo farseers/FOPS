@@ -80,20 +80,19 @@ func (receiver *DomainObject) Backup() error {
 
 	lstErrorContent := collections.NewList[string]()
 	for _, database := range receiver.Database {
-		var lstBackupHistoryData collections.List[BackupHistoryData]
+		flog.Infof("正在备份：%s:%d %s", receiver.Host, receiver.Port, database)
+
+		var ackupHistoryData BackupHistoryData
 		// 备份数据
 		switch receiver.BackupDataType {
 		case eumBackupDataType.Mysql:
-			lstBackupHistoryData, err = receiver.backupMySQL(backupRoot, database)
+			ackupHistoryData, err = receiver.backupMySQL(backupRoot, database)
 		case eumBackupDataType.Clickhouse:
-			lstBackupHistoryData, err = receiver.backupClickhouse(backupRoot, database)
+			ackupHistoryData, err = receiver.backupClickhouse(backupRoot, database)
 		}
 
 		if err != nil {
 			lstErrorContent.Add(fmt.Sprintf("在备份%s时，发生错误：%v", database, err))
-			continue
-		}
-		if lstBackupHistoryData.Count() == 0 {
 			continue
 		}
 
@@ -105,16 +104,14 @@ func (receiver *DomainObject) Backup() error {
 				continue
 			}
 
-			var fileNames []string
-			lstBackupHistoryData.Select(&fileNames, func(item BackupHistoryData) any {
-				return item.FileName
-			})
-			err = ossConfig.UploadOSS(backupRoot, fileNames)
+			flog.Infof("正在上传文件:%s", ackupHistoryData.FileName)
+			err = ossConfig.UploadOSS(backupRoot, []string{ackupHistoryData.FileName})
 			if err != nil {
 				lstErrorContent.Add(fmt.Sprintf("在上传备份文件%s时，发生错误：%v", database, err))
 				continue
 			}
 		}
+		flog.Infof("备份成功：%s:%d %s", receiver.Host, receiver.Port, database)
 	}
 
 	if lstErrorContent.Count() > 0 {
@@ -124,35 +121,33 @@ func (receiver *DomainObject) Backup() error {
 }
 
 // 备份MySQL
-func (receiver *DomainObject) backupMySQL(backupRoot, database string) (collections.List[BackupHistoryData], error) {
-	lstBackupHistoryData := collections.NewList[BackupHistoryData]()
+func (receiver *DomainObject) backupMySQL(backupRoot, database string) (BackupHistoryData, error) {
 	filePath := receiver.Id + "/" + database + "/"
 	// 创建备份目录
 	if !file.IsExists(backupRoot + filePath) {
 		file.CreateDir766(backupRoot + filePath)
 	}
 
+	sw := stopwatch.StartNew()
 	fileName := filePath + database + "_" + time.Now().Format("2006_01_02_15_04") + ".sql.gz"
 	fileSize, err := db.BackupMysql(receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, backupRoot+fileName)
 	if err != nil {
-		return lstBackupHistoryData, err
+		return BackupHistoryData{}, err
 	}
+	flog.Infof("导出mysql %s:%d %s 使用了：%s", receiver.Host, receiver.Port, database, sw.GetMillisecondsText())
 
-	lstBackupHistoryData.Add(BackupHistoryData{
+	return BackupHistoryData{
 		BackupId:  receiver.Id,
 		Database:  database,
 		FileName:  fileName,
 		StoreType: receiver.StoreType,
 		CreateAt:  dateTime.Now(),
 		Size:      fileSize,
-	})
-	return lstBackupHistoryData, nil
+	}, nil
 }
 
 // 备份Clickhouse
-func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (collections.List[BackupHistoryData], error) {
-	lstBackupHistoryData := collections.NewList[BackupHistoryData]()
-
+func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (BackupHistoryData, error) {
 	// 备份数据库
 	filePath := receiver.Id + "/" + database + "/"
 	// 创建备份目录
@@ -169,7 +164,7 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (col
 	dbContext := data.NewInternalContext(dbConnectionString)
 	tables, err := dbContext.GetTableList(database)
 	if err != nil {
-		return lstBackupHistoryData, err
+		return BackupHistoryData{}, err
 	}
 
 	// 删除文件（如果有）
@@ -184,7 +179,7 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (col
 		var createTableSql string
 		_, err = dbContext.ExecuteSqlToValue(&createTableSql, fmt.Sprintf("SHOW CREATE TABLE %s.%s", database, tableName))
 		if err != nil {
-			return lstBackupHistoryData, err
+			return BackupHistoryData{}, err
 		}
 		file.AppendLine(backupRoot+fileName, createTableSql+";")
 
@@ -200,7 +195,7 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (col
 		var totalCount float64
 		_, err = dbContext.ExecuteSqlToValue(&totalCount, fmt.Sprintf("SELECT count() FROM %s.%s;", database, tableName))
 		if err != nil {
-			return lstBackupHistoryData, err
+			return BackupHistoryData{}, err
 		}
 
 		// 导出数据
@@ -221,7 +216,7 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (col
 			query := fmt.Sprintf("SELECT toString(tuple(*)) FROM %s.%s %s LIMIT %d OFFSET %d FORMAT SQLInsert;", database, tableName, orderBy, int(pageSize), int(offset))
 			_, err := dbContext.ExecuteSqlToResult(&results, query)
 			if err != nil {
-				return lstBackupHistoryData, err
+				return BackupHistoryData{}, err
 			}
 
 			realTotalCount += float64(len(results))
@@ -233,31 +228,31 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (col
 		}
 		// 导出的数据与查到的数据数量不一致
 		if totalCount != realTotalCount {
-			return lstBackupHistoryData, fmt.Errorf("%s.%s 导出的数据与查到的数据数量不一致", database, tableName)
+			return BackupHistoryData{}, fmt.Errorf("%s.%s 导出的数据与查到的数据数量不一致", database, tableName)
 		}
 	}
 
 	// 压缩
+	flog.Infof("正在压缩文件:%s", backupRoot+fileName)
 	cmd := fmt.Sprintf("gzip %s", backupRoot+fileName)
 	code, result := exec.RunShellCommand(cmd, nil, path, false)
 	if code != 0 {
-		return lstBackupHistoryData, fmt.Errorf("压纹文件%s 时失败：%s", cmd, collections.NewList(result...).ToString(","))
+		return BackupHistoryData{}, fmt.Errorf("压纹文件%s 时失败：%s", cmd, collections.NewList(result...).ToString(","))
 	}
 	fileName += ".gz"
 	fileInfo, err := os.Stat(backupRoot + fileName)
 	if err != nil {
-		return lstBackupHistoryData, fmt.Errorf("获取备份文件信息:%s,失败： %s", fileName, err.Error())
+		return BackupHistoryData{}, fmt.Errorf("获取备份文件信息:%s,失败： %s", fileName, err.Error())
 	}
 
-	lstBackupHistoryData.Add(BackupHistoryData{
+	return BackupHistoryData{
 		BackupId:  receiver.Id,
 		Database:  database,
 		FileName:  fileName,
 		StoreType: receiver.StoreType,
 		CreateAt:  dateTime.Now(),
 		Size:      fileInfo.Size() / 1024,
-	})
-	return lstBackupHistoryData, nil
+	}, nil
 }
 
 // 删除备份文件

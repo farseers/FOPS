@@ -32,7 +32,7 @@
             <div style="width: 100%;">
             <div style="flex: 1;padding-right: 10px;display: flex;align-items: center;">
             <el-form-item style="width: 100%;">
-              <el-input v-model="baseTit" style="width: 200px;" clearable placeholder="请输入数据库"/>
+              <el-input v-model="baseTit" style="width: 200px;" @keyup.enter="oAddBase" clearable placeholder="请输入数据库"/>
               <el-button  style="margin-left: 10px;" type="success" @click="oAddBase">添加</el-button>
               <el-button  slot="reference" style="margin-left: 10px;" @click="baseCh" type="primary">查询</el-button>
             </el-form-item>
@@ -138,10 +138,18 @@ export default {
           }
     },
     oAddBase(){
-      if(this.baseTit && !this.addBases.includes(this.baseTit)){
-        this.checkBase.push(this.baseTit)
-        this.addBases.push(this.baseTit)
+      const arr = JSON.parse(JSON.stringify(this.addBases))
+      const crr = JSON.parse(JSON.stringify(this.checkBase))
+      if(this.baseTit){
+        if(this.addBases.includes(this.baseTit)){
+          ElMessage.error(this.baseTit+'已存在')
+          return
+        }
+        arr.push(this.baseTit)
+        crr.push(this.baseTit)
         this.baseTit = '';
+        this.addBases = [...arr]
+        this.checkBase = [...crr]
       }
     },
     onPort(){

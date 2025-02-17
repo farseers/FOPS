@@ -8,6 +8,10 @@
             :before-close="handleClose">
             <div style="display: flex;flex-flow: column;height: 100%;">
                 <div style="flex: 1;"  ref="navHe">
+                    <div style="margin-top: 10px;display: flex;align-items: center;">
+                        <el-input size="medium" v-model="prefix" placeholder="prefix" clearable style="width: 300px;margin-left: 5px;"></el-input>
+                        <el-button size="medium" type="primary" @click="search" style="margin-left: 10px;">查询</el-button>
+                    </div>
                     <div style="margin-top: 10px;">
                         <el-tag v-for="t,index in baseData" :key="index" :type="ck_t==t?'':'info'" style="cursor: pointer;margin-left: 5px;" @click="ck_ts(t)">{{ t }}</el-tag>
                     </div>
@@ -52,6 +56,7 @@ const serverApi = fopsApi();
             return {
                 baseData:[],
                 ck_t:'',
+                prefix:'',
                 dialogVisible:false,
                 mhs:'600px',
                 direction: 'rtl',
@@ -131,8 +136,10 @@ const serverApi = fopsApi();
                 this.dataList = [];
                 this.Id = '';
                 this.ck_t = t;
+                this.prefix = '';
                 if(row){
                     this.Id = row.Id;
+                    this.prefix = row.Id;
                     this.baseData = row.Database
                     this.search()
                 }
@@ -141,7 +148,8 @@ const serverApi = fopsApi();
                
                 serverApi.backupData_backupList({
                     backupId:this.Id,
-                    database:this.ck_t
+                    database:this.ck_t,
+                    prefix:this.prefix
                     }).then(d => {
                         let { Status, StatusMessage,Data } = d;
                         if (Status) {

@@ -353,7 +353,8 @@ func (receiver *DomainObject) RecoverClickhouse(database string, fileName string
 			sw := stopwatch.StartNew()
 			// 执行 SQL 语句
 			if _, err := dbContext.ExecuteSql(sqlStatement); err != nil {
-				return fmt.Errorf("执行 %s 的SQL 失败: %v", sqlStatement, err)
+				file.WriteString(fmt.Sprintf("%s.%d_error.log", fileName, executeIndex), sqlStatement)
+				return fmt.Errorf("执行 %s 的SQL 第%d次时失败: %v", fileName, executeIndex, err)
 			}
 			flog.Infof("还原%s 第%d次执行 使用了：%s", database, executeIndex, sw.GetMillisecondsText())
 		}

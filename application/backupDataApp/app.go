@@ -115,12 +115,12 @@ func Delete(id string, backupDataRepository backupData.Repository) {
 
 	// 遍历数据库，删除备份文件
 	for _, database := range do.Database {
-		lstHistoryData, err := do.GetHistoryData(database)
+		lstHistoryData, err := do.GetHistoryData(id, database)
 		for lstHistoryData.Count() > 0 && err == nil {
 			lstHistoryData.Foreach(func(item *backupData.BackupHistoryData) {
 				do.DeleteBackupFile(item.FileName)
 			})
-			lstHistoryData, err = do.GetHistoryData(database)
+			lstHistoryData, err = do.GetHistoryData(id, database)
 		}
 	}
 
@@ -137,12 +137,12 @@ func Clear(id string, backupDataRepository backupData.Repository) {
 
 	// 遍历数据库，删除备份文件
 	for _, database := range do.Database {
-		lstHistoryData, err := do.GetHistoryData(database)
+		lstHistoryData, err := do.GetHistoryData(id, database)
 		for lstHistoryData.Count() > 0 && err == nil {
 			lstHistoryData.Foreach(func(item *backupData.BackupHistoryData) {
 				do.DeleteBackupFile(item.FileName)
 			})
-			lstHistoryData, err = do.GetHistoryData(database)
+			lstHistoryData, err = do.GetHistoryData(id, database)
 		}
 	}
 }
@@ -160,11 +160,14 @@ func GetDatabaseList(req request.GetDatabaseListRequest) []string {
 // BackupList 备份文件列表
 // @post backupList
 // @filter application.Jwt
-func BackupList(backupId string, database string, backupDataRepository backupData.Repository) collections.List[backupData.BackupHistoryData] {
+func BackupList(backupId string, prefix, database string, backupDataRepository backupData.Repository) collections.List[backupData.BackupHistoryData] {
 	do := backupDataRepository.ToEntity(backupId)
 	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
-
-	lst, err := do.GetHistoryData(database)
+	// 支持自定义前缀
+	if prefix == "" {
+		prefix = do.Id
+	}
+	lst, err := do.GetHistoryData(prefix, database)
 	exception.ThrowRefuseExceptionError(err)
 
 	return lst

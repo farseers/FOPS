@@ -371,8 +371,8 @@ func (receiver *DomainObject) getBackupRoot() string {
 }
 
 // 获取备份历史数据
-func (receiver *DomainObject) GetHistoryData(database string) (collections.List[BackupHistoryData], error) {
-	filePath := receiver.Id + "/" + database + "/"
+func (receiver *DomainObject) GetHistoryData(prefix, database string) (collections.List[BackupHistoryData], error) {
+	filePath := prefix + "/" + database + "/"
 
 	lstBackupHistoryData := collections.NewList[BackupHistoryData]()
 	// 通过oss获取

@@ -120,13 +120,13 @@ const serverApi = fopsApi();
                 this.loading = true;
                 serverApi.backupData_recoverBackupFile(par).then(d => {
                     this.loading = false;
-            let { Status, StatusMessage } = d;
-            if (Status) {
-                this.$message({
-                    type: 'success',
-                    message: '恢复成功'
-                });
-              this.search()
+                    let { Status, StatusMessage } = d;
+                    if (Status) {
+                        this.$message({
+                            type: 'success',
+                            message: '恢复成功'
+                        });
+                    this.search()
             } else {
               ElMessage.error(StatusMessage)
             }

@@ -278,6 +278,8 @@ func (receiver *DomainObject) RecoverBackupFile(database string, fileName string
 	// 确定本地存储目录
 	backupRoot := receiver.getBackupRoot()
 
+	flog.Infof("正在还原：%s:%d %s", receiver.Host, receiver.Port, database)
+
 	var err error
 	switch receiver.StoreType {
 	// 通过oss获取，需先下载文件到本地目录
@@ -292,6 +294,7 @@ func (receiver *DomainObject) RecoverBackupFile(database string, fileName string
 		}
 	}
 
+	flog.Infof("正在解压文件:%s", fileName)
 	// 解压文件
 	path := filepath.Dir(backupRoot + fileName)
 	cmd := fmt.Sprintf("gzip -df %s", backupRoot+fileName)
@@ -302,12 +305,16 @@ func (receiver *DomainObject) RecoverBackupFile(database string, fileName string
 	fileName = fileName[:len(fileName)-3]
 	defer file.Delete(backupRoot + fileName)
 
+	flog.Infof("正在还原数据库:%s", database)
 	// 恢复数据库
 	switch receiver.BackupDataType {
 	case eumBackupDataType.Mysql:
 		err = db.RecoverMysql(receiver.Host, receiver.Port, receiver.Username, receiver.Password, database, backupRoot+fileName)
 	case eumBackupDataType.Clickhouse:
 		err = receiver.RecoverClickhouse(database, backupRoot+fileName)
+	}
+	if err == nil {
+		flog.Infof("数据库:%s 还原成功", database)
 	}
 	return err
 }
@@ -323,6 +330,7 @@ func (receiver *DomainObject) RecoverClickhouse(database string, fileName string
 	}
 	defer fSql.Close()
 
+	executeIndex := 0
 	// 逐行读取 SQL 文件
 	scanner := bufio.NewScanner(fSql)
 	var sqlBuilder strings.Builder
@@ -338,13 +346,16 @@ func (receiver *DomainObject) RecoverClickhouse(database string, fileName string
 
 		// 如果遇到分号，表示一个完整的 SQL 语句
 		if strings.HasSuffix(line, ";") {
+			executeIndex++
 			sqlStatement := sqlBuilder.String()
 			sqlBuilder.Reset()
 
+			sw := stopwatch.StartNew()
 			// 执行 SQL 语句
 			if _, err := dbContext.ExecuteSql(sqlStatement); err != nil {
-				return fmt.Errorf("执行 %s 的SQL 失败: %v", fileName, err)
+				return fmt.Errorf("执行 %s 的SQL 失败: %v", sqlStatement, err)
 			}
+			flog.Infof("还原%s 第%d次执行 使用了：%s", database, executeIndex, sw.GetMillisecondsText())
 		}
 	}
 

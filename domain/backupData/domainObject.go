@@ -222,11 +222,10 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (col
 				return lstBackupHistoryData, err
 			}
 
-			for index, result := range results {
-				results[index] = fmt.Sprintf("INSERT INTO %s.%s VALUES %s;", database, tableName, result)
-			}
 			realTotalCount += float64(len(results))
-			file.AppendAllLine(backupRoot+fileName, results)
+
+			insertSql := fmt.Sprintf("INSERT INTO %s.%s VALUES %s;", database, tableName, collections.NewList(results...).ToString(","))
+			file.AppendLine(backupRoot+fileName, insertSql)
 
 			flog.Infof("导出%s.%s 第%d/%d页 %d条数据 使用了：%s", database, tableName, int64(pageIndex), int64(pageCount), len(results), sw.GetMillisecondsText())
 		}

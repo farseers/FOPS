@@ -58,6 +58,6 @@ func (module Module) PostInitialize() {
 	// 日志消费
 	queue.Subscribe("flog", "saveFlogDataToCh", 1000, 3*time.Second, localQueue.SaveFlogQueue)
 
-	// 链路追踪日志消费
-	queue.Subscribe("linkTrace", "saveLinkTraceLogToCh", 1000, 1*time.Second, localQueue.SaveLinkTraceQueue)
+	// 链路追踪消费
+	queue.Subscribe("linkTrace", "saveLinkTraceLogToCh", 2000, 5*time.Second, localQueue.SaveLinkTraceQueue)
 }

@@ -339,6 +339,7 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 			UseTs:         item.UseTs,
 			UseDesc:       item.UseDesc,
 			TraceType:     item.TraceType,
+			List:          item.List,
 			WebContextPO: model.WebContextPO{
 				WebDomain:       item.WebContext.WebDomain,
 				WebPath:         item.WebContext.WebPath,

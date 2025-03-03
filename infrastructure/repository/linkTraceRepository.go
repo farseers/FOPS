@@ -11,57 +11,20 @@ import (
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/flog"
-	"github.com/farseer-go/fs/parse"
-	"github.com/farseer-go/fs/snc"
 	"github.com/farseer-go/fs/trace"
 	"github.com/farseer-go/fs/trace/eumCallType"
 	"github.com/farseer-go/fs/trace/eumTraceType"
-	linkTraceCom "github.com/farseer-go/linkTrace"
 	"github.com/farseer-go/mapper"
 )
 
 type linkTraceRepository struct{}
 
 func (receiver *linkTraceRepository) ToList(traceId string) collections.List[trace.TraceContext] {
-	var lstPO collections.List[model.TraceContextPO]
 	lst := collections.NewList[trace.TraceContext]()
 	if linkTrace.Config.Driver == "clickhouse" {
-		lstPO = context.CHContext.TraceContext.Where("trace_id", traceId).Asc("start_ts").ToList()
+		lstPO := context.CHContext.TraceContext.Where("trace_id", traceId).Asc("start_ts").ToList()
+		lst = mapper.ToList[trace.TraceContext](lstPO)
 	}
-
-	lstPO.Foreach(func(item *model.TraceContextPO) {
-		do := mapper.Single[trace.TraceContext](item)
-		do.List = []any{}
-		for _, detail := range item.List {
-			switch eumCallType.Enum(parse.ToInt(detail.(map[string]any)["CallType"])) {
-			case eumCallType.Database:
-				traceDetail := mapper.Single[linkTraceCom.TraceDetailDatabase](detail)
-				do.List = append(do.List, &traceDetail)
-			case eumCallType.Http:
-				traceDetail := mapper.Single[linkTraceCom.TraceDetailHttp](detail)
-				do.List = append(do.List, &traceDetail)
-			case eumCallType.Grpc:
-				traceDetail := mapper.Single[linkTraceCom.TraceDetailGrpc](detail)
-				do.List = append(do.List, &traceDetail)
-			case eumCallType.Redis:
-				traceDetail := mapper.Single[linkTraceCom.TraceDetailRedis](detail)
-				do.List = append(do.List, &traceDetail)
-			case eumCallType.Mq:
-				traceDetail := mapper.Single[linkTraceCom.TraceDetailMq](detail)
-				do.List = append(do.List, &traceDetail)
-			case eumCallType.Elasticsearch:
-				traceDetail := mapper.Single[linkTraceCom.TraceDetailEs](detail)
-				do.List = append(do.List, &traceDetail)
-			case eumCallType.Etcd:
-				traceDetail := mapper.Single[linkTraceCom.TraceDetailEtcd](detail)
-				do.List = append(do.List, &traceDetail)
-			case eumCallType.Hand:
-				traceDetail := mapper.Single[trace.TraceDetailHand](detail)
-				do.List = append(do.List, &traceDetail)
-			}
-		}
-		lst.Add(do)
-	})
 	return lst
 }
 
@@ -218,20 +181,15 @@ func (receiver *linkTraceRepository) ToTraceListByVisits(startAt, endAt time.Tim
 
 func (receiver *linkTraceRepository) DeleteSlow(dbName string, startTime time.Time) error {
 	if linkTrace.Config.Driver == "clickhouse" {
-		context.CHContext.TraceDetailDatabase.Where("create_at <= ?", startTime).Delete()
-		context.CHContext.TraceDetailEs.Where("create_at <= ?", startTime).Delete()
-		context.CHContext.TraceDetailEtcd.Where("create_at <= ?", startTime).Delete()
-		context.CHContext.TraceDetailHand.Where("create_at <= ?", startTime).Delete()
-		context.CHContext.TraceDetailHttp.Where("create_at <= ?", startTime).Delete()
-		context.CHContext.TraceDetailMq.Where("create_at <= ?", startTime).Delete()
-		context.CHContext.TraceDetailRedis.Where("create_at <= ?", startTime).Delete()
+		context.CHContext.TraceDetail.Where("create_at <= ?", startTime).Delete()
 	}
 	return nil
 }
 
-func (receiver *linkTraceRepository) ToSlowDbList(traceId, appName, appIp, dbName, tableName string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailDatabase] {
+func (receiver *linkTraceRepository) ToSlowDbList(traceId, appName, appIp, dbName, tableName string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[trace.TraceDetail] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceDetailDatabase.
+		ts := context.CHContext.TraceDetail.
+			Where("call_type = ?", eumCallType.Database).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
 			WhereIf(appIp != "", "app_ip = ?", appIp).
@@ -242,15 +200,15 @@ func (receiver *linkTraceRepository) ToSlowDbList(traceId, appName, appIp, dbNam
 			WhereIf(startMin > 0, "start_ts >= ?", dateTime.Now().AddMinutes(-startMin).UnixMicro())
 
 		lstPO := ts.DescIfElse(startMin > 0, "use_ts", "start_ts").ToPageList(pageSize, pageIndex)
-
-		lst := mapper.ToPageList[linkTraceCom.TraceDetailDatabase](lstPO)
+		lst := mapper.ToPageList[trace.TraceDetail](lstPO)
 		return lst
 	}
-	return collections.NewPageList[linkTraceCom.TraceDetailDatabase](collections.NewList[linkTraceCom.TraceDetailDatabase](), 0)
+	return collections.NewPageList[trace.TraceDetail](collections.NewList[trace.TraceDetail](), 0)
 }
-func (receiver *linkTraceRepository) ToSlowEsList(traceId, appName, appIp, indexName, aliasesName string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailEs] {
+func (receiver *linkTraceRepository) ToSlowEsList(traceId, appName, appIp, indexName, aliasesName string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[trace.TraceDetail] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceDetailEs.
+		ts := context.CHContext.TraceDetail.
+			Where("call_type = ?", eumCallType.Elasticsearch).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
 			WhereIf(appIp != "", "app_ip = ?", appIp).
@@ -261,14 +219,15 @@ func (receiver *linkTraceRepository) ToSlowEsList(traceId, appName, appIp, index
 			WhereIf(startMin > 0, "start_ts >= ?", dateTime.Now().AddMinutes(-startMin).UnixMicro())
 
 		lstPO := ts.DescIfElse(startMin > 0, "use_ts", "start_ts").ToPageList(pageSize, pageIndex)
-		lst := mapper.ToPageList[linkTraceCom.TraceDetailEs](lstPO)
+		lst := mapper.ToPageList[trace.TraceDetail](lstPO)
 		return lst
 	}
-	return collections.NewPageList[linkTraceCom.TraceDetailEs](collections.NewList[linkTraceCom.TraceDetailEs](), 0)
+	return collections.NewPageList[trace.TraceDetail](collections.NewList[trace.TraceDetail](), 0)
 }
-func (receiver *linkTraceRepository) ToSlowEtcdList(traceId, appName, appIp, key string, leaseID, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailEtcd] {
+func (receiver *linkTraceRepository) ToSlowEtcdList(traceId, appName, appIp, key string, leaseID, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[trace.TraceDetail] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceDetailEtcd.
+		ts := context.CHContext.TraceDetail.
+			Where("call_type = ?", eumCallType.Etcd).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
 			WhereIf(appIp != "", "app_ip = ?", appIp).
@@ -279,14 +238,15 @@ func (receiver *linkTraceRepository) ToSlowEtcdList(traceId, appName, appIp, key
 			WhereIf(startMin > 0, "start_ts >= ?", dateTime.Now().AddMinutes(-startMin).UnixMicro())
 
 		lstPO := ts.DescIfElse(startMin > 0, "use_ts", "start_ts").ToPageList(pageSize, pageIndex)
-		lst := mapper.ToPageList[linkTraceCom.TraceDetailEtcd](lstPO)
+		lst := mapper.ToPageList[trace.TraceDetail](lstPO)
 		return lst
 	}
-	return collections.NewPageList[linkTraceCom.TraceDetailEtcd](collections.NewList[linkTraceCom.TraceDetailEtcd](), 0)
+	return collections.NewPageList[trace.TraceDetail](collections.NewList[trace.TraceDetail](), 0)
 }
-func (receiver *linkTraceRepository) ToSlowHandList(traceId, appName, appIp, name string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[trace.TraceDetailHand] {
+func (receiver *linkTraceRepository) ToSlowHandList(traceId, appName, appIp, name string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[trace.TraceDetail] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceDetailHand.
+		ts := context.CHContext.TraceDetail.
+			Where("call_type = ?", eumCallType.Hand).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
 			WhereIf(appIp != "", "app_ip = ?", appIp).
@@ -296,14 +256,15 @@ func (receiver *linkTraceRepository) ToSlowHandList(traceId, appName, appIp, nam
 			WhereIf(startMin > 0, "start_ts >= ?", dateTime.Now().AddMinutes(-startMin).UnixMicro())
 
 		lstPO := ts.DescIfElse(startMin > 0, "use_ts", "start_ts").ToPageList(pageSize, pageIndex)
-		lst := mapper.ToPageList[trace.TraceDetailHand](lstPO)
+		lst := mapper.ToPageList[trace.TraceDetail](lstPO)
 		return lst
 	}
-	return collections.NewPageList[trace.TraceDetailHand](collections.NewList[trace.TraceDetailHand](), 0)
+	return collections.NewPageList[trace.TraceDetail](collections.NewList[trace.TraceDetail](), 0)
 }
-func (receiver *linkTraceRepository) ToSlowHttpList(traceId, appName, appIp, method, url, body string, statusCode int, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailHttp] {
+func (receiver *linkTraceRepository) ToSlowHttpList(traceId, appName, appIp, method, url, body string, statusCode int, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[trace.TraceDetail] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceDetailHttp.
+		ts := context.CHContext.TraceDetail.
+			Where("call_type = ?", eumCallType.Http).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
 			WhereIf(appIp != "", "app_ip = ?", appIp).
@@ -316,14 +277,15 @@ func (receiver *linkTraceRepository) ToSlowHttpList(traceId, appName, appIp, met
 			WhereIf(startMin > 0, "start_ts >= ?", dateTime.Now().AddMinutes(-startMin).UnixMicro())
 
 		lstPO := ts.DescIfElse(startMin > 0, "use_ts", "start_ts").ToPageList(pageSize, pageIndex)
-		lst := mapper.ToPageList[linkTraceCom.TraceDetailHttp](lstPO)
+		lst := mapper.ToPageList[trace.TraceDetail](lstPO)
 		return lst
 	}
-	return collections.NewPageList[linkTraceCom.TraceDetailHttp](collections.NewList[linkTraceCom.TraceDetailHttp](), 0)
+	return collections.NewPageList[trace.TraceDetail](collections.NewList[trace.TraceDetail](), 0)
 }
-func (receiver *linkTraceRepository) ToSlowMqList(traceId, appName, appIp, server, exchange, routingKey string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailMq] {
+func (receiver *linkTraceRepository) ToSlowMqList(traceId, appName, appIp, server, exchange, routingKey string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[trace.TraceDetail] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceDetailMq.
+		ts := context.CHContext.TraceDetail.
+			Where("call_type = ?", eumCallType.Mq).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
 			WhereIf(appIp != "", "app_ip = ?", appIp).
@@ -335,14 +297,15 @@ func (receiver *linkTraceRepository) ToSlowMqList(traceId, appName, appIp, serve
 			WhereIf(startMin > 0, "start_ts >= ?", dateTime.Now().AddMinutes(-startMin).UnixMicro())
 
 		lstPO := ts.DescIfElse(startMin > 0, "use_ts", "start_ts").ToPageList(pageSize, pageIndex)
-		lst := mapper.ToPageList[linkTraceCom.TraceDetailMq](lstPO)
+		lst := mapper.ToPageList[trace.TraceDetail](lstPO)
 		return lst
 	}
-	return collections.NewPageList[linkTraceCom.TraceDetailMq](collections.NewList[linkTraceCom.TraceDetailMq](), 0)
+	return collections.NewPageList[trace.TraceDetail](collections.NewList[trace.TraceDetail](), 0)
 }
-func (receiver *linkTraceRepository) ToSlowRedisList(traceId, appName, appIp, key, field string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[linkTraceCom.TraceDetailRedis] {
+func (receiver *linkTraceRepository) ToSlowRedisList(traceId, appName, appIp, key, field string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[trace.TraceDetail] {
 	if linkTrace.Config.Driver == "clickhouse" {
-		ts := context.CHContext.TraceDetailRedis.
+		ts := context.CHContext.TraceDetail.
+			Where("call_type = ?", eumCallType.Redis).
 			WhereIf(traceId != "", "trace_id = ?", traceId).
 			WhereIf(appName != "", "LOWER(app_name) = ?", appName).
 			WhereIf(appIp != "", "app_ip = ?", appIp).
@@ -353,14 +316,15 @@ func (receiver *linkTraceRepository) ToSlowRedisList(traceId, appName, appIp, ke
 			WhereIf(startMin > 0, "start_ts >= ?", dateTime.Now().AddMinutes(-startMin).UnixMicro())
 
 		lstPO := ts.DescIfElse(startMin > 0, "use_ts", "start_ts").ToPageList(pageSize, pageIndex)
-		lst := mapper.ToPageList[linkTraceCom.TraceDetailRedis](lstPO)
+		lst := mapper.ToPageList[trace.TraceDetail](lstPO)
 		return lst
 	}
-	return collections.NewPageList[linkTraceCom.TraceDetailRedis](collections.NewList[linkTraceCom.TraceDetailRedis](), 0)
+	return collections.NewPageList[trace.TraceDetail](collections.NewList[trace.TraceDetail](), 0)
 }
 
 func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceContext]) error {
 	lst := collections.NewList[model.TraceContextPO]()
+	lstDetail := collections.NewList[model.TraceDetailPO]()
 	lstEO.Foreach(func(item *trace.TraceContext) {
 		po := model.TraceContextPO{
 			TraceId:       item.TraceId,
@@ -411,11 +375,79 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 				ExceptionMessage:      item.Exception.ExceptionMessage,
 			}
 		}
-
-		for _, detail := range item.List {
-			po.List = append(po.List, detail.(map[string]any))
-		}
 		lst.Add(po)
+
+		// 转换明细
+		item.List.Foreach(func(traceDetail *trace.TraceDetail) {
+			lstDetail.Add(model.TraceDetailPO{
+				TraceId:        item.TraceId,
+				AppId:          item.AppId,
+				AppName:        item.AppName,
+				AppIp:          item.AppIp,
+				ParentAppName:  item.ParentAppName,
+				DetailId:       traceDetail.DetailId,
+				ParentDetailId: traceDetail.ParentDetailId,
+				Level:          traceDetail.Level,
+				Comment:        traceDetail.Comment,
+				MethodName:     traceDetail.MethodName,
+				CallType:       traceDetail.CallType,
+				Timeline:       traceDetail.Timeline,
+				UnTraceTs:      traceDetail.UnTraceTs,
+				StartTs:        traceDetail.StartTs,
+				EndTs:          traceDetail.EndTs,
+				Exception:      traceDetail.Exception,
+				CreateAt:       traceDetail.CreateAt,
+				TraceDetailHandPO: model.TraceDetailHandPO{
+					HandName: traceDetail.HandName,
+				},
+				TraceDetailDatabasePO: model.TraceDetailDatabasePO{
+					DbName:             traceDetail.DbName,
+					DbTableName:        traceDetail.DbTableName,
+					DbSql:              traceDetail.DbSql,
+					DbConnectionString: traceDetail.DbConnectionString,
+					DbRowsAffected:     traceDetail.DbRowsAffected,
+				},
+				TraceDetailEsPO: model.TraceDetailEsPO{
+					EsIndexName:   traceDetail.EsIndexName,
+					EsAliasesName: traceDetail.EsAliasesName,
+				},
+				TraceDetailEtcdPO: model.TraceDetailEtcdPO{
+					EtcdKey:     traceDetail.EtcdKey,
+					EtcdLeaseID: traceDetail.EtcdLeaseID,
+				},
+				TraceDetailEventPO: model.TraceDetailEventPO{
+					EventName: traceDetail.EventName,
+				},
+				TraceDetailGrpcPO: model.TraceDetailGrpcPO{
+					GrpcMethod:       traceDetail.GrpcMethod,
+					GrpcUrl:          traceDetail.GrpcUrl,
+					GrpcHeaders:      traceDetail.GrpcHeaders,
+					GrpcRequestBody:  traceDetail.GrpcRequestBody,
+					GrpcResponseBody: traceDetail.GrpcResponseBody,
+					GrpcStatusCode:   traceDetail.GrpcStatusCode,
+				},
+				TraceDetailHttpPO: model.TraceDetailHttpPO{
+					HttpMethod:       traceDetail.HttpMethod,
+					HttpUrl:          traceDetail.HttpUrl,
+					HttpHeaders:      traceDetail.HttpHeaders,
+					HttpRequestBody:  traceDetail.HttpRequestBody,
+					HttpResponseBody: traceDetail.HttpResponseBody,
+					HttpStatusCode:   traceDetail.HttpStatusCode,
+				},
+				TraceDetailMqPO: model.TraceDetailMqPO{
+					MqServer:     traceDetail.MqServer,
+					MqExchange:   traceDetail.MqExchange,
+					MqRoutingKey: traceDetail.MqRoutingKey,
+				},
+				TraceDetailRedisPO: model.TraceDetailRedisPO{
+					RedisKey:          traceDetail.RedisKey,
+					RedisField:        traceDetail.RedisField,
+					RedisRowsAffected: traceDetail.RedisRowsAffected,
+				},
+				UseTs:   time.Duration(traceDetail.EndTs-traceDetail.StartTs) * time.Microsecond,
+				UseDesc: (time.Duration(traceDetail.EndTs-traceDetail.StartTs) * time.Microsecond).String(),
+			})
+		})
 	})
 
 	if linkTrace.Config.Driver == "clickhouse" {
@@ -428,114 +460,14 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 	}
 
 	// 写入明细
-	return receiver.saveDetail(lst)
+	return receiver.saveDetail(lstDetail)
 }
 
 // 写入明细
-func (receiver *linkTraceRepository) saveDetail(lst collections.List[model.TraceContextPO]) error {
-	lstTraceDetailDatabase := collections.NewList[model.TraceDetailDatabasePO]()
-	lstTraceDetailEs := collections.NewList[model.TraceDetailEsPO]()
-	lstTraceDetailEtcd := collections.NewList[model.TraceDetailEtcdPO]()
-	lstTraceDetailHand := collections.NewList[model.TraceDetailHandPO]()
-	lstTraceDetailHttp := collections.NewList[model.TraceDetailHttpPO]()
-	lstTraceDetailGrpc := collections.NewList[model.TraceDetailGrpcPO]()
-	lstTraceDetailMq := collections.NewList[model.TraceDetailMqPO]()
-	lstTraceDetailRedis := collections.NewList[model.TraceDetailRedisPO]()
-
-	lst.Foreach(func(traceContext *model.TraceContextPO) {
-		for _, detail := range traceContext.List {
-			m := detail.(map[string]any)
-			var callType eumCallType.Enum
-			if m["CallType"] != nil {
-				callType = eumCallType.Enum(parse.ToInt(m["CallType"]))
-			}
-			switch callType {
-			case eumCallType.Database:
-				detailPO := mapper.Single[model.TraceDetailDatabasePO](m)
-				lstTraceDetailDatabase.Add(detailPO)
-			case eumCallType.Http:
-				detailPO := mapper.Single[model.TraceDetailHttpPO](m)
-				lstTraceDetailHttp.Add(detailPO)
-			case eumCallType.Grpc:
-				detailPO := mapper.Single[model.TraceDetailGrpcPO](m)
-				lstTraceDetailGrpc.Add(detailPO)
-			case eumCallType.Redis:
-				detailPO := mapper.Single[model.TraceDetailRedisPO](m)
-				lstTraceDetailRedis.Add(detailPO)
-			case eumCallType.Mq:
-				detailPO := mapper.Single[model.TraceDetailMqPO](m)
-				lstTraceDetailMq.Add(detailPO)
-			case eumCallType.Elasticsearch:
-				detailPO := mapper.Single[model.TraceDetailEsPO](m)
-				lstTraceDetailEs.Add(detailPO)
-			case eumCallType.Etcd:
-				detailPO := mapper.Single[model.TraceDetailEtcdPO](m)
-				lstTraceDetailEtcd.Add(detailPO)
-			case eumCallType.Hand:
-				detailPO := mapper.Single[model.TraceDetailHandPO](m)
-				lstTraceDetailHand.Add(detailPO)
-			}
-			time.Sleep(10 * time.Millisecond)
-		}
-	})
-
+func (receiver *linkTraceRepository) saveDetail(lstDetail collections.List[model.TraceDetailPO]) error {
 	if linkTrace.Config.Driver == "clickhouse" {
-		// 写入明细
-		if lstTraceDetailDatabase.Count() > 0 {
-			if _, err := context.CHContext.TraceDetailDatabase.InsertList(lstTraceDetailDatabase, 2000); err != nil {
-				b, _ := snc.Marshal(lstTraceDetailDatabase)
-				_ = flog.Errorf("TraceDetailDatabase写入ch失败,%s %s", err.Error(), string(b))
-				return err
-			}
-		}
-		if lstTraceDetailEs.Count() > 0 {
-			if _, err := context.CHContext.TraceDetailEs.InsertList(lstTraceDetailEs, 2000); err != nil {
-				b, _ := snc.Marshal(lstTraceDetailEs)
-				_ = flog.Errorf("TraceDetailEs写入ch失败,%s %s", err.Error(), string(b))
-				return err
-			}
-		}
-		if lstTraceDetailEtcd.Count() > 0 {
-			if _, err := context.CHContext.TraceDetailEtcd.InsertList(lstTraceDetailEtcd, 2000); err != nil {
-				b, _ := snc.Marshal(lstTraceDetailEtcd)
-				_ = flog.Errorf("TraceDetailEtcd写入ch失败,%s %s", err.Error(), string(b))
-				return err
-			}
-		}
-		if lstTraceDetailHand.Count() > 0 {
-			if _, err := context.CHContext.TraceDetailHand.InsertList(lstTraceDetailHand, 2000); err != nil {
-				b, _ := snc.Marshal(lstTraceDetailHand)
-				_ = flog.Errorf("TraceDetailHand写入ch失败,%s %s", err.Error(), string(b))
-				return err
-			}
-		}
-		if lstTraceDetailHttp.Count() > 0 {
-			if _, err := context.CHContext.TraceDetailHttp.InsertList(lstTraceDetailHttp, 2000); err != nil {
-				b, _ := snc.Marshal(lstTraceDetailHttp)
-				_ = flog.Errorf("TraceDetailHttp写入ch失败,%s %s", err.Error(), string(b))
-				return err
-			}
-		}
-		if lstTraceDetailGrpc.Count() > 0 {
-			if _, err := context.CHContext.TraceDetailGrpc.InsertList(lstTraceDetailGrpc, 2000); err != nil {
-				b, _ := snc.Marshal(lstTraceDetailGrpc)
-				_ = flog.Errorf("TraceDetailGrpc写入ch失败,%s %s", err.Error(), string(b))
-				return err
-			}
-		}
-		if lstTraceDetailMq.Count() > 0 {
-			if _, err := context.CHContext.TraceDetailMq.InsertList(lstTraceDetailMq, 2000); err != nil {
-				b, _ := snc.Marshal(lstTraceDetailMq)
-				_ = flog.Errorf("TraceDetailMq写入ch失败,%s %s", err.Error(), string(b))
-				return err
-			}
-		}
-		if lstTraceDetailRedis.Count() > 0 {
-			if _, err := context.CHContext.TraceDetailRedis.InsertList(lstTraceDetailRedis, 2000); err != nil {
-				b, _ := snc.Marshal(lstTraceDetailRedis)
-				_ = flog.Errorf("TraceDetailRedis写入ch失败,%s %s", err.Error(), string(b))
-				return err
-			}
+		if _, err := context.CHContext.TraceDetail.InsertList(lstDetail, 2000); err != nil {
+			return err
 		}
 	}
 	return nil

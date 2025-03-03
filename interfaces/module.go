@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/farseer-go/docker"
+	"github.com/farseer-go/fs/color"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/modules"
@@ -30,7 +31,7 @@ func (module Module) PostInitialize() {
 	if client.IsMaster() {
 		tasks.Run("开启构建应用", time.Second*1, job.BuildAppJob, context.Background())
 		tasks.Run("开启自动构建", time.Second*1, job.AutoBuildAppJob, context.Background())
-		flog.Info("Docker version：" + flog.Blue(client.GetVersion()))
+		flog.Info("Docker version：" + color.Blue(client.GetVersion()))
 
 		// 3秒收集一次Docker集群信息
 		tasks.RunNow("收集Docker Swarm集群信息", time.Second*10, job.CollectsNodeJob, context.Background())

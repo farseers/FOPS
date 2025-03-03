@@ -9,7 +9,6 @@ import (
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/trace"
-	linkTraceCom "github.com/farseer-go/linkTrace"
 )
 
 // DeleteSlow 删除7天之前的日志
@@ -23,7 +22,7 @@ func DeleteSlow(dbName string, linkTraceRepository linkTrace.Repository) {
 // SlowDbList 慢数据库列表
 // @get slowDbList
 // @filter application.Jwt
-func SlowDbList(traceId, appName, appIp, dbName, tableName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailDatabase] {
+func SlowDbList(traceId, appName, appIp, dbName, tableName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceDetail] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -42,7 +41,7 @@ func SlowDbList(traceId, appName, appIp, dbName, tableName string, searchUseTs i
 // SlowEsList 慢Es列表
 // @get slowEsList
 // @filter application.Jwt
-func SlowEsList(traceId, appName, appIp, indexName, aliasesName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailEs] {
+func SlowEsList(traceId, appName, appIp, indexName, aliasesName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceDetail] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -61,7 +60,7 @@ func SlowEsList(traceId, appName, appIp, indexName, aliasesName string, searchUs
 // SlowEtcdList 慢Etcd列表
 // @get slowEtcdList
 // @filter application.Jwt
-func SlowEtcdList(traceId, appName, appIp, key string, leaseID int64, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailEtcd] {
+func SlowEtcdList(traceId, appName, appIp, key string, leaseID int64, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceDetail] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -79,7 +78,7 @@ func SlowEtcdList(traceId, appName, appIp, key string, leaseID int64, searchUseT
 // SlowHandList 慢手动列表
 // @get slowHandList
 // @filter application.Jwt
-func SlowHandList(traceId, appName, appIp, name string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceDetailHand] {
+func SlowHandList(traceId, appName, appIp, name string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceDetail] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -97,7 +96,7 @@ func SlowHandList(traceId, appName, appIp, name string, searchUseTs int64, onlyV
 // SlowHttpList 慢Http列表
 // @get slowHttpList
 // @filter application.Jwt
-func SlowHttpList(traceId, appName, appIp, method, url, body string, statusCode int, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailHttp] {
+func SlowHttpList(traceId, appName, appIp, method, url, body string, statusCode int, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceDetail] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -117,7 +116,7 @@ func SlowHttpList(traceId, appName, appIp, method, url, body string, statusCode 
 // SlowMqList 慢Mq列表
 // @get slowMqList
 // @filter application.Jwt
-func SlowMqList(traceId, appName, appIp, server, exchange, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailMq] {
+func SlowMqList(traceId, appName, appIp, server, exchange, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceDetail] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -137,7 +136,7 @@ func SlowMqList(traceId, appName, appIp, server, exchange, routingKey string, se
 // SlowRedisList 慢Redis列表
 // @get slowRedisList
 // @filter application.Jwt
-func SlowRedisList(traceId, appName, appIp, key, field string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTraceCom.TraceDetailRedis] {
+func SlowRedisList(traceId, appName, appIp, key, field string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceDetail] {
 	if pageSize < 1 {
 		pageSize = 20
 	}

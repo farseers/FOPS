@@ -5,24 +5,25 @@ import (
 
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/dateTime"
+	"github.com/farseer-go/fs/trace"
 	"github.com/farseer-go/fs/trace/eumTraceType"
 )
 
 type TraceContextPO struct {
-	TraceId           string            `gorm:"not null;default:'';comment:上下文ID"`
-	AppId             string            `gorm:"not null;default:'';comment:应用ID"`
-	AppName           string            `gorm:"not null;default:'';comment:应用名称"`
-	AppIp             string            `gorm:"not null;default:'';comment:应用IP"`
-	ParentAppName     string            `gorm:"not null;default:'';comment:上游应用"`
-	TraceLevel        int               `gorm:"not null;default:0;comment:逐层递增（显示上下游顺序）"`
-	TraceCount        int               `gorm:"not null;default:0;comment:追踪明细数量"`
-	StartTs           int64             `gorm:"not null;default:0;comment:调用开始时间戳（微秒）"`
-	EndTs             int64             `gorm:"not null;default:0;comment:调用结束时间戳（微秒）"`
-	UseTs             time.Duration     `gorm:"not null;default:0;comment:总共使用时间（微秒）"`
-	UseDesc           string            `gorm:"not null;default:'';comment:总共使用时间（描述）"`
-	TraceType         eumTraceType.Enum `gorm:"not null;comment:入口类型"`
-	Exception         *ExceptionStackPO `gorm:"json;not null;comment:异常信息"`
-	List              []any             `gorm:"json;not null;comment:调用的上下文" es_type:"object"`
+	TraceId           string                              `gorm:"not null;default:'';comment:上下文ID"`
+	AppId             string                              `gorm:"not null;default:'';comment:应用ID"`
+	AppName           string                              `gorm:"not null;default:'';comment:应用名称"`
+	AppIp             string                              `gorm:"not null;default:'';comment:应用IP"`
+	ParentAppName     string                              `gorm:"not null;default:'';comment:上游应用"`
+	TraceLevel        int                                 `gorm:"not null;default:0;comment:逐层递增（显示上下游顺序）"`
+	TraceCount        int                                 `gorm:"not null;default:0;comment:追踪明细数量"`
+	StartTs           int64                               `gorm:"not null;default:0;comment:调用开始时间戳（微秒）"`
+	EndTs             int64                               `gorm:"not null;default:0;comment:调用结束时间戳（微秒）"`
+	UseTs             time.Duration                       `gorm:"not null;default:0;comment:总共使用时间（微秒）"`
+	UseDesc           string                              `gorm:"not null;default:'';comment:总共使用时间（描述）"`
+	TraceType         eumTraceType.Enum                   `gorm:"not null;comment:入口类型"`
+	Exception         *ExceptionStackPO                   `gorm:"json;not null;comment:异常信息"`
+	List              collections.List[trace.TraceDetail] `gorm:"json;not null;comment:调用的上下文" es_type:"object"`
 	WebContextPO      `gorm:"embedded;not null;comment:Web请求上下文" es_type:"object"`
 	ConsumerContextPO `gorm:"embedded;not null;comment:消费上下文" es_type:"object"`
 	TaskContextPO     `gorm:"embedded;not null;comment:任务上下文" es_type:"object"`

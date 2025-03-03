@@ -136,9 +136,8 @@ func (receiver *linkTraceWarp) addEntry(po trace.TraceContext) {
 
 // 服务所属的明细
 func (receiver *linkTraceWarp) addDetail(po trace.TraceContext) {
-	po.List.Foreach(func(detail *trace.TraceDetail) {
-		//m := mapper.ToMap[string, any](detail)
-		//baseDetailPO := m["BaseTraceDetail"].(trace.BaseTraceDetail)
+	po.List.Foreach(func(traceDetail **trace.TraceDetail) {
+		detail := *traceDetail
 		useTs := time.Duration(detail.EndTs-detail.StartTs) * time.Microsecond
 		detailTrace := response.LinkTraceVO{
 			Rgba: response.RgbaList[receiver.rgbaIndex], AppId: po.AppId, AppIp: po.AppIp, AppName: po.AppName,

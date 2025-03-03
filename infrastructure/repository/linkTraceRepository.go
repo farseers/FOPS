@@ -379,7 +379,8 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 		lst.Add(po)
 
 		// 转换明细
-		item.List.Foreach(func(traceDetail *trace.TraceDetail) {
+		item.List.Foreach(func(detail **trace.TraceDetail) {
+			traceDetail := *detail
 			lstDetail.Add(model.TraceDetailPO{
 				TraceId:        item.TraceId,
 				AppId:          item.AppId,

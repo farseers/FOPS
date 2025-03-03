@@ -22,8 +22,8 @@ type TraceContextPO struct {
 	UseTs             time.Duration                       `gorm:"not null;default:0;comment:总共使用时间（微秒）"`
 	UseDesc           string                              `gorm:"not null;default:'';comment:总共使用时间（描述）"`
 	TraceType         eumTraceType.Enum                   `gorm:"not null;comment:入口类型"`
-	Exception         *ExceptionStackPO                   `gorm:"json;not null;comment:异常信息"`
-	List              collections.List[trace.TraceDetail] `gorm:"json;not null;comment:调用的上下文" es_type:"object"`
+	Exception         *ExceptionStackPO                   `gorm:"type:String;json;not null;comment:异常信息"`
+	List              collections.List[trace.TraceDetail] `gorm:"type:String;json;not null;comment:调用的上下文" es_type:"object"`
 	WebContextPO      `gorm:"embedded;not null;comment:Web请求上下文" es_type:"object"`
 	ConsumerContextPO `gorm:"embedded;not null;comment:消费上下文" es_type:"object"`
 	TaskContextPO     `gorm:"embedded;not null;comment:任务上下文" es_type:"object"`

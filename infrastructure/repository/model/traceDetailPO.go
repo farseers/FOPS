@@ -25,7 +25,7 @@ type TraceDetailPO struct {
 	UnTraceTs      time.Duration         `gorm:"not null;default:0;comment:上一次结束到现在开始之间未Trace的时间（微秒）"`
 	StartTs        int64                 `gorm:"not null;default:0;comment:调用开始时间戳（微秒）"`
 	EndTs          int64                 `gorm:"not null;default:0;comment:调用停止时间戳（微秒）"`
-	Exception      *trace.ExceptionStack `gorm:"json;not null;comment:异常信息"`
+	Exception      *trace.ExceptionStack `gorm:"type:String;json;not null;comment:异常信息"`
 	CreateAt       dateTime.DateTime     `gorm:"type:DateTime64(3);not null;comment:请求时间"`
 
 	TraceDetailHandPO     `gorm:"embedded;not null;comment:手动埋点" es_type:"object"`

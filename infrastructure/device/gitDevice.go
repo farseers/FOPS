@@ -8,6 +8,7 @@ import (
 
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/container"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
 )
@@ -50,15 +51,15 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 }
 
 func (receiver *gitDevice) GetRemoteBranch(ctx context.Context, gitPath string) collections.List[apps.RemoteBranchVO] {
+	flog.Info(gitPath)
 	lst := collections.NewList[apps.RemoteBranchVO]()
 	progress := make(chan string, 10000)
 	// git ls-remote --heads
 	// git branch -vr
 	if exitCode := exec.RunShellContext(ctx, "timeout 10 git ls-remote --heads", progress, nil, gitPath, false); exitCode != 0 {
+		flog.Info("GetRemoteBranch_end1")
 		return lst
 	}
-	// 19df6d834707e361e168bdff49d56bbfe6c2b1e1	refs/heads/dev
-	// c3ec5bff7db0473b7b7dfac0f9797b8a7805f8e0	refs/heads/main
 	lstContent := collections.NewListFromChan(progress)
 	lstContent.RemoveAt(0)
 	for _, content := range lstContent.ToArray() {
@@ -69,13 +70,15 @@ func (receiver *gitDevice) GetRemoteBranch(ctx context.Context, gitPath string) 
 		if len(fields[0]) < 16 {
 			continue
 		}
+		flog.Info(1)
 		remoteBranch := apps.RemoteBranchVO{
 			CommitId: fields[0][:16],
 			//CommitMessage: content[len(fields[0])+len(fields[1])+3:], // 消息带有空格，不能直接取fields[2]
 		}
+		flog.Info(2)
 		remoteBranch.BranchName, _ = strings.CutPrefix(fields[1], "refs/heads/")
 		lst.Add(remoteBranch)
 	}
-
+	flog.Info("GetRemoteBranch_end2")
 	return lst
 }

@@ -26,14 +26,13 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 		if !file.IsExists(path) {
 			return
 		}
-		flog.Infof("在工作流根目录，获取远程分支名称")
+		flog.Infof("在工作流根目录，获取远程分支名称" + path)
 		// 在工作流根目录，获取远程分支名称
-		lstBranch := gitDevice.GetRemoteBranch(fs.Context, appDO.GetWorkflowsRoot())
+		lstBranch := gitDevice.GetRemoteBranch(fs.Context, path)
 		if lstBranch.Count() == 0 {
 			return
 		}
 
-		flog.Infof("当前应用的本地分支")
 		// 当前应用的本地分支
 		lstLocalUT := lstUT.Where(func(item appsBranch.DomainObject) bool {
 			return item.AppName == appDO.AppName
@@ -41,7 +40,6 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 
 		flog.Infof("lstBranch.Foreach")
 		lstBranch.Foreach(func(remoteBranchVO *apps.RemoteBranchVO) {
-			flog.Infof("找到数据库中的UT记录")
 			// 找到数据库中的UT记录
 			dbUT := lstLocalUT.Find(func(item *appsBranch.DomainObject) bool {
 				return item.BranchName == remoteBranchVO.BranchName

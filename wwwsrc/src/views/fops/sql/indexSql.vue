@@ -59,13 +59,13 @@
           </template>
         </el-table-column>
         <el-table-column width="120px" prop="DbName" label="数据库名" show-overflow-tooltip></el-table-column>
-        <el-table-column width="180px" prop="TableName" label="表名" show-overflow-tooltip></el-table-column>
+        <el-table-column width="180px" prop="DbTableName" label="表名" show-overflow-tooltip></el-table-column>
         <el-table-column width="400px" label="Sql语句" show-overflow-tooltip>
           <template #default="scope">
-            <span style="cursor: pointer" title="点击复制" @click="copyText(scope.row.Sql)">{{scope.row.Sql}}</span>
+            <span style="cursor: pointer" title="点击复制" @click="copyText(scope.row.DbSql)">{{scope.row.DbSql}}</span>
           </template>
         </el-table-column>
-        <el-table-column width="100px" prop="RowsAffected" label="影响行数" show-overflow-tooltip></el-table-column>
+        <el-table-column width="100px" prop="DbRowsAffected" label="影响行数" show-overflow-tooltip></el-table-column>
         <el-table-column width="250px" label="异常" show-overflow-tooltip>
           <template #default="scope">
             <el-tag size="small" v-if="scope.row.Exception!=null" type="danger">{{scope.row.Exception.ExceptionCallFile}}:{{scope.row.Exception.ExceptionCallLine}} {{scope.row.Exception.ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.Exception!=null">
@@ -174,6 +174,7 @@ const getTableData = () => {
 
 };
 const onDetail=(row: any)=>{
+  row.tid = row.TraceId;
   detailDialogRef.value.openDialog(row);
 }
 const getAppData=()=>{

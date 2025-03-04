@@ -66,8 +66,8 @@
         </el-table-column>
         <el-table-column label="请求内容" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small">{{scope.row.StatusCode}}</el-tag> <el-tag type="success" size="small">{{scope.row.Method}}</el-tag>
-            <br />{{scope.row.Url}}
+            <el-tag size="small">{{scope.row.HttpStatusCode}}</el-tag> <el-tag type="success" size="small">{{scope.row.HttpMethod}}</el-tag>
+            <br />{{scope.row.HttpUrl}}
           </template>
         </el-table-column>
         <el-table-column width="200px" label="异常" show-overflow-tooltip>
@@ -185,9 +185,11 @@ const getTableData = () => {
 
 };
 const onDetail=(row: any)=>{
+  row.tid = row.TraceId;
   detailDialogRef.value.openDialog(row);
 }
 const onShow=(row: any)=>{
+  row.tid = row.TraceId;
   showDialogRef.value.openDialog(1,row);
 }
 const getAppData=()=>{

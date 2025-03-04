@@ -58,8 +58,8 @@
             <el-tag size="small" v-else type="success">{{scope.row.UseDesc}}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="IndexName" label="索引名称" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="AliasesName" label="别名" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="EsIndexName" label="索引名称" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="EsAliasesName" label="别名" show-overflow-tooltip></el-table-column>
         <el-table-column width="200px" label="异常" show-overflow-tooltip>
           <template #default="scope">
             <el-tag size="small" v-if="scope.row.Exception!=null" type="danger">{{scope.row.Exception.ExceptionCallFile}}:{{scope.row.Exception.ExceptionCallLine}} {{scope.row.Exception.ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.Exception!=null">
@@ -166,6 +166,7 @@ const getTableData = () => {
 
 };
 const onDetail=(row: any)=>{
+  row.tid = row.TraceId;
   detailDialogRef.value.openDialog(row);
 }
 const getAppData=()=>{

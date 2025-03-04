@@ -60,9 +60,9 @@
             <el-tag size="small" v-else type="success">{{scope.row.UseDesc}}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="Server" label="服务器地址" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="Exchange" label="交换器" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="RoutingKey" label="路由KEY" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="MqServer" label="服务器地址" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="MqExchange" label="交换器" show-overflow-tooltip></el-table-column>
+        <el-table-column prop="MqRoutingKey" label="路由KEY" show-overflow-tooltip></el-table-column>
         <el-table-column width="200px" label="异常" show-overflow-tooltip>
           <template #default="scope">
             <el-tag size="small" v-if="scope.row.Exception!=null" type="danger">{{scope.row.Exception.ExceptionCallFile}}:{{scope.row.Exception.ExceptionCallLine}} {{scope.row.Exception.ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.Exception!=null">
@@ -171,6 +171,7 @@ const getTableData = () => {
 
 };
 const onDetail=(row: any)=>{
+  row.tid = row.TraceId;
   detailDialogRef.value.openDialog(row);
 }
 const getAppData=()=>{

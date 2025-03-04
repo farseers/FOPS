@@ -7,7 +7,6 @@ import (
 	"github.com/farseer-go/fs"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/dateTime"
-	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/tasks"
 	"github.com/farseer-go/utils/file"
 )
@@ -26,7 +25,6 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 		if !file.IsExists(path) {
 			return
 		}
-		flog.Infof("在工作流根目录，获取远程分支名称" + path)
 		// 在工作流根目录，获取远程分支名称
 		lstBranch := gitDevice.GetRemoteBranch(fs.Context, path)
 		if lstBranch.Count() == 0 {
@@ -38,13 +36,11 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 			return item.AppName == appDO.AppName
 		}).ToList()
 
-		flog.Infof("lstBranch.Foreach")
 		lstBranch.Foreach(func(remoteBranchVO *apps.RemoteBranchVO) {
 			// 找到数据库中的UT记录
 			dbUT := lstLocalUT.Find(func(item *appsBranch.DomainObject) bool {
 				return item.BranchName == remoteBranchVO.BranchName
 			})
-			flog.Infof("不存在，则直接添加")
 			// 不存在，则直接添加
 			if dbUT == nil {
 				do := appsBranch.DomainObject{AppName: appDO.AppName, BranchName: remoteBranchVO.BranchName, CommitId: remoteBranchVO.CommitId, CommitMessage: remoteBranchVO.CommitMessage, CommitAt: dateTime.Now(), BuildAt: dateTime.Now()}
@@ -53,7 +49,6 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 				return
 			}
 
-			flog.Infof("不相等时，说明有新的提交，则替换")
 			// 不相等时，说明有新的提交，则替换
 			if dbUT.CommitId != remoteBranchVO.CommitId {
 				dbUT.CommitId = remoteBranchVO.CommitId
@@ -67,14 +62,12 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 			}
 		})
 
-		flog.Infof("通过遍历本地分支，判断远程分支是否存在")
 		// 通过遍历本地分支，判断远程分支是否存在
 		lstLocalUT.Foreach(func(utDO *appsBranch.DomainObject) {
 			// 远程分支不存在，说明已经被删了
 			if !lstBranch.Where(func(item apps.RemoteBranchVO) bool {
 				return item.BranchName == utDO.BranchName
 			}).Any() && dateTime.Now().Sub(utDO.BuildAt).Hours() > 168 {
-				flog.Infof("应用：%s的远程分支：%s不存在了，删除本地分支", utDO.AppName, utDO.BranchName)
 				appsBranchRepository.DeleteBranch(utDO.AppName, utDO.BranchName)
 			}
 		})

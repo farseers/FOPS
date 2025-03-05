@@ -138,7 +138,15 @@ func Clear(id string, backupDataRepository backupData.Repository) {
 	// 遍历数据库，删除备份文件
 	for _, database := range do.Database {
 		lstHistoryData, err := do.GetHistoryData(id, database)
-		for lstHistoryData.Count() > 0 && err == nil {
+
+		for lstHistoryData.Count() > 1 && err == nil {
+			// 按时间排序
+			lstHistoryData = lstHistoryData.OrderByDescending(func(item backupData.BackupHistoryData) any {
+				return item.CreateAt
+			}).ToList()
+			// 保留最近的一个备份点
+			lstHistoryData.RemoveAt(0)
+
 			lstHistoryData.Foreach(func(item *backupData.BackupHistoryData) {
 				do.DeleteBackupFile(item.FileName)
 			})

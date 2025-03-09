@@ -17,7 +17,7 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 	appsBranchRepository := container.Resolve[appsBranch.Repository]()
 	gitDevice := container.Resolve[apps.IGitDevice]()
 	lstApp := appsRepository.ToUTList()
-	lstUT := appsBranchRepository.ToList()
+	lstLocalUT := appsBranchRepository.ToList()
 
 	// 读取远程分支，并更新状态
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
@@ -26,17 +26,17 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 			return
 		}
 		// 在工作流根目录，获取远程分支名称
-		lstBranch := gitDevice.GetRemoteBranch(fs.Context, path)
-		if lstBranch.Count() == 0 {
+		lstRemoteBranch := gitDevice.GetRemoteBranch(fs.Context, path)
+		if lstRemoteBranch.Count() == 0 {
 			return
 		}
 
 		// 当前应用的本地分支
-		lstLocalUT := lstUT.Where(func(item appsBranch.DomainObject) bool {
+		lstLocalUT := lstLocalUT.Where(func(item appsBranch.DomainObject) bool {
 			return item.AppName == appDO.AppName
 		}).ToList()
 
-		lstBranch.Foreach(func(remoteBranchVO *apps.RemoteBranchVO) {
+		lstRemoteBranch.Foreach(func(remoteBranchVO *apps.RemoteBranchVO) {
 			// 找到数据库中的UT记录
 			dbUT := lstLocalUT.Find(func(item *appsBranch.DomainObject) bool {
 				return item.BranchName == remoteBranchVO.BranchName
@@ -65,9 +65,9 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 		// 通过遍历本地分支，判断远程分支是否存在
 		lstLocalUT.Foreach(func(utDO *appsBranch.DomainObject) {
 			// 远程分支不存在，说明已经被删了
-			if !lstBranch.Where(func(item apps.RemoteBranchVO) bool {
+			if !lstRemoteBranch.Where(func(item apps.RemoteBranchVO) bool {
 				return item.BranchName == utDO.BranchName
-			}).Any() && dateTime.Now().Sub(utDO.BuildAt).Hours() > 168 {
+			}).Any() && dateTime.Now().Sub(utDO.BuildAt).Hours() > 1 {
 				appsBranchRepository.DeleteBranch(utDO.AppName, utDO.BranchName)
 			}
 		})

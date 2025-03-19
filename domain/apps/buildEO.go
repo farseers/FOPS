@@ -495,6 +495,7 @@ func (receiver *BuildEO) WatchStatus() {
 		time.Sleep(3 * time.Second)
 		curBuildEO := container.Resolve[Repository]().ToBuildEntity(receiver.Id)
 		if curBuildEO.Status == eumBuildStatus.Cancel {
+			receiver.Status = eumBuildStatus.Cancel
 			if receiver.cancel != nil && !curBuildEO.IsSuccess {
 				receiver.cancel()
 			}

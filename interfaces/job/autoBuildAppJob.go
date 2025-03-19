@@ -55,5 +55,9 @@ func AutoBuildAppJob(*tasks.TaskContext) {
 	if !buildDO.IsSuccess {
 		appsBranchDO.BuildErrorCount++
 	}
+	// 如果自动构建被取消了，则全部暂停
+	if buildDO.Status == eumBuildStatus.Cancel {
+		appsBranchDO.BuildErrorCount = 3
+	}
 	appsBranchRepository.UpdateByBranch(appsBranchDO)
 }

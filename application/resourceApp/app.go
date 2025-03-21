@@ -39,16 +39,16 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 			if node == nil {
 				clusterNode.NodeList.Add(docker.DockerNodeVO{
 					IP:            req.Host.IP,
-					NodeName:      "",
-					Status:        "",
-					Availability:  "",
-					IsMaster:      false,
+					NodeName:      req.Host.HostName,
+					Status:        "Ready",
+					Availability:  "Active",
+					IsMaster:      req.IsDockerMaster,
 					IsHealth:      true,
-					EngineVersion: "",
-					OS:            "",
-					Architecture:  "",
+					EngineVersion: req.DockerEngineVersion,
+					OS:            req.Host.OS,
+					Architecture:  req.Host.Architecture,
 					CPUs:          strconv.Itoa(req.Host.CpuCores),
-					Memory:        "",
+					Memory:        strconv.Itoa(int(req.Host.MemoryTotal/1024/1024)) + "MB",
 					Label:         collections.List[docker.DockerLabelVO]{},
 				})
 				node = clusterNode.NodeList.Find(func(item *docker.DockerNodeVO) bool {
@@ -58,6 +58,12 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 
 			// 更新集群节点资源信息
 			if node != nil {
+				node.EngineVersion = req.DockerEngineVersion
+				node.OS = req.Host.OS
+				node.Architecture = req.Host.Architecture
+				node.NodeName = req.Host.HostName
+				node.CPUs = strconv.Itoa(req.Host.CpuCores)
+				node.Memory = strconv.Itoa(int(req.Host.MemoryTotal/1024/1024)) + "MB"
 				node.CpuUsagePercent = req.Host.CpuUsagePercent
 				node.MemoryUsagePercent = req.Host.MemoryUsagePercent
 				node.MemoryUsage = memoryUsage

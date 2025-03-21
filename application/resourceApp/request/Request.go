@@ -7,6 +7,8 @@ import (
 )
 
 type Request struct {
-	Host    system.Resource
-	Dockers collections.List[docker.DockerStatsVO]
+	Host                system.Resource                        // 主机资源
+	IsDockerMaster      bool                                   // 是否是Docker主节点
+	DockerEngineVersion string                                 // Docker引擎版本
+	Dockers             collections.List[docker.DockerStatsVO] // Docker容器资源
 }

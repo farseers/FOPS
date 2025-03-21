@@ -50,6 +50,7 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 					CPUs:          strconv.Itoa(req.Host.CpuCores),
 					Memory:        strconv.Itoa(int(req.Host.MemoryTotal/1024/1024/1024)) + "GB",
 					Label:         collections.List[docker.DockerLabelVO]{},
+					UpdateAt:      time.Now(),
 				})
 				node = clusterNode.NodeList.Find(func(item *docker.DockerNodeVO) bool {
 					return item.IP == req.Host.IP
@@ -70,18 +71,14 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 				node.Disk = req.Host.DiskTotal / 1024 / 1024 / 1024
 				node.DiskUsagePercent = req.Host.DiskUsagePercent
 				node.DiskUsage = diskUsage
+				node.UpdateAt = time.Now()
+				node.IsHealth = true
 			}
 		}
 
 		// 更新docker应用资源信息
 		if req.Host.IP != "" && req.Dockers.Count() > 0 {
 			apps.NodeDockerStatsList[req.Host.IP] = req.Dockers
-		}
-
-		// 间隔更新
-		if time.Now().Second()%30 == 0 {
-			// 更新集群节点信息
-			clusterNodeRepository.UpdateClusterNode(clusterNode.NodeList)
 		}
 	})
 }

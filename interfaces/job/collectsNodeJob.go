@@ -2,8 +2,10 @@ package job
 
 import (
 	"fops/domain/clusterNode"
+	"time"
 
 	"github.com/farseer-go/docker"
+	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/tasks"
 )
@@ -48,6 +50,22 @@ func CollectsNodeJob(*tasks.TaskContext) {
 			dockerNodeVO.CPUs = node.CPUs
 			dockerNodeVO.Memory = node.Memory
 			dockerNodeVO.Label = node.Label
+			dockerNodeVO.UpdateAt = time.Now()
+			dockerNodeVO.Status = node.Status
+			dockerNodeVO.Availability = node.Availability
 		}
 	})
+
+	// 10s未更新，标记为不健康
+	clusterNode.NodeList.Foreach(func(item *docker.DockerNodeVO) {
+		if time.Since(item.UpdateAt).Seconds() > 10 {
+			item.IsHealth = false
+		}
+	})
+	// 间隔更新
+	if time.Now().Second()%30 == 0 {
+		// 更新集群节点信息
+		clusterNodeRepository := container.Resolve[clusterNode.Repository]()
+		clusterNodeRepository.UpdateClusterNode(clusterNode.NodeList)
+	}
 }

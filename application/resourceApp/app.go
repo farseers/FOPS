@@ -48,7 +48,7 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 					OS:            req.Host.OS,
 					Architecture:  req.Host.Architecture,
 					CPUs:          strconv.Itoa(req.Host.CpuCores),
-					Memory:        strconv.Itoa(int(req.Host.MemoryTotal/1024/1024)) + "MB",
+					Memory:        strconv.Itoa(int(req.Host.MemoryTotal/1024/1024/1024)) + "GB",
 					Label:         collections.List[docker.DockerLabelVO]{},
 				})
 				node = clusterNode.NodeList.Find(func(item *docker.DockerNodeVO) bool {

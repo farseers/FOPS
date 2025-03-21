@@ -5,7 +5,7 @@ import (
 	"github.com/farseer-go/docker"
 )
 
-// key = agentContainerIP
+// key = nodeIP
 // value = container app
 var NodeDockerStatsList = make(map[string]collections.List[docker.DockerStatsVO])
 

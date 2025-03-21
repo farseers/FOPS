@@ -12,6 +12,7 @@ import (
 	"fops/application/linkTraceApp"
 	"fops/application/login"
 	"fops/application/monitorApp"
+	"fops/application/resourceApp"
 	"fops/application/terminalApp"
 	"github.com/farseer-go/webapi"
 	"github.com/farseer-go/webapi/context"
@@ -108,6 +109,7 @@ var route = []webapi.Route{
     {"POST", "/monitor/drpBaseList", monitorApp.DrpBaseList, "", []context.IFilter{application.Jwt{}}, []string{"baseType"}},
     {"WS", "/ws/monitor", monitorApp.WsReceive, "", []context.IFilter{}, []string{"context", ""}},
     {"WS", "/ws/notice", monitorApp.WsNotice, "", []context.IFilter{}, []string{"context", ""}},
+    {"WS", "/ws/resource", resourceApp.Resource, "", []context.IFilter{}, []string{"context", ""}},
     {"POST", "/terminal/clientList", terminalApp.ClientList, "", []context.IFilter{application.Jwt{}}, []string{"pageSize", "pageIndex", ""}},
     {"POST", "/terminal/clientAdd", terminalApp.ClientAdd, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},
     {"POST", "/terminal/clientUpdate", terminalApp.ClientUpdate, "", []context.IFilter{application.Jwt{}}, []string{"req", ""}},

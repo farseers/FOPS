@@ -64,7 +64,7 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 				node.Architecture = req.Host.Architecture
 				node.NodeName = req.Host.HostName
 				node.CPUs = strconv.Itoa(req.Host.CpuCores)
-				node.Memory = strconv.Itoa(int(req.Host.MemoryTotal/1024/1024)) + "MB"
+				node.Memory = strconv.Itoa(int(req.Host.MemoryTotal/1024/1024/1024)) + "GB"
 				node.CpuUsagePercent = req.Host.CpuUsagePercent
 				node.MemoryUsagePercent = req.Host.MemoryUsagePercent
 				node.MemoryUsage = memoryUsage

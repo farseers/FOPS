@@ -48,7 +48,7 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 					OS:            req.Host.OS,
 					Architecture:  req.Host.Architecture,
 					CPUs:          strconv.Itoa(req.Host.CpuCores),
-					Memory:        strconv.Itoa(int(req.Host.MemoryTotal/1024/1024/1024)) + "GB",
+					Memory:        parse.ToString(parse.ToFloat64(req.Host.MemoryTotal)/1024/1024/1024) + "GB",
 					Label:         collections.List[docker.DockerLabelVO]{},
 					UpdateAt:      time.Now(),
 				})
@@ -64,7 +64,7 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 				node.Architecture = req.Host.Architecture
 				node.NodeName = req.Host.HostName
 				node.CPUs = strconv.Itoa(req.Host.CpuCores)
-				node.Memory = strconv.Itoa(int(req.Host.MemoryTotal/1024/1024/1024)) + "GB"
+				node.Memory = parse.ToString(parse.ToFloat64(req.Host.MemoryTotal)/1024/1024/1024) + "GB"
 				node.CpuUsagePercent = req.Host.CpuUsagePercent
 				node.MemoryUsagePercent = req.Host.MemoryUsagePercent
 				node.MemoryUsage = memoryUsage

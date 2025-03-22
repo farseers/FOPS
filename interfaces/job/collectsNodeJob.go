@@ -30,10 +30,10 @@ func CollectsNodeJob(*tasks.TaskContext) {
 		}
 
 		node.IP = dockerNode.IP
-		node.OS = dockerNode.OS
-		node.Architecture = dockerNode.Architecture
-		node.CPUs = dockerNode.CPUs
-		node.Memory = dockerNode.Memory
+		// node.OS = dockerNode.OS
+		// node.Architecture = dockerNode.Architecture
+		// node.CPUs = dockerNode.CPUs
+		// node.Memory = dockerNode.Memory
 		node.Label = dockerNode.Label
 
 		// 加入到本地列表
@@ -45,10 +45,10 @@ func CollectsNodeJob(*tasks.TaskContext) {
 			clusterNode.NodeList.Add(*node)
 		} else {
 			dockerNodeVO.IsHealth = node.IsHealth
-			dockerNodeVO.OS = node.OS
-			dockerNodeVO.Architecture = node.Architecture
-			dockerNodeVO.CPUs = node.CPUs
-			dockerNodeVO.Memory = node.Memory
+			// dockerNodeVO.OS = node.OS
+			// dockerNodeVO.Architecture = node.Architecture
+			// dockerNodeVO.CPUs = node.CPUs
+			// dockerNodeVO.Memory = node.Memory
 			dockerNodeVO.Label = node.Label
 			dockerNodeVO.UpdateAt = time.Now()
 			dockerNodeVO.Status = node.Status

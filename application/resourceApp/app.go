@@ -82,7 +82,7 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 
 		// 更新docker应用资源信息
 		if req.Host.IP != "" && req.Dockers.Count() > 0 {
-			apps.NodeDockerStatsList[req.Host.IP] = req.Dockers
+			apps.NodeDockerStatsList.Add(req.Host.IP, req.Dockers)
 		}
 	})
 }

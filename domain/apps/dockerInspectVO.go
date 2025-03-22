@@ -7,7 +7,7 @@ import (
 
 // key = nodeIP
 // value = container app
-var NodeDockerStatsList = make(map[string]collections.List[docker.DockerStatsVO])
+var NodeDockerStatsList = collections.NewDictionary[string, collections.List[docker.DockerStatsVO]]()
 
 type DockerInspectVO struct {
 	docker.DockerStatsVO
@@ -22,7 +22,7 @@ type DockerInspectVO struct {
 
 // GetDockerStats 根据集群节点IP，找到对应的容器ID
 func GetDockerStats(containerID string) docker.DockerStatsVO {
-	for _, dockerStatsList := range NodeDockerStatsList {
+	for _, dockerStatsList := range NodeDockerStatsList.Values().ToArray() {
 		dockerStatsVO := dockerStatsList.Find(func(item *docker.DockerStatsVO) bool {
 			return item.ContainerID == containerID
 		})

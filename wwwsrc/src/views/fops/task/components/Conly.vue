@@ -25,7 +25,7 @@
                         <el-tag size="small">worker</el-tag> {{ item.Architecture }} | {{ item.EngineVersion }}
                     </div>
                     <div><el-tag type="info" size="small">{{ item.OS }}</el-tag> <b>{{ item.Memory }}</b> | <b>{{
-                            item.Disk }}GiB</b></div>
+                            item.Disk }}</b></div>
 
                     <div><el-tag type="info" size="small">CPU</el-tag> <b>{{ item.CpuUsagePercent }}</b>% ({{ item.CPUs
                         }}核)</div>

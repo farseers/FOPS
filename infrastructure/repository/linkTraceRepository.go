@@ -338,14 +338,14 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 			UseTs:         item.UseTs,
 			UseDesc:       item.UseDesc,
 			TraceType:     item.TraceType,
-			List:          item.List,
+			List:          collections.NewList(item.List...),
 			WebContextPO: model.WebContextPO{
 				WebDomain:       item.WebContext.WebDomain,
 				WebPath:         item.WebContext.WebPath,
 				WebMethod:       item.WebContext.WebMethod,
 				WebContentType:  item.WebContext.WebContentType,
 				WebStatusCode:   item.WebContext.WebStatusCode,
-				WebHeaders:      item.WebContext.WebHeaders,
+				WebHeaders:      collections.NewDictionaryFromMap(item.WebContext.WebHeaders),
 				WebRequestBody:  item.WebContext.WebRequestBody,
 				WebResponseBody: item.WebContext.WebResponseBody,
 				WebRequestIp:    item.WebContext.WebRequestIp,
@@ -359,7 +359,7 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 				TaskName:      item.TaskContext.TaskName,
 				TaskGroupName: item.TaskContext.TaskGroupName,
 				TaskId:        item.TaskContext.TaskId,
-				TaskData:      item.TaskContext.TaskData,
+				TaskData:      collections.NewDictionaryFromMap(item.TaskContext.TaskData),
 			},
 			WatchKeyContextPO: model.WatchKeyContextPO{
 				WatchKey: item.WatchKeyContext.WatchKey,
@@ -378,8 +378,7 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 		lst.Add(po)
 
 		// 转换明细
-		item.List.Foreach(func(detail **trace.TraceDetail) {
-			traceDetail := *detail
+		for _, traceDetail := range item.List {
 			lstDetail.Add(model.TraceDetailPO{
 				TraceId:        item.TraceId,
 				AppId:          item.AppId,
@@ -422,7 +421,7 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 				TraceDetailGrpcPO: model.TraceDetailGrpcPO{
 					GrpcMethod:       traceDetail.GrpcMethod,
 					GrpcUrl:          traceDetail.GrpcUrl,
-					GrpcHeaders:      traceDetail.GrpcHeaders,
+					GrpcHeaders:      collections.NewDictionaryFromMap(traceDetail.GrpcHeaders),
 					GrpcRequestBody:  traceDetail.GrpcRequestBody,
 					GrpcResponseBody: traceDetail.GrpcResponseBody,
 					GrpcStatusCode:   traceDetail.GrpcStatusCode,
@@ -430,7 +429,7 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 				TraceDetailHttpPO: model.TraceDetailHttpPO{
 					HttpMethod:       traceDetail.HttpMethod,
 					HttpUrl:          traceDetail.HttpUrl,
-					HttpHeaders:      traceDetail.HttpHeaders,
+					HttpHeaders:      collections.NewDictionaryFromMap(traceDetail.HttpHeaders),
 					HttpRequestBody:  traceDetail.HttpRequestBody,
 					HttpResponseBody: traceDetail.HttpResponseBody,
 					HttpStatusCode:   traceDetail.HttpStatusCode,
@@ -448,7 +447,7 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 				UseTs:   time.Duration(traceDetail.EndTs-traceDetail.StartTs) * time.Microsecond,
 				UseDesc: (time.Duration(traceDetail.EndTs-traceDetail.StartTs) * time.Microsecond).String(),
 			})
-		})
+		}
 	})
 
 	if linkTrace.Config.Driver == "clickhouse" {

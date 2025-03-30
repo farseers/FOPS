@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/snc"
 	"github.com/farseer-go/fs/trace"
 	"github.com/farseer-go/fs/trace/eumCallType"
 	"github.com/farseer-go/fs/trace/eumTraceType"
@@ -72,7 +73,7 @@ func Info(traceId string, linkTraceRepository linkTrace.Repository) response.Lin
 		List:  l.lst,
 	}
 	rsp.Entry.UseDesc = rsp.Entry.UseTs.String()
-	rsp.Entry.List.Clear()
+	rsp.Entry.List = nil
 	rsp.Entry.StartTs = l.startTs
 	rsp.Entry.EndTs = l.endTs
 	rsp.Entry.UseTs = time.Duration(l.TotalUse) * time.Microsecond
@@ -122,7 +123,7 @@ func (receiver *linkTraceWarp) addEntry(po trace.TraceContext) {
 		entryTrace.Caption = fmt.Sprintf("事件订阅 => %s %s", po.ConsumerServer, po.ConsumerQueueName)
 	case eumTraceType.FSchedule:
 		entryTrace.Caption = fmt.Sprintf("任务调度 => 任务组：%s 任务ID：%v", po.TaskGroupName, po.TaskId)
-		dataJson, _ := po.TaskData.MarshalJSON()
+		dataJson, _ := snc.Marshal(po.TaskData)
 		entryTrace.Desc = fmt.Sprintf("参数 %s", string(dataJson))
 	case eumTraceType.Task:
 		entryTrace.Caption = fmt.Sprintf("本地任务 => %s", po.TaskName)
@@ -136,7 +137,7 @@ func (receiver *linkTraceWarp) addEntry(po trace.TraceContext) {
 
 // 服务所属的明细
 func (receiver *linkTraceWarp) addDetail(po trace.TraceContext) {
-	po.List.Foreach(func(traceDetail **trace.TraceDetail) {
+	for _, traceDetail := range po.List {
 		detail := *traceDetail
 		useTs := time.Duration(detail.EndTs-detail.StartTs) * time.Microsecond
 		detailTrace := response.LinkTraceVO{
@@ -169,14 +170,14 @@ func (receiver *linkTraceWarp) addDetail(po trace.TraceContext) {
 		case eumCallType.Http:
 			detailTrace.Caption = fmt.Sprintf("调用http <span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s</span> => %v %s <span style='background-color: #ead996;'>%s</span>", detail.Comment, detail.HttpStatusCode, detail.HttpMethod, detail.HttpUrl)
 			lstHeader := collections.NewList[string]()
-			for k, v := range detail.HttpHeaders.ToMap() {
+			for k, v := range detail.HttpHeaders {
 				lstHeader.Add(fmt.Sprintf("%s=%v", k, v))
 			}
 			detailTrace.Desc = fmt.Sprintf("头部：%s 入参：%s 出参：%s", lstHeader.ToString(","), detail.HttpRequestBody, detail.HttpResponseBody)
 		case eumCallType.Grpc:
 			detailTrace.Caption = fmt.Sprintf("调用http <span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s</span> => %v %s <span style='background-color: #ead996;'>%s</span>", detail.Comment, detail.GrpcStatusCode, detail.GrpcMethod, detail.GrpcUrl)
 			lstHeader := collections.NewList[string]()
-			for k, v := range detail.GrpcHeaders.ToMap() {
+			for k, v := range detail.GrpcHeaders {
 				lstHeader.Add(fmt.Sprintf("%s=%v", k, v))
 			}
 			detailTrace.Desc = fmt.Sprintf("头部：%s 入参：%s 出参：%s", lstHeader.ToString(","), detail.GrpcRequestBody, detail.GrpcResponseBody)
@@ -232,8 +233,8 @@ func (receiver *linkTraceWarp) addDetail(po trace.TraceContext) {
 			}).First()
 		}
 		if nextEntry.TraceId != "" {
-			receiver.PreDetail = *detail
+			receiver.PreDetail = detail
 			receiver.addEntry(nextEntry)
 		}
-	})
+	}
 }

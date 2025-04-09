@@ -61,9 +61,7 @@ type WatchKeyContextPO struct {
 }
 
 type ExceptionStackPO struct {
-	ExceptionCallFile     string `gorm:"not null;default:'';comment:调用者文件路径"`
-	ExceptionCallLine     int    `gorm:"not null;default:0;comment:调用者行号"`
-	ExceptionCallFuncName string `gorm:"not null;default:'';comment:调用者函数名称"`
-	ExceptionIsException  bool   `gorm:"not null;default:false;comment:是否执行异常"`
-	ExceptionMessage      string `gorm:"not null;default:'';comment:异常信息"`
+	ExceptionIsException bool                         `gorm:"not null;default:false;comment:是否执行异常"`
+	ExceptionMessage     string                       `gorm:"not null;default:'';comment:异常信息"`
+	Details              []trace.ExceptionStackDetail `gorm:"type:String;json;not null;comment:异常详情" es_type:"flattened"`
 }

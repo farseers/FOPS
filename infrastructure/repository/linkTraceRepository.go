@@ -368,11 +368,9 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 		}
 		if item.Exception != nil {
 			po.Exception = &model.ExceptionStackPO{
-				ExceptionCallFile:     item.Exception.ExceptionCallFile,
-				ExceptionCallLine:     item.Exception.ExceptionCallLine,
-				ExceptionCallFuncName: item.Exception.ExceptionCallFuncName,
-				ExceptionIsException:  item.Exception.ExceptionIsException,
-				ExceptionMessage:      item.Exception.ExceptionMessage,
+				Details:              item.Exception.Details,
+				ExceptionIsException: item.Exception.ExceptionIsException,
+				ExceptionMessage:     item.Exception.ExceptionMessage,
 			}
 		}
 		lst.Add(po)

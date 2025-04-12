@@ -11,12 +11,14 @@
         </el-select>
         <label class="ml10">执行端IP</label>
         <el-input class="ml5" size="default" v-model="state.appIp" placeholder="执行端IP" clearable style="max-width: 120px;"></el-input>
+        <label class="ml10">Method</label>
+        <el-input class="ml5" size="default" v-model="state.methodName" placeholder="Method" clearable style="max-width: 160px;"> </el-input>
         <label class="ml10">KEY</label>
-        <el-input class="ml5" size="default" v-model="state.key" placeholder="Key" clearable style="max-width: 180px;"> </el-input>
+        <el-input class="ml5" size="default" v-model="state.key" placeholder="Key" clearable style="max-width: 160px;"> </el-input>
         <label class="ml10">Field</label>
-        <el-input class="ml5" size="default" v-model="state.field" placeholder="Field" clearable style="max-width: 180px;"> </el-input>
-        <label class="ml10">耗时最高</label>
-        <el-select class="ml5" v-model="state.startMin" placeholder="往前推N分钟的数据" style="max-width: 120px;" size="default">
+        <el-input class="ml5" size="default" v-model="state.field" placeholder="Field" clearable style="max-width: 160px;"> </el-input>
+        <label class="ml10">耗时</label>
+        <el-select class="ml5" v-model="state.startMin" placeholder="往前推N分钟的数据" style="max-width: 90px;" size="default">
           <el-option label="全部" :value="0"></el-option>
           <el-option label="1小时" :value="60"></el-option>
           <el-option label="30分钟" :value="30"></el-option>
@@ -35,7 +37,7 @@
 				</el-button>
         <el-button size="default" type="warning" class="ml5" @click="linkTraceDeleteSlow">
 					<el-icon><ele-Delete /></el-icon>
-					删除七天前数据
+					清除
 				</el-button>
 			</div>
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
@@ -58,6 +60,7 @@
             <el-tag size="small" v-else type="success">{{scope.row.UseDesc}}</el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="MethodName" label="MethodName" show-overflow-tooltip></el-table-column>
         <el-table-column prop="RedisKey" label="Key" show-overflow-tooltip></el-table-column>
         <el-table-column prop="RedisField" label="Field" show-overflow-tooltip></el-table-column>
         <el-table-column prop="RedisRowsAffected" label="行数" show-overflow-tooltip></el-table-column>
@@ -112,6 +115,7 @@ const state = reactive({
   traceId:'',
   appIp:'',
   key:'',
+  methodName:'',
   field:'',
   startMin:0,
   searchUseTs:0,
@@ -143,6 +147,7 @@ const getTableData = () => {
     traceId:state.traceId,
     appName:state.appName,
     appIp:state.appIp,
+    methodName:state.methodName,
     key:state.key,
     field:state.field,
     startMin:state.startMin.toString(),

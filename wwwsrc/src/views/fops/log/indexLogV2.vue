@@ -31,7 +31,7 @@
 				</el-button>
         <el-button size="default" type="warning" class="ml5" @click="logDelete">
 					<el-icon><ele-Delete /></el-icon>
-					删除七天前数据
+					清除
 				</el-button>
 			</div>
       <el-card style="color: #fff;background-color:#393d49;height: 100%;line-height:35px;overflow: auto;" class="layout-padding-auto">

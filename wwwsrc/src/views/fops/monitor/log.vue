@@ -19,7 +19,7 @@
                     查询</el-button>
                     <el-button size="default" type="warning" class="ml5" @click="set_del">
 					<el-icon><ele-Delete /></el-icon>
-					删除七天前数据
+					清除
 				</el-button>
             </template>
             <template #main>
@@ -108,7 +108,7 @@ export default {
             }
         },
         set_del(){ //删除
-            let str = '确定删除七天前数据?'
+            let str = '确定清除?'
             const _this = this;
             ElMessageBox.confirm(`${str}`, '提示', {
                 confirmButtonText: '确认',

@@ -14,7 +14,7 @@
         <label class="ml5">任务名称</label>
         <el-input class="ml5" size="default" v-model="state.taskName" placeholder="任务名称" clearable style="max-width: 180px;"> </el-input>
         <label class="ml5">往前推N分钟的数据</label>
-        <el-select class="ml5" v-model="state.startMin" placeholder="往前推N分钟的数据" style="max-width: 120px;" size="default">
+        <el-select class="ml5" v-model="state.startMin" placeholder="往前推N分钟的数据" style="max-width: 90px;" size="default">
           <el-option label="全部" :value="0"></el-option>
           <el-option label="1小时" :value="60"></el-option>
           <el-option label="30分钟" :value="30"></el-option>
@@ -33,7 +33,7 @@
 				</el-button>
         <el-button size="default" type="warning" class="ml5" @click="linkTraceDelete">
 					<el-icon><ele-Delete /></el-icon>
-					删除七天前数据
+					清除
 				</el-button>
 			</div>
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">

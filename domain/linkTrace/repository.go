@@ -30,7 +30,7 @@ type Repository interface {
 	ToSlowHandList(traceId, appName, appIp, name string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[TraceDetailEO]
 	ToSlowHttpList(traceId, appName, appIp, method, url, body string, statusCode int, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[TraceDetailEO]
 	ToSlowMqList(traceId, appName, appIp, server, exchange, routingKey string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[TraceDetailEO]
-	ToSlowRedisList(traceId, appName, appIp, key, field string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[TraceDetailEO]
+	ToSlowRedisList(traceId, appName, appIp, methodName, key, field string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int) collections.PageList[TraceDetailEO]
 	Save(lstEO collections.List[trace.TraceContext]) error
 
 	SaveVisits(lst collections.List[VisitsEO]) (int64, error)

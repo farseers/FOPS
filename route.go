@@ -86,7 +86,7 @@ var route = []webapi.Route{
     {"GET", "/linkTrace/slowHandList", linkTraceApp.SlowHandList, "", []context.IFilter{application.Jwt{}}, []string{"traceId", "appName", "appIp", "name", "searchUseTs", "onlyViewException", "startMin", "pageSize", "pageIndex", ""}},
     {"GET", "/linkTrace/slowHttpList", linkTraceApp.SlowHttpList, "", []context.IFilter{application.Jwt{}}, []string{"traceId", "appName", "appIp", "method", "url", "body", "statusCode", "searchUseTs", "onlyViewException", "startMin", "pageSize", "pageIndex", ""}},
     {"GET", "/linkTrace/slowMqList", linkTraceApp.SlowMqList, "", []context.IFilter{application.Jwt{}}, []string{"traceId", "appName", "appIp", "server", "exchange", "routingKey", "searchUseTs", "onlyViewException", "startMin", "pageSize", "pageIndex", ""}},
-    {"GET", "/linkTrace/slowRedisList", linkTraceApp.SlowRedisList, "", []context.IFilter{application.Jwt{}}, []string{"traceId", "appName", "appIp", "key", "field", "searchUseTs", "onlyViewException", "startMin", "pageSize", "pageIndex", ""}},
+    {"GET", "/linkTrace/slowRedisList", linkTraceApp.SlowRedisList, "", []context.IFilter{application.Jwt{}}, []string{"traceId", "appName", "appIp", "methodName", "key", "field", "searchUseTs", "onlyViewException", "startMin", "pageSize", "pageIndex", ""}},
     {"POST", "/linkTrace/upload", linkTraceApp.Upload, "", []context.IFilter{}, []string{"req", ""}},
     {"GET", "/linkTrace/visits", linkTraceApp.Visits, "", []context.IFilter{}, []string{"request", ""}},
     {"POST", "/user/passport/Login", login.Login, "", []context.IFilter{}, []string{"req", ""}},

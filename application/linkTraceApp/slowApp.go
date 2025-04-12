@@ -135,7 +135,7 @@ func SlowMqList(traceId, appName, appIp, server, exchange, routingKey string, se
 // SlowRedisList 慢Redis列表
 // @get slowRedisList
 // @filter application.Jwt
-func SlowRedisList(traceId, appName, appIp, key, field string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTrace.TraceDetailEO] {
+func SlowRedisList(traceId, appName, appIp, methodName, key, field string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[linkTrace.TraceDetailEO] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -145,8 +145,9 @@ func SlowRedisList(traceId, appName, appIp, key, field string, searchUseTs int64
 	traceId = strings.TrimSpace(traceId)
 	appName = strings.TrimSpace(appName)
 	appIp = strings.TrimSpace(appIp)
+	methodName = strings.TrimSpace(methodName)
 	key = strings.TrimSpace(key)
 	field = strings.TrimSpace(field)
 
-	return linkTraceRepository.ToSlowRedisList(traceId, appName, appIp, key, field, searchUseTs, onlyViewException, startMin, pageSize, pageIndex)
+	return linkTraceRepository.ToSlowRedisList(traceId, appName, appIp, methodName, key, field, searchUseTs, onlyViewException, startMin, pageSize, pageIndex)
 }

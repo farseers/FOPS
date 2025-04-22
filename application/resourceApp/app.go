@@ -11,6 +11,7 @@ import (
 
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/webapi/websocket"
 )
@@ -22,6 +23,7 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 	context.ForReceiverFunc(func(req *request.Request) {
 		// 更新主机节点资源信息
 		if req.Host.CpuUsagePercent > 0 {
+			flog.Infof("%+v", req.Host.Disk)
 			req.Host.MemoryUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", req.Host.MemoryUsagePercent), 64)
 			memoryTotal := fmt.Sprintf("%.1fGB", parse.ToFloat64(req.Host.MemoryTotal)/1024/1024/1024)
 			memoryUsage, _ := strconv.ParseFloat(fmt.Sprintf("%.1f", parse.ToFloat64(req.Host.MemoryUsage)/1024/1024), 64)
@@ -65,8 +67,9 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 				node.MemoryUsagePercent = req.Host.MemoryUsagePercent
 				node.MemoryUsage = memoryUsage
 				node.UpdateAt = time.Now()
+				node.IsHealth = true
 
-				node.Disk = nil
+				var diskList []docker.DiskVO
 				var diskTotal uint64
 				for _, disk := range req.Host.Disk {
 					// 总磁盘、磁盘使用
@@ -74,7 +77,7 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 					diskUsagePercent, _ := strconv.ParseFloat(fmt.Sprintf("%.1f", disk.DiskUsagePercent), 64)
 
 					diskTotal += disk.DiskTotal
-					node.Disk = append(node.Disk, docker.DiskVO{
+					diskList = append(diskList, docker.DiskVO{
 						Path:             disk.Path,
 						Disk:             fmt.Sprintf("%.1fGB", parse.ToFloat64(disk.DiskTotal)/1024/1024/1024),
 						DiskUsage:        diskUsage,
@@ -82,7 +85,7 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 					})
 				}
 				node.DiskTotal = fmt.Sprintf("%.1fGB", parse.ToFloat64(diskTotal)/1024/1024/1024)
-				node.IsHealth = true
+				node.Disk = diskList
 			}
 		}
 

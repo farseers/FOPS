@@ -22,19 +22,9 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 	context.ForReceiverFunc(func(req *request.Request) {
 		// 更新主机节点资源信息
 		if req.Host.CpuUsagePercent > 0 {
-			req.Host.CpuUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", req.Host.CpuUsagePercent), 64)
 			req.Host.MemoryUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", req.Host.MemoryUsagePercent), 64)
-			req.Host.DiskUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", req.Host.DiskUsagePercent), 64)
-
-			// 总内存、内存使用
 			memoryTotal := fmt.Sprintf("%.1fGB", parse.ToFloat64(req.Host.MemoryTotal)/1024/1024/1024)
-			memoryUsage := parse.ToFloat64(req.Host.MemoryUsage) / 1024 / 1024
-			memoryUsage, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", memoryUsage), 64)
-
-			// 总磁盘、磁盘使用
-			diskTotal := fmt.Sprintf("%.1fGB", parse.ToFloat64(req.Host.DiskTotal)/1024/1024/1024)
-			diskUsage := parse.ToFloat64(req.Host.DiskUsage) / 1024 / 1024 / 1024
-			diskUsage, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", diskUsage), 64)
+			memoryUsage, _ := strconv.ParseFloat(fmt.Sprintf("%.1f", parse.ToFloat64(req.Host.MemoryUsage)/1024/1024), 64)
 
 			// 更新集群节点资源信息
 			node := clusterNode.NodeList.Find(func(item *docker.DockerNodeVO) bool {
@@ -63,6 +53,8 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 
 			// 更新集群节点资源信息
 			if node != nil {
+				req.Host.CpuUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", req.Host.CpuUsagePercent), 64)
+
 				node.EngineVersion = req.DockerEngineVersion
 				node.OS = req.Host.OS
 				node.Architecture = req.Host.Architecture
@@ -72,10 +64,24 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 				node.CpuUsagePercent = req.Host.CpuUsagePercent
 				node.MemoryUsagePercent = req.Host.MemoryUsagePercent
 				node.MemoryUsage = memoryUsage
-				node.Disk = diskTotal
-				node.DiskUsagePercent = req.Host.DiskUsagePercent
-				node.DiskUsage = diskUsage
 				node.UpdateAt = time.Now()
+
+				node.Disk = nil
+				var diskTotal uint64
+				for _, disk := range req.Host.Disk {
+					// 总磁盘、磁盘使用
+					diskUsage, _ := strconv.ParseFloat(fmt.Sprintf("%.1f", parse.ToFloat64(disk.DiskUsage)/1024/1024/1024), 64)
+					diskUsagePercent, _ := strconv.ParseFloat(fmt.Sprintf("%.1f", disk.DiskUsagePercent), 64)
+
+					diskTotal += disk.DiskTotal
+					node.Disk = append(node.Disk, docker.DiskVO{
+						Path:             disk.Path,
+						Disk:             fmt.Sprintf("%.1fGB", parse.ToFloat64(disk.DiskTotal)/1024/1024/1024),
+						DiskUsage:        diskUsage,
+						DiskUsagePercent: diskUsagePercent,
+					})
+				}
+				node.DiskTotal = fmt.Sprintf("%.1fGB", parse.ToFloat64(diskTotal)/1024/1024/1024)
 				node.IsHealth = true
 			}
 		}

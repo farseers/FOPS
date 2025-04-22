@@ -65,10 +65,14 @@ func MonitorFopsJob(*tasks.TaskContext) {
 			Value:    parse.ToString(node.MemoryUsagePercent),
 			CreateAt: dateTime.Now(),
 		})
+		// 多个硬盘路径，取最大占用值
+		diskUsagePercent := collections.NewList(node.Disk...).Max(func(item docker.DiskVO) any {
+			return item.DiskUsagePercent
+		}).(float64)
 		addMonitorData.Add(monitor.DataEO{
 			AppName:  fmt.Sprintf("%s(%s)", node.IP, node.NodeName),
 			Key:      "disk",
-			Value:    parse.ToString(node.DiskUsagePercent),
+			Value:    parse.ToString(diskUsagePercent),
 			CreateAt: dateTime.Now(),
 		})
 		addMonitorData.Add(monitor.DataEO{

@@ -5,34 +5,28 @@
             <div v-for="item, index in state.tableData" :key="index.toString() + 'conly1'" class="conlyCol">
                 <el-card :class="item.IsHealth ? 'conlyCard' : 'conlyCard conly_w'">
                     <div class="name" style="text-align: center">
-                        <span>{{ item.IP }} <el-tag type="info" size="small">{{ item.NodeName }}</el-tag> <img
-                                v-show="item.OS == 'linux'" :src="linux" alt="" /></span>
+                        <span>{{ item.IP }} <el-tag type="info" size="small">{{ item.NodeName }}</el-tag> <img v-show="item.OS == 'linux'" :src="linux" alt="" /></span>
                     </div>
                     <div style="text-align: center">
                         <el-tag effect="dark" size="small" style="margin-right: 5px;"
                             :type="item.Status == 'Ready' ? 'success' : 'danger'">{{ item.Status }}</el-tag>
                         <el-tag effect="dark" size="small" style="margin-right: 5px;"
-                            :type="item.Availability == 'Active' ? 'success' : 'danger'">{{ item.Availability
-                            }}</el-tag>
-                        <el-tag effect="dark" size="small" style="cursor: pointer;" type="success"
-                            @click="termRet(item)">终端</el-tag>
+                            :type="item.Availability == 'Active' ? 'success' : 'danger'">{{ item.Availability }}</el-tag>
+                        <el-tag effect="dark" size="small" style="cursor: pointer;" type="success" @click="termRet(item)">终端</el-tag>
                     </div>
                     <div v-show="item.IsMaster">
-                        <el-tag type="danger" size="small">manager</el-tag> {{ item.Architecture }} | {{
-                        item.EngineVersion }}
+                        <el-tag type="danger" size="small">manager</el-tag> {{ item.Architecture }} | {{ item.EngineVersion }}
                     </div>
                     <div v-show="!item.IsMaster">
                         <el-tag size="small">worker</el-tag> {{ item.Architecture }} | {{ item.EngineVersion }}
                     </div>
-                    <div><el-tag type="info" size="small">{{ item.OS }}</el-tag> <b>{{ item.Memory }}</b> | <b>{{
-                            item.Disk }}</b></div>
+                    <div><el-tag type="info" size="small">{{ item.OS }}</el-tag> <b>{{ item.Memory }}</b> | <b>{{ item.DiskTotal }}</b></div>
 
-                    <div><el-tag type="info" size="small">CPU</el-tag> <b>{{ item.CpuUsagePercent }}</b>% ({{ item.CPUs
-                        }}核)</div>
-                    <div><el-tag type="info" size="small">内存</el-tag> <b>{{ item.MemoryUsagePercent }}</b>% / <b>{{
-                            item.MemoryUsage }}</b> MB</div>
-                    <div><el-tag type="info" size="small">硬盘</el-tag> <b>{{ item.DiskUsagePercent }}</b>% / <b>{{
-                            item.DiskUsage }}</b> GB</div>
+                    <div><el-tag type="info" size="small">CPU</el-tag> <b>{{ item.CpuUsagePercent }}</b>% ({{ item.CPUs }}核)</div>
+                    <div><el-tag type="info" size="small">内存</el-tag> <b>{{ item.MemoryUsagePercent }}</b>% / <b>{{ item.MemoryUsage }}</b> MB</div>
+                    <div v-for="disk, diskIndex in item.Disk" :key="diskIndex.toString() + 'Disk'">
+                        <el-tag type="info" size="small">硬盘{{ disk.Path }}</el-tag> <b>{{ disk.DiskUsagePercent }}</b>% / <b>{{ disk.DiskUsage }}</b> GB
+                    </div>
                     <!-- <div class="line" v-show="item.Label && item.Label.length>0"></div> -->
                     <el-tag class="ks" v-for="row, j in item.Label" :key="index.toString() + j.toString() + 'conly2'">
                         <div>{{ row.Name }} = {{ row.Value }}</div>

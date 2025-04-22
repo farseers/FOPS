@@ -11,7 +11,6 @@ import (
 
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
-	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/webapi/websocket"
 )
@@ -23,7 +22,6 @@ func Resource(context *websocket.Context[request.Request], clusterNodeRepository
 	context.ForReceiverFunc(func(req *request.Request) {
 		// 更新主机节点资源信息
 		if req.Host.CpuUsagePercent > 0 {
-			flog.Infof("%+v", req.Host.Disk)
 			req.Host.MemoryUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", req.Host.MemoryUsagePercent), 64)
 			memoryTotal := fmt.Sprintf("%.1fGB", parse.ToFloat64(req.Host.MemoryTotal)/1024/1024/1024)
 			memoryUsage, _ := strconv.ParseFloat(fmt.Sprintf("%.1f", parse.ToFloat64(req.Host.MemoryUsage)/1024/1024), 64)

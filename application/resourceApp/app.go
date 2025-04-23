@@ -17,7 +17,7 @@ import (
 
 // WsReceive 监控数据接收
 // @ws resource
-func Resource(context *websocket.Context[request.Request], clusterNodeRepository clusterNode.Repository) {
+func Resource(context *websocket.Context[request.Request]) {
 	// 如果appId为空直接返回
 	context.ForReceiverFunc(func(req *request.Request) {
 		// 更新主机节点资源信息

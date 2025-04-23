@@ -7,38 +7,38 @@ toolchain go1.23.3
 exclude github.com/mitchellh/osext v0.0.0-20151018003038-5e2d6d41470f
 
 require (
-	github.com/farseer-go/collections v0.16.0
-	github.com/farseer-go/data v0.16.0
-	github.com/farseer-go/data/driver/clickhouse v0.16.0
-	github.com/farseer-go/docker v0.16.0
-	github.com/farseer-go/elasticSearch v0.16.0
-	github.com/farseer-go/eventBus v0.16.0
-	github.com/farseer-go/fs v0.16.0
-	github.com/farseer-go/mapper v0.16.0
-	github.com/farseer-go/monitor v0.16.0
-	github.com/farseer-go/queue v0.16.0
-	github.com/farseer-go/tasks v0.16.0
-	github.com/farseer-go/utils v0.16.0
-	github.com/farseer-go/webapi v0.16.0
+	github.com/farseer-go/collections v0.16.10
+	github.com/farseer-go/data v0.16.10
+	github.com/farseer-go/data/driver/clickhouse v0.16.10
+	github.com/farseer-go/docker v0.16.10
+	github.com/farseer-go/elasticSearch v0.16.10
+	github.com/farseer-go/eventBus v0.16.10
+	github.com/farseer-go/fs v0.16.10
+	github.com/farseer-go/mapper v0.16.10
+	github.com/farseer-go/monitor v0.16.10
+	github.com/farseer-go/queue v0.16.10
+	github.com/farseer-go/tasks v0.16.10
+	github.com/farseer-go/utils v0.16.10
+	github.com/farseer-go/webapi v0.16.10
 	github.com/robfig/cron/v3 v3.0.1
-	golang.org/x/crypto v0.36.0
+	golang.org/x/crypto v0.37.0
 )
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/ClickHouse/ch-go v0.65.1 // indirect
-	github.com/ClickHouse/clickhouse-go/v2 v2.33.1 // indirect
+	github.com/ClickHouse/clickhouse-go/v2 v2.34.0 // indirect
 	github.com/aliyun/alibabacloud-oss-go-sdk-v2 v1.2.1 // indirect
 	github.com/andybalholm/brotli v1.1.1 // indirect
 	github.com/ebitengine/purego v0.8.2 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
 	github.com/go-faster/city v1.0.1 // indirect
 	github.com/go-faster/errors v0.7.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.26.0 // indirect
-	github.com/go-sql-driver/mysql v1.9.1 // indirect
+	github.com/go-sql-driver/mysql v1.9.2 // indirect
 	github.com/golang-jwt/jwt/v5 v5.2.2 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/govalues/decimal v0.1.36 // indirect
@@ -59,19 +59,19 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
-	github.com/shirou/gopsutil/v4 v4.25.2 // indirect
+	github.com/shirou/gopsutil/v4 v4.25.3 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/timandy/routine v1.1.5 // indirect
 	github.com/tklauser/go-sysconf v0.3.15 // indirect
 	github.com/tklauser/numcpus v0.10.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.59.0 // indirect
+	github.com/valyala/fasthttp v1.61.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.opentelemetry.io/otel v1.35.0 // indirect
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
-	golang.org/x/net v0.38.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
+	golang.org/x/net v0.39.0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/text v0.24.0 // indirect
 	golang.org/x/time v0.11.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gorm.io/driver/clickhouse v0.6.1 // indirect

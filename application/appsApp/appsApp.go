@@ -111,11 +111,10 @@ func Delete(appName string, appsRepository apps.Repository) {
 // DropDownList 应用列表
 // @post dropDownList
 // @filter application.Jwt
-func DropDownList(isAll bool, appsRepository apps.Repository, clusterNodeRepository clusterNode.Repository) collections.List[apps.ShortEO] {
+func DropDownList(isAll bool, appsRepository apps.Repository) collections.List[apps.ShortEO] {
 	resList := appsRepository.ToShortList(isAll)
 	// cluster_node 节点信息
-	nodeList := clusterNodeRepository.GetClusterNodeList()
-	nodeList.Foreach(func(node *docker.DockerNodeVO) {
+	clusterNode.NodeList.Foreach(func(node *docker.DockerNodeVO) {
 		resList.Add(apps.ShortEO{AppName: fmt.Sprintf("%s(%s)", node.IP, node.NodeName)})
 	})
 	return resList

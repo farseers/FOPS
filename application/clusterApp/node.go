@@ -11,8 +11,6 @@ import (
 // NodeList 集群节点列表
 // @get nodeList
 // @filter application.Jwt
-func NodeList(clusterNodeRepository clusterNode.Repository) collections.List[docker.DockerNodeVO] {
-	//lst := clusterNodeRepository.GetClusterNodeList()
-	//return lst
+func NodeList() collections.List[docker.DockerNodeVO] {
 	return clusterNode.NodeList
 }

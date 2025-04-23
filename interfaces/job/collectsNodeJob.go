@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/farseer-go/docker"
-	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/tasks"
 )
@@ -63,10 +62,4 @@ func CollectsNodeJob(*tasks.TaskContext) {
 			item.IsHealth = false
 		}
 	})
-	// 间隔更新
-	if time.Now().Second()%30 == 0 {
-		// 更新集群节点信息
-		clusterNodeRepository := container.Resolve[clusterNode.Repository]()
-		clusterNodeRepository.UpdateClusterNode(clusterNode.NodeList)
-	}
 }

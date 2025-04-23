@@ -6,7 +6,6 @@ import (
 	"fops/domain/appsBranch"
 	"fops/domain/backupData"
 	"fops/domain/cluster"
-	"fops/domain/clusterNode"
 	"fops/domain/configure"
 	"fops/domain/linkTrace"
 	"fops/domain/logData"
@@ -20,8 +19,6 @@ import (
 func InitRepository() {
 	// 应用
 	container.Register(func() apps.Repository { return &appsRepository{} })
-	// 集群节点
-	container.Register(func() clusterNode.Repository { return &clusterNodeRepository{} })
 	// 集群
 	container.Register(func() cluster.Repository { return &clusterRepository{} })
 	// 链路追踪

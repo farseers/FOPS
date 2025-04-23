@@ -5,7 +5,6 @@ import (
 	"fops/domain/apps"
 	"fops/domain/clusterNode"
 	"fops/domain/monitor"
-	"runtime/debug"
 	"strings"
 
 	"github.com/farseer-go/collections"
@@ -20,13 +19,10 @@ import (
 // MonitorFopsJob 监控fops数据
 func MonitorFopsJob(*tasks.TaskContext) {
 	appsRepository := container.Resolve[apps.Repository]()
-	clusterNodeRepository := container.Resolve[clusterNode.Repository]()
 	// 规则
 	monitorRepository := container.Resolve[monitor.Repository]()
 	// apps 信息
 	appList := appsRepository.ToList()
-	// cluster_node 节点信息
-	nodeList := clusterNodeRepository.GetClusterNodeList()
 	addMonitorData := collections.NewList[monitor.DataEO]()
 	// 应用数据
 	appList.Foreach(func(app *apps.DomainObject) {
@@ -52,7 +48,7 @@ func MonitorFopsJob(*tasks.TaskContext) {
 		})
 	})
 	// 节点数据
-	nodeList.Foreach(func(node *docker.DockerNodeVO) {
+	clusterNode.NodeList.Foreach(func(node *docker.DockerNodeVO) {
 		addMonitorData.Add(monitor.DataEO{
 			AppName:  fmt.Sprintf("%s(%s)", node.IP, node.NodeName),
 			Key:      "cpu",
@@ -103,19 +99,4 @@ func MonitorFopsJob(*tasks.TaskContext) {
 		})
 		appNameList.Add(item.AppName)
 	})
-	// // 刷新时间
-	// if appNameList.Count() > 0 {
-	// 	appNameList.Distinct().Foreach(func(item *string) {
-	// 		if !monitorRepository.IsExistSyncAt(*item) {
-	// 			err := monitorRepository.SaveSyncAt(monitor.NewSyncAtEO(*item))
-	// 			exception.ThrowWebExceptionError(403, err)
-	// 		} else {
-	// 			// 更新时间
-	// 			err := monitorRepository.UpdateSyncAt(*item, time.Now())
-	// 			exception.ThrowWebExceptionError(403, err)
-	// 		}
-	// 	})
-	// }
-
-	debug.FreeOSMemory()
 }

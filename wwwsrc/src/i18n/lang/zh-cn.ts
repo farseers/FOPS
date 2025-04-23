@@ -79,7 +79,7 @@ export default {
 		ServerNode:'服务器节点',
 		ColonyNode:'监控中心',
 		AppCenter:'应用中心',
-		BuildDeployment:'手动构建',
+		BuildDeployment:'应用部署',
 		AutoBuildDeployment:'自动构建',
 		ClusterAdd:'集群管理',
 		AppAdd:'添加应用',

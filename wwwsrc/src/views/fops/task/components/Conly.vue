@@ -22,10 +22,24 @@
                     </div>
                     <div><el-tag type="info" size="small">{{ item.OS }}</el-tag> <b>{{ item.Memory }}</b> | <b>{{ item.DiskTotal }}</b></div>
 
-                    <div><el-tag type="info" size="small">CPU</el-tag> <b>{{ item.CpuUsagePercent }}</b>% ({{ item.CPUs }}核)</div>
-                    <div><el-tag type="info" size="small">内存</el-tag> <b>{{ item.MemoryUsagePercent }}</b>% / <b>{{ item.MemoryUsage }}</b> MB</div>
+                    <div>
+                        <el-tag type="info" size="small">CPU</el-tag> 
+                        <el-tag v-if="item.CpuUsagePercent >= 300" size="small" type="danger">{{ item.CpuUsagePercent }}</el-tag>
+                        <el-tag v-else-if="item.CpuUsagePercent >= 200" size="small" type="warning">{{ item.CpuUsagePercent }}</el-tag>
+                        <b v-else>{{ item.CpuUsagePercent }}</b>%
+                         ({{ item.CPUs }}核)</div>
+                    <div>
+                        <el-tag type="info" size="small">内存</el-tag>
+                        <el-tag v-if="item.MemoryUsagePercent >= 80" size="small" type="danger">{{ item.MemoryUsagePercent }}</el-tag>
+                        <el-tag v-else-if="item.MemoryUsagePercent >= 50" size="small" type="warning">{{ item.MemoryUsagePercent }}</el-tag>
+                        <b v-else>{{ item.MemoryUsagePercent }}</b>%
+                         / <b>{{ item.MemoryUsage }}</b> MB</div>
                     <div v-for="disk, diskIndex in item.Disk" :key="diskIndex.toString() + 'Disk'">
-                        <el-tag type="info" size="small">硬盘{{ disk.Path }}</el-tag> <b>{{ disk.DiskUsagePercent }}</b>% / <b>{{ disk.DiskUsage }}</b> GB
+                        <el-tag type="info" size="small">硬盘{{ disk.Path }}</el-tag>
+                        <el-tag v-if="disk.DiskUsagePercent >= 80" size="small" type="danger">{{ disk.DiskUsagePercent }}</el-tag>
+                        <el-tag v-else-if="disk.DiskUsagePercent >= 50" size="small" type="warning">{{ disk.DiskUsagePercent }}</el-tag>
+                        <b v-else>{{ disk.DiskUsagePercent }}</b>%
+                        / <b> {{ disk.DiskUsage }}</b> GB
                     </div>
                     <!-- <div class="line" v-show="item.Label && item.Label.length>0"></div> -->
                     <el-tag class="ks" v-for="row, j in item.Label" :key="index.toString() + j.toString() + 'conly2'">

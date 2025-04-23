@@ -55,8 +55,18 @@
                                 style="margin-left: 5px;cursor: pointer">{{ item.TaskFailCount }}</el-tag>
                         </el-tooltip>
                     </div>
-                  <div><el-tag type="info" size="small">CPU</el-tag> <b>{{ item.CpuUsagePercent }}</b>%</div>
-                  <div><el-tag type="info" size="small">内存</el-tag> <b>{{ item.MemoryUsagePercent }}</b>% / <b>{{ item.MemoryUsage }}</b> MB</div>
+                  <div>
+                    <el-tag type="info" size="small">CPU</el-tag>
+                    <el-tag v-if="item.CpuUsagePercent >= 300" size="small" type="danger">{{ item.CpuUsagePercent }}</el-tag>
+                    <el-tag v-else-if="item.CpuUsagePercent >= 200" size="small" type="warning">{{ item.CpuUsagePercent }}</el-tag>
+                    <b v-else>{{ item.CpuUsagePercent }}</b>%
+                    </div>
+                  <div>
+                    <el-tag type="info" size="small">内存</el-tag>
+                    <el-tag v-if="item.MemoryUsagePercent >= 80" size="small" type="danger">{{ item.MemoryUsagePercent }}</el-tag>
+                    <el-tag v-else-if="item.MemoryUsagePercent >= 50" size="small" type="warning">{{ item.MemoryUsagePercent }}</el-tag>
+                    <b v-else>{{ item.MemoryUsagePercent }}</b>%
+                     / <b>{{ item.MemoryUsage }}</b> MB</div>
                 </el-card>
             </div>
         </div>

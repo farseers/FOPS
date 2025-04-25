@@ -12,6 +12,7 @@ import (
 	"github.com/farseer-go/data"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/mapper"
 	"github.com/farseer-go/webapi/check"
@@ -102,6 +103,7 @@ func Backup(id string, backupDataRepository backupData.Repository) {
 	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
 
 	if err := do.Backup(); err != nil {
+		flog.Warningf("数据库:%s 备份失败:%v", id, err)
 		exception.ThrowRefuseExceptionError(err)
 	}
 	backupDataRepository.UpdateAt(do.Id, do)

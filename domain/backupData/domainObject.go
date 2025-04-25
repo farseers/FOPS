@@ -315,6 +315,8 @@ func (receiver *DomainObject) RecoverBackupFile(database string, fileName string
 	}
 	if err == nil {
 		flog.Infof("数据库:%s 还原成功", database)
+	} else {
+		flog.Warningf("数据库:%s 还原失败:%v", database, err)
 	}
 	return err
 }

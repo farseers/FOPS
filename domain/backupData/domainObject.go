@@ -359,7 +359,6 @@ func (receiver *DomainObject) RecoverClickhouse(database string, fileName string
 			flog.Infof("还原%s 第%d次执行 使用了：%s", database, executeIndex, sw.GetMillisecondsText())
 		}
 	}
-
 	// 检查文件读取错误
 	if err := scanner.Err(); err != nil {
 		return fmt.Errorf("读取 %s SQL 的文件失败: %v", fileName, err)

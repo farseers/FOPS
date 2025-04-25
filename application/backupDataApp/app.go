@@ -5,6 +5,7 @@ import (
 	"fops/application/backupDataApp/request"
 	"fops/domain/_/eumBackupStoreType"
 	"fops/domain/backupData"
+	"runtime/debug"
 	"time"
 
 	"github.com/farseer-go/collections"
@@ -200,5 +201,6 @@ func RecoverBackupFile(backupId string, database string, fileName string, backup
 	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
 
 	err := do.RecoverBackupFile(database, fileName)
+	debug.FreeOSMemory()
 	exception.ThrowRefuseExceptionError(err)
 }

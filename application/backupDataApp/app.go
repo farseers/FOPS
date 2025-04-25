@@ -201,6 +201,7 @@ func RecoverBackupFile(backupId string, database string, fileName string, backup
 	check.IsTrue(do.IsNil(), 403, "备份计划不存在")
 
 	err := do.RecoverBackupFile(database, fileName)
+	// 立即释放内存返回给操作系统
 	debug.FreeOSMemory()
 	exception.ThrowRefuseExceptionError(err)
 }

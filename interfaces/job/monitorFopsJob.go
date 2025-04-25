@@ -100,5 +100,6 @@ func MonitorFopsJob(*tasks.TaskContext) {
 		})
 		appNameList.Add(item.AppName)
 	})
+	// 立即释放内存返回给操作系统
 	debug.FreeOSMemory()
 }

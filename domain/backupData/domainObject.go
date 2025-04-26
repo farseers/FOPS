@@ -172,6 +172,7 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (Bac
 	file.WriteString(backupRoot+fileName, "")
 
 	for _, tableName := range tables {
+		swTotal := stopwatch.StartNew()
 		// 删除表
 		file.AppendLine(backupRoot+fileName, fmt.Sprintf("DROP TABLE IF EXISTS %s.%s;", database, tableName))
 
@@ -193,38 +194,52 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (Bac
 
 		// 得到总的数据量（用于分页计算）
 		var totalCount float64
+		// 实际读取到的数量
+		var realTotalCount float64
 		_, err = dbContext.ExecuteSqlToValue(&totalCount, fmt.Sprintf("SELECT count() FROM %s.%s;", database, tableName))
 		if err != nil {
 			return BackupHistoryData{}, err
 		}
 
-		// 导出数据
-		var realTotalCount float64
-		pageSize := float64(10000)
-		pageCount := math.Ceil(totalCount / pageSize)
-		for pageIndex := float64(1); pageIndex <= pageCount; pageIndex++ {
-			sw := stopwatch.StartNew()
-
-			offset := (pageIndex - 1) * pageSize
-
-			var results []string
-			query := fmt.Sprintf("SELECT toString(tuple(*)) FROM %s.%s %s LIMIT %d OFFSET %d FORMAT SQLInsert;", database, tableName, orderBy, int(pageSize), int(offset))
-			_, err := dbContext.ExecuteSqlToResult(&results, query)
-			if err != nil {
+		// 先读取分区表
+		var partitions []string
+		if _, err = dbContext.ExecuteSqlToResult(&partitions, fmt.Sprintf("SELECT DISTINCT _partition_id FROM %s.%s order by _partition_id;", database, tableName)); err != nil {
+			return BackupHistoryData{}, err
+		}
+		for _, partition := range partitions {
+			var partitionTotalCount float64
+			if _, err = dbContext.ExecuteSqlToValue(&partitionTotalCount, fmt.Sprintf("SELECT count() FROM %s.%s WHERE _partition_id = ?;", database, tableName), partition); err != nil {
 				return BackupHistoryData{}, err
 			}
 
-			realTotalCount += float64(len(results))
+			// 导出数据
+			pageSize := float64(10000)
+			pageCount := math.Ceil(partitionTotalCount / pageSize)
+			for pageIndex := float64(1); pageIndex <= pageCount; pageIndex++ {
+				sw := stopwatch.StartNew()
 
-			insertSql := fmt.Sprintf("INSERT INTO %s.%s VALUES %s;", database, tableName, strings.Join(results, ",\r\n"))
-			file.AppendLine(backupRoot+fileName, insertSql)
+				offset := (pageIndex - 1) * pageSize
 
-			flog.Infof("导出%s.%s 第%d/%d页 %d条数据 使用了：%s", database, tableName, int64(pageIndex), int64(pageCount), len(results), sw.GetMillisecondsText())
+				var results []string
+				query := fmt.Sprintf("SELECT toString(tuple(*)) FROM %s.%s WHERE _partition_id = ? %s LIMIT %d OFFSET %d FORMAT SQLInsert;", database, tableName, orderBy, int(pageSize), int(offset))
+				_, err := dbContext.ExecuteSqlToResult(&results, query, partition)
+				if err != nil {
+					return BackupHistoryData{}, err
+				}
+
+				realTotalCount += float64(len(results))
+
+				insertSql := fmt.Sprintf("INSERT INTO %s.%s VALUES %s;", database, tableName, strings.Join(results, ",\r\n"))
+				file.AppendLine(backupRoot+fileName, insertSql)
+
+				flog.Infof("导出%s.%s %s 第%d/%d页 %d条数据 使用了：%s", database, tableName, partition, int64(pageIndex), int64(pageCount), len(results), sw.GetMillisecondsText())
+			}
 		}
 		// 导出的数据与查到的数据数量不一致
 		if totalCount != realTotalCount {
 			return BackupHistoryData{}, fmt.Errorf("%s.%s 导出的数据与查到的数据数量不一致", database, tableName)
 		}
+		flog.Infof("%s.%s 共导出%d条数据 总共使用了：%s", database, tableName, int64(realTotalCount), swTotal.GetMillisecondsText())
 	}
 
 	// 压缩

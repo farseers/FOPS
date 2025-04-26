@@ -215,8 +215,10 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (Bac
 			// 导出数据
 			pageSize := float64(10000)
 			pageCount := math.Ceil(partitionTotalCount / pageSize)
+
+			flog.Infof("正在导出%s.%s %s 共%d条数据 %d页", database, tableName, partition, int64(partitionTotalCount), int64(pageCount))
 			for pageIndex := float64(1); pageIndex <= pageCount; pageIndex++ {
-				sw := stopwatch.StartNew()
+				//sw := stopwatch.StartNew()
 
 				offset := (pageIndex - 1) * pageSize
 
@@ -232,7 +234,7 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (Bac
 				insertSql := fmt.Sprintf("INSERT INTO %s.%s VALUES %s;", database, tableName, strings.Join(results, ",\r\n"))
 				file.AppendLine(backupRoot+fileName, insertSql)
 
-				flog.Infof("导出%s.%s %s 第%d/%d页 %d条数据 使用了：%s", database, tableName, partition, int64(pageIndex), int64(pageCount), len(results), sw.GetMillisecondsText())
+				//flog.Infof("导出%s.%s %s 第%d/%d页 %d条数据 使用了：%s", database, tableName, partition, int64(pageIndex), int64(pageCount), len(results), sw.GetMillisecondsText())
 			}
 		}
 		// 导出的数据与查到的数据数量不一致

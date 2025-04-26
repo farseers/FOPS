@@ -203,11 +203,6 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (Bac
 		pageSize := float64(10000)
 		pageCount := math.Ceil(totalCount / pageSize)
 		for pageIndex := float64(1); pageIndex <= pageCount; pageIndex++ {
-			// 第二页起，休眠500ms
-			if pageIndex > 1 {
-				time.Sleep(500 * time.Millisecond)
-			}
-
 			sw := stopwatch.StartNew()
 
 			offset := (pageIndex - 1) * pageSize

@@ -7,7 +7,7 @@
             <ul class="custom-list">
               <li>
                 {{state.ruleForm.CreateAt}}
-                <el-tag size="small">{{state.ruleForm.StatusCode}}</el-tag> {{state.ruleForm.RequestIp}} <el-tag type="success" size="small">{{state.ruleForm.Method}}</el-tag>
+                <el-tag size="small">{{state.ruleForm.HttpStatusCode}}</el-tag> {{state.ruleForm.RequestIp}} <el-tag type="success" size="small">{{state.ruleForm.HttpMethod}}</el-tag>
                 {{state.ruleForm.Url}}
                 整体耗时：
                   <el-tag size="small" v-if="state.ruleForm.UseTs > 100000000" type="danger">{{state.ruleForm.UseDesc}}</el-tag>
@@ -15,9 +15,9 @@
                   <el-tag size="small" v-else-if="state.ruleForm.UseTs > 1000000">{{scope.row.UseDesc}}</el-tag>
                   <el-tag size="small" v-else type="success">{{state.ruleForm.UseDesc}}</el-tag>
               </li>
-              <li><el-tag size="small">Headers：</el-tag>{{friendlyJSONstringify(state.ruleForm.Headers)}}</li>
-              <li><el-tag size="small">入参：</el-tag>{{state.ruleForm.RequestBody}}</li>
-              <li><el-tag size="small">出参：</el-tag>{{state.ruleForm.ResponseBody}}</li>
+              <li><el-tag size="small">Headers：</el-tag>{{friendlyJSONstringify(state.ruleForm.HttpHeaders)}}</li>
+              <li><el-tag size="small">入参：</el-tag>{{state.ruleForm.HttpRequestBody}}</li>
+              <li><el-tag size="small">出参：</el-tag>{{state.ruleForm.HttpResponseBody}}</li>
             </ul>
 					</el-col>
 				</el-row>
@@ -43,12 +43,12 @@ const gitDialogFormRef = ref();
 const state = reactive({
 	ruleForm: {
     CreateAt:'',
-    Method:'',
-    Url:'',
-    Headers:{},
-    RequestBody:'',
-    ResponseBody:'',
-    StatusCode:'',
+    HttpMethod:'',
+    HttpUrl:'',
+    HttpHeaders:{},
+    HttpRequestBody:'',
+    HttpResponseBody:'',
+    HttpStatusCode:'',
     UseDesc:'',
     UseTs:0,
   },
@@ -78,12 +78,12 @@ const openDialog = (type:number,row: any) => {
   }else{
     state.TraceId=row.TraceId
     state.ruleForm.CreateAt=row.CreateAt
-    state.ruleForm.Url=row.WebPath
-    state.ruleForm.Method=row.WebMethod
-    state.ruleForm.Headers=row.WebHeaders
-    state.ruleForm.RequestBody=row.WebRequestBody
-    state.ruleForm.ResponseBody=row.WebResponseBody
-    state.ruleForm.StatusCode=row.WebStatusCode
+    state.ruleForm.HttpUrl=row.WebPath
+    state.ruleForm.HttpMethod=row.WebMethod
+    state.ruleForm.HttpHeaders=row.WebHeaders
+    state.ruleForm.HttpRequestBody=row.WebRequestBody
+    state.ruleForm.HttpResponseBody=row.WebResponseBody
+    state.ruleForm.HttpStatusCode=row.WebStatusCode
     state.ruleForm.UseDesc=row.UseDesc
   }
 	state.dialog.isShowDialog = true;

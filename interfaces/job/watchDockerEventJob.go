@@ -14,19 +14,19 @@ import (
 
 // Docker核心容器事件映射表
 var dockerEventMap = map[string]string{
-	"create":        "容器创建完成（docker create 或 Swarm 调度新容器）",
-	"start":         "容器启动（docker start 或 Swarm 服务启动）",
-	"die":           "容器进程终止（正常退出/崩溃/OOM Kill）",
-	"stop":          "容器被显式停止（docker stop）",
-	"kill":          "容器被强制终止（docker kill）",
-	"pause":         "容器暂停（docker pause）",
-	"unpause":       "容器恢复运行（docker unpause）",
-	"restart":       "容器重启（docker restart）",
-	"rename":        "容器重命名（docker rename）",
-	"destroy":       "容器被删除（docker rm 或 Swarm 清理旧副本）",
-	"update":        "容器配置更新（资源限制等）",
-	"health_status": "健康检查状态变更（healthy → unhealthy 或反之）",
-	"attach":        "附加到容器（docker attach）",
+	"create":        "容器创建完成",
+	"start":         "容器启动",
+	"die":           "容器进程终止",
+	"stop":          "容器被停止",
+	"kill":          "容器被强制终止",
+	"pause":         "容器暂停",
+	"unpause":       "容器恢复运行",
+	"restart":       "容器重启",
+	"rename":        "容器重命名",
+	"destroy":       "容器被删除",
+	"update":        "容器配置更新",
+	"health_status": "健康检查状态变更",
+	"attach":        "附加到容器",
 	"detach":        "从容器分离",
 }
 

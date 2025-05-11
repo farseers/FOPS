@@ -42,6 +42,7 @@ func (module Module) PostInitialize() {
 		tasks.Run("fops监控数据处理", time.Minute*1, job.MonitorFopsJob, context.Background())
 		tasks.Run("同步Git分支", time.Second*30, job.SyncAppsBranchJob, context.Background())
 		tasks.Run("执行备份计划", time.Minute*1, job.SyncBackupDataJob, context.Background())
+		tasks.Run("监听容器事件", time.Second*1, job.WatchDockerEventJob, context.Background())
 
 		// 如果最后一次构建是fops，且状态=构建中，同时fops的仓库=最后一次构建的镜像，则强制做一次同步操作
 		buildEO := container.Resolve[apps.Repository]().GetLastBuilding(eumBuildType.Manual)

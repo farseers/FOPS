@@ -85,20 +85,21 @@ func MonitorFopsJob(*tasks.TaskContext) {
 			CreateAt: dateTime.Now(),
 		})
 	})
-	// 应用规则数据
+	// 告警规则数据
 	ruleList := monitorRepository.ToListRule()
-	appNameList := collections.NewList[string]()
 	// 添加消息队列
 	addMonitorData.Foreach(func(item *monitor.DataEO) {
+		// 查找当前应用和KEY的规则
 		curRuleList := ruleList.Where(func(rule monitor.RuleEO) bool {
 			return rule.KeyName == item.Key && strings.Contains(strings.ToLower(rule.AppName), strings.ToLower(item.AppName))
 		}).ToList()
+
+		// 比较结果
 		curRuleList.Foreach(func(rule *monitor.RuleEO) {
 			if rule.CompareResult(item.Value) {
 				queue.Push("monitor", item)
 			}
 		})
-		appNameList.Add(item.AppName)
 	})
 	// 立即释放内存返回给操作系统
 	debug.FreeOSMemory()

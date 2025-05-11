@@ -2,11 +2,12 @@ package monitor
 
 import (
 	"fops/domain/enum/ruleTimeType"
-	"github.com/farseer-go/collections"
-	"github.com/farseer-go/fs/parse"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs/parse"
 )
 
 type RuleEO struct {
@@ -34,7 +35,7 @@ func (receiver *RuleEO) IsNull() bool {
 // ToAppNameList 获取appName集合
 func (receiver *RuleEO) ToAppNameList() collections.List[string] {
 	array := strings.Split(receiver.AppName, ",")
-	return collections.NewList[string](array...)
+	return collections.NewList(array...)
 }
 func (receiver *RuleEO) GetTipTemplate(appName, realValue string) string {
 	var tips string

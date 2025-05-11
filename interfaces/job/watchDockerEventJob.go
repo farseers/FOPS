@@ -7,6 +7,7 @@ import (
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/dateTime"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/queue"
 	"github.com/farseer-go/tasks"
 )
@@ -19,6 +20,7 @@ func WatchDockerEventJob(*tasks.TaskContext) {
 	dockerClient := docker.NewClient()
 	eventResults := dockerClient.Event.Watch()
 	for eventResult := range eventResults {
+		flog.Infof("收到%s容器事件: %s", eventResult.Actor.Attributes.ComDockerSwarmServiceName, eventResult.Action)
 		dateEO := &monitor.DataEO{
 			AppName:  eventResult.Actor.Attributes.ComDockerSwarmServiceName,
 			Key:      "event",

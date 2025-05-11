@@ -16,16 +16,16 @@ import (
 func WatchDockerEventJob(*tasks.TaskContext) {
 	// 告警规则数据
 	monitorRepository := container.Resolve[monitor.Repository]()
+	flog.Infof("监听容器事件")
 
 	dockerClient := docker.NewClient()
 	eventResults := dockerClient.Event.Watch()
 	for eventResult := range eventResults {
-		flog.Infof("收到%s容器事件: %s", eventResult.Actor.Attributes.ComDockerSwarmServiceName, eventResult.Action)
 		dateEO := &monitor.DataEO{
 			AppName:  eventResult.Actor.Attributes.ComDockerSwarmServiceName,
 			Key:      "event",
 			Value:    eventResult.Action,
-			CreateAt: dateTime.Now(),
+			CreateAt: dateTime.NewUnix(int64(eventResult.Time)),
 		}
 
 		// 查找当前应用和KEY的规则

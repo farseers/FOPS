@@ -7,7 +7,6 @@ import (
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/dateTime"
-	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/queue"
 	"github.com/farseer-go/tasks"
 )
@@ -16,9 +15,9 @@ import (
 var dockerEventMap = map[string]string{
 	"create":        "容器创建完成",
 	"start":         "容器启动",
+	"kill":          "容器被强制终止",
 	"die":           "容器进程终止",
 	"stop":          "容器被停止",
-	"kill":          "容器被强制终止",
 	"pause":         "容器暂停",
 	"unpause":       "容器恢复运行",
 	"restart":       "容器重启",
@@ -32,7 +31,6 @@ var dockerEventMap = map[string]string{
 
 // WatchDockerEventJob 监听容器事件
 func WatchDockerEventJob(*tasks.TaskContext) {
-	flog.Infof("监听容器事件")
 	// 告警规则数据
 	monitorRepository := container.Resolve[monitor.Repository]()
 
@@ -44,9 +42,14 @@ func WatchDockerEventJob(*tasks.TaskContext) {
 			continue
 		}
 
+		// 过滤rm操作 和 容器进程停止事件
+		if eventResult.Action == "destroy" { //  || eventResult.Action == "die"
+			continue
+		}
+
 		// 转换成中文事件描述
 		if cns, exists := dockerEventMap[eventResult.Action]; exists {
-			eventResult.Action = cns
+			eventResult.Action = eventResult.Action + cns
 		}
 
 		dateEO := &monitor.DataEO{

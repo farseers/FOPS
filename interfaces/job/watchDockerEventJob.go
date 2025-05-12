@@ -67,9 +67,11 @@ func WatchDockerEventJob(*tasks.TaskContext) {
 			return rule.KeyName == dateEO.Key && strings.Contains(strings.ToLower(rule.AppName), strings.ToLower(dateEO.AppName))
 		}).ToList()
 
+		flog.Infof("共找到 %d 条规则", curRuleList.Count())
 		// 比较结果
 		curRuleList.Foreach(func(rule *monitor.RuleEO) {
 			if rule.CompareResult(dateEO.Value) {
+				flog.Infof("告警规则匹配成功：%+v", rule)
 				queue.Push("monitor", dateEO)
 			}
 		})

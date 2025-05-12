@@ -32,6 +32,7 @@ var dockerEventMap = map[string]string{
 
 // WatchDockerEventJob 监听容器事件
 func WatchDockerEventJob(*tasks.TaskContext) {
+	flog.Infof("开始监听Docker事件")
 	// 告警规则数据
 	monitorRepository := container.Resolve[monitor.Repository]()
 

@@ -137,7 +137,7 @@ const defaultRow = {
         "Comparison": "",
         "KeyName": "",
         "KeyValue": "",
-        "TipTemplate":'',
+        "TipTemplate": "{{AppName}} {{Key}}告警：{{RealValue}}，当前值：{{Value}}，发生时间：{{Time}}",
         "Remark": "",
         "NoticeIds": [],
         "NoticeList": [],

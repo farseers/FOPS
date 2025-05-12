@@ -35,7 +35,7 @@ func WebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode
 // @post delete
 // @filter application.Jwt
 func Delete(traceType int, linkTraceRepository linkTrace.Repository) {
-	err := linkTraceRepository.Delete(eumTraceType.Enum(traceType), time.Now().AddDate(0, 0, -7))
+	err := linkTraceRepository.Delete(eumTraceType.Enum(traceType), time.Now().AddDate(0, 0, -3))
 	exception.ThrowWebExceptionError(403, err)
 }
 

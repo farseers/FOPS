@@ -9,7 +9,6 @@ import (
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/fs/trace"
-	"github.com/farseer-go/fs/trace/eumTraceType"
 )
 
 // WebApiList WebApi链路追踪列表
@@ -35,7 +34,7 @@ func WebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode
 // @post delete
 // @filter application.Jwt
 func Delete(traceType int, linkTraceRepository linkTrace.Repository) {
-	err := linkTraceRepository.Delete(eumTraceType.Enum(traceType), time.Now().AddDate(0, 0, -3))
+	err := linkTraceRepository.Delete(time.Now().AddDate(0, 0, -3))
 	exception.ThrowWebExceptionError(403, err)
 }
 

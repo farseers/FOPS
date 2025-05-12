@@ -14,7 +14,7 @@ import (
 // @post deleteSlow
 // @filter application.Jwt
 func DeleteSlow(dbName string, linkTraceRepository linkTrace.Repository) {
-	err := linkTraceRepository.DeleteSlow(dbName, time.Now().AddDate(0, 0, -3))
+	err := linkTraceRepository.DeleteSlow(time.Now().AddDate(0, 0, -3))
 	exception.ThrowWebExceptionError(403, err)
 }
 

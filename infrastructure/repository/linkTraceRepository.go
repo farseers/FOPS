@@ -28,7 +28,7 @@ func (receiver *linkTraceRepository) ToList(traceId string) collections.List[tra
 	return lst
 }
 
-func (receiver *linkTraceRepository) Delete(traceType eumTraceType.Enum, startTime time.Time) error {
+func (receiver *linkTraceRepository) Delete(startTime time.Time) error {
 	if linkTrace.Config.Driver == "clickhouse" {
 		_, err := context.CHContext.TraceContext.Where("create_at <= ?", startTime).Delete() // trace_type = ? and
 		return err
@@ -176,7 +176,7 @@ func (receiver *linkTraceRepository) ToTraceListByVisits(startAt, endAt time.Tim
 	return collections.NewList[trace.TraceContext]()
 }
 
-func (receiver *linkTraceRepository) DeleteSlow(dbName string, startTime time.Time) error {
+func (receiver *linkTraceRepository) DeleteSlow(startTime time.Time) error {
 	if linkTrace.Config.Driver == "clickhouse" {
 		context.CHContext.TraceDetail.Where("create_at <= ?", startTime).Delete()
 	}

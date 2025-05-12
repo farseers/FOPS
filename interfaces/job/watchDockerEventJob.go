@@ -7,6 +7,7 @@ import (
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/dateTime"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/queue"
 	"github.com/farseer-go/tasks"
 )
@@ -37,6 +38,7 @@ func WatchDockerEventJob(*tasks.TaskContext) {
 	dockerClient := docker.NewClient()
 	eventResults := dockerClient.Event.Watch()
 	for eventResult := range eventResults {
+		flog.Infof("docker event: %+v", eventResult)
 		// 过滤其它信息
 		if eventResult.Type != "container" || eventResult.Actor.Attributes.ComDockerSwarmServiceName == "" {
 			continue

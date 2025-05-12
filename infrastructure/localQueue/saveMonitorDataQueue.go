@@ -36,6 +36,7 @@ func SaveMonitorDataQueue(subscribeName string, lstMessage collections.ListAny, 
 		if !appNameList.Contains(dataEO.AppName) {
 			appNameList.Add(dataEO.AppName)
 		}
+		// 过滤掉没有规则的
 		rules := ruleList.Where(func(item monitor.RuleEO) bool {
 			return strings.Contains(strings.ToLower(item.AppName), strings.ToLower(dataEO.AppName)) && item.KeyName == dataEO.Key
 		}).ToList()

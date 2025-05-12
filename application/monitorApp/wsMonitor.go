@@ -23,10 +23,9 @@ func WsReceive(context *websocket.Context[fsMonitor.SendContentVO], monitorRepos
 		//jsonData, _ := snc.Marshal(req)
 		//flog.Info("WsReceive:" + string(jsonData))
 		// 所有key值进行处理
-		req.Keys.Keys().Foreach(func(key *string) {
-			reqVal := req.Keys.GetValue(*key)
+		req.Keys.Foreach(func(key string, value any) {
 			// 添加消息队列
-			queue.Push("monitor", monitor.NewDataEO(req.AppName, *key, parse.ToString(reqVal)))
+			queue.Push("monitor", monitor.NewDataEO(req.AppName, key, parse.ToString(value)))
 		})
 	})
 }
@@ -34,7 +33,6 @@ func WsReceive(context *websocket.Context[fsMonitor.SendContentVO], monitorRepos
 // WsNotice 通知消息
 // @ws notice
 func WsNotice(context *websocket.Context[string], monitorRepository monitor.Repository) {
-
 	context.ReceiverMessageFunc(5*time.Second, func(message string) {
 		// 未读消息列表
 		noReadList := ToListPageNoticeLogNoRead(20, monitorRepository)

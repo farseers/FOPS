@@ -147,6 +147,7 @@
   </el-dialog>
   <dockerDialog ref="dockerDialogRef"/>
   <editAppNum ref="editAppNumRef" @refresh="getTableData()"/>
+  <elFirmBox ref="elFirmBoxRef" @refresh="getTableLogData()"/> 
   <div v-if="state.showOverlay" class="overlay">
     <div class="overlay-content">
       <img :src="Image" style="width: 200px" alt="Image">
@@ -177,6 +178,7 @@ const taskDialog= defineAsyncComponent(() => import('/src/views/fops/task/taskAp
 const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logV2Dialog.vue'));
 const dockerDialog = defineAsyncComponent(() => import('/src/views/fops/task/dockerDialog.vue'));
 const editAppNum = defineAsyncComponent(() => import('/src/views/fops/build/editAppNum.vue'));
+const elFirmBox = defineAsyncComponent(() => import('/src/views/fops/build/elFirmBox.vue'));
 const logDialogRef = ref();
 // 定义变量内容
 const appDialogRef = ref();
@@ -185,6 +187,7 @@ const taskDialogRef = ref();
 const scrollableBuildLog = ref();
 const dockerDialogRef = ref();
 const editAppNumRef = ref();
+const elFirmBoxRef = ref();
 const state = reactive({
   isShowBuildLogDialog: false,
   buildLogContent: '',
@@ -365,6 +368,8 @@ const onHideOverlay=()=>{
 }
 // 构建
 const onBuildAdd = (row:any,workflowsName:any) => {
+   elFirmBoxRef.value.openDialog(row,workflowsName);
+  return
   const t = '请填写分支名称，并确认构建到本地!'
   ElMessageBox.prompt(t, '提示', {
     confirmButtonText: '确认',

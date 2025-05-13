@@ -1,11 +1,16 @@
 package appsBranch
 
-import "github.com/farseer-go/data"
+import (
+	"github.com/farseer-go/collections"
+	"github.com/farseer-go/data"
+)
 
 // Repository 仓储接口
 type Repository interface {
 	// IRepository 通用的仓储接口
 	data.IRepository[DomainObject]
+	// ToListByAppName 获取当前应用的所有分支
+	ToListByAppName(appName string) collections.List[DomainObject]
 	// UpdateByBranch 更新
 	UpdateByBranch(do DomainObject) error
 	// 重置构建错误

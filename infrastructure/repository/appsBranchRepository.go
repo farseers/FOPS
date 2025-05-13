@@ -5,6 +5,7 @@ import (
 	"fops/infrastructure/repository/context"
 	"fops/infrastructure/repository/model"
 
+	"github.com/farseer-go/collections"
 	"github.com/farseer-go/data"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/mapper"
@@ -13,6 +14,12 @@ import (
 type appsBranchRepository struct {
 	// IRepository 通用的仓储接口
 	data.IRepository[appsBranch.DomainObject]
+}
+
+// ToListByAppName 获取当前应用的所有分支
+func (receiver *appsBranchRepository) ToListByAppName(appName string) collections.List[appsBranch.DomainObject] {
+	lstPO := context.MysqlContext.AppsBranch.Where("app_name = ?", appName).Select("branch_name", "commit_at").Desc("commit_at").ToList()
+	return mapper.ToList[appsBranch.DomainObject](lstPO)
 }
 
 // UpdateByBranch 更新

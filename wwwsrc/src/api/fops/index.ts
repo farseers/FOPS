@@ -554,9 +554,16 @@ export function fopsApi() {
 				data:param,
 			});
 		},
-		autobuildList:(param: object) => { // 自动构建列表
+		autobuildList:(param: object) => { // 获取所有应用的分支列表
 			return request({
 				url: '/apps/autobuild/list',
+				method:'post',
+				data:param,
+			});
+		},
+		autobuildBranchList:(param: object) => { // 获取指定应用的分支列表
+			return request({
+				url: '/apps/autobuild/branchList',
 				method:'post',
 				data:param,
 			});

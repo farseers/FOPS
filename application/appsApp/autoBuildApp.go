@@ -9,10 +9,10 @@ import (
 	"github.com/farseer-go/fs/exception"
 )
 
-// BuildList 获取分支列表
+// AllBranchList 获取所有应用的分支列表
 // @post autobuild/list
 // @filter application.Jwt
-func BranchList(appsBranchRepository appsBranch.Repository) collections.List[response.BranchListResponse] {
+func AllBranchList(appsBranchRepository appsBranch.Repository) collections.List[response.BranchListResponse] {
 	var mGroupBy map[string]collections.List[appsBranch.DomainObject]
 	appsBranchRepository.ToList().GroupBy(&mGroupBy, func(item appsBranch.DomainObject) any {
 		return item.AppName
@@ -29,6 +29,13 @@ func BranchList(appsBranchRepository appsBranch.Repository) collections.List[res
 	return lst.OrderBy(func(item response.BranchListResponse) any {
 		return item.AppName
 	}).ToList()
+}
+
+// BuildList 获取指定应用的分支列表
+// @post autobuild/branchList
+// @filter application.Jwt
+func BranchList(appName string, appsBranchRepository appsBranch.Repository) collections.List[appsBranch.DomainObject] {
+	return appsBranchRepository.ToListByAppName(appName)
 }
 
 // ResetCommitId 重置错误次数

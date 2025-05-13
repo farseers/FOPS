@@ -4,8 +4,10 @@
 			<div class="cropper-warp">
 				<div style="margin-bottom: 5px;">请填写分支名称，并确认构建到本地!</div>
                  <el-autocomplete
+                 v-if="state.isShowDialog"
                     class="inline-input"
                    style="width: 100%;"
+                   ref="autoCompleteRef"
                     clearable
                     v-model="state.inputValue"
                     :fetch-suggestions="querySearch"
@@ -26,7 +28,7 @@
 </template>
 
 <script setup lang="ts" name="cropper">
-import { reactive } from 'vue';
+import { reactive,nextTick,ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import {fopsApi} from "/@/api/fops";
 const emit = defineEmits(['refresh']);
@@ -40,6 +42,7 @@ const state = reactive({
      workflowsName:'',
      appName:''
 });
+ const autoCompleteRef = ref();
 const handleSelect = (item: any) => {
   console.log(item)
 }
@@ -50,7 +53,6 @@ const createFilter = (queryString: string) => {
 }
 const querySearch = (queryString: string, cb: any) => {
   var restaurants = state.restaurants;
-  console.log(restaurants)
         var results = queryString ? restaurants.filter(createFilter(queryString)) : restaurants;
         // 调用 callback 返回建议列表的数据
         cb(results);
@@ -73,6 +75,11 @@ const openDialog = (row: any,workflowsName: any) => {
                 return {value:item.BranchName}
             });
             state.restaurants = arr
+            nextTick(() => {
+                  if (autoCompleteRef.value) {
+                        autoCompleteRef.value.focus()
+                    }
+            });
         }
     })
 };

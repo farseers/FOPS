@@ -7,6 +7,7 @@ import (
 	"github.com/farseer-go/fs"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/dateTime"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/tasks"
 	"github.com/farseer-go/utils/file"
 )
@@ -23,6 +24,7 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
 		path := appDO.GetWorkflowsRoot()
 		if !file.IsExists(path) {
+			flog.Warningf("应用[%s]的工作流目录不存在，无法同步分支", appDO.AppName)
 			return
 		}
 		// 在工作流根目录，获取远程分支名称

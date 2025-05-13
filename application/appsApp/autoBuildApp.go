@@ -14,7 +14,7 @@ import (
 // @filter application.Jwt
 func AllBranchList(appsBranchRepository appsBranch.Repository) collections.List[response.BranchListResponse] {
 	var mGroupBy map[string]collections.List[appsBranch.DomainObject]
-	appsBranchRepository.ToList().GroupBy(&mGroupBy, func(item appsBranch.DomainObject) any {
+	appsBranchRepository.ToListByAutoBuild().GroupBy(&mGroupBy, func(item appsBranch.DomainObject) any {
 		return item.AppName
 	})
 

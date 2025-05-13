@@ -9,6 +9,8 @@ import (
 type Repository interface {
 	// IRepository 通用的仓储接口
 	data.IRepository[DomainObject]
+	// ToListByAppName 获取所有分支
+	ToListByAutoBuild() collections.List[DomainObject]
 	// ToListByAppName 获取当前应用的所有分支
 	ToListByAppName(appName string) collections.List[DomainObject]
 	// UpdateByBranch 更新

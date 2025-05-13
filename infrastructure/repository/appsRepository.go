@@ -39,6 +39,11 @@ func (receiver *appsRepository) ToShortList(isAll bool) collections.List[apps.Sh
 	return mapper.ToList[apps.ShortEO](lst)
 }
 
+func (repository *buildRepository) ToUTList() collections.List[apps.DomainObject] {
+	lst := context.MysqlContext.Apps.Select("app_name", "app_git", "ut_workflows_name").Where("is_sys = 0").ToList()
+	return mapper.ToList[apps.DomainObject](lst)
+}
+
 func (receiver *appsRepository) UpdateApp(do apps.DomainObject) error {
 	po := mapper.Single[model.AppsPO](do)
 	_, err := context.MysqlContext.Apps.Where("LOWER(app_name) = ?", po.AppName).Omit("app_name", "docker_ver", "docker_image", "docker_instances", "is_sys").Update(po)
@@ -104,9 +109,4 @@ func (receiver *appsRepository) UpdateInspect(lst collections.List[apps.DomainOb
 	// where
 	sql.WriteString("WHERE 1=1;\n")
 	return context.MysqlContext.ExecuteSql(sql.String())
-}
-
-func (repository *buildRepository) ToUTList() collections.List[apps.DomainObject] {
-	lst := context.MysqlContext.Apps.Select("app_name", "app_git", "ut_workflows_name").Where("ut_workflows_name <> '' and is_sys = 0").ToList()
-	return mapper.ToList[apps.DomainObject](lst)
 }

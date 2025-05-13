@@ -16,6 +16,12 @@ type appsBranchRepository struct {
 	data.IRepository[appsBranch.DomainObject]
 }
 
+// ToListByAppName 获取所有分支
+func (receiver *appsBranchRepository) ToListByAutoBuild() collections.List[appsBranch.DomainObject] {
+	lstPO := context.MysqlContext.AppsBranch.Where("app_name in (select app_name from apps where ut_workflows_name <>'')").ToList()
+	return mapper.ToList[appsBranch.DomainObject](lstPO)
+}
+
 // ToListByAppName 获取当前应用的所有分支
 func (receiver *appsBranchRepository) ToListByAppName(appName string) collections.List[appsBranch.DomainObject] {
 	lstPO := context.MysqlContext.AppsBranch.Where("app_name = ?", appName).Select("branch_name", "commit_at").Desc("commit_at").ToList()
@@ -37,7 +43,7 @@ func (receiver *appsBranchRepository) DeleteBranch(appName, branchName string) e
 
 // GetUnRunUT 获取未运行UT的分支
 func (receiver *appsBranchRepository) GetUnRunUT() appsBranch.DomainObject {
-	po := context.MysqlContext.AppsBranch.Where("build_success = 0 and build_error_count < 3").Asc("commit_at").ToEntity()
+	po := context.MysqlContext.AppsBranch.Where("build_success = 0 and build_error_count < 3 and app_name in (select app_name from apps where ut_workflows_name <>'')").Asc("commit_at").ToEntity()
 	return mapper.Single[appsBranch.DomainObject](po)
 }
 

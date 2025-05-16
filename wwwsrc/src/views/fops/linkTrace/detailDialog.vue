@@ -51,9 +51,9 @@
           </el-col>
           <el-col :xs="24" :sm="12" :md="12" :lg="12" :xl="12" class="mb20">
             <el-form-item label="异常信息">
-              <el-tag size="small">ExceptionCallFile:{{state.ruleForm.Exception.ExceptionCallFile}}</el-tag>
-              <el-tag size="small">ExceptionCallLine:{{state.ruleForm.Exception.ExceptionCallLine}}</el-tag>
-              <el-tag size="small">ExceptionCallFuncName:{{state.ruleForm.Exception.ExceptionCallFuncName}}</el-tag>
+              <el-tag size="small">ExceptionCallFile:{{state.ruleForm.Exception.ExceptionDetails[0].ExceptionCallFile}}</el-tag>
+              <el-tag size="small">ExceptionCallLine:{{state.ruleForm.Exception.ExceptionDetails[0].ExceptionCallLine}}</el-tag>
+              <el-tag size="small">ExceptionCallFuncName:{{state.ruleForm.Exception.ExceptionDetails[0].ExceptionCallFuncName}}</el-tag>
               <el-tag size="small">ExceptionIsException:{{state.ruleForm.Exception.ExceptionIsException}}</el-tag>
               <el-tag size="small">ExceptionMessage:{{state.ruleForm.Exception.ExceptionMessage}}</el-tag>
             </el-form-item>

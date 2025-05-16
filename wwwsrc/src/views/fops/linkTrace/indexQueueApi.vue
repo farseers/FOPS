@@ -63,7 +63,7 @@
         </el-table-column>
         <el-table-column width="200px" label="异常" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small" v-if="scope.row.e!=null" type="danger">{{scope.row.e.ExceptionCallFile}}:{{scope.row.e.ExceptionCallLine}} {{scope.row.e.ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.e!=null">
+            <el-tag size="small" v-if="scope.row.e!=null" type="danger">{{scope.row.e.ExceptionDetails[0].ExceptionCallFile}}:{{scope.row.e.ExceptionDetails[0].ExceptionCallLine}} {{scope.row.e.ExceptionDetails[0].ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.e!=null">
             <el-tag size="small" v-if="scope.row.e!=null" type="danger">{{scope.row.e.ExceptionMessage}}</el-tag>
             <el-tag size="small" v-else type="info">无</el-tag>
           </template>

@@ -44,7 +44,7 @@
               <el-button style="margin-left: 20px" size="small" type="success" @click="showLog()">查看日志</el-button>
               <div v-if="state.Exception!=null" class="mt5">
               <el-tag type="danger">
-                异常：{{state.Exception.ExceptionCallFile}}:{{state.Exception.ExceptionCallLine}} {{state.Exception.ExceptionCallFuncName}}
+                异常：{{state.Exception.ExceptionDetails[0].ExceptionCallFile}}:{{state.Exception.ExceptionDetails[0].ExceptionCallLine}} {{state.Exception.ExceptionDetails[0].ExceptionCallFuncName}}
                 {{state.Exception.ExceptionMessage}}
               </el-tag>
               </div>

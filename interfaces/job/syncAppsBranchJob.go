@@ -69,7 +69,7 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 			// 远程分支不存在，说明已经被删了
 			if !lstRemoteBranch.Where(func(item apps.RemoteBranchVO) bool {
 				return item.BranchName == utDO.BranchName
-			}).Any() && dateTime.Now().Sub(utDO.BuildAt).Hours() > 168 {
+			}).Any() && dateTime.Now().Sub(utDO.BuildAt).Hours() > 72 {
 				appsBranchRepository.DeleteBranch(utDO.AppName, utDO.BranchName)
 			}
 		})

@@ -255,15 +255,18 @@ func SyncWorkflows(appName string, appsRepository apps.Repository, gitDevice app
 
 func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps.DomainObject) response.AppsResponse {
 	clusterVer := collections.NewList[response.ClusterVerVO]()
-	do.ClusterVer.Values().OrderBy(func(item apps.ClusterVerVO) any {
-		return item.ClusterId
-	}).Foreach(func(item *apps.ClusterVerVO) {
-		clusterVerVO := mapper.Single[response.ClusterVerVO](item)
-		clusterVerVO.ClusterName = lstCluster.Where(func(item cluster.DomainObject) bool {
+	do.ClusterVer.Values().Foreach(func(clusterVerVO *apps.ClusterVerVO) {
+		if curCluster := lstCluster.Find(func(item *cluster.DomainObject) bool {
 			return item.Id == clusterVerVO.ClusterId
-		}).First().Name
-		clusterVer.Add(clusterVerVO)
+		}); curCluster != nil {
+			vo := mapper.Single[response.ClusterVerVO](clusterVerVO)
+			vo.ClusterName = curCluster.Name
+			clusterVer.Add(vo)
+		}
 	})
+	clusterVer = clusterVer.OrderBy(func(item response.ClusterVerVO) any {
+		return item.ClusterId
+	}).ToList()
 	return response.AppsResponse{
 		AppName:           do.AppName,
 		AppGit:            do.AppGit,

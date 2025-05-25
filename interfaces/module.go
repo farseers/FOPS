@@ -31,6 +31,7 @@ func (module Module) PostInitialize() {
 	if client.IsMaster() {
 		tasks.Run("开启构建应用", time.Second*1, job.BuildAppJob, context.Background())
 		tasks.Run("开启自动构建", time.Second*1, job.AutoBuildAppJob, context.Background())
+		tasks.Run("同步Git分支", time.Second*30, job.SyncAppsBranchJob, context.Background())
 		flog.Info("Docker version：" + color.Blue(client.GetVersion()))
 
 		// 3秒收集一次Docker集群信息
@@ -38,9 +39,7 @@ func (module Module) PostInitialize() {
 		tasks.Run("收集Docker应用信息", time.Second*3, job.CollectsClusterJob, context.Background())
 
 		tasks.Run("统计访问", time.Minute*1, job.StatVisitsJob, context.Background())
-
 		tasks.Run("fops监控数据处理", time.Minute*1, job.MonitorFopsJob, context.Background())
-		tasks.Run("同步Git分支", time.Second*30, job.SyncAppsBranchJob, context.Background())
 		tasks.Run("执行备份计划", time.Minute*1, job.SyncBackupDataJob, context.Background())
 		tasks.Run("自动清除历史链路数据", time.Hour*1, job.ClearLinkTraceDataJob, context.Background())
 

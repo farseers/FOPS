@@ -4,7 +4,6 @@ package appsApp
 import (
 	"fops/domain/_/eumBuildStatus"
 	"fops/domain/apps"
-	"fops/domain/apps/event"
 	"fops/domain/cluster"
 	"strings"
 
@@ -32,7 +31,7 @@ func UpdateDockerImage(appName string, dockerImage string, updateDelay int, buil
 	}
 
 	// 更新仓库版本
-	event.DockerPushedEvent{BuildNumber: buildNumber, AppName: appName, ImageName: dockerImage}.PublishEvent()
+	//event.DockerPushedEvent{BuildNumber: buildNumber, AppName: appName, ImageName: dockerImage}.PublishEvent()
 
 	defer func() {
 		// 手动创建一个构建记录

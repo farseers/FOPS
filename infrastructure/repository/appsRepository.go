@@ -50,14 +50,6 @@ func (receiver *appsRepository) UpdateApp(do apps.DomainObject) error {
 	return err
 }
 
-// UpdateDockerVer 修改镜像版本
-func (receiver *appsRepository) UpdateDockerVer(appName string, dockerVer int, imageName string) (int64, error) {
-	return context.MysqlContext.Apps.Where("LOWER(app_name) = ?", appName).Select("docker_ver", "docker_image").Update(model.AppsPO{
-		DockerVer:   dockerVer,
-		DockerImage: imageName,
-	})
-}
-
 // UpdateClusterVer 修改集群的镜像版本
 func (receiver *appsRepository) UpdateClusterVer(appName string, dicClusterVer collections.Dictionary[int64, apps.ClusterVerVO]) (int64, error) {
 	marshal, _ := dicClusterVer.MarshalJSON()

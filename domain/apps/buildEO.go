@@ -188,7 +188,7 @@ func (receiver *BuildEO) StartBuild() {
 			}
 
 		case "dockerPush": // 上传成功后，需要更新项目中的镜像版本属性
-			event.DockerPushedEvent{BuildNumber: parse.ToInt(step.With["buildNumber"]), AppName: parse.ToString(step.With["appName"]), ImageName: parse.ToString(step.With["dockerImage"])}.PublishEvent()
+			//event.DockerPushedEvent{BuildNumber: parse.ToInt(step.With["buildNumber"]), AppName: parse.ToString(step.With["appName"]), ImageName: parse.ToString(step.With["dockerImage"])}.PublishEvent()
 		case "dockerBuild": // 镜像打包成功后，需要更新到Git分支中，用于后续的缓存使用
 			container.Resolve[appsBranch.Repository]().UpdateDockerImage(receiver.AppName, receiver.Env.CommitId, receiver.Env.DockerImage)
 		}

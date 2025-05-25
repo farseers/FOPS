@@ -17,11 +17,16 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 	appsRepository := container.Resolve[apps.Repository]()
 	appsBranchRepository := container.Resolve[appsBranch.Repository]()
 	gitDevice := container.Resolve[apps.IGitDevice]()
+
 	lstApp := appsRepository.ToUTList()
 	lstLocalUT := appsBranchRepository.ToList()
 
 	// 读取远程分支，并更新状态
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
+		// 没有配置git仓库，则不处理
+		if appDO.AppGit == 0 {
+			return
+		}
 		path := appDO.GetWorkflowsRoot()
 		if !file.IsExists(path) {
 			flog.Warningf("应用[%s]的工作流目录不存在，无法同步分支", appDO.AppName)

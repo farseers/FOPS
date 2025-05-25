@@ -49,6 +49,7 @@ func (module Module) PostInitialize() {
 		appEO := container.Resolve[apps.Repository]().ToEntity("fops")
 
 		clusterDO := container.Resolve[cluster.Repository]().GetLocalCluster()
+		flog.Infof("当前FOPS版本：%s", appEO.ClusterVer.GetValue(clusterDO.Id).DockerImage)
 		if buildEO.AppName == appEO.AppName && buildEO.Status == eumBuildStatus.Building && appEO.ClusterVer.GetValue(clusterDO.Id).DockerImage == buildEO.DockerImage {
 			flog.Infof("恭喜，你正在使用最新的FOPS版本：%s", buildEO.DockerImage)
 			// 发布事件

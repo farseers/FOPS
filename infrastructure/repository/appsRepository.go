@@ -46,7 +46,7 @@ func (repository *buildRepository) ToUTList() collections.List[apps.DomainObject
 
 func (receiver *appsRepository) UpdateApp(do apps.DomainObject) error {
 	po := mapper.Single[model.AppsPO](do)
-	_, err := context.MysqlContext.Apps.Where("LOWER(app_name) = ?", po.AppName).Omit("app_name", "docker_ver", "docker_image", "docker_instances", "is_sys").Update(po)
+	_, err := context.MysqlContext.Apps.Where("LOWER(app_name) = ?", po.AppName).Omit("app_name", "docker_instances", "is_sys").Update(po)
 	return err
 }
 

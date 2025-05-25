@@ -438,7 +438,11 @@ func (receiver *DomainObject) GetHistoryData(prefix, database string) (collectio
 			}
 		}
 	}
-	return lstBackupHistoryData, nil
+
+	// 按时间倒排
+	return lstBackupHistoryData.OrderByDescending(func(item BackupHistoryData) any {
+		return item.CreateAt
+	}).ToList(), nil
 }
 
 // 本地目录存储配置

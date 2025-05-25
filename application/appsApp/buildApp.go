@@ -25,7 +25,9 @@ func BuildAdd(appName string, workflowsName string, branchName string, appsRepos
 	appDO := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionfBool(appDO.IsNil(), 403, "应用不存在")
 	exception.ThrowWebExceptionfBool(workflowsName == "", 403, "工作流名称未设置")
-
+	if branchName == "" {
+		branchName = "main"
+	}
 	buildNumber := appsRepository.GetBuildNumber(appName) + 1
 	buildDO := apps.BuildEO{
 		BuildServerId: core.AppId,

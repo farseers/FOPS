@@ -4,9 +4,9 @@ import (
 	"fops/domain/apps"
 	"fops/infrastructure/repository/context"
 	"fops/infrastructure/repository/model"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/mapper"
-	"time"
 )
 
 type gitRepository struct {
@@ -34,7 +34,7 @@ func (receiver *gitRepository) AddGit(eo apps.GitEO) error {
 
 func (receiver *gitRepository) UpdateGit(eo apps.GitEO) (int64, error) {
 	po := mapper.Single[model.GitPO](eo)
-	return context.MysqlContext.Git.Where("id = ?", eo.Id).Omit("pull_at").Update(po)
+	return context.MysqlContext.Git.Where("id = ?", eo.Id).Update(po)
 }
 
 func (receiver *gitRepository) DeleteGit(id int64) (int64, error) {
@@ -43,9 +43,4 @@ func (receiver *gitRepository) DeleteGit(id int64) (int64, error) {
 
 func (receiver *gitRepository) ExistsGit(id int64) bool {
 	return context.MysqlContext.Git.Where("id = ?", id).IsExists()
-}
-
-// UpdateForTime 修改GIT的拉取时间
-func (receiver *gitRepository) UpdateForTime(id int, pullAt time.Time) (int64, error) {
-	return context.MysqlContext.Git.Where("id = ?", id).UpdateValue("pull_at", pullAt)
 }

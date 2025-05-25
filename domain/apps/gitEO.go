@@ -5,22 +5,20 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/utils/str"
 )
 
 // GitEO git仓库
 type GitEO struct {
-	Id       int               // 主键
-	Name     string            // Git名称
-	Hub      string            // git地址
-	Branch   string            // Git分支
-	UserName string            // 账户名称
-	UserPwd  string            // 账户密码
-	Path     string            // 存储目录
-	PullAt   dateTime.DateTime // 拉取时间
-	IsApp    bool              // 是否为应用
+	Id       int    // 主键
+	Name     string // Git名称
+	Hub      string // git地址
+	Branch   string // Git分支
+	UserName string // 账户名称
+	UserPwd  string // 账户密码
+	Path     string // 存储目录
+	IsApp    bool   // 是否为应用
 }
 
 func (receiver *GitEO) IsNil() bool {

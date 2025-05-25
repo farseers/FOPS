@@ -23,4 +23,6 @@ type Repository interface {
 	GetUnRunUT() DomainObject
 	// UpdateDockerImage 更新镜像
 	UpdateDockerImage(appName, commitId, dockerImage string) error
+	// GetDockerImage 通过CommitId获取Docker镜像
+	GetDockerImage(appName, commitId string) string
 }

@@ -3,7 +3,6 @@ package apps
 import (
 	"fops/domain/_/eumBuildStatus"
 	"fops/domain/_/eumBuildType"
-	"time"
 
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/data"
@@ -48,5 +47,4 @@ type gitRepository interface {
 	UpdateGit(eo GitEO) (int64, error)
 	DeleteGit(id int64) (int64, error)
 	ExistsGit(id int64) bool
-	UpdateForTime(id int, pullAt time.Time) (int64, error) // 修改GIT的拉取时间
 }

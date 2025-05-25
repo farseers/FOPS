@@ -33,7 +33,6 @@
 				<el-table-column prop="Branch" label="Git分支" width="100" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="UserName" label="账户名称" width="180" show-overflow-tooltip></el-table-column>
         <el-table-column prop="Path" label="存储目录" width="220" show-overflow-tooltip></el-table-column>
-        <el-table-column prop="PullAt" label="拉取时间" width="180" show-overflow-tooltip></el-table-column>
 				<el-table-column label="操作" width="170">
 					<template #default="scope">
 						<el-button size="small" text type="primary" @click="onOpenEdit('edit', scope.row)">修改</el-button>

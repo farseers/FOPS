@@ -49,6 +49,7 @@ type EnvVO struct {
 	DockerHub   string // Docker仓库地址
 	DockerImage string // Docker镜像
 	BranchName  string // 分支名称
+	CommitId    string // 应用的CommitId
 }
 
 // Print 打印环境变量

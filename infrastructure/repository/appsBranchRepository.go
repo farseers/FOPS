@@ -35,6 +35,12 @@ func (receiver *appsBranchRepository) UpdateByBranch(do appsBranch.DomainObject)
 	return err
 }
 
+// UpdateDockerImage 更新镜像
+func (receiver *appsBranchRepository) UpdateDockerImage(appName, commitId, dockerImage string) error {
+	_, err := context.MysqlContext.AppsBranch.Where("app_name = ? and commit_id = ?", appName, commitId).UpdateValue("docker_image", dockerImage)
+	return err
+}
+
 // DeleteBranch 删除分支
 func (receiver *appsBranchRepository) DeleteBranch(appName, branchName string) error {
 	_, err := context.MysqlContext.AppsBranch.Where("app_name = ? and branch_name = ?", appName, branchName).Delete()

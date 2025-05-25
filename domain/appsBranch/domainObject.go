@@ -8,7 +8,8 @@ type DomainObject struct {
 	BranchName      string            // 分支名称
 	CommitId        string            // 当前分支最后提交ID
 	CommitMessage   string            // 提交消息
-	CommitAt        dateTime.DateTime // 同步时间
+	CommitAt        dateTime.DateTime //
+	DockerImage     string            // Docker镜像
 	BuildId         int64             // 对应的构建ID
 	BuildSuccess    bool              // 是否构建成功
 	BuildErrorCount int               // 构建失败次数

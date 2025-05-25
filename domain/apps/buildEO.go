@@ -7,6 +7,7 @@ import (
 	"fops/domain/_/eumBuildStatus"
 	"fops/domain/_/eumBuildType"
 	"fops/domain/apps/event"
+	"fops/domain/appsBranch"
 	"fops/domain/cluster"
 	"os"
 	"path"
@@ -72,6 +73,7 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.logQueue = NewLogQueue(receiver.Id)
 
 	appsRepository := container.Resolve[Repository]()
+
 	// 应用
 	receiver.apps = appsRepository.ToEntity(receiver.AppName)
 	receiver.appGit = appsRepository.ToGitEntity(receiver.apps.AppGit)
@@ -152,9 +154,7 @@ func (receiver *BuildEO) StartBuild() {
 		args := []string{"-itd", "-v /etc/localtime:/etc/localtime", "-v /var/run/docker.sock:/var/run/docker.sock", "-e distRoot=" + DistRoot, "-e gitRoot=" + GitRoot, "-e fopsRoot=" + FopsRoot, "-e npmModulesRoot=" + NpmModulesRoot, "-e kubeRoot=" + KubeRoot, "-e withjson=" + WithJsonPath, "-e dockerfilePath=" + DockerfilePath, "-e dockerIgnorePath=" + DockerIgnorePath, "-e shellRoot=" + ShellRoot, "-e actionsRoot=" + ActionsRoot}
 		// 添加自定义的挂载
 		builderArgs := configure.GetSlice("Fops.Builder")
-		for _, arg := range builderArgs {
-			args = append(args, arg)
-		}
+		args = append(args, builderArgs...)
 		err := receiver.dockerClient.Container.Run(receiver.fopsBuildName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env.ToMap(), receiver.ctx) // , "-v /var/lib/fops:/var/lib/fops"
 		if err != nil {
 			receiver.logQueue.progress <- err.Error()
@@ -223,19 +223,6 @@ func (receiver *BuildEO) StartBuild() {
 						appsRepository.UpdateBuilding(receiver.Id, receiver.Env)
 					}
 				}
-
-				// 需要自动合并的分支
-				if branch := parse.ToString(step.With["autoMerge"]); branch != "" || receiver.BranchName != "" {
-					appGit := gits.Find(func(item *GitEO) bool {
-						return item.IsApp
-					})
-					appGit.AutoMerge = branch
-				}
-			}
-
-			// 需要对{{branch}}替换（因为receiver.BranchName在执行checkout后才能拿到）
-			if step.ActionName == "newBuild" {
-				step.With["branch"] = strings.ReplaceAll(parse.ToString(step.With["branch"]), "{{branch}}", receiver.BranchName)
 			}
 			step.With["gits"] = gits
 
@@ -248,16 +235,28 @@ func (receiver *BuildEO) StartBuild() {
 			// 设置超时
 			receiver.ctx, receiver.cancel = context.WithTimeout(receiver.ctx, time.Duration(step.Timeout)*time.Minute)
 
-			// 执行 docker exec FOPS-Build-hub-fsgit-cc-fops-130 action
+			// 执行 docker exec FOPS-Build /bin/bash -c "action"
 			err := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx)
 			receiver.checkResult(err == nil)
 
 			switch step.ActionName {
 			case "checkout":
+				// 拉取事件
 				event.GitCloneOrPulledEvent{GitId: receiver.appGit.Id}.PublishEvent()
-			case "dockerPush":
-				// 上传成功后，需要更新项目中的镜像版本属性
+				// 得到应用的CommitId
+				cmd := fmt.Sprintf("git -C %s rev-parse HEAD", receiver.appGit.GetAbsolutePath())
+				progress := make(chan string, 1000)
+				//  docker exec FOPS-Build /bin/bash -c "git -C /var/lib/fops/git/fops rev-parse HEAD"
+				if err = receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, progress, receiver.ctx); err == nil {
+					if commitId := collections.NewListFromChan(progress).First(); len(commitId) >= 16 {
+						receiver.Env.CommitId = commitId[:16]
+						receiver.logQueue.progress <- fmt.Sprintf("应用的CommitId：%s", receiver.Env.CommitId)
+					}
+				}
+			case "dockerPush": // 上传成功后，需要更新项目中的镜像版本属性
 				event.DockerPushedEvent{BuildNumber: parse.ToInt(step.With["buildNumber"]), AppName: parse.ToString(step.With["appName"]), ImageName: parse.ToString(step.With["dockerImage"])}.PublishEvent()
+			case "dockerBuild": // 镜像打包成功后，需要更新到Git分支中，用于后续的缓存使用
+				container.Resolve[appsBranch.Repository]().UpdateDockerImage(receiver.AppName, receiver.Env.CommitId, receiver.Env.DockerImage)
 			}
 		}
 
@@ -280,7 +279,7 @@ func (receiver *BuildEO) StartBuild() {
 			file.WriteString(shellPath, script)
 			_ = receiver.dockerClient.Container.Cp(receiver.fopsBuildName, shellPath, shellPath, receiver.ctx)
 
-			// 执行脚本
+			// 执行脚本 docker exec FOPS-Build /bin/bash -c "xxx.sh"
 			receiver.checkResult(receiver.dockerClient.Container.Exec(receiver.fopsBuildName, shellPath, receiver.WorkflowsAction.Env, receiver.logQueue.progress, receiver.ctx) == nil)
 		}
 		receiver.logQueue.progress <- "---------------------------------------------------------"

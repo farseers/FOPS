@@ -25,6 +25,7 @@ type BuildPO struct {
 	BranchName    string              `gorm:"size:32;not null;default:'';comment:分支名称"`
 	DockerImage   string              `gorm:"size:64;not null;default:'';comment:Docker镜像"`
 	Env           apps.EnvVO          `gorm:"type:text;json;not null;comment:环境变量"`
+	CommitId      string              `gorm:"size:64;not null;default:'';comment:应用的CommitId"`
 }
 
 // 创建索引

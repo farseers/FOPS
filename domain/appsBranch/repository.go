@@ -21,4 +21,6 @@ type Repository interface {
 	DeleteBranch(appName, branchName string) error
 	// GetUnRunUT 获取未运行UT的分支
 	GetUnRunUT() DomainObject
+	// UpdateDockerImage 更新镜像
+	UpdateDockerImage(appName, commitId, dockerImage string) error
 }

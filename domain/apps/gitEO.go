@@ -21,8 +21,6 @@ type GitEO struct {
 	Path     string            // 存储目录
 	PullAt   dateTime.DateTime // 拉取时间
 	IsApp    bool              // 是否为应用
-
-	AutoMerge string // 自动要合并的分支名称（通常是main）
 }
 
 func (receiver *GitEO) IsNil() bool {

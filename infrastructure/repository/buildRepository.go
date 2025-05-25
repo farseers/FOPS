@@ -63,11 +63,12 @@ func (repository *buildRepository) UpdateBuilding(id int64, env apps.EnvVO) {
 
 // SetSuccess 任务完成
 func (repository *buildRepository) SetSuccess(id int64, env apps.EnvVO) {
-	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at", "env", "docker_image").Update(model.BuildPO{
+	_, _ = context.MysqlContext.Build.Where("id = ?", id).Select("status", "is_success", "finish_at", "env", "docker_image", "commit_id").Update(model.BuildPO{
 		Status:      eumBuildStatus.Finish,
 		IsSuccess:   true,
 		FinishAt:    time.Now(),
 		Env:         env,
+		CommitId:    env.CommitId,
 		DockerImage: env.DockerImage,
 	})
 }

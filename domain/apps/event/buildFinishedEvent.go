@@ -15,6 +15,10 @@ type BuildFinishedEvent struct {
 	ClusterId int64
 	// 是否成功
 	IsSuccess bool
+	// Docker镜像版本
+	DockerVer int
+	// Docker镜像名称
+	DockerImage string
 }
 
 // PublishEvent 发布事件

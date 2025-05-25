@@ -55,18 +55,18 @@ func UpdateDockerImage(appName string, dockerImage string, updateDelay int, buil
 	}
 
 	// 先拉取镜像
-	err = client.Images.Pull(do.DockerImage)
+	err = client.Images.Pull(dockerImage)
 	exception.ThrowRefuseExceptionError(err)
 
 	// 服务存在，才更新，否则自动创建
-	if !createService(client, appName, do.DockerImage, appsRepository, clusterRepository) {
+	if !createService(client, appName, dockerImage, appsRepository, clusterRepository) {
 		// 更新镜像
-		err = client.Service.SetImages(appName, do.DockerImage, updateDelay)
+		err = client.Service.SetImages(appName, dockerImage, updateDelay)
 		exception.ThrowRefuseExceptionError(err)
 	}
 
 	// 更新集群版本信息
-	do.UpdateBuildVer(true, clusterDO.Id, 0)
+	do.UpdateBuildVer(true, clusterDO.Id, 0, buildNumber, dockerImage)
 	_, _ = appsRepository.UpdateClusterVer(appName, do.ClusterVer)
 
 	buildLogEO.IsSuccess = true

@@ -41,7 +41,6 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		if appDO == nil {
 			_ = appsRepository.Add(apps.DomainObject{
 				AppName:         item.Name,
-				DockerImage:     item.Image,
 				DockerInstances: item.Instances,
 				DockerReplicas:  item.Replicas,
 				IsSys:           true,

@@ -181,7 +181,11 @@ func (receiver *BuildEO) StartBuild() {
 		case "checkout":
 			// 得到应用的CommitId
 			receiver.getCommitId()
-			receiver.useCache(index, gits)
+			// 直接使用缓存
+			if receiver.useCache(index, gits) {
+				receiver.success()
+				return
+			}
 
 		case "dockerPush": // 上传成功后，需要更新项目中的镜像版本属性
 			event.DockerPushedEvent{BuildNumber: parse.ToInt(step.With["buildNumber"]), AppName: parse.ToString(step.With["appName"]), ImageName: parse.ToString(step.With["dockerImage"])}.PublishEvent()
@@ -484,7 +488,7 @@ func (receiver *BuildEO) success() {
 	}).Any() {
 		receiver.logQueue.progress <- "更新镜像版本完成。"
 		// 发布事件
-		event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: true}.PublishEvent()
+		event.BuildFinishedEvent{AppName: receiver.AppName, BuildId: receiver.Id, ClusterId: receiver.ClusterId, IsSuccess: true, DockerVer: receiver.Env.BuildNumber, DockerImage: receiver.DockerImage}.PublishEvent()
 	}
 
 	receiver.logQueue.progress <- "---------------------------------------------------------"

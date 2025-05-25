@@ -7,6 +7,7 @@ import (
 	"fops/domain/_/eumBuildType"
 	"fops/domain/apps"
 	"fops/domain/apps/event"
+	"fops/domain/cluster"
 	"fops/interfaces/job"
 	"time"
 
@@ -46,10 +47,12 @@ func (module Module) PostInitialize() {
 		// 如果最后一次构建是fops，且状态=构建中，同时fops的仓库=最后一次构建的镜像，则强制做一次同步操作
 		buildEO := container.Resolve[apps.Repository]().GetLastBuilding(eumBuildType.Manual)
 		appEO := container.Resolve[apps.Repository]().ToEntity("fops")
-		if buildEO.AppName == appEO.AppName && buildEO.Status == eumBuildStatus.Building && appEO.DockerImage == buildEO.DockerImage {
-			flog.Infof("恭喜，你正在使用最新的FOPS版本：%s", appEO.DockerImage)
+
+		clusterDO := container.Resolve[cluster.Repository]().GetLocalCluster()
+		if buildEO.AppName == appEO.AppName && buildEO.Status == eumBuildStatus.Building && appEO.ClusterVer.GetValue(clusterDO.Id).DockerImage == buildEO.DockerImage {
+			flog.Infof("恭喜，你正在使用最新的FOPS版本：%s", buildEO.DockerImage)
 			// 发布事件
-			event.BuildFinishedEvent{AppName: appEO.AppName, BuildId: buildEO.Id, ClusterId: buildEO.ClusterId, IsSuccess: true}.PublishEvent()
+			event.BuildFinishedEvent{AppName: appEO.AppName, BuildId: buildEO.Id, ClusterId: buildEO.ClusterId, IsSuccess: true, DockerVer: buildEO.BuildNumber, DockerImage: buildEO.DockerImage}.PublishEvent()
 			container.Resolve[apps.Repository]().SetSuccessForFops(buildEO.Id)
 		}
 	}

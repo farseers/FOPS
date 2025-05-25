@@ -8,11 +8,9 @@ import (
 // DomainObject 聚合
 type DomainObject struct {
 	AppName           string                                      // 应用名称（链路追踪）
-	DockerVer         int                                         // 镜像版本
 	ClusterVer        collections.Dictionary[int64, ClusterVerVO] // 集群版本
 	AppGit            int64                                       // 应用的源代码
 	FrameworkGits     collections.List[int64]                     // 依赖的框架源代码
-	DockerImage       string                                      // 仓库镜像名称
 	DockerfilePath    string                                      // Dockerfile路径
 	DockerInstances   int                                         // 运行的实例数量
 	DockerInspect     collections.List[DockerInspectVO]           // 运行的实例详情
@@ -41,7 +39,7 @@ type ClusterVerVO struct {
 }
 
 // UpdateBuildVer 当构建失败时，记录失败时间、失败时的构建ID
-func (receiver *DomainObject) UpdateBuildVer(isSuccess bool, clusterId int64, buildId int64) {
+func (receiver *DomainObject) UpdateBuildVer(isSuccess bool, clusterId int64, buildId int64, dockerVer int, dockerImage string) {
 	if receiver.ClusterVer.IsNil() {
 		receiver.ClusterVer = collections.NewDictionary[int64, ClusterVerVO]()
 	}
@@ -52,8 +50,8 @@ func (receiver *DomainObject) UpdateBuildVer(isSuccess bool, clusterId int64, bu
 	receiver.ClusterVer.Update(clusterId, func(clusterVerVO *ClusterVerVO) {
 		// 当构建成功时，记录发布时间、发布时的构建ID
 		if isSuccess {
-			clusterVerVO.DockerVer = receiver.DockerVer
-			clusterVerVO.DockerImage = receiver.DockerImage
+			clusterVerVO.DockerVer = dockerVer
+			clusterVerVO.DockerImage = dockerImage
 			clusterVerVO.DeploySuccessAt = dateTime.Now()
 			clusterVerVO.BuildSuccessId = buildId
 		} else { // 当构建失败时，记录失败时间、失败时的构建ID

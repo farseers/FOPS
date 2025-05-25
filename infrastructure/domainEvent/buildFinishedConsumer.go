@@ -3,6 +3,7 @@ package domainEvent
 import (
 	"fops/domain/apps"
 	"fops/domain/apps/event"
+
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/core"
 )
@@ -14,7 +15,7 @@ func BuildFinishedConsumer(message any, _ core.EventArgs) {
 
 	// 更新项目的版本信息
 	appsDO := appsRepository.ToEntity(buildFinishedEvent.AppName)
-	appsDO.UpdateBuildVer(buildFinishedEvent.IsSuccess, buildFinishedEvent.ClusterId, buildFinishedEvent.BuildId)
+	appsDO.UpdateBuildVer(buildFinishedEvent.IsSuccess, buildFinishedEvent.ClusterId, buildFinishedEvent.BuildId, buildFinishedEvent.DockerVer, buildFinishedEvent.DockerImage)
 
 	_, _ = appsRepository.UpdateClusterVer(buildFinishedEvent.AppName, appsDO.ClusterVer)
 }

@@ -14,10 +14,8 @@ type ClusterVerVO struct {
 
 type AppsResponse struct {
 	AppName            string                         // 应用名称（链路追踪）
-	DockerVer          int                            // 镜像版本
 	ClusterVer         collections.List[ClusterVerVO] // 集群版本
 	LocalClusterVer    ClusterVerVO                   // 集群版本
-	DockerImage        string                         // 仓库镜像名称
 	AppGit             int64                          // 应用的git仓库
 	FrameworkGits      collections.List[int64]        // 依赖的框架源代码
 	IsHealth           bool                           // 应用是否健康

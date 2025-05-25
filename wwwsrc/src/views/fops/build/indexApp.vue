@@ -9,7 +9,6 @@
               <template #header>
                 <div class="card-header" style="height: 20px;">
                   <el-tag size="default" @click="onOpenEdit('edit', v)" style="cursor: pointer;text;font-weight: bold">{{ v.AppName }}</el-tag>
-                 
                   <el-tooltip content="实例数量/副本数量" slot="label">
                     <el-tag @click="showDockerTag(v,1)" v-if="v.IsHealth" size="small" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
                     <el-tag @click="showDockerTag(v,2)" v-else size="small" type="danger" style="margin-left: 5px;cursor: pointer;">{{v.DockerInstances}}/{{ v.DockerReplicas }}</el-tag>
@@ -19,10 +18,19 @@
                   <el-tag v-else-if = "v.DockerNodeRole !=''" type="info" size="small" style="margin-left: 5px">{{ v.DockerNodeRole }}</el-tag>
                 </div>
               </template>
-                <div class="appItem" style="margin-bottom: 10px">
+                <!-- <div class="appItem" style="margin-bottom: 10px">
                   <div style="display: flex;justify-content: space-between;align-items: center;">
                     <span>仓库版本</span>
-                    <span class="ecdis">
+                    
+                  </div>
+                  <div class="appItem">
+                    <el-tag v-if="v.DockerImage !=''" size="small">{{ v.DockerImage }}</el-tag>
+                    <el-tag v-else size="small">未构建</el-tag>
+                  </div>
+                </div> -->
+              <div v-for="(item, index) in v.ClusterVer">
+                <div class="appItem" style="margin-bottom: 10px">{{ item.ClusterName }}
+                  <span v-if="index == 0" class="ecdis">
                       <el-tooltip content="删除服务" slot="label">
                         <el-icon style="cursor: pointer;color: #f56c6c;font-size: 18px" @click="onDeleteDocker(v)"><ele-CircleCloseFilled /></el-icon>
                       </el-tooltip>
@@ -36,14 +44,6 @@
                           <el-icon style="margin-left: 10px;cursor: pointer;color: #19d4ae;font-size: 18px" @click="showFsLogLevel(2,v.AppName)"><ele-Document /></el-icon>
                       </el-tooltip>
                     </span>
-                  </div>
-                  <div class="appItem">
-                    <el-tag v-if="v.DockerImage !=''" size="small">{{ v.DockerImage }}</el-tag>
-                    <el-tag v-else size="small">未构建</el-tag>
-                  </div>
-                </div>
-              <div v-for="(item, index) in v.ClusterVer">
-                <div class="appItem" style="margin-bottom: 10px">{{ item.ClusterName }} 版本
                   <div class="appItem">
                     <el-tag v-if="item.DockerImage !=''" size="small" title="{{ item.DeploySuccessAt }}">{{ item.DockerImage }}</el-tag>
                     <el-tag v-else size="small">未发布</el-tag>

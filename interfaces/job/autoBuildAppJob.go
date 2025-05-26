@@ -30,10 +30,11 @@ func AutoBuildAppJob(*tasks.TaskContext) {
 		return
 	}
 
+	buildNumber := appsRepository.GetBuildNumber(appsBranchDO.AppName) + 1
 	buildDO := apps.BuildEO{
 		BuildType:     eumBuildType.Auto,
 		BuildServerId: core.AppId,
-		BuildNumber:   0,
+		BuildNumber:   buildNumber,
 		CreateAt:      dateTime.Now(),
 		FinishAt:      dateTime.Now(),
 		Env:           apps.EnvVO{},

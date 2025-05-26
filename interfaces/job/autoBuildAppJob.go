@@ -55,6 +55,7 @@ func AutoBuildAppJob(*tasks.TaskContext) {
 	appsBranchDO.BuildAt = dateTime.Now()
 	if !buildDO.IsSuccess {
 		appsBranchDO.BuildErrorCount++
+		appsBranchDO.DockerImage = buildDO.DockerImage
 	}
 	// 如果自动构建被取消了，则全部暂停
 	if buildDO.Status == eumBuildStatus.Cancel {

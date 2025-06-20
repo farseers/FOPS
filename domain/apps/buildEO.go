@@ -180,7 +180,8 @@ func (receiver *BuildEO) StartBuild() {
 		switch step.ActionName {
 		case "checkout":
 			// 得到应用的CommitId
-			receiver.getCommitId()
+			//receiver.getCommitId()
+			receiver.getSha256sum()
 			// 直接使用缓存
 			if receiver.useCache(index, gits) {
 				receiver.success()
@@ -291,14 +292,27 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 }
 
 // 得到应用的CommitId
-func (receiver *BuildEO) getCommitId() {
-	cmd := fmt.Sprintf("git -C %s rev-parse HEAD", receiver.appGit.GetAbsolutePath())
+// func (receiver *BuildEO) getCommitId() {
+// 	cmd := fmt.Sprintf("git -C %s rev-parse HEAD", receiver.appGit.GetAbsolutePath())
+// 	progress := make(chan string, 1000)
+// 	//  docker exec FOPS-Build /bin/bash -c "git -C /var/lib/fops/git/fops rev-parse HEAD"
+// 	if err := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, progress, receiver.ctx); err == nil {
+// 		if commitId := collections.NewListFromChan(progress).First(); len(commitId) >= 16 {
+// 			receiver.Env.CommitId = commitId[:16]
+// 			receiver.logQueue.progress <- fmt.Sprintf("应用的CommitId：%s", receiver.Env.CommitId)
+// 		}
+// 	}
+// }
+
+// 得到整个目录的Sha256sum
+func (receiver *BuildEO) getSha256sum() {
+	cmd := fmt.Sprintf("tar -cf - --exclude=\".git\" --exclude=\"./with.json\" -C %s ./ | sha256sum", DistRoot)
 	progress := make(chan string, 1000)
-	//  docker exec FOPS-Build /bin/bash -c "git -C /var/lib/fops/git/fops rev-parse HEAD"
+	//  docker exec FOPS-Build /bin/bash -c "tar -cf - --exclude=\".git\" --exclude=\"./with.json\" -C /var/lib/fops/dist/ ./ | sha256sum"
 	if err := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, progress, receiver.ctx); err == nil {
-		if commitId := collections.NewListFromChan(progress).First(); len(commitId) >= 16 {
-			receiver.Env.CommitId = commitId[:16]
-			receiver.logQueue.progress <- fmt.Sprintf("应用的CommitId：%s", receiver.Env.CommitId)
+		if sha256sum := collections.NewListFromChan(progress).First(); len(sha256sum) >= 16 {
+			receiver.Env.CommitId = sha256sum[:16]
+			receiver.logQueue.progress <- fmt.Sprintf("打包目录Sha256：%s", receiver.Env.CommitId)
 		}
 	}
 }

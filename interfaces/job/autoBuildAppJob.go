@@ -58,6 +58,7 @@ func AutoBuildAppJob(*tasks.TaskContext) {
 	} else {
 		// 成功后要更新镜像，用于下次直接使用缓存
 		appsBranchDO.DockerImage = buildDO.DockerImage
+		appsBranchDO.Sha256sum = buildDO.Env.Sha256sum
 	}
 	// 如果自动构建被取消了，则全部暂停
 	if buildDO.Status == eumBuildStatus.Cancel {

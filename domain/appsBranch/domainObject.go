@@ -7,6 +7,7 @@ type DomainObject struct {
 	AppName         string            // 应用名称
 	BranchName      string            // 分支名称
 	CommitId        string            // 当前分支最后提交ID
+	Sha256sum       string            // 构建成功时的sha256sum
 	CommitMessage   string            // 提交消息
 	CommitAt        dateTime.DateTime //
 	DockerImage     string            // Docker镜像

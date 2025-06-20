@@ -180,7 +180,7 @@ func (receiver *BuildEO) StartBuild() {
 		switch step.ActionName {
 		case "checkout":
 			// 得到应用的CommitId
-			//receiver.getCommitId()
+			receiver.getCommitId()
 			receiver.getSha256sum()
 			// 直接使用缓存
 			if receiver.useCache(index, gits) {
@@ -191,7 +191,7 @@ func (receiver *BuildEO) StartBuild() {
 		case "dockerPush": // 上传成功后，需要更新项目中的镜像版本属性
 			//event.DockerPushedEvent{BuildNumber: parse.ToInt(step.With["buildNumber"]), AppName: parse.ToString(step.With["appName"]), ImageName: parse.ToString(step.With["dockerImage"])}.PublishEvent()
 		case "dockerBuild": // 镜像打包成功后，需要更新到Git分支中，用于后续的缓存使用
-			container.Resolve[appsBranch.Repository]().UpdateDockerImage(receiver.AppName, receiver.Env.CommitId, receiver.Env.DockerImage)
+			container.Resolve[appsBranch.Repository]().UpdateDockerImage(receiver.AppName, receiver.Env.CommitId, receiver.Env.DockerImage, receiver.Env.Sha256sum)
 		}
 	}
 
@@ -292,17 +292,17 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 }
 
 // 得到应用的CommitId
-// func (receiver *BuildEO) getCommitId() {
-// 	cmd := fmt.Sprintf("git -C %s rev-parse HEAD", receiver.appGit.GetAbsolutePath())
-// 	progress := make(chan string, 1000)
-// 	//  docker exec FOPS-Build /bin/bash -c "git -C /var/lib/fops/git/fops rev-parse HEAD"
-// 	if err := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, progress, receiver.ctx); err == nil {
-// 		if commitId := collections.NewListFromChan(progress).First(); len(commitId) >= 16 {
-// 			receiver.Env.CommitId = commitId[:16]
-// 			receiver.logQueue.progress <- fmt.Sprintf("应用的CommitId：%s", receiver.Env.CommitId)
-// 		}
-// 	}
-// }
+func (receiver *BuildEO) getCommitId() {
+	cmd := fmt.Sprintf("git -C %s rev-parse HEAD", receiver.appGit.GetAbsolutePath())
+	progress := make(chan string, 1000)
+	//  docker exec FOPS-Build /bin/bash -c "git -C /var/lib/fops/git/fops rev-parse HEAD"
+	if err := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, progress, receiver.ctx); err == nil {
+		if commitId := collections.NewListFromChan(progress).First(); len(commitId) >= 16 {
+			receiver.Env.CommitId = commitId[:16]
+			receiver.logQueue.progress <- fmt.Sprintf("应用的CommitId：%s", receiver.Env.CommitId)
+		}
+	}
+}
 
 // 得到整个目录的Sha256sum
 func (receiver *BuildEO) getSha256sum() {
@@ -312,8 +312,8 @@ func (receiver *BuildEO) getSha256sum() {
 	// docker exec FOPS-Build /bin/bash -c "find /var/lib/fops/dist -type f ! -path \"*/.git/*\" ! -name \".gitignore\" ! -name \".gitmodules\" ! -name \"with.json\" -exec sha256sum {} + |sort -k2|sha256sum"
 	if err := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, progress, receiver.ctx); err == nil {
 		if sha256sum := collections.NewListFromChan(progress).First(); len(sha256sum) >= 16 {
-			receiver.Env.CommitId = sha256sum[:16]
-			receiver.logQueue.progress <- fmt.Sprintf("打包目录Sha256：%s", receiver.Env.CommitId)
+			receiver.Env.Sha256sum = sha256sum[:16]
+			receiver.logQueue.progress <- fmt.Sprintf("打包目录Sha256：%s", receiver.Env.Sha256sum)
 		}
 	}
 }
@@ -321,7 +321,7 @@ func (receiver *BuildEO) getSha256sum() {
 // 使用缓存
 func (receiver *BuildEO) useCache(index int, gits collections.List[GitEO]) bool {
 	// 找到该commitId，如果之前存在，则直接使用
-	dockerImage := container.Resolve[appsBranch.Repository]().GetDockerImage(receiver.AppName, receiver.Env.CommitId)
+	dockerImage := container.Resolve[appsBranch.Repository]().GetDockerImage(receiver.AppName, receiver.Env.Sha256sum)
 	if dockerImage == "" {
 		return false
 	}

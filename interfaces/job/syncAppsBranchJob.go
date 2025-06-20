@@ -66,6 +66,7 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 				dbUT.BuildId = 0
 				dbUT.BuildSuccess = false
 				dbUT.DockerImage = ""
+				dbUT.Sha256sum = ""
 				appsBranchRepository.UpdateByBranch(*dbUT)
 			}
 		})

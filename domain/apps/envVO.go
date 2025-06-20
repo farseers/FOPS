@@ -50,6 +50,7 @@ type EnvVO struct {
 	DockerImage string // Docker镜像
 	BranchName  string // 分支名称
 	CommitId    string // 应用的CommitId
+	Sha256sum   string // 应用的Sha256sum
 }
 
 // Print 打印环境变量

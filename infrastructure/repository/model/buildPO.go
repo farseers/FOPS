@@ -26,6 +26,7 @@ type BuildPO struct {
 	DockerImage   string              `gorm:"size:64;not null;default:'';comment:Docker镜像"`
 	Env           apps.EnvVO          `gorm:"type:text;json;not null;comment:环境变量"`
 	CommitId      string              `gorm:"size:64;not null;default:'';comment:应用的CommitId"`
+	Sha256sum     string              `gorm:"size:64;not null;default:'';comment:构建成功时的sha256sum"`
 }
 
 // 创建索引

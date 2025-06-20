@@ -22,7 +22,7 @@ type Repository interface {
 	// GetUnRunUT 获取未运行UT的分支
 	GetUnRunUT() DomainObject
 	// UpdateDockerImage 更新镜像
-	UpdateDockerImage(appName, commitId, dockerImage string) error
-	// GetDockerImage 通过CommitId获取Docker镜像
-	GetDockerImage(appName, commitId string) string
+	UpdateDockerImage(appName, commitId, dockerImage, sha256sum string) error
+	// GetDockerImage 通过sha256sum获取Docker镜像
+	GetDockerImage(appName, sha256sum string) string
 }

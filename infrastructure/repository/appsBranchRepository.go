@@ -36,14 +36,17 @@ func (receiver *appsBranchRepository) UpdateByBranch(do appsBranch.DomainObject)
 }
 
 // UpdateDockerImage 更新镜像
-func (receiver *appsBranchRepository) UpdateDockerImage(appName, commitId, dockerImage string) error {
-	_, err := context.MysqlContext.AppsBranch.Where("app_name = ? and commit_id = ?", appName, commitId).UpdateValue("docker_image", dockerImage)
+func (receiver *appsBranchRepository) UpdateDockerImage(appName, commitId, dockerImage, sha256sum string) error {
+	_, err := context.MysqlContext.AppsBranch.Where("app_name = ? and commit_id = ?", appName, commitId).Select("docker_image", "sha256sum").Update(model.AppsBranchPO{
+		DockerImage: dockerImage,
+		Sha256sum:   sha256sum,
+	})
 	return err
 }
 
-// GetDockerImage 通过CommitId获取Docker镜像
-func (receiver *appsBranchRepository) GetDockerImage(appName, commitId string) string {
-	return context.MysqlContext.AppsBranch.Where("app_name = ? and commit_id = ?", appName, commitId).GetString("docker_image")
+// GetDockerImage 通过sha256sum获取Docker镜像
+func (receiver *appsBranchRepository) GetDockerImage(appName, sha256sum string) string {
+	return context.MysqlContext.AppsBranch.Where("app_name = ? and sha256sum = ?", appName, sha256sum).GetString("docker_image")
 }
 
 // DeleteBranch 删除分支
@@ -66,6 +69,7 @@ func (receiver *appsBranchRepository) ResetCommitId(commitId string) error {
 		CommitId:        commitId,
 		BuildId:         0,
 		BuildAt:         dateTime.Now(),
+		Sha256sum:       "",
 	})
 	return err
 }

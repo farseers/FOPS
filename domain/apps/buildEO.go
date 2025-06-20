@@ -306,9 +306,10 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 
 // 得到整个目录的Sha256sum
 func (receiver *BuildEO) getSha256sum() {
-	cmd := fmt.Sprintf("tar -cf - --exclude=\".git\" --exclude=\"./with.json\" -C %s ./ | sha256sum", DistRoot)
+	// find /var/lib/fops/dist -type f ! -path "*/.git/*" ! -name ".gitignore" ! -name ".gitmodules" ! -name "with.json" -exec sha256sum {} + |sort -k2|sha256sum
+	cmd := fmt.Sprintf("find %s -type f ! -path \"*/.git/*\" ! -name \".gitignore\" ! -name \".gitmodules\" ! -name \"with.json\" -exec sha256sum {} + |sort -k2|sha256sum", DistRoot)
 	progress := make(chan string, 1000)
-	//  docker exec FOPS-Build /bin/bash -c "tar -cf - --exclude=\".git\" --exclude=\"./with.json\" -C /var/lib/fops/dist/ ./ | sha256sum"
+	// docker exec FOPS-Build /bin/bash -c "find /var/lib/fops/dist -type f ! -path \"*/.git/*\" ! -name \".gitignore\" ! -name \".gitmodules\" ! -name \"with.json\" -exec sha256sum {} + |sort -k2|sha256sum"
 	if err := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, progress, receiver.ctx); err == nil {
 		if sha256sum := collections.NewListFromChan(progress).First(); len(sha256sum) >= 16 {
 			receiver.Env.CommitId = sha256sum[:16]

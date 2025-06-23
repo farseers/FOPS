@@ -55,11 +55,4 @@ func CollectsNodeJob(*tasks.TaskContext) {
 			// dockerNodeVO.Memory = node.Memory
 		}
 	})
-
-	// 10s未更新，标记为不健康
-	clusterNode.NodeList.Foreach(func(item *docker.DockerNodeVO) {
-		if time.Since(item.UpdateAt).Seconds() > 10 {
-			item.IsHealth = false
-		}
-	})
 }

@@ -80,7 +80,7 @@ func (receiver *DomainObject) Backup() error {
 
 	lstErrorContent := collections.NewList[string]()
 	for _, database := range receiver.Database {
-		flog.Infof("正在备份：%s:%d %s", receiver.Host, receiver.Port, database)
+		//flog.Infof("正在备份：%s:%d %s", receiver.Host, receiver.Port, database)
 
 		var ackupHistoryData BackupHistoryData
 		// 备份数据
@@ -104,7 +104,7 @@ func (receiver *DomainObject) Backup() error {
 				continue
 			}
 
-			flog.Infof("正在上传文件:%s", ackupHistoryData.FileName)
+			flog.Infof("准备上传：%s", ackupHistoryData.FileName)
 			err = ossConfig.UploadOSS(backupRoot, []string{ackupHistoryData.FileName})
 			if err != nil {
 				lstErrorContent.Add(fmt.Sprintf("在上传备份文件%s时，发生错误：%v", database, err))
@@ -216,7 +216,7 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (Bac
 			pageSize := float64(10000)
 			pageCount := math.Ceil(partitionTotalCount / pageSize)
 
-			flog.Infof("正在导出%s.%s %s 共%d条数据 %d页", database, tableName, partition, int64(partitionTotalCount), int64(pageCount))
+			//flog.Infof("正在导出%s.%s %s 共%d条数据 %d页", database, tableName, partition, int64(partitionTotalCount), int64(pageCount))
 			for pageIndex := float64(1); pageIndex <= pageCount; pageIndex++ {
 				//sw := stopwatch.StartNew()
 
@@ -241,11 +241,11 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (Bac
 		if totalCount != realTotalCount {
 			return BackupHistoryData{}, fmt.Errorf("%s.%s 导出的数据与查到的数据数量不一致", database, tableName)
 		}
-		flog.Infof("%s.%s 共导出%d条数据 总共使用了：%s", database, tableName, int64(realTotalCount), swTotal.GetMillisecondsText())
+		flog.Infof("导出clickhouse %s.%s 共%d条数据 使用了：%s", database, tableName, int64(realTotalCount), swTotal.GetMillisecondsText())
 	}
 
 	// 压缩
-	flog.Infof("正在压缩文件:%s", backupRoot+fileName)
+	flog.Infof("准备压缩：%s", backupRoot+fileName)
 	cmd := fmt.Sprintf("gzip %s", backupRoot+fileName)
 	code, result := exec.RunShellCommand(cmd, nil, path, false)
 	if code != 0 {

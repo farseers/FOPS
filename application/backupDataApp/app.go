@@ -142,7 +142,7 @@ func Clear(id string, backupDataRepository backupData.Repository) {
 	for _, database := range do.Database {
 		lstHistoryData, err := do.GetHistoryData(id, database)
 
-		for lstHistoryData.Count() > 1 && err == nil {
+		for lstHistoryData.Count() > 7 && err == nil {
 			// 按时间排序
 			lstHistoryData = lstHistoryData.OrderByDescending(func(item backupData.BackupHistoryData) any {
 				return item.CreateAt

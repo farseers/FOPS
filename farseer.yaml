@@ -15,7 +15,7 @@ Fops:
   Server: "http://127.0.0.1:8889"
   LinkTrace:
     Driver: "clickhouse"
-    ConnString: "DataType=clickhouse,PoolMaxSize=50,PoolMinSize=1,ConnectionString=clickhouse://root:steden@192.168.1.8:9000/linkTrace?dial_timeout=10s&read_timeout=20s"
+    ConnString: "DataType=clickhouse,PoolMaxSize=5,PoolMinSize=1,ConnectionString=clickhouse://root:steden@192.168.1.8:9000/linkTrace?dial_timeout=10s&read_timeout=20s"
     SaveDays: 3 # 链路数据保存天数（每隔1个小时自动清除历史数据）
   ExtranetIpUrl: "ipv4.ip.sb"
   Builder:

@@ -70,9 +70,7 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, clusterRe
 	})
 
 	// 删除末尾的/
-	if strings.HasSuffix(newDO.AdditionalScripts, "\\") {
-		newDO.AdditionalScripts = newDO.AdditionalScripts[:len(newDO.AdditionalScripts)-1]
-	}
+	newDO.AdditionalScripts = strings.TrimSuffix(newDO.AdditionalScripts, "\\")
 
 	// 更新部署的镜像
 	if newDO.ClusterVer.ContainsKey(clusterDO.Id) && req.ClusterDockerImage != "" {

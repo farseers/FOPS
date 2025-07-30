@@ -347,6 +347,10 @@ func (receiver *DomainObject) RecoverClickhouse(database string, fileName string
 	executeIndex := 0
 	// 逐行读取 SQL 文件
 	scanner := bufio.NewScanner(fSql)
+	// 设置更大的缓冲区
+	buf := make([]byte, 0, 1024*1024*10) // 10MB 缓冲区
+	scanner.Buffer(buf, cap(buf))
+
 	var sqlBuilder strings.Builder
 	for scanner.Scan() {
 		line := scanner.Text()

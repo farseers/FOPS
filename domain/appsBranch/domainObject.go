@@ -12,6 +12,7 @@ type DomainObject struct {
 	CommitAt        dateTime.DateTime //
 	DockerImage     string            // Docker镜像
 	BuildId         int64             // 对应的构建ID
+	AutoBuild       bool              // 是否自动构建
 	BuildSuccess    bool              // 是否构建成功
 	BuildErrorCount int               // 构建失败次数
 	BuildAt         dateTime.DateTime // 构建时间

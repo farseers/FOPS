@@ -57,7 +57,7 @@ func (receiver *appsBranchRepository) DeleteBranch(appName, branchName string) e
 
 // GetUnRunUT 获取未运行UT的分支
 func (receiver *appsBranchRepository) GetUnRunUT() appsBranch.DomainObject {
-	po := context.MysqlContext.AppsBranch.Where("build_success = 0 and build_error_count < 3 and app_name in (select app_name from apps where ut_workflows_name <>'')").Asc("commit_at").ToEntity()
+	po := context.MysqlContext.AppsBranch.Where("auto_build = 1 and build_success = 0 and build_error_count < 3 and app_name in (select app_name from apps where ut_workflows_name <>'')").Asc("commit_at").ToEntity()
 	return mapper.Single[appsBranch.DomainObject](po)
 }
 
@@ -72,4 +72,9 @@ func (receiver *appsBranchRepository) ResetCommitId(commitId string) error {
 		Sha256sum:       "",
 	})
 	return err
+}
+
+// SetAutoBuild 设置是否自动构建
+func (receiver *appsBranchRepository) SetAutoBuild(appName string, branchName string, isAuto bool) {
+	context.MysqlContext.AppsBranch.Where("app_name = ? and branch_name = ?", appName, branchName).UpdateValue("auto_build", isAuto)
 }

@@ -45,3 +45,10 @@ func ResetCommitId(commitId string, appsBranchRepository appsBranch.Repository) 
 	err := appsBranchRepository.ResetCommitId(commitId)
 	exception.ThrowWebExceptionError(403, err)
 }
+
+// SetAutoBuild 设置是否自动构建
+// @post autobuild/setAutoBuild
+// @filter application.Jwt
+func SetAutoBuild(appName string, branchName string, isAuto bool, appsBranchRepository appsBranch.Repository) {
+	appsBranchRepository.SetAutoBuild(appName, branchName, isAuto)
+}

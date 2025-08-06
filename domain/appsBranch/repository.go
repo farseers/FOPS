@@ -25,4 +25,6 @@ type Repository interface {
 	UpdateDockerImage(appName, commitId, dockerImage, sha256sum string) error
 	// GetDockerImage 通过sha256sum获取Docker镜像
 	GetDockerImage(appName, sha256sum string) string
+	// SetAutoBuild 设置是否自动构建
+	SetAutoBuild(appName string, branchName string, isAuto bool)
 }

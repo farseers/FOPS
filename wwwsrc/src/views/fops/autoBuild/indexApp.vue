@@ -11,9 +11,20 @@
                 <ul :class="v.List.length>1?'_uls _uls1':'_uls'" v-for="(item, index) in v.List" :key="item.CommitId">
                   <li>
                     <el-tag size="small" style="margin-right: 3px;">{{ item.BranchName }}</el-tag>
-                    <span style="margin-right: 3px;">git提交时间：{{ item.CommitAt }}</span>
-                    <span>
-                     自动构建： 
+                    <span>git提交时间：{{ item.CommitAt }}</span>
+                    
+                  </li>
+                  <li v-if="item.CommitMessage"><span>git提交信息：{{ item.CommitMessage }}</span></li>
+                  <li>
+                    <el-tag size="small" style="margin-right: 3px;" type="success" v-show="item.BuildSuccess">成功</el-tag>
+                    <el-tag size="small" style="margin-right: 3px;" type="danger" v-show="!item.BuildSuccess">失败</el-tag>
+                    <span style="margin-right: 3px;">构建ID:{{ item.BuildId }}</span> 
+                    <span  style="margin-right: 3px;">
+                      失败次数:
+                    <el-tag size="small" style="margin-right: 3px;" :type="item.BuildErrorCount > 0?'danger':'info'" >{{item.BuildErrorCount}}</el-tag>
+                    </span>
+                  <span>
+
                   <el-switch
                     v-model="item.AutoBuild"
                     size="small"
@@ -25,17 +36,6 @@
                     inactive-text="关闭"
                   />
                    </span>
-                  </li>
-                  <li v-if="item.CommitMessage"><span>git提交信息：{{ item.CommitMessage }}</span></li>
-                  <li>
-                    <el-tag size="small" style="margin-right: 3px;" type="success" v-show="item.BuildSuccess">成功</el-tag>
-                    <el-tag size="small" style="margin-right: 3px;" type="danger" v-show="!item.BuildSuccess">失败</el-tag>
-                    <span style="margin-right: 3px;">构建ID:{{ item.BuildId }}</span> 
-                    <span>
-                      失败次数:
-                    <el-tag size="small" style="margin-right: 3px;" :type="item.BuildErrorCount > 0?'danger':'info'" >{{item.BuildErrorCount}}</el-tag>
-                    </span>
-                  
                   </li>
                   <li style="display: flex;align-items: center;padding: 5px 10px;">构建时间：{{ item.BuildAt }}</li>
                   <!-- v-if="item.BuildErrorCount == 3 && !item.BuildSuccess" -->

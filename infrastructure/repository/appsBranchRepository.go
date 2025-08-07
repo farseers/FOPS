@@ -31,7 +31,7 @@ func (receiver *appsBranchRepository) ToListByAppName(appName string) collection
 // UpdateByBranch 更新
 func (receiver *appsBranchRepository) UpdateByBranch(do appsBranch.DomainObject) error {
 	po := mapper.Single[model.AppsBranchPO](do)
-	_, err := context.MysqlContext.AppsBranch.Where("app_name = ? and branch_name = ?", do.AppName, do.BranchName).Update(po)
+	_, err := context.MysqlContext.AppsBranch.Where("app_name = ? and branch_name = ?", do.AppName, do.BranchName).Omit("auto_build").Update(po)
 	return err
 }
 

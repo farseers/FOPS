@@ -575,6 +575,13 @@ export function fopsApi() {
 				data:param,
 			});
 		},
+		setAutoBuild:(param: object) => { // 设置自动构建开关
+			return request({
+				url: '/apps/autobuild/setAutoBuild',
+				method:'post',
+				data:param,
+			});
+		},
 		drpBaseList:(param: object) => { // 通知类型 {baseType:'1,2'} 1通知类型 2比较方式
 			return request({
 				url: '/monitor/drpBaseList',

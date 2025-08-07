@@ -9,7 +9,23 @@
               <div class="title">{{ v.AppName }}</div>
               <div class="_divs">
                 <ul :class="v.List.length>1?'_uls _uls1':'_uls'" v-for="(item, index) in v.List" :key="item.CommitId">
-                  <li><el-tag size="small" style="margin-right: 3px;">{{ item.BranchName }}</el-tag><span>git提交时间：{{ item.CommitAt }}</span></li>
+                  <li>
+                    <el-tag size="small" style="margin-right: 3px;">{{ item.BranchName }}</el-tag>
+                    <span style="margin-right: 3px;">git提交时间：{{ item.CommitAt }}</span>
+                    <span>
+                     自动构建： 
+                  <el-switch
+                    v-model="item.AutoBuild"
+                    size="small"
+                    width="50"
+                    @change="setAutoBuild(item)"
+                    inline-prompt
+                    style="--el-switch-on-color: #13ce66; --el-switch-off-color: #ff4949;padding: 2px;"
+                    active-text="开启"
+                    inactive-text="关闭"
+                  />
+                   </span>
+                  </li>
                   <li v-if="item.CommitMessage"><span>git提交信息：{{ item.CommitMessage }}</span></li>
                   <li>
                     <el-tag size="small" style="margin-right: 3px;" type="success" v-show="item.BuildSuccess">成功</el-tag>
@@ -17,14 +33,21 @@
                     <span style="margin-right: 3px;">构建ID:{{ item.BuildId }}</span> 
                     <span>
                       失败次数:
-                    <el-tag size="small" style="margin-right: 3px;" :type="item.BuildErrorCount > 0?'danger':'info'" >{{item.BuildErrorCount}}</el-tag> 
+                    <el-tag size="small" style="margin-right: 3px;" :type="item.BuildErrorCount > 0?'danger':'info'" >{{item.BuildErrorCount}}</el-tag>
                     </span>
                   
                   </li>
                   <li style="display: flex;align-items: center;padding: 5px 10px;">构建时间：{{ item.BuildAt }}</li>
                   <!-- v-if="item.BuildErrorCount == 3 && !item.BuildSuccess" -->
                   <li style="height: 20px;padding: 0;display: flex;align-items: center;">
-                  <el-button  v-show="item.BuildErrorCount == 3 && !item.BuildSuccess" size="small" @click="goBuild(item,v)" type="info" style="width:100%"><el-icon class="iconfont icon-wenducanshu-05"></el-icon>构建</el-button>
+                  <el-button  
+                  v-show="item.BuildErrorCount >= 3 || !item.AutoBuild" 
+                  size="small" @click="goBuild(item)" 
+                  type="info" 
+                  style="width:100%">
+                  <el-icon class="iconfont icon-wenducanshu-05"></el-icon>
+                  构建
+                </el-button>
                 </li>
                 </ul>
               </div>
@@ -174,7 +197,7 @@ const getTableData = () => {
   // 获取应用列表
   serverApi.autobuildList(param).then(function (res){
     if (res.Status) {
-      console.log(res.Data)
+      // console.log(res.Data)
       const arr =  res.Data;
       arr.sort((a:any, b:any) => a.List.length - b.List.length);
       state.tableData.data = arr;
@@ -206,7 +229,22 @@ const getTableLogData = () => {
     state.tableLogData.loading = false;
   })
 };
-
+const setAutoBuild = (item:any)=>{
+  const param = {
+    "appName": item.AppName,  // 应用名称
+    "branchName": item.BranchName, // 分支名称
+    "isAuto": item.AutoBuild     // 开关状态
+  }
+  serverApi.setAutoBuild(param).then(async function(res){
+          if(res.Status){
+            // ElMessage.success("自动构建成功")
+            // 刷新
+            getTableData()
+          }else{
+            ElMessage.error(res.StatusMessage)
+          }
+        })
+}
 // 构建
 const goBuild = (item: any) => {
   ElMessageBox.confirm(`请确认重新自动构建?`, '提示', {

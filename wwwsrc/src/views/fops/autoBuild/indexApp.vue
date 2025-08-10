@@ -69,14 +69,14 @@
                 <el-table-column prop="FinishAt" width="130" label="构建时间"></el-table-column>
                 <el-table-column label="应用名称" show-overflow-tooltip>
                   <template #default="scope">
-                    <el-tag v-if="scope.row.Status==0" size="small" type="info">未开始</el-tag>
-                    <el-tag v-else-if="scope.row.Status==1" size="small" type="warning">构建中</el-tag>
-                    <el-tag v-else-if="scope.row.Status==2 && scope.row.IsSuccess == true" size="small" type="success">成功</el-tag>
-                    <el-tag v-else-if="scope.row.Status==2 && scope.row.IsSuccess == false" size="small" type="danger">失败</el-tag>
-                    <el-tag v-else-if="scope.row.Status==3" size="small" type="info">取消</el-tag>
-                    <el-tag size="small" type="info">{{ scope.row.WorkflowsName }}</el-tag>
-                    <el-tag v-if="scope.row.BranchName !=''" size="small">{{ scope.row.BranchName }}</el-tag>
-                    <span style="margin-left: 5px ">{{ scope.row.AppName }}:{{ scope.row.BuildNumber }}</span>
+                    <el-tag v-if="scope.row.Status==0" size="small" type="info">{{ scope.row.BranchName }}</el-tag>
+                    <el-tag v-else-if="scope.row.Status==1" size="small" type="warning">{{ scope.row.BranchName }}</el-tag>
+                    <el-tag v-else-if="scope.row.Status==2 && scope.row.IsSuccess == true" size="small" type="success">{{ scope.row.BranchName }}</el-tag>
+                    <el-tag v-else-if="scope.row.Status==2 && scope.row.IsSuccess == false" size="small" type="danger">{{ scope.row.BranchName }}</el-tag>
+                    <el-tag v-else-if="scope.row.Status==3" size="small" type="info">{{ scope.row.BranchName }}</el-tag>
+                    <!-- <el-tag v-if="scope.row.BranchName !=''" size="small">{{ scope.row.BranchName }}</el-tag> -->
+
+                    <span style="margin-left: 5px;">{{ scope.row.AppName }}:{{ scope.row.BuildNumber }}</span>
                   </template>
                 </el-table-column>
                 <el-table-column label="操作" width="80">

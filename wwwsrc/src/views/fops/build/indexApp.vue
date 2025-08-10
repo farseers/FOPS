@@ -96,6 +96,7 @@
                 <el-table-column prop="FinishAt" width="130" label="构建时间"></el-table-column>
                 <el-table-column label="应用名称" show-overflow-tooltip>
                   <template #default="scope">
+                    <el-tag size="small" type="info">{{ scope.row.WorkflowsName }}</el-tag>
                     <el-tag v-if="scope.row.Status==0" size="small" type="info">{{ scope.row.BranchName }}</el-tag>
                     <el-tag v-else-if="scope.row.Status==1" size="small" type="warning">{{ scope.row.BranchName }}</el-tag>
                     <el-tag v-else-if="scope.row.Status==2 && scope.row.IsSuccess == true" size="small" type="success">{{ scope.row.BranchName }}</el-tag>

@@ -8,16 +8,27 @@
               <li>
                 {{state.ruleForm.CreateAt}}
                 <el-tag size="small">{{state.ruleForm.HttpStatusCode}}</el-tag> {{state.ruleForm.RequestIp}} <el-tag type="success" size="small">{{state.ruleForm.HttpMethod}}</el-tag>
-                {{state.ruleForm.Url}}
-                整体耗时：
+                <el-tag style="font-size: 14px;" @click="copyToClipboard(state.ruleForm.HttpUrl)">{{state.ruleForm.HttpUrl}}</el-tag>
+                耗时：
                   <el-tag size="small" v-if="state.ruleForm.UseTs > 100000000" type="danger">{{state.ruleForm.UseDesc}}</el-tag>
                   <el-tag size="small" v-else-if="state.ruleForm.UseTs > 50000000" type="warning">{{state.ruleForm.UseDesc}}</el-tag>
-                  <el-tag size="small" v-else-if="state.ruleForm.UseTs > 1000000">{{scope.row.UseDesc}}</el-tag>
+                  <el-tag size="small" v-else-if="state.ruleForm.UseTs > 1000000">{{state.ruleForm.UseDesc}}</el-tag>
                   <el-tag size="small" v-else type="success">{{state.ruleForm.UseDesc}}</el-tag>
               </li>
-              <li><el-tag size="small">Headers：</el-tag>{{friendlyJSONstringify(state.ruleForm.HttpHeaders)}}</li>
-              <li><el-tag size="small">入参：</el-tag>{{state.ruleForm.HttpRequestBody}}</li>
-              <li><el-tag size="small">出参：</el-tag>{{state.ruleForm.HttpResponseBody}}</li>
+              <li><el-tag size="small">Headers：</el-tag>
+                <el-button size="small" @click="copyToClipboard(formatJson(friendlyJSONstringify(state.ruleForm.HttpHeaders)))" type="info">复制</el-button>
+                <pre>{{formatJson(friendlyJSONstringify(state.ruleForm.HttpHeaders))}}</pre>
+              </li>
+              <div style="display: flex; gap: 10px; list-style: none; padding: 0;">
+                <li style="flex: 1;"><el-tag size="small">入参：</el-tag>
+                  <el-button size="small" @click="copyToClipboard(formatJson(state.ruleForm.HttpRequestBody))" type="info">复制</el-button>
+                  <pre>{{formatJson(state.ruleForm.HttpRequestBody)}}</pre>
+                </li>
+                <li style="flex: 1;"><el-tag size="small">出参：</el-tag>
+                  <el-button size="small" @click="copyToClipboard(formatJson(state.ruleForm.HttpResponseBody))" type="info">复制</el-button>
+                  <pre>{{formatJson(state.ruleForm.HttpResponseBody)}}</pre>
+                </li>
+              </div>
             </ul>
 					</el-col>
 				</el-row>
@@ -72,20 +83,9 @@ const openDialog = (type:number,row: any) => {
   state.dialog.title = '请求报文(TraceId：'+row.TraceId+')';
   //state.dialog.submitTxt = '修 改';
   //console.log(row2)
-  if(type==1){
-    state.TraceId=row.TraceId
-    state.ruleForm=row
-  }else{
-    state.TraceId=row.TraceId
-    state.ruleForm.CreateAt=row.CreateAt
-    state.ruleForm.HttpUrl=row.WebPath
-    state.ruleForm.HttpMethod=row.WebMethod
-    state.ruleForm.HttpHeaders=row.WebHeaders
-    state.ruleForm.HttpRequestBody=row.WebRequestBody
-    state.ruleForm.HttpResponseBody=row.WebResponseBody
-    state.ruleForm.HttpStatusCode=row.WebStatusCode
-    state.ruleForm.UseDesc=row.UseDesc
-  }
+  state.TraceId=row.TraceId
+  state.ruleForm=row
+
 	state.dialog.isShowDialog = true;
 };
 // 关闭弹窗
@@ -119,6 +119,23 @@ const onCancel = () => {
 defineExpose({
 	openDialog,
 });
+
+const formatJson = (jsonStr) =>{
+  try {
+    return JSON.stringify(JSON.parse(jsonStr), null, 2);
+  } catch (e) {
+    return jsonStr;
+  }
+}
+const copyToClipboard = (text) =>{
+      try {
+        navigator.clipboard.writeText(text);
+        alert('复制成功')
+      } catch (err) {
+        alert('复制失败')
+      }
+}
+
 </script>
 
 <style>
@@ -147,5 +164,4 @@ textarea{
 .custom-list li:hover {
   background-color: #e0e0e0;
 }
-
 </style>

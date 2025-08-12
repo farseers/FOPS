@@ -164,4 +164,14 @@ textarea{
 .custom-list li:hover {
   background-color: #e0e0e0;
 }
+
+/* 增加垂直滚动条 */
+pre{
+  max-height: 600px; 
+  overflow-y: auto;
+  padding: 10px;
+  background: #f8f8f8;
+  border: 1px solid #eee;
+  border-radius: 4px;
+}
 </style>

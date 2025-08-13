@@ -143,22 +143,23 @@ func StatVisitsJob(*tasks.TaskContext) {
 				totalCount := items.Count()
 				index95 := parse.ToInt(float64(totalCount) * 0.95)
 				index99 := parse.ToInt(float64(totalCount) * 0.99)
-
-				lstEO.Add(linkTrace.VisitsEO{
-					TraceType:        eumTraceType.Enum(traceType),
-					AppName:          items.First().AppName,
-					CreateAt:         createAt,
-					VisitsNodePrefix: visitsNodePrefix,
-					VisitsNode:       visitsNode,
-					MinMs:            float64(items.Min(func(item trace.TraceContext) any { return item.UseTs.Microseconds() }).(int64)) / 1000,
-					MaxMs:            float64(items.Max(func(item trace.TraceContext) any { return item.UseTs.Microseconds() }).(int64)) / 1000,
-					AvgMs:            items.Average(func(item trace.TraceContext) any { return item.UseTs.Milliseconds() }),
-					Line95Ms:         float64(items.Index(index95).UseTs.Microseconds()) / 1000,
-					Line99Ms:         float64(items.Index(index99).UseTs.Microseconds()) / 1000,
-					ErrorCount:       items.Where(func(item trace.TraceContext) bool { return item.Exception != nil && !item.Exception.IsNil() }).Count(),
-					TotalCount:       totalCount,
-					QPS:              float64(totalCount) / 60,
-				})
+				if totalCount > index99 {
+					lstEO.Add(linkTrace.VisitsEO{
+						TraceType:        eumTraceType.Enum(traceType),
+						AppName:          items.First().AppName,
+						CreateAt:         createAt,
+						VisitsNodePrefix: visitsNodePrefix,
+						VisitsNode:       visitsNode,
+						MinMs:            float64(items.Min(func(item trace.TraceContext) any { return item.UseTs.Microseconds() }).(int64)) / 1000,
+						MaxMs:            float64(items.Max(func(item trace.TraceContext) any { return item.UseTs.Microseconds() }).(int64)) / 1000,
+						AvgMs:            items.Average(func(item trace.TraceContext) any { return item.UseTs.Milliseconds() }),
+						Line95Ms:         float64(items.Index(index95).UseTs.Microseconds()) / 1000,
+						Line99Ms:         float64(items.Index(index99).UseTs.Microseconds()) / 1000,
+						ErrorCount:       items.Where(func(item trace.TraceContext) bool { return item.Exception != nil && !item.Exception.IsNil() }).Count(),
+						TotalCount:       totalCount,
+						QPS:              float64(totalCount) / 60,
+					})
+				}
 			}
 		}
 	}

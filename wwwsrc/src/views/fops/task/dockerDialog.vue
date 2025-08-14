@@ -48,7 +48,7 @@ const clickDockerLog = (item) => {
     state.dockerLog = item
 }
 const openDockerLog = (appName) => { //容器日志
-    serverApi.dockerLog({ "AppName": appName, "tailCount": 100 }).then(function (res) {
+    serverApi.dockerLog({ "AppName": appName, "tailCount": 500 }).then(function (res) {
         state.dockerLogContent = res.Data;
         if (state.dockerLogContent && state.dockerLogContent.length > 0) {
             clickDockerLog(state.dockerLogContent[0])

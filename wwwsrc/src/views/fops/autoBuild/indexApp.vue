@@ -31,7 +31,7 @@
                     width="50"
                     @change="setAutoBuild(item)"
                     inline-prompt
-                    style="--el-switch-on-color: #13ce66; --el-switch-off-color: #909399;padding: 2px;"
+                    style="--el-switch-on-color: #13ce66; --el-switch-off-color: #f4f4f5;padding: 2px;"
                     active-text="开启"
                     inactive-text="关闭"
                   />

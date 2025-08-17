@@ -1,26 +1,26 @@
 <template>
 	<div class="system-user-container layout-padding">
-		<el-card shadow="hover" class="layout-padding-auto">
-			<div class="system-user-search mb15">
-        <label>客户端名称</label>
-        <el-select  class="ml10" style="max-width: 150px;margin-right: 5px;" size="small" v-model="state.appName">
-          <el-option label="全部" value=""></el-option>
-          <el-option v-for="item in state.appData" :label="item.AppName" :value="item.AppName" ></el-option>
-        </el-select>
-				<el-input size="default" v-model="state.keyWord" placeholder="请输入任务名称" clearable style="max-width: 180px"> </el-input>
-        <el-input size="default" v-model="state.clientId" placeholder="请输入客户端ID" clearable style="max-width: 180px"  class="ml10"> </el-input>
-        <el-select v-model="state.enable" placeholder="请选择运行状态"  class="ml10" @change="onEnableChange">
-          <el-option label="全部" :value="-1"></el-option>
-          <el-option label="停止" :value="0"></el-option>
-          <el-option label="启用" :value="1"></el-option>
-        </el-select>
-				<el-button size="default" type="primary" class="ml10" @click="onQuery">
-					<el-icon>
-						<ele-Search />
-					</el-icon>
-					查询
-				</el-button>
-			</div>
+    <el-card shadow="hover" class="layout-padding-auto">
+    <div class="system-user-search mb15" style="display: flex; align-items: center; flex-wrap: wrap;">
+    <label>客户端名称</label>
+    <el-select class="ml10" style="max-width: 150px;margin-right: 5px;" size="small" v-model="state.appName" @change="onQuery">
+      <el-option label="全部" value=""></el-option>
+      <el-option v-for="item in state.appData" :label="item.AppName" :value="item.AppName"></el-option>
+    </el-select>
+    <el-input size="default" v-model="state.keyWord" placeholder="请输入任务名称" clearable style="max-width: 180px; margin-left: 10px;" @keyup.enter="onQuery"></el-input>
+    <el-input size="default" v-model="state.clientId" placeholder="请输入客户端ID" clearable style="max-width: 180px; margin-left: 10px;" @keyup.enter="onQuery"></el-input>
+    <el-select v-model="state.enable" placeholder="请选择运行状态" class="ml10" style="margin-left: 10px;" @change="onQuery">
+      <el-option label="全部" :value="-1"></el-option>
+      <el-option label="停止" :value="0"></el-option>
+      <el-option label="启用" :value="1"></el-option>
+    </el-select>
+    <el-button size="default" type="primary" class="ml10" style="margin-left: 10px;" @click="onQuery">
+      <el-icon>
+      <ele-Search />
+      </el-icon>
+      查询
+    </el-button>
+    </div>
 			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%" class="mytable">
 				<el-table-column label="名称" style="line-height: 45px;height: 45px">
           <template #default="scope">
@@ -71,11 +71,12 @@
                 </span>
               </template>
             </el-table-column>
-				<el-table-column label="操作" width="100">
+				<el-table-column label="操作" width="140">
 					<template #default="scope">
             <el-button size="small" text type="danger" @click="onTaskList(scope.row)">历史</el-button>
             <el-button size="small" text type="danger" @click="onLog(scope.row)">日志</el-button><br />
             <el-button size="small" text type="warning" @click="onEdit('edit',scope.row)">修改</el-button>
+            <el-button size="small" text type="success" @click="onExecuteNow(scope.row)">执行</el-button>
             <el-button size="small" text type="info" @click="onDel(scope.row)">删除</el-button>
 					</template>
 				</el-table-column>
@@ -204,8 +205,7 @@ const onDel = (row: any) => {
 		confirmButtonText: '确认',
 		cancelButtonText: '取消',
 		type: 'warning',
-	})
-		.then(() => {
+	}).then(() => {
       // 删除逻辑
       serverApi.taskDel({"taskGroupName":row.Name}).then(function (res){
         if (res.Status){
@@ -217,6 +217,24 @@ const onDel = (row: any) => {
       })
 		})
 		.catch(() => {});
+};
+
+ const onExecuteNow = (row: any) => {
+  ElMessageBox.confirm(`是否立即执行当前任务：“${row.Name}”？`, '提示', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    serverApi.taskGroupExecuteNow({ "taskGroupName": row.Name }).then(function (res) {
+    if (res.Status) {
+      ElMessage.success('执行成功');
+      getTableData();
+    } else {
+      ElMessage.error(res.StatusMessage);
+    }
+    });
+  })
+  .catch(() => {});
 };
 
 //启用停用

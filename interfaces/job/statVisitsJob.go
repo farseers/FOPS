@@ -32,10 +32,10 @@ func StatVisitsJob(*tasks.TaskContext) {
 		lastVisitsAt = time.Date(lastVisitsAt.Year(), lastVisitsAt.Month(), lastVisitsAt.Day(), lastVisitsAt.Hour(), lastVisitsAt.Minute(), 0, 0, time.Local)
 	}
 
-	// 按1个小时的数据
-	endAt := lastVisitsAt.Add(time.Hour)
-	if endAt.After(time.Now()) {
-		endAt = time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), time.Now().Hour(), time.Now().Minute(), 0, 0, time.Local)
+	// 默认为当前时间，如果超过1个小时，则只按1个小时
+	endAt := time.Date(time.Now().Year(), time.Now().Month(), time.Now().Day(), time.Now().Hour(), time.Now().Minute(), 0, 0, time.Local)
+	if endAt.Sub(lastVisitsAt).Hours() > 1 {
+		endAt = lastVisitsAt.Add(time.Hour)
 	}
 
 	// 获取链路集合

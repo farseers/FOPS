@@ -163,7 +163,8 @@ func (receiver *monitorRepository) ToListPageNoticeLogNoRead(top int) collection
 }
 
 func (receiver *monitorRepository) UpdateNoticeLogRead(ids []int) error {
-	_, err := context.MysqlContext.MonitorNoticeLog.Where("is_read = 0 and id in ?", ids).UpdateValue("is_read", true)
+	//_, err := context.MysqlContext.MonitorNoticeLog.Where("is_read = 0 and id in ?", ids).UpdateValue("is_read", true)
+	_, err := context.MysqlContext.MonitorNoticeLog.Where("is_read = 0").UpdateValue("is_read", true)
 	return err
 }
 

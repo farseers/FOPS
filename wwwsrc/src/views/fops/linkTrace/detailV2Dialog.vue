@@ -44,7 +44,7 @@
               <el-button style="margin-left: 20px" size="small" type="success" @click="showLog()">查看日志</el-button>
               <div v-if="state.Exception!=null" class="mt5">
               <el-tag type="danger">
-                异常：{{state.Exception.ExceptionDetails[0].ExceptionCallFile}}:{{state.Exception.ExceptionDetails[0].ExceptionCallLine}} {{state.Exception.ExceptionDetails[0].ExceptionCallFuncName}}
+                <div v-if="state.Exception.ExceptionDetails !=null">异常：{{state.Exception.ExceptionDetails[0].ExceptionCallFile}}:{{state.Exception.ExceptionDetails[0].ExceptionCallLine}} {{state.Exception.ExceptionDetails[0].ExceptionCallFuncName}}</div>
                 {{state.Exception.ExceptionMessage}}
               </el-tag>
               </div>
@@ -134,6 +134,7 @@ import { ElMessageBox, ElMessage } from 'element-plus';
 import {friendlyJSONstringify} from "@intlify/shared";
 // 定义变量内容
 import commonFunction from '/@/utils/commonFunction';
+import { ByteLengthQueuingStrategy } from 'stream/web';
 const { copyText } = commonFunction();
 // 引入 api 请求接口
 const serverApi = fopsApi();

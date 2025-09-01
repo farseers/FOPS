@@ -8,6 +8,7 @@
               <li>
                 {{state.ruleForm.CreateAt}}
                 <el-tag size="small">{{state.ruleForm.HttpStatusCode}}</el-tag> {{state.ruleForm.RequestIp}} <el-tag type="success" size="small">{{state.ruleForm.HttpMethod}}</el-tag>
+                <el-tag v-if="state.ruleForm.HttpContentType !=null " type="info" size="small">{{state.ruleForm.HttpContentType}}</el-tag>
                 <el-tag style="font-size: 14px;" @click="copyToClipboard(state.ruleForm.HttpUrl)">{{state.ruleForm.HttpUrl}}</el-tag>
                 耗时：
                   <el-tag size="small" v-if="state.ruleForm.UseTs > 100000000" type="danger">{{state.ruleForm.UseDesc}}</el-tag>
@@ -79,12 +80,23 @@ const state = reactive({
 
 // 打开弹窗
 const openDialog = (type:number,row: any) => {
-  //state.ruleForm = row;
+  if (type == 2) {
+      row.HttpStatusCode = row.WebStatusCode
+      row.RequestIp = row.WebRequestIp
+      row.HttpMethod = row.WebMethod
+      row.HttpContentType = row.WebContentType
+      row.HttpUrl = row.WebPath
+      row.HttpHeaders = row.WebHeaders
+      row.HttpRequestBody = row.WebRequestBody
+      row.HttpResponseBody = row.WebResponseBody
+  }
+
   state.dialog.title = '请求报文(TraceId：'+row.TraceId+')';
   //state.dialog.submitTxt = '修 改';
   //console.log(row2)
   state.TraceId=row.TraceId
-  state.ruleForm=row
+  state.ruleForm = row
+
 
 	state.dialog.isShowDialog = true;
 };

@@ -38,7 +38,7 @@ func (receiver *UpdateRequest) Check() {
 	// 用户名
 	check.IsTrue(len(receiver.Username) == 0, 403, "用户名不能为空")
 	// 数据库
-	check.IsTrue(len(receiver.Database) == 0, 403, "数据库不能为空")
+	//check.IsTrue(len(receiver.Database) == 0, 403, "数据库不能为空")
 	// 备份间隔
 	check.IsTrue(len(receiver.Cron) == 0, 403, "备份间隔不能为空")
 	// 备份存储配置

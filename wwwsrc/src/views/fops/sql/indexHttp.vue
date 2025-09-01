@@ -66,8 +66,8 @@
         </el-table-column>
         <el-table-column label="请求内容" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag v-if="scope.row.HttpStatusCode == 200 || scope.row.HttpStatusCode == 301 || scope.row.HttpStatusCode == 302 || scope.row.HttpStatusCode == 303"  size="small" type="danger">{{scope.row.HttpStatusCode}}</el-tag> 
-            <el-tag v-else size="small">{{scope.row.HttpStatusCode}}</el-tag> 
+            <el-tag v-if="scope.row.HttpStatusCode == 200 || scope.row.HttpStatusCode == 301 || scope.row.HttpStatusCode == 302 || scope.row.HttpStatusCode == 303"  size="small">{{scope.row.HttpStatusCode}}</el-tag> 
+            <el-tag v-else size="small" type="danger">{{scope.row.HttpStatusCode}}</el-tag> 
             
             <el-tag type="success" size="small">{{scope.row.HttpMethod}}</el-tag>
             <br />{{scope.row.HttpUrl}}

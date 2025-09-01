@@ -62,8 +62,8 @@
         </el-table-column>
         <el-table-column label="请求内容" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag v-if="scope.row.wsc == 200 || scope.row.wsc == 301 || scope.row.wsc == 302 || scope.row.wsc == 303"  size="small" type="danger">{{scope.row.wsc}}</el-tag> 
-            <el-tag v-else size="small">{{scope.row.wsc}}</el-tag> 
+            <el-tag v-if="scope.row.wsc == 200 || scope.row.wsc == 301 || scope.row.wsc == 302 || scope.row.wsc == 303"  size="small">{{scope.row.wsc}}</el-tag> 
+            <el-tag v-else size="small" type="danger">{{scope.row.wsc}}</el-tag> 
             {{scope.row.wip}} 
             <el-tag type="success" size="small">{{scope.row.wm}}</el-tag>
             <el-tag v-if="scope.row.wct!=''" type="info" size="small">{{scope.row.wct}}</el-tag>

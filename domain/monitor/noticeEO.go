@@ -3,9 +3,10 @@ package monitor
 import (
 	"fmt"
 	"fops/domain/enum/noticeType"
+	"net/url"
+
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/utils/http"
-	"net/url"
 )
 
 type NoticeEO struct {
@@ -34,7 +35,7 @@ func (receiver *NoticeEO) Notice(content string) {
 		body, statusCode, _, err = http.RequestProxyConfigure("GET", sendUrl, head, nil, "", 5000)
 	case noticeType.Telegram: // Telegram
 		sendUrl := fmt.Sprintf("https://api.telegram.org/bot%s/sendmessage?chat_id=%s&text=%s", receiver.ApiKey, receiver.Phone, url.QueryEscape(content))
-		body, statusCode, _, err = http.RequestProxyConfigure("GET", sendUrl, head, nil, "", 5000)
+		body, statusCode, _, err = http.RequestProxyConfigure("GET", sendUrl, nil, nil, "", 5000)
 	case noticeType.Log:
 		statusCode = 200
 		flog.Infof("消息通知：%s", content)

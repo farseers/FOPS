@@ -212,5 +212,6 @@ fops是如何知道远程集群的地址，这需要在远程集群中安装好f
 - 节点状态`nodeAvailability`：如nodeAvailability <> Active，告警通知
 - 异常日志`log_error`
 - 警告日志`log_warning`
+- 构建结果`build`
 
 > 自定义，go应用可通过依赖`monitor`组件上传业务指标。通过fops的通知规则来，告警通知

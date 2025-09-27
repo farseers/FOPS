@@ -54,7 +54,7 @@ func (receiver *gitDevice) GetRemoteBranch(ctx context.Context, gitPath string) 
 	progress := make(chan string, 10000)
 	// git ls-remote --heads
 	// git branch -vr
-	if exitCode := exec.RunShellContext(ctx, "timeout 10 git ls-remote --heads", progress, nil, gitPath, false); exitCode != 0 {
+	if exitCode := exec.RunShellContext(ctx, "git remote update origin --prune && timeout 10 git ls-remote --heads", progress, nil, gitPath, false); exitCode != 0 {
 		return lst
 	}
 	lstContent := collections.NewListFromChan(progress)

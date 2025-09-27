@@ -17,7 +17,8 @@
                   <li v-if="item.CommitMessage"><span>git提交信息：{{ item.CommitMessage }}</span></li>
                   <li>
                     <el-tag size="small" style="margin-right: 3px;" type="success" v-show="item.BuildSuccess">成功</el-tag>
-                    <el-tag size="small" style="margin-right: 3px;" type="danger" v-show="!item.BuildSuccess">失败</el-tag>
+                    <el-tag size="small" style="margin-right: 3px;" type="danger" v-show="!item.BuildSuccess && item.BuildErrorCount > 0">失败</el-tag>
+                    <el-tag size="small" style="margin-right: 3px;" type="info" v-show="!item.BuildSuccess && item.BuildErrorCount == 0">未构建</el-tag>
                     <span style="margin-right: 3px;">构建ID:{{ item.BuildId }}</span> 
                     <span  style="margin-right: 3px;">
                       失败次数:

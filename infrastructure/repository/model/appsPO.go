@@ -4,6 +4,7 @@ import (
 	"fops/domain/apps"
 
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/data"
 )
 
 // AppsPO 实体类
@@ -22,4 +23,11 @@ type AppsPO struct {
 	LimitCpus         float64                                `gorm:"type:decimal(6,3);not null;default:0;comment:Cpu核数限制"`
 	LimitMemory       string                                 `gorm:"not null;default:'';comment:内存限制"`
 	IsSys             bool                                   `gorm:"size:1;not null;default:0;comment:是否系统应用"`
+}
+
+// 创建索引
+func (*AppsPO) CreateIndex() map[string]data.IdxField {
+	return map[string]data.IdxField{
+		"idx_is_sys": {false, "is_sys"},
+	}
 }

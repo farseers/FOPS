@@ -16,7 +16,7 @@
                   <el-tag size="small" v-else-if="state.ruleForm.UseTs > 1000000">{{state.ruleForm.UseDesc}}</el-tag>
                   <el-tag size="small" v-else type="success">{{state.ruleForm.UseDesc}}</el-tag>
               </li>
-              <div style="display: flex; gap: 10px; list-style: none; padding: 0;"></div>
+              <div style="display: flex; gap: 10px; list-style: none; padding: 0;">
                 <li style="flex: 1;"><el-tag size="small">请求Headers：</el-tag>
                   <el-button size="small" @click="copyToClipboard(formatJson(friendlyJSONstringify(state.ruleForm.HttpHeaders)))" type="info">复制</el-button>
                   <pre>{{formatJson(friendlyJSONstringify(state.ruleForm.HttpHeaders))}}</pre>
@@ -40,8 +40,6 @@
 					</el-col>
 				</el-row>
 			</el-form>
-
-
 		</el-dialog>
 	</div>
 </template>

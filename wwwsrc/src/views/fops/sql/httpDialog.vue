@@ -20,10 +20,10 @@
                 <li style="flex: 1;"><el-tag size="small">请求Headers：</el-tag>
                   <el-button size="small" @click="copyToClipboard(formatJson(friendlyJSONstringify(state.ruleForm.HttpHeaders)))" type="info">复制</el-button>
                   <pre>{{formatJson(friendlyJSONstringify(state.ruleForm.HttpHeaders))}}</pre>
+                </li>
                 <li style="flex: 1;"><el-tag size="small">响应Headers：</el-tag>
                   <el-button size="small" @click="copyToClipboard(formatJson(friendlyJSONstringify(state.ruleForm.HttpResponseHeaders)))" type="info">复制</el-button>
                   <pre>{{formatJson(friendlyJSONstringify(state.ruleForm.HttpResponseHeaders))}}</pre>
-                </li>
                 </li>
               </div>
               <div style="display: flex; gap: 10px; list-style: none; padding: 0;">

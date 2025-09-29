@@ -74,22 +74,24 @@ type TraceDetailEventPO struct {
 
 // TraceDetailHttpPO http埋点
 type TraceDetailHttpPO struct {
-	HttpMethod       string                                 `gorm:"not null;default:'';comment:post/get/put/delete"`
-	HttpUrl          string                                 `gorm:"not null;default:'';comment:请求url"`
-	HttpHeaders      collections.Dictionary[string, string] `gorm:"type:String;json;not null;comment:请求头部"`
-	HttpRequestBody  string                                 `gorm:"not null;default:'';comment:入参"`
-	HttpResponseBody string                                 `gorm:"not null;default:'';comment:出参"`
-	HttpStatusCode   int                                    `gorm:"not null;default:0;comment:状态码"`
+	HttpMethod          string                                 `gorm:"not null;default:'';comment:post/get/put/delete"`
+	HttpUrl             string                                 `gorm:"not null;default:'';comment:请求url"`
+	HttpHeaders         collections.Dictionary[string, string] `gorm:"type:String;json;not null;comment:请求头部"`
+	HttpRequestBody     string                                 `gorm:"not null;default:'';comment:入参"`
+	HttpResponseBody    string                                 `gorm:"not null;default:'';comment:出参"`
+	HttpResponseHeaders collections.Dictionary[string, string] `gorm:"type:String;json;not null;comment:响应头部"`
+	HttpStatusCode      int                                    `gorm:"not null;default:0;comment:状态码"`
 }
 
 // TraceDetailGrpcPO grpc埋点
 type TraceDetailGrpcPO struct {
-	GrpcMethod       string                                 `gorm:"not null;default:'';comment:post/get/put/delete"`
-	GrpcUrl          string                                 `gorm:"not null;default:'';comment:请求url"`
-	GrpcHeaders      collections.Dictionary[string, string] `gorm:"type:String;json;not null;comment:请求头部"`
-	GrpcRequestBody  string                                 `gorm:"not null;default:'';comment:入参"`
-	GrpcResponseBody string                                 `gorm:"not null;default:'';comment:出参"`
-	GrpcStatusCode   int                                    `gorm:"not null;default:0;comment:状态码"`
+	GrpcMethod          string                                 `gorm:"not null;default:'';comment:post/get/put/delete"`
+	GrpcUrl             string                                 `gorm:"not null;default:'';comment:请求url"`
+	GrpcHeaders         collections.Dictionary[string, string] `gorm:"type:String;json;not null;comment:请求头部"`
+	GrpcRequestBody     string                                 `gorm:"not null;default:'';comment:入参"`
+	GrpcResponseBody    string                                 `gorm:"not null;default:'';comment:出参"`
+	GrpcResponseHeaders collections.Dictionary[string, string] `gorm:"type:String;json;not null;comment:响应头部"`
+	GrpcStatusCode      int                                    `gorm:"not null;default:0;comment:状态码"`
 }
 
 // TraceDetailMqPO mq埋点

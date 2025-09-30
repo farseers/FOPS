@@ -5,7 +5,7 @@
       <el-container>
         <el-main style="padding: 0;overflow: hidden;">
           <el-space wrap style="align-items: unset;">
-            <el-card shadow="hover" v-for="(v, k) in state.tableData.data" :key="k" style="width: 250px;"  class="appItemCard">
+            <el-card shadow="hover" v-for="(v, k) in state.tableData.data" :key="k" style="width: 250px;background-color: #f9f9e3;"  class="appItemCard">
               <template #header>
                 <div class="card-header" style="height: 20px;">
                   <el-tag size="default" @click="onOpenEdit('edit', v)" style="cursor: pointer;text;font-weight: bold">{{ v.AppName }}</el-tag>

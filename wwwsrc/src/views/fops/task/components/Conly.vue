@@ -29,7 +29,7 @@
 
                     <div class="progress_cs">
                         <el-tag type="info" size="small">CPU</el-tag>
-                        <span class="progress_sp"><el-progress :text-inside="true" class="custom-progress" :stroke-width="20" :color="state.customColors" :percentage="item.CpuUsagePercent"></el-progress> </span>
+                        <span class="progress_sp"><el-progress :text-inside="true" class="custom-progress" :stroke-width="20" :color="state.customColorsCpu" :percentage="item.CpuUsagePercent"></el-progress> </span>
                         <span>({{ item.CPUs}}核)</span>
                         </div>
                     <div class="progress_cs">
@@ -82,9 +82,14 @@ const dialogTerm = ref(null);
 const state = reactive({
     tableData: [],
     customColors:[
-        {color: '#5cb87a', percentage: 30},
-        {color: '#e6a23c', percentage: 60},
-        {color: '#f56c6c', percentage: 90},
+        {color: '#5cb87a', percentage: 50},
+        {color: '#e6a23c', percentage: 80},
+        {color: '#f56c6c', percentage: 100},
+    ],
+     customColorsCpu:[
+        {color: '#5cb87a', percentage: 200},
+        {color: '#e6a23c', percentage: 300},
+        {color: '#f56c6c', percentage: 400},
     ]
 });
 const termRet = (item)=>{
@@ -125,7 +130,11 @@ defineExpose({
 }
 .custom-progress .el-progress-bar__innerText {
   color: #000 !important; /* 例如设置为红色 */
-}</style>
+}
+.progress_cs .el-progress-bar__inner{
+    max-width: 100%;
+}
+</style>
 <style scoped lang="scss">
 .conlyRow {
     flex-wrap: wrap;

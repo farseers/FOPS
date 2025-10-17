@@ -62,7 +62,7 @@
                             :text-inside="true" 
                             class="custom-progress" 
                             :stroke-width="20" 
-                            :color="state.customColors" 
+                            :color="state.customColorsCpu" 
                             :percentage="item.CpuUsagePercent">
                         </el-progress>
                        </span>
@@ -123,9 +123,14 @@ const state = reactive({
 		Name: '', Node: '', State: '', StateInfo: '', Error: '', Image: '',
 	},//容器日志选中
    customColors:[
-        {color: '#5cb87a', percentage: 30},
-        {color: '#e6a23c', percentage: 70},
-        {color: '#f56c6c', percentage: 90},
+        {color: '#5cb87a', percentage: 50},
+        {color: '#e6a23c', percentage: 80},
+        {color: '#f56c6c', percentage: 100},
+    ],
+     customColorsCpu:[
+        {color: '#5cb87a', percentage: 200},
+        {color: '#e6a23c', percentage: 300},
+        {color: '#f56c6c', percentage: 400},
     ]
 });
 const showDockerTag = (row,type) =>{
@@ -237,7 +242,11 @@ defineExpose({
 }
 .custom-progress .el-progress-bar__innerText {
   color: #000 !important; /* 例如设置为红色 */
-}</style>
+}
+.progress_cs .el-progress-bar__inner{
+    max-width: 100%;
+}
+</style>
 <style scoped lang="scss">
 .el-dialog__body {
 		display: flex;

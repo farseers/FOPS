@@ -5,41 +5,58 @@
             <div v-for="item, index in state.tableData" :key="index.toString() + 'conly1'" class="conlyCol">
                 <el-card :class="item.IsHealth ? 'conlyCard' : 'conlyCard conly_w'">
                     <div class="name" style="text-align: center">
-                        <span>{{ item.IP }} <el-tag type="info" size="small">{{ item.NodeName }}</el-tag> <img v-show="item.OS == 'linux'" :src="linux" alt="" /></span>
+                        <span>{{ item.IP }} <el-tag type="info" size="small">{{ item.NodeName }}</el-tag> <img
+                                v-show="item.OS == 'linux'" :src="linux" alt="" /></span>
                     </div>
                     <div style="text-align: center">
                         <el-tag effect="dark" size="small" style="margin-right: 5px;"
                             :type="item.Status == 'Ready' ? 'success' : 'danger'">{{ item.Status }}</el-tag>
                         <el-tag effect="dark" size="small" style="margin-right: 5px;"
-                            :type="item.Availability == 'Active' ? 'success' : 'danger'">{{ item.Availability }}</el-tag>
-                        <el-tag effect="dark" size="small" style="cursor: pointer;" type="success" @click="termRet(item)">终端</el-tag>
+                            :type="item.Availability == 'Active' ? 'success' : 'danger'">{{ item.Availability
+                            }}</el-tag>
+                        <el-tag effect="dark" size="small" style="cursor: pointer;" type="success"
+                            @click="termRet(item)">终端</el-tag>
                     </div>
                     <div v-show="item.IsMaster">
-                        <el-tag type="danger" size="small">manager</el-tag> {{ item.Architecture }} | {{ item.EngineVersion }}
+                        <el-tag type="danger" size="small">manager</el-tag> {{ item.Architecture }} | {{
+                        item.EngineVersion }}
                     </div>
                     <div v-show="!item.IsMaster">
                         <el-tag size="small">worker</el-tag> {{ item.Architecture }} | {{ item.EngineVersion }}
                     </div>
-                    <div><el-tag type="info" size="small">{{ item.OS }}</el-tag> <b>{{ item.Memory }}</b> | <b>{{ item.DiskTotal }}</b></div>
+                    <div><el-tag type="info" size="small">{{ item.OS }}</el-tag> <b>{{ item.Memory }}</b> | <b>{{
+                            item.Disk }}GiB</b></div>
 
-                    <div>
-                        <el-tag type="info" size="small">CPU</el-tag> 
-                        <el-tag v-if="item.CpuUsagePercent >= 300" size="small" type="danger">{{ item.CpuUsagePercent }}</el-tag>
-                        <el-tag v-else-if="item.CpuUsagePercent >= 200" size="small" type="warning">{{ item.CpuUsagePercent }}</el-tag>
-                        <b v-else>{{ item.CpuUsagePercent }}</b>%
-                         ({{ item.CPUs }}核)</div>
-                    <div>
-                        <el-tag type="info" size="small">内存</el-tag>
-                        <el-tag v-if="item.MemoryUsagePercent >= 80" size="small" type="danger">{{ item.MemoryUsagePercent }}</el-tag>
-                        <el-tag v-else-if="item.MemoryUsagePercent >= 50" size="small" type="warning">{{ item.MemoryUsagePercent }}</el-tag>
-                        <b v-else>{{ item.MemoryUsagePercent }}</b>%
-                         / <b>{{ item.MemoryUsage }}</b> MB</div>
-                    <div v-for="disk, diskIndex in item.Disk" :key="diskIndex.toString() + 'Disk'">
-                        <el-tag type="info" size="small">硬盘{{ disk.Path }}</el-tag>
-                        <el-tag v-if="disk.DiskUsagePercent >= 80" size="small" type="danger">{{ disk.DiskUsagePercent }}</el-tag>
-                        <el-tag v-else-if="disk.DiskUsagePercent >= 50" size="small" type="warning">{{ disk.DiskUsagePercent }}</el-tag>
-                        <b v-else>{{ disk.DiskUsagePercent }}</b>%
-                        / <b> {{ disk.DiskUsage }}</b> GB
+                    <div class="progress_cs">
+                        <el-tag type="info" size="small">CPU</el-tag>
+                        <span class="progress_sp"><el-progress :text-inside="true" class="custom-progress" :stroke-width="20" :color="state.customColors" :percentage="item.CpuUsagePercent"></el-progress> </span>
+                        <span>({{ item.CPUs}}核)</span>
+                        </div>
+                    <div class="progress_cs">
+                        <el-tag type="info" size="small">内存</el-tag> 
+                        <span class="progress_sp">
+                            <el-progress 
+                            :text-inside="true" 
+                            class="custom-progress" 
+                            :stroke-width="20" 
+                            :color="state.customColors" 
+                            :percentage="item.MemoryUsagePercent">
+                        </el-progress>
+                       </span>
+                        <span> <b>{{item.MemoryUsage }}</b> MB</span>
+                       </div>
+                   <div class="progress_cs">
+                        <el-tag type="info" size="small">硬盘</el-tag> 
+                         <span class="progress_sp">
+                            <el-progress 
+                            :text-inside="true" 
+                            class="custom-progress" 
+                            :stroke-width="20" 
+                            :color="state.customColors" 
+                            :percentage="item.DiskUsagePercent">
+                        </el-progress>
+                       </span>
+                       <span><b>{{item.DiskUsage }}</b> GB</span>   
                     </div>
                     <!-- <div class="line" v-show="item.Label && item.Label.length>0"></div> -->
                     <el-tag class="ks" v-for="row, j in item.Label" :key="index.toString() + j.toString() + 'conly2'">
@@ -63,7 +80,12 @@ const serverApi = fopsApi();
 const dialogTerm = ref(null);
 // 定义变量内容
 const state = reactive({
-    tableData: []
+    tableData: [],
+    customColors:[
+        {color: '#5cb87a', percentage: 30},
+        {color: '#e6a23c', percentage: 60},
+        {color: '#f56c6c', percentage: 90},
+    ]
 });
 const termRet = (item)=>{
     dialogTerm.value && dialogTerm.value.init && dialogTerm.value.init(item)
@@ -89,7 +111,21 @@ defineExpose({
 });
 
 </script>
-
+<style>
+.progress_cs{
+    display: flex;
+    align-items: center;
+}
+.progress_sp{
+    flex: 1;
+    padding: 0 2px;
+}
+.custom-progress{
+    padding: 0 2px;
+}
+.custom-progress .el-progress-bar__innerText {
+  color: #000 !important; /* 例如设置为红色 */
+}</style>
 <style scoped lang="scss">
 .conlyRow {
     flex-wrap: wrap;
@@ -161,4 +197,6 @@ defineExpose({
     background: var(--el-color-danger-light-8);
     border: 1px dotted var(--el-color-danger);
 }
+
 </style>
+

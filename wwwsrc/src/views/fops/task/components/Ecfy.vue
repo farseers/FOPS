@@ -55,18 +55,31 @@
                                 style="margin-left: 5px;cursor: pointer">{{ item.TaskFailCount }}</el-tag>
                         </el-tooltip>
                     </div>
-                  <div>
+                  <div class="progress_cs">
                     <el-tag type="info" size="small">CPU</el-tag>
-                    <el-tag v-if="item.CpuUsagePercent >= 300" size="small" type="danger">{{ item.CpuUsagePercent }}</el-tag>
-                    <el-tag v-else-if="item.CpuUsagePercent >= 200" size="small" type="warning">{{ item.CpuUsagePercent }}</el-tag>
-                    <b v-else>{{ item.CpuUsagePercent }}</b>%
-                    </div>
-                  <div>
+                   <span class="progress_sp">
+                            <el-progress 
+                            :text-inside="true" 
+                            class="custom-progress" 
+                            :stroke-width="20" 
+                            :color="state.customColors" 
+                            :percentage="item.CpuUsagePercent">
+                        </el-progress>
+                       </span>
+                   </div>
+                  <div class="progress_cs">
                     <el-tag type="info" size="small">内存</el-tag>
-                    <el-tag v-if="item.MemoryUsagePercent >= 80" size="small" type="danger">{{ item.MemoryUsagePercent }}</el-tag>
-                    <el-tag v-else-if="item.MemoryUsagePercent >= 50" size="small" type="warning">{{ item.MemoryUsagePercent }}</el-tag>
-                    <b v-else>{{ item.MemoryUsagePercent }}</b>%
-                     / <b>{{ item.MemoryUsage }}</b> MB</div>
+                     <span class="progress_sp">
+                            <el-progress 
+                            :text-inside="true" 
+                            class="custom-progress" 
+                            :stroke-width="20" 
+                            :color="state.customColors" 
+                            :percentage="item.MemoryUsagePercent">
+                        </el-progress>
+                       </span> 
+                      <span><b>{{ item.MemoryUsage }}</b> MB</span>
+                      </div>
                 </el-card>
             </div>
         </div>
@@ -109,6 +122,11 @@ const state = reactive({
 		Id: '',
 		Name: '', Node: '', State: '', StateInfo: '', Error: '', Image: '',
 	},//容器日志选中
+   customColors:[
+        {color: '#5cb87a', percentage: 30},
+        {color: '#e6a23c', percentage: 70},
+        {color: '#f56c6c', percentage: 90},
+    ]
 });
 const showDockerTag = (row,type) =>{
     // console.log(row,row.DockerReplicas,type)
@@ -205,6 +223,21 @@ defineExpose({
     getData,
 });
 </script>
+<style>
+.progress_cs{
+    display: flex;
+    align-items: center;
+}
+.progress_sp{
+    flex: 1;
+    padding: 0 2px;
+}
+.custom-progress{
+    padding: 0 2px;
+}
+.custom-progress .el-progress-bar__innerText {
+  color: #000 !important; /* 例如设置为红色 */
+}</style>
 <style scoped lang="scss">
 .el-dialog__body {
 		display: flex;

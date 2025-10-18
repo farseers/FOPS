@@ -25,10 +25,10 @@
                         <el-tag size="small">worker</el-tag> {{ item.Architecture }} | {{ item.EngineVersion }}
                     </div>
                     <div><el-tag type="info" size="small">{{ item.OS }}</el-tag> <b>{{ item.Memory }}</b> | <b>{{
-                            item.Disk }}GiB</b></div>
+                            item.DiskTotal }}</b></div>
 
                     <div class="progress_cs" style="margin-bottom: 3px;">
-                        <el-tag type="info" size="small">CPU</el-tag>
+                        <el-tag type="info" size="small"><img :src="cpu" alt="" /></el-tag>
                         <span class="progress_sp">
                             <el-progress 
                             :text-inside="true" 
@@ -40,7 +40,8 @@
                         </el-progress> </span>
                         </div>
                     <div class="progress_cs" style="margin-bottom: 3px;">
-                        <el-tag type="info" size="small">内存</el-tag> 
+                        <!-- <el-tag type="info" size="small">内存</el-tag>  -->
+                         <el-tag type="info" size="small"><img :src="nc" alt="" /></el-tag> 
                         <span class="progress_sp">
                             <el-progress 
                             :text-inside="true" 
@@ -52,16 +53,17 @@
                         </el-progress>
                        </span>
                        </div>
-                   <div class="progress_cs">
-                        <el-tag type="info" size="small">硬盘</el-tag> 
+
+                   <div class="progress_cs" v-for="row in item.Disk">
+                        <el-tag type="info" size="small"><img :src="yp" alt="" />{{ row.Path }}</el-tag> 
                          <span class="progress_sp">
                             <el-progress 
                             :text-inside="true" 
                             class="custom-progress" 
                             :stroke-width="20" 
                             :color="state.customColors" 
-                            :percentage="item.DiskUsagePercent">
-                            <span>{{ item.DiskUsagePercent || 0 }}% {{item.DiskUsage }}GB</span>
+                            :percentage="row.DiskUsagePercent">
+                            <span>{{ row.DiskUsagePercent || 0 }}% {{row.DiskUsage }}GB</span>
                         </el-progress>
                        </span>
                     </div>
@@ -81,6 +83,9 @@ import { reactive, onMounted, defineExpose,defineAsyncComponent,ref } from 'vue'
 import { ElMessage } from 'element-plus';
 import { fopsApi } from "/@/api/fops";
 import linux from '/@/assets/linux.png';
+import nc from '/@/assets/nc.png';
+import yp from '/@/assets/yp.png';
+import cpu from '/@/assets/cpu.png';
 const DialogTerm = defineAsyncComponent(() => import('./DialogTerm.vue'))
 // 引入 api 请求接口
 const serverApi = fopsApi();
@@ -140,6 +145,10 @@ defineExpose({
 }
 .progress_cs .el-progress-bar__inner{
     max-width: 100%;
+}
+.progress_cs img{
+        width: 15px;
+        vertical-align: middle;
 }
 </style>
 <style scoped lang="scss">

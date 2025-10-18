@@ -56,7 +56,7 @@
                         </el-tooltip>
                     </div>
                   <div class="progress_cs">
-                    <el-tag type="info" size="small">CPU</el-tag>
+                    <el-tag type="info" size="small"><img :src="cpu" alt="" /></el-tag>
                    <span class="progress_sp">
                             <el-progress 
                             :text-inside="true" 
@@ -69,7 +69,7 @@
                        </span>
                    </div>
                   <div class="progress_cs">
-                    <el-tag type="info" size="small">内存</el-tag>
+                    <el-tag type="info" size="small"><img :src="nc" alt="" /></el-tag>
                      <span class="progress_sp">
                             <el-progress 
                             :text-inside="true" 
@@ -100,6 +100,9 @@ import { reactive, onMounted, defineExpose, ref,defineAsyncComponent } from 'vue
 import { ElMessage,ElMessageBox } from 'element-plus';
 import { fopsApi } from "/@/api/fops";
 import Image from '/@/assets/loading.gif';
+import nc from '/@/assets/nc.png';
+import yp from '/@/assets/yp.png';
+import cpu from '/@/assets/cpu.png';
 const dockerDialog = defineAsyncComponent(() => import('/src/views/fops/task/dockerDialog.vue'));
 const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logV2Dialog.vue'));
 const taskDialog= defineAsyncComponent(() => import('/src/views/fops/task/taskAppDialog.vue'));
@@ -249,6 +252,10 @@ defineExpose({
 }
 .progress_cs .el-progress-bar__inner{
     max-width: 100%;
+}
+.progress_cs img{
+        width: 15px;
+        vertical-align: middle;
 }
 </style>
 <style scoped lang="scss">

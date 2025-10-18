@@ -28,7 +28,10 @@
                             item.DiskTotal }}</b></div>
 
                     <div class="progress_cs" style="margin-bottom: 3px;">
-                        <el-tag type="info" size="small"><img :src="cpu" alt="" /></el-tag>
+                         <el-tooltip class="item" effect="dark" content="CPU" placement="top-start">
+                            <el-tag type="info" size="small"><img :src="cpu" alt="" /></el-tag>
+                        </el-tooltip>
+                        
                         <span class="progress_sp">
                             <el-progress 
                             :text-inside="true" 
@@ -41,7 +44,10 @@
                         </div>
                     <div class="progress_cs" style="margin-bottom: 3px;">
                         <!-- <el-tag type="info" size="small">内存</el-tag>  -->
-                         <el-tag type="info" size="small"><img :src="nc" alt="" /></el-tag> 
+                          <el-tooltip class="item" effect="dark" content="内存" placement="top-start">
+                            <el-tag type="info" size="small"><img :src="nc" alt="" /></el-tag> 
+                        </el-tooltip>
+                         
                         <span class="progress_sp">
                             <el-progress 
                             :text-inside="true" 
@@ -55,7 +61,10 @@
                        </div>
 
                    <div class="progress_cs" v-for="row in item.Disk">
-                        <el-tag type="info" size="small"><img :src="yp" alt="" />{{ row.Path }}</el-tag> 
+                     <el-tooltip class="item" effect="dark" content="硬盘" placement="top-start">
+                            <el-tag type="info" size="small"><img :src="yp" alt="" />{{ row.Path }}</el-tag> 
+                        </el-tooltip>
+                       
                          <span class="progress_sp">
                             <el-progress 
                             :text-inside="true" 

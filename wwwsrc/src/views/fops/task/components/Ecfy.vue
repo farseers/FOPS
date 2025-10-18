@@ -56,7 +56,10 @@
                         </el-tooltip>
                     </div>
                   <div class="progress_cs">
-                    <el-tag type="info" size="small"><img :src="cpu" alt="" /></el-tag>
+                     <el-tooltip class="item" effect="dark" content="CPU" placement="top-start">
+                            <el-tag type="info" size="small"><img :src="cpu" alt="" /></el-tag>
+                        </el-tooltip>
+                    
                    <span class="progress_sp">
                             <el-progress 
                             :text-inside="true" 
@@ -69,7 +72,10 @@
                        </span>
                    </div>
                   <div class="progress_cs">
-                    <el-tag type="info" size="small"><img :src="nc" alt="" /></el-tag>
+                     <el-tooltip class="item" effect="dark" content="内存" placement="top-start">
+                            <el-tag type="info" size="small"><img :src="nc" alt="" /></el-tag>
+                        </el-tooltip>
+                    
                      <span class="progress_sp">
                             <el-progress 
                             :text-inside="true" 

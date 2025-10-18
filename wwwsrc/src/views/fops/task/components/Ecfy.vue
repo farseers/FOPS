@@ -64,7 +64,7 @@
                             <el-progress 
                             :text-inside="true" 
                             class="custom-progress" 
-                            :stroke-width="18" 
+                            :stroke-width="state.strokeWidth" 
                             :color="state.customColorsCpu" 
                             :percentage="item.CpuUsagePercent">
                              <span>{{item.CpuUsagePercent || 0 }}%</span>
@@ -80,7 +80,7 @@
                             <el-progress 
                             :text-inside="true" 
                             class="custom-progress" 
-                            :stroke-width="18" 
+                            :stroke-width="state.strokeWidth" 
                             :color="state.customColors" 
                             :percentage="item.MemoryUsagePercent">
                             <span>{{item.MemoryUsagePercent || 0 }}% {{ item.MemoryUsage }}MB</span>
@@ -132,15 +132,16 @@ const state = reactive({
 		Id: '',
 		Name: '', Node: '', State: '', StateInfo: '', Error: '', Image: '',
 	},//容器日志选中
+  strokeWidth:16,
    customColors:[
-        {color: '#5cb87a', percentage: 50},
-        {color: '#e6a23c', percentage: 80},
-        {color: '#f56c6c', percentage: 100},
+        {color: '#67C23AD1', percentage: 50},
+        {color: '#E6A23CD1', percentage: 80},
+        {color: '#F56C6C', percentage: 100},
     ],
      customColorsCpu:[
-        {color: '#5cb87a', percentage: 200},
-        {color: '#e6a23c', percentage: 300},
-        {color: '#f56c6c', percentage: 400},
+        {color: '#67C23AD1', percentage: 200},
+        {color: '#E6A23CD1', percentage: 300},
+        {color: '#F56C6C', percentage: 400},
     ]
 });
 const showDockerTag = (row,type) =>{
@@ -262,6 +263,9 @@ defineExpose({
 .progress_cs img{
         width: 15px;
         vertical-align: middle;
+}
+.progress_cs .custom-progress .el-progress-bar__innerText{
+  color: #39393a !important;
 }
 </style>
 <style scoped lang="scss">

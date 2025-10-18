@@ -42,6 +42,10 @@ func CollectsNodeJob(*tasks.TaskContext) {
 		if dockerNodeVO == nil {
 			flog.Infof("发现新的集群节点：%s", node.IP)
 			clusterNode.NodeList.Add(*node)
+			// 重新排序
+			clusterNode.NodeList = clusterNode.NodeList.OrderBy(func(item docker.DockerNodeVO) any {
+				return item.IP
+			}).ToList()
 		} else {
 			dockerNodeVO.IsHealth = node.IsHealth
 			dockerNodeVO.Label = node.Label

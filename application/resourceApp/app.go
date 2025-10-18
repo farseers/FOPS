@@ -46,6 +46,11 @@ func Resource(context *websocket.Context[request.Request]) {
 					Label:         collections.List[docker.DockerLabelVO]{},
 					UpdateAt:      time.Now(),
 				})
+				// 重新排序
+				clusterNode.NodeList = clusterNode.NodeList.OrderBy(func(item docker.DockerNodeVO) any {
+					return item.IP
+				}).ToList()
+
 				node = clusterNode.NodeList.Find(func(item *docker.DockerNodeVO) bool {
 					return item.IP == req.Host.IP
 				})

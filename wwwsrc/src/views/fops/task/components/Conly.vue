@@ -27,12 +27,19 @@
                     <div><el-tag type="info" size="small">{{ item.OS }}</el-tag> <b>{{ item.Memory }}</b> | <b>{{
                             item.Disk }}GiB</b></div>
 
-                    <div class="progress_cs">
+                    <div class="progress_cs" style="margin-bottom: 3px;">
                         <el-tag type="info" size="small">CPU</el-tag>
-                        <span class="progress_sp"><el-progress :text-inside="true" class="custom-progress" :stroke-width="20" :color="state.customColorsCpu" :percentage="item.CpuUsagePercent"></el-progress> </span>
-                        <span>({{ item.CPUs}}核)</span>
+                        <span class="progress_sp">
+                            <el-progress 
+                            :text-inside="true" 
+                            class="custom-progress" 
+                            :stroke-width="20" 
+                            :color="state.customColorsCpu" 
+                            :percentage="item.CpuUsagePercent">
+                            <span>{{ item.CpuUsagePercent || 0  }}% {{ item.CPUs}}核</span>
+                        </el-progress> </span>
                         </div>
-                    <div class="progress_cs">
+                    <div class="progress_cs" style="margin-bottom: 3px;">
                         <el-tag type="info" size="small">内存</el-tag> 
                         <span class="progress_sp">
                             <el-progress 
@@ -41,9 +48,9 @@
                             :stroke-width="20" 
                             :color="state.customColors" 
                             :percentage="item.MemoryUsagePercent">
+                            <span>{{item.MemoryUsagePercent || 0 }}% {{item.MemoryUsage }}MB</span>
                         </el-progress>
                        </span>
-                        <span> <b>{{item.MemoryUsage }}</b> MB</span>
                        </div>
                    <div class="progress_cs">
                         <el-tag type="info" size="small">硬盘</el-tag> 
@@ -54,9 +61,9 @@
                             :stroke-width="20" 
                             :color="state.customColors" 
                             :percentage="item.DiskUsagePercent">
+                            <span>{{ item.DiskUsagePercent || 0 }}% {{item.DiskUsage }}GB</span>
                         </el-progress>
                        </span>
-                       <span><b>{{item.DiskUsage }}</b> GB</span>   
                     </div>
                     <!-- <div class="line" v-show="item.Label && item.Label.length>0"></div> -->
                     <el-tag class="ks" v-for="row, j in item.Label" :key="index.toString() + j.toString() + 'conly2'">

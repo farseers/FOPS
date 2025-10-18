@@ -61,9 +61,10 @@
                             <el-progress 
                             :text-inside="true" 
                             class="custom-progress" 
-                            :stroke-width="20" 
+                            :stroke-width="18" 
                             :color="state.customColorsCpu" 
                             :percentage="item.CpuUsagePercent">
+                             <span>{{item.CpuUsagePercent || 0 }}%</span>
                         </el-progress>
                        </span>
                    </div>
@@ -73,12 +74,12 @@
                             <el-progress 
                             :text-inside="true" 
                             class="custom-progress" 
-                            :stroke-width="20" 
+                            :stroke-width="18" 
                             :color="state.customColors" 
                             :percentage="item.MemoryUsagePercent">
+                            <span>{{item.MemoryUsagePercent || 0 }}% {{ item.MemoryUsage }}MB</span>
                         </el-progress>
                        </span> 
-                      <span><b>{{ item.MemoryUsage }}</b> MB</span>
                       </div>
                 </el-card>
             </div>
@@ -148,7 +149,10 @@ const showFsLogLevel=(level,appName)=>{
 const showTask=(st,appName)=>{
   taskDialogRef.value.openDialogApp(st,appName);
 }
-
+const  format =(c,t,s)=> {
+  console.log(c,t,s)
+        return  `${c}%`;
+      }
 const getData = () => {
     var param = {
         "ClusterId": state.clusterId,

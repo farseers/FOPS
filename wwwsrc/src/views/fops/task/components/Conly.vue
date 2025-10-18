@@ -104,13 +104,13 @@ const state = reactive({
     tableData: [],
     strokeWidth:16,
     customColors:[
-        {color: '#67C23AD1', percentage: 50},
-        {color: '#E6A23CD1', percentage: 80},
+        {color: '#67C23A80', percentage: 50},
+        {color: '#E6A23C80', percentage: 80},
         {color: '#F56C6C', percentage: 100},
     ],
      customColorsCpu:[
-        {color: '#67C23AD1', percentage: 200},
-        {color: '#E6A23CD1', percentage: 300},
+        {color: '#67C23A80', percentage: 200},
+        {color: '#E6A23C80', percentage: 300},
         {color: '#F56C6C', percentage: 400},
     ]
 });

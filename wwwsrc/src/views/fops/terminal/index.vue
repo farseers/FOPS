@@ -18,7 +18,6 @@
 			</div>
 			<el-table :data="tableData.data" v-loading="tableData.loading" style="width: 100%">
 				<el-table-column type="index" label="序号" width="60" />
-				<el-table-column prop="Id" label="ID" show-overflow-tooltip  width="60"></el-table-column>
 				<el-table-column prop="Name" label="名称" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="LoginIp" label="Ip" show-overflow-tooltip></el-table-column>
 				<el-table-column prop="LoginName" label="登录名" show-overflow-tooltip></el-table-column>
@@ -101,7 +100,7 @@ export default {
 		},
 		onOpenEditRole(row){
 			const _this = this;
-			serverApi.terminalClientInfo({Id:row.Id}).then((res)=>{
+			serverApi.terminalClientInfo({LoginIp:row.LoginIp}).then((res)=>{
 				if(res.Status){
 					_this.$refs.roleDialogRef && _this.$refs.roleDialogRef.edit(res.Data)
 				}else{
@@ -126,7 +125,7 @@ export default {
 				type: 'warning',
 			})
 				.then(() => {
-					serverApi.terminalClientDel({Id:row.Id}).then((res)=>{
+					serverApi.terminalClientDel({LoginIp:row.LoginIp}).then((res)=>{
 						if(res.Status){
 							_this.getTableData();
 							ElMessage.success('删除成功');

@@ -4,6 +4,7 @@ package terminalApp
 import (
 	"fops/application/terminalApp/response"
 	"fops/domain/terminal"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/exception"
 	"github.com/farseer-go/mapper"
@@ -27,42 +28,41 @@ func ClientList(pageSize, pageIndex int, terminalRepository terminal.Repository)
 // ClientAdd 客户端添加
 // @post clientAdd
 // @filter application.Jwt
-func ClientAdd(req terminal.ClientEO, terminalRepository terminal.Repository) int64 {
+func ClientAdd(req terminal.ClientEO, terminalRepository terminal.Repository) string {
 	err := terminalRepository.Add(req)
 	exception.ThrowWebExceptionError(403, err)
-	return req.Id
+	return req.LoginIp
 }
 
 // ClientUpdate 客户端更新
 // @post clientUpdate
 // @filter application.Jwt
 func ClientUpdate(req terminal.ClientEO, terminalRepository terminal.Repository) {
-	check.IsTrue(req.Id == 0, 403, "修改数据id参数不能为空")
-	info := terminalRepository.ToEntity(req.Id)
+	check.IsTrue(req.LoginIp == "", 403, "修改数据loginIp参数不能为空")
+	info := terminalRepository.ToEntity(req.LoginIp)
 	if len(req.LoginPwd) > 0 {
 		info.LoginPwd = req.LoginPwd
 	}
-	info.LoginIp = req.LoginIp
 	info.LoginName = req.LoginName
 	info.LoginPort = req.LoginPort
-	_, err := terminalRepository.Update(req.Id, info)
+	_, err := terminalRepository.Update(req.LoginIp, info)
 	exception.ThrowWebExceptionError(403, err)
 }
 
 // ClientDel 客户端删除
 // @post clientDel
 // @filter application.Jwt
-func ClientDel(id int64, terminalRepository terminal.Repository) {
-	check.IsTrue(id == 0, 403, "删除数据id参数不能为空")
-	_, err := terminalRepository.Delete(id)
+func ClientDel(loginIp string, terminalRepository terminal.Repository) {
+	check.IsTrue(loginIp == "", 403, "删除数据loginIp参数不能为空")
+	_, err := terminalRepository.Delete(loginIp)
 	exception.ThrowWebExceptionError(403, err)
 }
 
 // ClientInfo 客户端详情
 // @post clientInfo
 // @filter application.Jwt
-func ClientInfo(id int64, terminalRepository terminal.Repository) response.ClientResponse {
-	check.IsTrue(id == 0, 403, "删除数据id参数不能为空")
-	info := terminalRepository.ToEntity(id)
+func ClientInfo(loginIp string, terminalRepository terminal.Repository) response.ClientResponse {
+	check.IsTrue(loginIp == "", 403, "loginIp参数不能为空")
+	info := terminalRepository.ToEntity(loginIp)
 	return mapper.Single[response.ClientResponse](info)
 }

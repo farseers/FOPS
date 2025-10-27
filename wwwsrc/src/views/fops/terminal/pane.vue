@@ -26,7 +26,7 @@
             </el-form-item>
             <el-form-item>
               <el-button type="primary" @click="save()">保存</el-button>
-              <el-button type="success" @click="submitForm()"  v-if="editId">重新连接</el-button>
+              <el-button type="success" @click="submitForm()"  v-if="editIp">重新连接</el-button>
               <el-button @click="resetForm()">重置</el-button>
             </el-form-item>
           </el-form>
@@ -101,7 +101,7 @@ export default {
       form: {
         ...defaultRow
       },
-      editId: null,
+      editIp: null,
       inputBuffer:'',//输入的字符
      
     }
@@ -111,7 +111,7 @@ export default {
   },
   methods: {
     validatorPwd(){
-          if(this.editId){
+          if(this.editIp){
             return true
           }else{
             if(this.form.pwd){
@@ -127,7 +127,7 @@ export default {
       this.form = {
         ...defaultRow
       }
-      this.editId = null;
+      this.editIp = null;
       this.secondShow = false;
       this.clearWs()
       this.$refs['elForm'] && this.$refs['elForm'].resetFields();
@@ -142,7 +142,7 @@ export default {
         name: row.Name,
         port: row.LoginPort,
       }
-      this.editId = row.Id;
+      this.editIp = row.LoginIp;
       this.secondShow = true;
       this.dialogVisible = true;
       this.initWs()
@@ -155,7 +155,7 @@ export default {
       this.dialogVisible = false;
       this.secondShow = false;
       this.activeName = 'first';
-      this.editId = null;
+      this.editIp = null;
       this.$refs['elForm'].resetFields();
     },
     save_back(res,fn) {
@@ -185,8 +185,8 @@ export default {
           if(_this.form.pwd){
             param.LoginPwd = _this.form.pwd
           }
-          if (_this.editId) {
-            param.Id = _this.editId;
+          if (_this.editIp) {
+            param.LoginIp = _this.editIp;
             serverApi.terminalClientUpdate(param).then(function (res) {
               _this.$emit('refresh')
               _this.save_back(res,fn)
@@ -209,7 +209,7 @@ export default {
     },
     clearWs(type){
       if(type){ //清楚后 重连
-        this.$refs.initTerm&&this.$refs.initTerm.clearInit(this.editId)
+        this.$refs.initTerm&&this.$refs.initTerm.clearInit(this.editIp)
       }else{
         this.$refs.initTerm&&this.$refs.initTerm.clearWs()
       }
@@ -217,7 +217,7 @@ export default {
     },
     initWs() {
      setTimeout(()=>{
-      this.$refs.initTerm&&this.$refs.initTerm.init(this.editId)
+      this.$refs.initTerm&&this.$refs.initTerm.init(this.editIp)
      },300)
       
     },

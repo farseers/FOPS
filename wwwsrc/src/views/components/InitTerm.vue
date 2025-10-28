@@ -14,7 +14,7 @@ export default {  //终端
             timeClose: null,
             errorNum:0,//重连次数
             againFlag:true,//断开后是否重新链接
-            fireId:'',//记录id
+            fireLoginIp:'',//记录ip
             option: {
                 cursorBlink: true,
                 cursorStyle: 'underline', // 光标样式 'block' | 'underline' | 'bar'
@@ -52,10 +52,10 @@ export default {  //终端
             this.init('')
            
         },
-        clearInit(id){ //断开 - 重连 
+        clearInit(loginIp){ //断开 - 重连 
             this.sshByLogin = false;
             this.againFlag = false; //不在重新链接
-            this.init(id)
+            this.init(loginIp)
         },
         clearWs(fn) { //清除
             this.ws && this.ws.close();
@@ -88,24 +88,24 @@ export default {  //终端
         isWsOpen() {
             return this.ws && this.ws.readyState === 1
         },
-        init(id) {
+        init(loginIp) {
             this.clearWs(()=>{
-                this.initFire(id)
+                this.initFire(loginIp)
             })    
         },
-        get_row(id){
+        get_row(loginIp){
             let row = {};
             if(this.sshByLogin){
                 let initRow = this.initRow;
                 initRow.LoginPort = initRow.LoginPort * 1;
                 row = {...initRow}
             }else{
-                row.Id = id;
+                row.LoginIp = loginIp;
             }
             return row
         },
-        initFire(id){
-            this.fireId = id;
+        initFire(loginIp){
+            this.fireLoginIp = loginIp;
             this.term = new Terminal(this.option)
             this.fitAddon = new FitAddon()
             // this.term.loadAddon(this.fitAddon)
@@ -120,15 +120,15 @@ export default {  //终端
             this.term && this.term.write('连接中...\r\n')
             setTimeout(() => {
                 this.fitAddon.fit()
-                this.initSocket(id)
-                this.onTerminalResize(id)
-                this.onTerminalKeyPress(id)
+                this.initSocket(loginIp)
+                this.onTerminalResize(loginIp)
+                this.onTerminalKeyPress(loginIp)
             }, 300); // 必须延时处理
         },
         handleKeyDown(event){
             // if (event.ctrlKey && event.key == 'k') {
             //    if(this.term){
-            //     const row = this.get_row(this.fireId);
+            //     const row = this.get_row(this.fireLoginIp);
             //     this.term && this.ws && this.ws.send(JSON.stringify({
             //         ...row,
             //         Command: '\f'
@@ -138,8 +138,8 @@ export default {  //终端
             //     event.preventDefault(); // 阻止默认行为
             // }
         },
-        onTerminalKeyPress(id) {
-            const row = this.get_row(id);
+        onTerminalKeyPress(loginIp) {
+            const row = this.get_row(loginIp);
             this.term && this.term.onKey(e => {
                 if (e.domEvent.metaKey && e.domEvent.key === 'k') {
                 //   metaKey 
@@ -159,10 +159,10 @@ export default {  //终端
             })
         },
         // resize 相关
-        resizeRemoteTerminal(id) {
+        resizeRemoteTerminal(loginIp) {
             // const { cols, rows } = this.term
             // 调整后端终端大小 使后端与前端终端大小一致
-            // this.isWsOpen() && this.ws.send(JSON.stringify({ Id: id, Command: '' , ...this.initRow,}))
+            // this.isWsOpen() && this.ws.send(JSON.stringify({ LoginIp: loginIp, Command: '' , ...this.initRow,}))
         },
         onResize: debounce(function () {
             this.fitAddon.fit()
@@ -175,31 +175,28 @@ export default {  //终端
             window.removeEventListener('resize', this.onResize)
         },
         // socket
-        initSocket(id) {
+        initSocket(loginIp) {
             let host = window.location.host;
             let w_s = 'wss://' + host + '/';
-            if (process.env.NODE_ENV === 'development') {
-                w_s = ' wss://fops.test188.cc/';
-            }
             const token = `${Session.get('token')}`; //terminal/ws/sshByLogin
             const ssh = this.sshByLogin?'sshByLogin':'ssh'
             const socketUrl = `${w_s}terminal/ws/${ssh}?Authorization=${token}`;
             this.ws = new WebSocket(socketUrl, ['webssh'])
             this.term && this.term.clear()
             this.term && this.term.write('连接中...\r\n')
-            this.onOpenSocket(id)
-            this.onCloseSocket(id)
-            this.onErrorSocket(id)
-            this.onMessageSocket(id)
+            this.onOpenSocket(loginIp)
+            this.onCloseSocket(loginIp)
+            this.onErrorSocket(loginIp)
+            this.onMessageSocket(loginIp)
 
         },
 
         // 打开连接
-        onOpenSocket(id) {
+        onOpenSocket(loginIp) {
             this.againFlag = true;//断开后重新链接
             this.ws.onopen = () => {
                 this.term && this.term.clear()
-                const row = this.get_row(id);
+                const row = this.get_row(loginIp);
                 const str = JSON.stringify({
                     ...row,
                      Command: '' });
@@ -212,27 +209,27 @@ export default {  //终端
         },
 
         // 关闭连接
-        onCloseSocket(id) {
+        onCloseSocket(loginIp) {
             this.ws.onclose = () => {
                 clearInterval(this.timeClose)
                 if(this.againFlag){
                     this.errorNum ++
                     this.term && this.term.write(`第${this.errorNum}次重新链接...\r\n`)
                     this.timeClose = setTimeout(() => {
-                        if (this.term) { this.initSocket(id); }
+                        if (this.term) { this.initSocket(loginIp); }
                     }, 2000);
                 }
                 
             }
         },
         // 连接错误
-        onErrorSocket(id) {
+        onErrorSocket(loginIp) {
             this.ws.onerror = () => {
                 this.term && this.term.write('连接失败，请刷新！')
             }
         },
         // 接收消息
-        onMessageSocket(id) {
+        onMessageSocket(loginIp) {
             this.ws.onmessage = res => {
                 const msg = JSON.parse(res.data)
                 const term = this.term;

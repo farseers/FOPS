@@ -63,7 +63,7 @@ type SshRequest struct {
 }
 
 func (receiver *SshRequest) IsNotNil() bool {
-	return len(receiver.LoginIp) > 0 && len(receiver.LoginName) > 0 && len(receiver.LoginPwd) > 0 && receiver.LoginPort > 0
+	return len(receiver.LoginIp) > 0 && len(receiver.LoginName) > 0 && receiver.LoginPort > 0
 }
 
 func NewSSHClient() SSHClient {

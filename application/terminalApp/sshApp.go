@@ -54,7 +54,7 @@ func WsSshByLogin(context *websocket.Context[terminal.SshRequest], terminalRepos
 	// 初始化客户端
 	if req.IsNotNil() {
 		// 如果密码为空，则从数据库获取
-		if req.LoginIp != "" && req.LoginPwd == "" {
+		if req.LoginPwd == "" {
 			info := terminalRepository.ToEntity(req.LoginIp)
 			req.LoginPwd = info.LoginPwd
 		}

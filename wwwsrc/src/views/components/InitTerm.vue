@@ -49,7 +49,8 @@ export default {  //终端
             this.sshByLogin = true;
             this.againFlag = false; //不在重新链接
             this.initRow = {...row}
-            this.init('')
+            // console.log('row',row.LoginIp)
+            this.init(row.LoginIp)
            
         },
         clearInit(loginIp){ //断开 - 重连 
@@ -87,6 +88,11 @@ export default {  //终端
         },
         isWsOpen() {
             return this.ws && this.ws.readyState === 1
+        },
+        inits(loginIp) { //弹框刚打开的时候调用
+            this.sshByLogin = false;
+            this.againFlag = true; //
+            this.init(loginIp) 
         },
         init(loginIp) {
             this.clearWs(()=>{
@@ -140,6 +146,7 @@ export default {  //终端
         },
         onTerminalKeyPress(loginIp) {
             const row = this.get_row(loginIp);
+            // console.log('onTerminalKeyPress',row)
             this.term && this.term.onKey(e => {
                 if (e.domEvent.metaKey && e.domEvent.key === 'k') {
                 //   metaKey 
@@ -177,6 +184,9 @@ export default {  //终端
         // socket
         initSocket(loginIp) {
             let host = window.location.host;
+            if (process.env.NODE_ENV === 'development') {
+               host = 'fops.test188.cc'
+            }
             let w_s = 'wss://' + host + '/';
             const token = `${Session.get('token')}`; //terminal/ws/sshByLogin
             const ssh = this.sshByLogin?'sshByLogin':'ssh'

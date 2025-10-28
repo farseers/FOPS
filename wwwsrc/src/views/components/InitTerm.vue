@@ -185,7 +185,7 @@ export default {  //终端
         initSocket(loginIp) {
             let host = window.location.host;
             if (process.env.NODE_ENV === 'development') {
-               host = 'fops.test188.cc'
+               host = import.meta.env.VITE_API_WS
             }
             let w_s = 'wss://' + host + '/';
             const token = `${Session.get('token')}`; //terminal/ws/sshByLogin

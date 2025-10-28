@@ -21,7 +21,8 @@ class WebSocketService {
     }
     let host = window.location.host;
     if (process.env.NODE_ENV === 'development') {
-       host = 'fops.test188.cc'
+       host = import.meta.env.VITE_API_WS
+       
     }
     // let host = 'fops.fsgit.cc'
     const w_s = 'wss://' + host;

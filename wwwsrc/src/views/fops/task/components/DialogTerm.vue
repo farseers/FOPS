@@ -46,9 +46,10 @@ export default {
             this.$refs.initTerm && this.$refs.initTerm.clearWs()
             this.pRow.LoginIp = row.IP;
             this.dialogVisible = true;
+            submitForm();
         },
         submitForm() {
-            if(this.pRow.LoginIp && this.pRow.LoginName && this.pRow.LoginPwd && this.pRow.LoginPort){
+            if(this.pRow.LoginIp ){ // && this.pRow.LoginName && this.pRow.LoginPwd && this.pRow.LoginPort
                 this.$refs.initTerm && this.$refs.initTerm.initStart(this.pRow)
             }
           

@@ -3,13 +3,14 @@ package terminal
 import (
 	"bufio"
 	"fmt"
-	"github.com/farseer-go/fs/exception"
-	"github.com/farseer-go/webapi/websocket"
-	"golang.org/x/crypto/ssh"
 	"log"
 	"net"
 	"time"
 	"unicode/utf8"
+
+	"github.com/farseer-go/fs/exception"
+	"github.com/farseer-go/webapi/websocket"
+	"golang.org/x/crypto/ssh"
 )
 
 type ptyRequestMsg struct {
@@ -54,7 +55,6 @@ type SSHClient struct {
 //		return client
 //	}
 type SshRequest struct {
-	Id        int64  // 登录ID
 	LoginIp   string // 登录IP
 	LoginName string // 登录帐号
 	LoginPwd  string // 登录密码
@@ -177,6 +177,7 @@ func (receiver *SSHClient) Connect(ws *websocket.Context[SshRequest]) {
 		_ = receiver.Client.Close()
 		_ = receiver.Session.Close()
 	}()
+
 	//第二个协程将远程主机的返回结果返回给用户
 	go func() {
 		br := bufio.NewReader(receiver.Channel)
@@ -190,7 +191,6 @@ func (receiver *SSHClient) Connect(ws *websocket.Context[SshRequest]) {
 		go func() {
 			catch := exception.Try(func() {
 				for {
-
 					x, size, err := br.ReadRune()
 					if err != nil {
 						log.Println(err)

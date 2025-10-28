@@ -45,6 +45,7 @@ func ClientUpdate(req terminal.ClientEO, terminalRepository terminal.Repository)
 	}
 	info.LoginName = req.LoginName
 	info.LoginPort = req.LoginPort
+	info.Name = req.Name
 	_, err := terminalRepository.Update(req.LoginIp, info)
 	exception.ThrowWebExceptionError(403, err)
 }

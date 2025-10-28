@@ -13,7 +13,7 @@
               <el-form-item prop="ip" style="width: 300px;">
               <el-input v-model="form.ip" />
             </el-form-item>
-            <el-form-item label="端口" style="padding-left: 10px;" prop="port">
+            <el-form-item label="端口" style="padding-left: 10px;width: 60px;" prop="port">
               <el-input v-model="form.port" />
             </el-form-item>
             </el-form-item>
@@ -52,7 +52,7 @@ const packResize = (cols, rows) =>
     rows: rows
   })
   const defaultRow= {
-        user: '',
+        user: 'root',
         pwd: '',
         ip: '',
         name: '',

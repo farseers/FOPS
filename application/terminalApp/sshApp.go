@@ -3,6 +3,7 @@ package terminalApp
 
 import (
 	"fops/domain/terminal"
+
 	"github.com/farseer-go/webapi/websocket"
 )
 
@@ -18,8 +19,8 @@ func WsSsh(context *websocket.Context[terminal.SshRequest], terminalRepository t
 	// p为用户输入
 	req := context.Receiver()
 	// 初始化客户端
-	if req.Id > 0 {
-		info := terminalRepository.ToEntity(req.Id)
+	if req.LoginIp != "" {
+		info := terminalRepository.ToEntity(req.LoginIp)
 		sshClient = terminal.DecodedMsgToSSHClient(info.LoginIp, info.LoginName, info.LoginPwd, info.LoginPort)
 		err := sshClient.GenerateClient()
 		if err != nil {

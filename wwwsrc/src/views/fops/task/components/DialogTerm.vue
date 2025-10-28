@@ -41,12 +41,38 @@ export default {
         }
     },
     methods: {
+        onOpenEditRole(row){
+			const _this = this;
+            //  console.log('onOpenEditRole',row)
+             const LoginIp = row.LoginIp;
+			serverApi.terminalClientInfo({LoginIp:LoginIp}).then((res)=>{
+				if(res.Status){
+                    // console.log(res)
+                    const d = res.Data;
+                    const { LoginName,LoginPort,LoginPwd } = d;
+                     this.LoginName =LoginName;
+                     if(LoginPwd){this.LoginPwd = LoginPwd;}
+                     this.LoginPort = LoginPort;
+                    if(res.StatusCode != 403){
+                        _this.$refs.initTerm && _this.$refs.initTerm.inits(LoginIp)
+                        // {
+                        //     LoginName:LoginName,
+                        //     LoginPort:LoginPort
+                        // }
+                    }
+					
+				}else{
+				ElMessage.error(res.StatusMessage);
+			}
+			})
+		},
         init(row) {
             this.pRow = { ...defaultRow }
             this.$refs.initTerm && this.$refs.initTerm.clearWs()
             this.pRow.LoginIp = row.IP;
             this.dialogVisible = true;
-            submitForm();
+            this.onOpenEditRole(this.pRow)
+            // submitForm();
         },
         submitForm() {
             if(this.pRow.LoginIp ){ // && this.pRow.LoginName && this.pRow.LoginPwd && this.pRow.LoginPort

@@ -15,7 +15,7 @@ import (
 func DockerSwarm(appName string, tailCount int) collections.List[response.DockerSwarmResponse] {
 	client := docker.NewClient()
 	lst := client.Service.PS(appName)
-	lstRunning := lst.Where(func(item docker.ServicePsVO) bool {
+	lstRunning := lst.Where(func(item docker.TaskInstanceVO) bool {
 		return item.State != "Shutdown"
 	}).ToList()
 
@@ -25,23 +25,23 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 		lst = lstRunning
 	}
 
-	lst.Foreach(func(item *docker.ServicePsVO) {
+	lst.Foreach(func(item *docker.TaskInstanceVO) {
 		// 通过容器id获取日志
-		logs, _ := client.Service.Logs(item.ServiceId, tailCount)
+		logs, _ := client.Service.Logs(item.TaskId, tailCount)
 		if logs.Count() < 2 {
 			return
 		}
 		// 有错误时，则通过docker inspect r6r8uboagmln 获取错误详情
 		if item.Error != "" {
-			containerInspectJson, _ := client.Container.InspectByServiceId(item.ServiceId)
+			containerInspectJson, _ := client.Container.InspectByServiceId(item.TaskId)
 			if len(containerInspectJson) > 0 {
 				item.Error = containerInspectJson[0].Status.Err
 			}
 		}
 
 		rsp.Add(response.DockerSwarmResponse{
-			ServicePsVO: *item,
-			Log:         flog.ClearColor(logs.ToString("\r\n")),
+			TaskInstanceVO: *item,
+			Log:            flog.ClearColor(logs.ToString("\r\n")),
 		})
 	})
 
@@ -54,8 +54,8 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 		}
 		logs, _ := client.Service.Logs(appName, tailCount*2)
 		rsp.Add(response.DockerSwarmResponse{
-			ServicePsVO: docker.ServicePsVO{
-				ServiceId: appName,
+			TaskInstanceVO: docker.TaskInstanceVO{
+				TaskId:    appName,
 				Name:      appName,
 				Image:     image,
 				Node:      "all",

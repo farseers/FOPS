@@ -3,6 +3,6 @@ package response
 import "github.com/farseer-go/docker"
 
 type DockerSwarmResponse struct {
-	docker.ServicePsVO
+	docker.TaskInstanceVO
 	Log string
 }

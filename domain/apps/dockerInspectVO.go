@@ -11,7 +11,7 @@ var NodeDockerStatsList = collections.NewDictionary[string, collections.List[doc
 
 type DockerInspectVO struct {
 	docker.DockerStatsVO
-	ServiceID   string // 服务ID（docker service ps xxx 得到）
+	TaskId      string // 任务ID（docker service ps xxx 得到）
 	Node        string // 节点
 	NodeIP      string // 集群节点
 	ContainerIP string // 容器IP

@@ -84,27 +84,28 @@ func CollectsClusterJob(*tasks.TaskContext) {
 			appDO.DockerInspect = collections.NewList[apps.DockerInspectVO]()
 		}
 
-		// 得到该应用正在运行的实例列表
-		allServiceList := dockerClient.Service.PS(appDO.AppName)
-		if allServiceList.Count() == 0 {
+		// 根据ServiceId获取所有实例
+		allInstanceList := dockerClient.Service.PS(appDO.AppName)
+		if allInstanceList.Count() == 0 {
 			return
 		}
-		servicePS := allServiceList.Where(func(item docker.ServicePsVO) bool {
+		// 只保留运行中的实例
+		runInstanceList := allInstanceList.Where(func(item docker.TaskInstanceVO) bool {
 			return item.State == "Running" //return item.State != "Shutdown"
 		}).ToList()
 
 		// 清空不存在的实例列表
 		appDO.DockerInspect.RemoveAll(func(dockerInspectVO apps.DockerInspectVO) bool {
-			return !servicePS.Where(func(serviceVO docker.ServicePsVO) bool {
-				return dockerInspectVO.ServiceID == serviceVO.ServiceId
+			return !runInstanceList.Where(func(serviceVO docker.TaskInstanceVO) bool {
+				return dockerInspectVO.TaskId == serviceVO.TaskId
 			}).Any()
 		})
 
 		// 遍历每个实例，得到容器ID、IP
-		servicePS.Foreach(func(serviceVO *docker.ServicePsVO) {
+		runInstanceList.Foreach(func(serviceVO *docker.TaskInstanceVO) {
 			// 服务已存在于本地实例列表中，则跳过
 			if appDO.DockerInspect.Where(func(dockerInspectVO apps.DockerInspectVO) bool {
-				return dockerInspectVO.ServiceID == serviceVO.ServiceId
+				return dockerInspectVO.TaskId == serviceVO.TaskId
 			}).Any() {
 				return
 			}
@@ -116,14 +117,14 @@ func CollectsClusterJob(*tasks.TaskContext) {
 			// 只有当节点是健康状态才加入到实例列表中。
 			if node != nil && node.IsHealth {
 				// 读取单个实例的详情
-				containerInspectJson, _ := dockerClient.Container.InspectByServiceId(serviceVO.ServiceId)
+				containerInspectJson, _ := dockerClient.Container.InspectByServiceId(serviceVO.TaskId)
 				if len(containerInspectJson) == 0 {
 					return
 				}
 				// 通过代理节点同步到的容器资源信息
 				dockerInspectVO := apps.DockerInspectVO{
 					DockerStatsVO: apps.GetDockerStats(containerInspectJson[0].Status.ContainerStatus.ContainerID),
-					ServiceID:     serviceVO.ServiceId,
+					TaskId:        serviceVO.TaskId,
 					Node:          serviceVO.Node,
 					NodeIP:        node.IP,
 					CreatedAt:     containerInspectJson[0].CreatedAt.Format(time.DateTime),
@@ -139,7 +140,7 @@ func CollectsClusterJob(*tasks.TaskContext) {
 			}
 		})
 		// 实例数量
-		appDO.DockerInstances = servicePS.Count()
+		appDO.DockerInstances = runInstanceList.Count()
 		time.Sleep(100 * time.Millisecond)
 	})
 

@@ -13,8 +13,8 @@ import (
 	"github.com/farseer-go/tasks"
 )
 
-// CollectsClusterJob 3秒收集一次Docker集群信息
-func CollectsClusterJob(*tasks.TaskContext) {
+// CollectsDockerSwarmJob 3秒收集一次Docker集群信息
+func CollectsDockerSwarmJob(*tasks.TaskContext) {
 	appsRepository := container.Resolve[apps.Repository]()
 	clusterRepository := container.Resolve[cluster.Repository]()
 
@@ -31,6 +31,10 @@ func CollectsClusterJob(*tasks.TaskContext) {
 	}
 	// 如果服务不存在，则添加到列表中，用于更新到数据库中，指明服务的实例为0
 	lstApp := appsRepository.ToList()
+	// 没有读取到应用，则退出
+	if lstApp.Count() == 0 {
+		return
+	}
 
 	// 先把fops中的应用缺少的给补上
 	serviceList.Foreach(func(item *docker.ServiceListVO) {
@@ -104,16 +108,19 @@ func CollectsClusterJob(*tasks.TaskContext) {
 		// 遍历每个实例，得到容器ID、IP
 		runInstanceList.Foreach(func(serviceVO *docker.TaskInstanceVO) {
 			// 服务已存在于本地实例列表中，则跳过
-			if appDO.DockerInspect.Where(func(dockerInspectVO apps.DockerInspectVO) bool {
+			curInstance := appDO.DockerInspect.Find(func(dockerInspectVO *apps.DockerInspectVO) bool {
 				return dockerInspectVO.TaskId == serviceVO.TaskId
-			}).Any() {
-				return
-			}
-
+			})
 			// 匹配对应的节点
 			node := clusterNode.NodeList.Find(func(node *docker.DockerNodeVO) bool {
 				return node.NodeName == serviceVO.Node
 			})
+			// 实例存在，则只更新资源信息
+			if node != nil && curInstance != nil {
+				curInstance.DockerStatsVO = apps.GetDockerStats(node.IP, serviceVO.TaskId)
+				return
+			}
+
 			// 只有当节点是健康状态才加入到实例列表中。
 			if node != nil && node.IsHealth {
 				// 读取单个实例的详情
@@ -123,7 +130,8 @@ func CollectsClusterJob(*tasks.TaskContext) {
 				}
 				// 通过代理节点同步到的容器资源信息
 				dockerInspectVO := apps.DockerInspectVO{
-					DockerStatsVO: apps.GetDockerStats(containerInspectJson[0].Status.ContainerStatus.ContainerID),
+					// containerInspectJson[0].Status.ContainerStatus.ContainerID
+					DockerStatsVO: apps.GetDockerStats(node.IP, serviceVO.TaskId),
 					TaskId:        serviceVO.TaskId,
 					Node:          serviceVO.Node,
 					NodeIP:        node.IP,
@@ -145,7 +153,5 @@ func CollectsClusterJob(*tasks.TaskContext) {
 	})
 
 	// 更新服务运行情况
-	if serviceList.Count() > 0 {
-		_, _ = appsRepository.UpdateInspect(lstApp)
-	}
+	_, _ = appsRepository.UpdateInspect(lstApp)
 }

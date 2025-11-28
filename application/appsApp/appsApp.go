@@ -65,7 +65,7 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, clusterRe
 	}
 
 	// 更新应用信息
-	newDO := mapper.Single[apps.DomainObject](req, func(newVal *apps.DomainObject) {
+	newDO := mapper.Single(req, func(newVal *apps.DomainObject) {
 		newVal.ClusterVer = do.ClusterVer
 	})
 

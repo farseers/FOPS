@@ -37,7 +37,7 @@ func (module Module) PostInitialize() {
 
 		// 3秒收集一次Docker集群信息
 		tasks.RunNow("收集Docker Swarm集群信息", time.Second*10, job.CollectsNodeJob, context.Background())
-		tasks.Run("收集Docker应用信息", time.Second*3, job.CollectsClusterJob, context.Background())
+		tasks.Run("收集Docker应用信息", time.Second*3, job.CollectsDockerSwarmJob, context.Background())
 
 		tasks.Run("统计访问", time.Minute*1, job.StatVisitsJob, context.Background())
 		tasks.Run("fops监控数据处理", time.Minute*1, job.MonitorFopsJob, context.Background())

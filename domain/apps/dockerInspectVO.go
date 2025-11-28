@@ -21,14 +21,14 @@ type DockerInspectVO struct {
 }
 
 // GetDockerStats 根据集群节点IP，找到对应的容器ID
-func GetDockerStats(containerID string) docker.DockerStatsVO {
-	for _, dockerStatsList := range NodeDockerStatsList.Values().ToArray() {
-		dockerStatsVO := dockerStatsList.Find(func(item *docker.DockerStatsVO) bool {
-			return item.ContainerID == containerID
-		})
-		if dockerStatsVO != nil {
-			return *dockerStatsVO
-		}
+func GetDockerStats(nodeIP, taskId string) docker.DockerStatsVO {
+	lstDockerStats := NodeDockerStatsList.GetValue(nodeIP)
+	dockerStatsVO := lstDockerStats.Find(func(item *docker.DockerStatsVO) bool {
+		return item.TaskId == taskId
+	})
+
+	if dockerStatsVO != nil {
+		return *dockerStatsVO
 	}
-	return docker.DockerStatsVO{ContainerID: containerID}
+	return docker.DockerStatsVO{TaskId: taskId}
 }

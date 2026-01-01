@@ -279,9 +279,14 @@ const onOpenEdit = (type: string, row: any) => {
 };
 //重新构建
 const onBranchAgain = (row: any)=>{
-  if(row.IsSuccess == false && row.Status == 2){
+  if(row.Status == 2){
+    if(row.IsSuccess == false ){
     elFirmBoxRef.value.openDialog(row,row.WorkflowsName,row.BranchName);
+  }else{
+    elFirmBoxRef.value.openDialog(row,row.WorkflowsName);
   }
+  }
+  
 }
 // 清除镜像
 const onClearDockerImage = () => {

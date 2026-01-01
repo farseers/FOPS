@@ -59,12 +59,14 @@ const querySearch = (queryString: string, cb: any) => {
 }
 
 // 打开弹窗
-const openDialog = (row: any,workflowsName: any) => {
+const openDialog = (row: any,workflowsName: any,branchName:any) => {
+  // console.log(row,workflowsName,branchName)
     state.inputValue = '';
 	state.restaurants = [];
 	state.isShowDialog = true;
     state.workflowsName = workflowsName;
     state.appName = row.AppName;
+    if(branchName){state.inputValue = branchName}
      let param = {
     "appName":  state.appName
   };

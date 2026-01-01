@@ -97,11 +97,11 @@
                 <el-table-column label="应用名称" show-overflow-tooltip>
                   <template #default="scope">
                     <el-tag size="small" type="info">{{ scope.row.WorkflowsName }}</el-tag>
-                    <el-tag v-if="scope.row.Status==0" size="small" type="info">{{ scope.row.BranchName }}</el-tag>
-                    <el-tag v-else-if="scope.row.Status==1" size="small" type="warning">{{ scope.row.BranchName }}</el-tag>
-                    <el-tag v-else-if="scope.row.Status==2 && scope.row.IsSuccess == true" size="small" type="success">{{ scope.row.BranchName }}</el-tag>
-                    <el-tag v-else-if="scope.row.Status==2 && scope.row.IsSuccess == false" size="small" type="danger">{{ scope.row.BranchName }}</el-tag>
-                    <el-tag v-else-if="scope.row.Status==3" size="small" type="info">{{ scope.row.BranchName }}</el-tag>
+                    <el-tag @click="onBranchAgain(scope.row)" v-if="scope.row.Status==0" size="small" type="info">{{ scope.row.BranchName }}</el-tag>
+                    <el-tag @click="onBranchAgain(scope.row)" v-else-if="scope.row.Status==1" size="small" type="warning">{{ scope.row.BranchName }}</el-tag>
+                    <el-tag @click="onBranchAgain(scope.row)" v-else-if="scope.row.Status==2 && scope.row.IsSuccess == true" size="small" type="success">{{ scope.row.BranchName }}</el-tag>
+                    <el-tag @click="onBranchAgain(scope.row)" v-else-if="scope.row.Status==2 && scope.row.IsSuccess == false" size="small" type="danger">{{ scope.row.BranchName }}</el-tag>
+                    <el-tag @click="onBranchAgain(scope.row)" v-else-if="scope.row.Status==3" size="small" type="info">{{ scope.row.BranchName }}</el-tag>
                     <span style="margin-left: 5px ">{{ scope.row.AppName }}:{{ scope.row.BuildNumber }}</span>
                   </template>
                 </el-table-column>
@@ -277,7 +277,12 @@ const onOpenAdd = (type: string) => {
 const onOpenEdit = (type: string, row: any) => {
   appDialogRef.value.openDialog(type, row, null);
 };
-
+//重新构建
+const onBranchAgain = (row: any)=>{
+  if(row.IsSuccess == false && row.Status == 2){
+    elFirmBoxRef.value.openDialog(row,row.WorkflowsName,row.BranchName);
+  }
+}
 // 清除镜像
 const onClearDockerImage = () => {
   ElMessageBox.confirm(`此操作将永久清除：“None镜像”，是否继续?`, '提示', {

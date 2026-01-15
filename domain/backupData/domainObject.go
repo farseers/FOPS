@@ -247,9 +247,9 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (Bac
 	// 压缩
 	flog.Infof("准备压缩：%s", backupRoot+fileName)
 	cmd := fmt.Sprintf("gzip %s", backupRoot+fileName)
-	code, result := exec.RunShellCommand(cmd, nil, path, false)
+	result, code := exec.RunShellCommand(cmd, nil, path, false)
 	if code != 0 {
-		return BackupHistoryData{}, fmt.Errorf("压纹文件%s 时失败：%s", cmd, collections.NewList(result...).ToString(","))
+		return BackupHistoryData{}, fmt.Errorf("压纹文件%s 时失败：%s", cmd, result.ToString(","))
 	}
 	fileName += ".gz"
 	fileInfo, err := os.Stat(backupRoot + fileName)
@@ -310,9 +310,9 @@ func (receiver *DomainObject) RecoverBackupFile(database string, fileName string
 	// 解压文件
 	path := filepath.Dir(backupRoot + fileName)
 	cmd := fmt.Sprintf("gzip -df %s", backupRoot+fileName)
-	code, result := exec.RunShellCommand(cmd, nil, path, false)
+	result, code := exec.RunShellCommand(cmd, nil, path, false)
 	if code != 0 {
-		return fmt.Errorf("解压文件：%s 时失败：%s", cmd, collections.NewList(result...).ToString(","))
+		return fmt.Errorf("解压文件：%s 时失败：%s", cmd, result.ToString(","))
 	}
 	fileName = fileName[:len(fileName)-3]
 	defer file.Delete(backupRoot + fileName)

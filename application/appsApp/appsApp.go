@@ -52,15 +52,16 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, clusterRe
 	clusterDO := clusterRepository.GetLocalCluster()
 
 	client := docker.NewClient()
-	if exists, err := client.Service.Exists(req.AppName); exists || err != nil {
+	if exists := client.Service.Exists(req.AppName); exists {
 		// 更新镜像
 		if (req.ClusterDockerImage != "" && req.ClusterDockerImage != do.ClusterVer.GetValue(clusterDO.Id).DockerImage) || do.DockerReplicas != req.DockerReplicas {
-			err = client.Service.SetImagesAndReplicas(req.AppName, req.ClusterDockerImage, req.DockerReplicas)
-			exception.ThrowWebExceptionError(403, err)
+			result, wait := client.Service.SetImagesAndReplicas(req.AppName, req.ClusterDockerImage, req.DockerReplicas)
+			exception.ThrowRefuseExceptionBool(wait() != 0, collections.NewListFromChan(result).ToString(","))
+
 		} else if do.DockerReplicas != req.DockerReplicas {
 			// 更新副本数量
-			err = client.Service.SetReplicas(req.AppName, req.DockerReplicas)
-			exception.ThrowWebExceptionError(403, err)
+			result, wait := client.Service.SetReplicas(req.AppName, req.DockerReplicas)
+			exception.ThrowRefuseExceptionBool(wait() != 0, collections.NewListFromChan(result).ToString(","))
 		}
 	}
 
@@ -94,15 +95,14 @@ func Delete(appName string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(strings.Trim(appName, "") == "", 403, "参数不完整")
 	// 删除服务
 	client := docker.NewClient()
-	exists, err := client.Service.Exists(appName)
-	// 当err!=nil时，也认为服务是存在的。
-	if exists || err != nil {
-		err = client.Service.Delete(appName)
-		exception.ThrowWebExceptionError(403, err)
+	exists := client.Service.Exists(appName)
+	if exists {
+		result, wait := client.Service.Delete(appName)
+		exception.ThrowRefuseExceptionBool(wait() != 0, collections.NewListFromChan(result).ToString(","))
 	}
 
 	// 删除应用
-	_, err = appsRepository.Delete(appName)
+	_, err := appsRepository.Delete(appName)
 	exception.ThrowWebExceptionError(403, err)
 }
 

@@ -155,6 +155,12 @@ export function fopsApi() {
 				method: 'get',
 				data:{},
 			});
+		},buildLogIncremental: (buildId: string, fromLine: number) => {
+			return requestGet({
+				url: '/apps/build/viewIncremental-'+buildId+'-'+fromLine,
+				method: 'get',
+				data:{},
+			});
 		},dockerLog: (param: object) => {
 			return requestGet({
 				url: '/apps/logs/dockerSwarm',

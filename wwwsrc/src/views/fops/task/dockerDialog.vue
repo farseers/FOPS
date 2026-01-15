@@ -12,20 +12,20 @@
 							<el-button size="small" type="primary" @click="refreshDockerLog">刷新</el-button>
 						</div>
 					</div>
-				<div style="margin: 5px 0;">
-					<div style="display: flex; align-items: center; justify-content: space-between;">
-						<div>
-							<el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.State }}</el-tag>
-							<el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.StateInfo }}</el-tag>
-							<el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.Image }}</el-tag>
+					<div style="margin: 5px 0;">
+						<div style="display: flex; align-items: center; justify-content: space-between;">
+							<div>
+								<el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.State }}</el-tag>
+								<el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.StateInfo }}</el-tag>
+								<el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.Image }}</el-tag>
+							</div>
 						</div>
+						<div style="color: #f56c6c;">{{ state.dockerLog.Error }}</div>
 					</div>
-					<div style="color: #f56c6c;">{{ state.dockerLog.Error }}</div>
-				</div>
-				<div class="layout-padding-auto" style="background-color:#393d49;flex: 1;overflow: auto;" ref="scrollableDockerLog">
-					<pre v-html="state.dockerLog.Log"
-							style="color: #fff;background-color:#393d49;padding: 5px 0 5px 5px;"></pre>
-				</div>
+					<div class="layout-padding-auto" style="background-color:#393d49;flex: 1;overflow: auto;" ref="scrollableDockerLog">
+						<pre v-html="state.dockerLog.Log"
+								style="color: #fff;background-color:#393d49;padding: 5px 0 5px 5px;"></pre>
+					</div>
 				</div>
 				
 			</el-dialog>

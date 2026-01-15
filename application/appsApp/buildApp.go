@@ -137,7 +137,9 @@ func View(buildId int64) action.IResult {
 		}
 		logContent[i] = dateTimePart + " " + logPart
 	}
-	return action.Content(strings.Join(logContent, "\n"))
+	// 返回内容时去掉末尾的换行符，由前端负责拼接换行符
+	content := strings.Join(logContent, "\n")
+	return action.Content(strings.TrimSuffix(content, "\n"))
 }
 
 // ViewIncremental 增量获取构建日志（返回从指定行开始的日志）
@@ -181,7 +183,9 @@ func ViewIncremental(buildId int64, fromLine int) action.IResult {
 		}
 		logContent[i] = dateTimePart + " " + logPart
 	}
-	return action.Content(strings.Join(logContent, "\n"))
+	// 返回内容时去掉末尾的换行符，由前端负责拼接换行符
+	content := strings.Join(logContent, "\n")
+	return action.Content(strings.TrimSuffix(content, "\n"))
 }
 
 // Stop 停止构建

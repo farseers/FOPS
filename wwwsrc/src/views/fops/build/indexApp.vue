@@ -354,14 +354,15 @@ const onShowLog=()=>{
     const res = response.data || response
     // 如果有新增日志内容
     if(res && res.length > 0){
-      // 追加日志内容
+      // 追加日志内容 - 前端负责拼接换行符
       if(state.buildLogContent) {
         state.buildLogContent += '\n' + res
       } else {
         state.buildLogContent = res
       }
-      // 更新行数
-      state.buildLogLines += res.split('\n').length
+      // 更新行数（后端返回已去掉末尾换行符）
+      const lines = res.split('\n')
+      state.buildLogLines += lines.length
 
       // 自动刷新日志，滚动到底部
       if (state.autoLog ) {

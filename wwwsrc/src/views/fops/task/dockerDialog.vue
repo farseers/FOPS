@@ -2,13 +2,16 @@
     <div>
         <el-dialog title="容器日志" v-model="state.isShowDockerLogDialog" style="width: 80%;top:20px;margin-bottom: 50px;">
 				<div style="display: flex;flex-flow: column;max-height: calc(90vh - 151px) !important;">
-					<div>
-					<el-tag size="default" :type="item.Id == state.dockerLog.Id ? '' : 'info'"
-						@click="clickDockerLog(item)" v-for="item in state.dockerLogContent" :key="item.Id"
-						style="cursor: pointer;margin:0 15px 5px 0">
-						{{ item.Name }}（{{ item.Node }}）
-					</el-tag>
-				</div>
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div>
+							<el-tag size="default" :type="item.Id == state.dockerLog.Id ? '' : 'info'"
+								@click="clickDockerLog(item)" v-for="item in state.dockerLogContent" :key="item.Id"
+								style="cursor: pointer;margin:0 15px 5px 0">
+								{{ item.Name }}（{{ item.Node }}）
+							</el-tag>
+							<el-button size="small" type="primary" @click="refreshDockerLog">刷新</el-button>
+						</div>
+					</div>
 				<div style="margin: 5px 0;">
 					<div style="display: flex; align-items: center; justify-content: space-between;">
 						<div>
@@ -16,7 +19,6 @@
 							<el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.StateInfo }}</el-tag>
 							<el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.Image }}</el-tag>
 						</div>
-						<el-button size="small" type="primary" @click="refreshDockerLog">刷新</el-button>
 					</div>
 					<div style="color: #f56c6c;">{{ state.dockerLog.Error }}</div>
 				</div>

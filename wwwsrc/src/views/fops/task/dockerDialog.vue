@@ -10,13 +10,13 @@
 					</el-tag>
 				</div>
 				<div style="margin: 5px 0;">
-					<div>
-						<el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.State
-							}}</el-tag>
-						<el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.StateInfo
-							}}</el-tag>
-						<el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.Image
-							}}</el-tag>
+					<div style="display: flex; align-items: center; justify-content: space-between;">
+						<div>
+							<el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.State }}</el-tag>
+							<el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.StateInfo }}</el-tag>
+							<el-tag size="small" type="success" style="margin-right:10px">{{ state.dockerLog.Image }}</el-tag>
+						</div>
+						<el-button size="small" type="primary" @click="refreshDockerLog">刷新</el-button>
 					</div>
 					<div style="color: #f56c6c;">{{ state.dockerLog.Error }}</div>
 				</div>
@@ -42,22 +42,36 @@ const state = reactive({
 		Name: '', Node: '', State: '', StateInfo: '', Error: '', Image: '',
 	},//容器日志选中
 });
+
+
+const currentAppName = ref(''); // 保存当前应用名称，用于刷新功能
 const scrollableDockerLog = ref(); //容器日志
 //点击容器日志选项
 const clickDockerLog = (item) => {
     state.dockerLog = item
 }
 const openDockerLog = (appName) => { //容器日志
+    currentAppName.value = appName; // 保存当前应用名称
+    loadDockerLog(appName);
+}
+
+const loadDockerLog = (appName) => { // 加载容器日志
     serverApi.dockerLog({ "AppName": appName, "tailCount": 500 }).then(function (res) {
         state.dockerLogContent = res.Data;
         if (state.dockerLogContent && state.dockerLogContent.length > 0) {
             clickDockerLog(state.dockerLogContent[0])
         }
         state.isShowDockerLogDialog = true
-        setTimeout(() => {   //自动跳到底部 
+        setTimeout(() => {   //自动跳到底部
             scrollableDockerLog.value.scrollTop = scrollableDockerLog.value.scrollHeight;
         }, 500)
     })
+}
+
+const refreshDockerLog = () => { // 刷新容器日志
+    if (currentAppName.value) {
+        loadDockerLog(currentAppName.value);
+    }
 }
 defineExpose({
     openDockerLog

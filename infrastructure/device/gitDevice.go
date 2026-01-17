@@ -45,8 +45,7 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 			return false
 		default:
 			lstResult, wait := exec.RunShellContext(ctx, fmt.Sprintf("timeout 10 git pull origin %s", branch), nil, gitPath, true)
-			exitCode = exec.SaveToChan(progress, lstResult, wait)
-			if exitCode == 0 {
+			if exitCode = exec.SaveToChan(progress, lstResult, wait); exitCode == 0 {
 				return true
 			}
 			if i == 2 {

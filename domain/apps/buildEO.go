@@ -270,8 +270,8 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 
 		// 执行 docker exec FOPS-Build /bin/bash -c "action"
 		lstResult, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.ctx)
-		code := exec.SaveToChan(receiver.logQueue.progress, lstResult, wait)
-		receiver.checkResult(code == 0)
+		exitCode := exec.SaveToChan(receiver.logQueue.progress, lstResult, wait)
+		receiver.checkResult(exitCode == 0)
 	}
 
 	// 运行脚本
@@ -296,8 +296,8 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 
 		// 执行脚本 docker exec FOPS-Build /bin/bash -c "xxx.sh"
 		lstResult, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, shellPath, receiver.WorkflowsAction.Env, receiver.ctx)
-		code := exec.SaveToChan(receiver.logQueue.progress, lstResult, wait)
-		receiver.checkResult(code == 0)
+		exitCode := exec.SaveToChan(receiver.logQueue.progress, lstResult, wait)
+		receiver.checkResult(exitCode == 0)
 	}
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 }
@@ -353,8 +353,7 @@ func (receiver *BuildEO) useCache(index int, gits collections.List[GitEO]) bool 
 	// 将之前的镜像更新成新的镜像名称
 	cmd := fmt.Sprintf("docker tag %s %s", dockerImage, receiver.Env.DockerImage)
 	lstResult, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, receiver.ctx)
-	code := exec.SaveToChan(receiver.logQueue.progress, lstResult, wait)
-	if code != 0 {
+	if exitCode := exec.SaveToChan(receiver.logQueue.progress, lstResult, wait); exitCode != 0 {
 		return false
 	}
 

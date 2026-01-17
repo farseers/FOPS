@@ -2,8 +2,6 @@ module fops
 
 go 1.23.0
 
-toolchain go1.23.3
-
 exclude github.com/mitchellh/osext v0.0.0-20151018003038-5e2d6d41470f
 
 require (

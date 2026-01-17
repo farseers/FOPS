@@ -97,7 +97,7 @@
   </div>
             <dockerDialog ref="dockerDialogRef"/>
             <taskDialog ref="taskDialogRef"  />
-            <logDialog ref="logDialogRef"  />
+            <logDialog ref="logDetailDialogRef"  />
             <editAppNum ref="editAppNumRef" @refresh="getData()"/>
     </div>
 </template>
@@ -110,13 +110,13 @@ import nc from '/@/assets/nc.png';
 import yp from '/@/assets/yp.png';
 import cpu from '/@/assets/cpu.png';
 const dockerDialog = defineAsyncComponent(() => import('/src/views/fops/task/dockerDialog.vue'));
-const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logV2Dialog.vue'));
+const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logDetailDialog.vue'));
 const taskDialog= defineAsyncComponent(() => import('/src/views/fops/task/taskAppDialog.vue'));
 const editAppNum = defineAsyncComponent(() => import('/src/views/fops/build/editAppNum.vue'));
 // 引入 api 请求接口
 const serverApi = fopsApi();
 const conlyTabs = ref(null)
-const logDialogRef = ref();
+const logDetailDialogRef = ref();
 const taskDialogRef = ref();
 const dockerDialogRef = ref();
 const editAppNumRef = ref();
@@ -153,7 +153,7 @@ const showDockerLog = (AppName) => {
 }
 // 打开FS日志
 const showFsLogLevel=(level,appName)=>{
-  logDialogRef.value.openDialogLogLevel(level,appName,'应用日志');
+  logDetailDialogRef.value.openDialogLogLevel(level,appName,'应用日志');
 }
 // 任务组日志
 const showTask=(st,appName)=>{

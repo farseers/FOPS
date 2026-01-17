@@ -51,7 +51,7 @@
         </el-table-column>
             <el-table-column label="下次运行时间" width="170" show-overflow-tooltip>
               <template #default="scope">
-                <span title="Cron表达式" >{{scope.row.Cron}}</span><br>
+                <span title="Cron表达式" >{{scope.row.ConsumerRoutingKeyon}}</span><br>
                 <span style="color:red" title="下次运行时间" v-if="compareTime(scope.row.NextAt)" > {{scope.row.NextAt}}</span>
                 <span title="下次运行时间" v-else> {{scope.row.NextAt}}</span>
               </template>
@@ -97,7 +97,7 @@
 		</el-card>
     <editDialog ref="editDialogRef" @refresh="getTableData()" />
     <taskDialog ref="taskDialogRef" @refresh="getTableData()" />
-    <logDialog ref="logDialogRef" @refresh="getTableData()" />
+    <logDialog ref="logDetailDialogRef" @refresh="getTableData()" />
 	</div>
 </template>
 
@@ -119,7 +119,7 @@ const logDialog = defineAsyncComponent(() => import('/src/views/fops/task/logDia
 // 定义变量内容
 const editDialogRef = ref();
 const taskDialogRef = ref();
-const logDialogRef = ref();
+const logDetailDialogRef = ref();
 const state = reactive({
   keyWord:'',
   appName:'',
@@ -196,7 +196,7 @@ const onTaskList=(row: any)=>{
   taskDialogRef.value.openDialog(row);
 }
 const onLog=(row: any)=>{
-  logDialogRef.value.openDialog(row);
+  logDetailDialogRef.value.openDialog(row);
 }
 
 // 删除

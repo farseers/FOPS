@@ -167,7 +167,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					},{
 						path: '/log/list',
 						name: 'logList',
-						component: () => import('/@/views/fops/log/indexLogV2.vue'),
+						component: () => import('/@/views/fops/log/indexLog.vue'),
 						meta: {
 							title: 'message.router.LogList',
 							isLink: '',
@@ -468,7 +468,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					{
 						path: '/slowQuery/dataBase',
 						name: 'dataBase',
-						component: () => import('/@/views/fops/sql/indexSql.vue'),
+						component: () => import('/@/views/fops/slow/indexSql.vue'),
 						meta: {
 							title: 'message.router.DataBase',
 							isLink: '',
@@ -482,7 +482,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					},{
 						path: '/slowQuery/redis',
 						name: 'redis',
-						component: () => import('/@/views/fops/sql/indexRedis.vue'),
+						component: () => import('/@/views/fops/slow/indexRedis.vue'),
 						meta: {
 							title: 'message.router.Redis',
 							isLink: '',
@@ -496,7 +496,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					},{
 						path: '/slowQuery/mq',
 						name: 'mq',
-						component: () => import('/@/views/fops/sql/indexMq.vue'),
+						component: () => import('/@/views/fops/slow/indexMq.vue'),
 						meta: {
 							title: 'message.router.MQ',
 							isLink: '',
@@ -510,7 +510,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					},{
 						path: '/slowQuery/http',
 						name: 'http',
-						component: () => import('/@/views/fops/sql/indexHttp.vue'),
+						component: () => import('/@/views/fops/slow/indexHttp.vue'),
 						meta: {
 							title: 'message.router.Http',
 							isLink: '',
@@ -524,7 +524,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					},{
 						path: '/slowQuery/etcd',
 						name: 'etcd',
-						component: () => import('/@/views/fops/sql/indexEtcd.vue'),
+						component: () => import('/@/views/fops/slow/indexEtcd.vue'),
 						meta: {
 							title: 'message.router.Etcd',
 							isLink: '',
@@ -538,7 +538,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					},{
 						path: '/slowQuery/es',
 						name: 'es',
-						component: () => import('/@/views/fops/sql/indexEs.vue'),
+						component: () => import('/@/views/fops/slow/indexEs.vue'),
 						meta: {
 							title: 'message.router.ES',
 							isLink: '',
@@ -552,7 +552,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					},{
 						path: '/slowQuery/hand',
 						name: 'hand',
-						component: () => import('/@/views/fops/sql/indexHand.vue'),
+						component: () => import('/@/views/fops/slow/indexHand.vue'),
 						meta: {
 							title: 'message.router.Hand',
 							isLink: '',

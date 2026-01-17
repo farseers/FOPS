@@ -134,7 +134,7 @@
 
   <appDialog ref="appDialogRef" @refresh="getTableData()" @showOverlay="onShowOverlay()" @hideOverlay="onHideOverlay()" />
   <appAddDialog ref="appAddDialogRef" @refresh="getTableData()" @showOverlay="onShowOverlay()" @hideOverlay="onHideOverlay()" />
-  <logDialog ref="logDialogRef"  />
+  <logDialog ref="logDetailDialogRef"  />
   <taskDialog ref="taskDialogRef"  />
   <el-dialog title="构建日志" v-model="state.isShowBuildLogDialog" style="width: 80%;top:20px;margin-bottom: 50px;" class='initdialog__body'>
     <el-checkbox v-model="state.autoLog" style="margin-bottom: 5px;">自动刷新日志</el-checkbox>
@@ -174,11 +174,11 @@ const appAddDialog = defineAsyncComponent(() => import('/src/views/fops/build/ad
 // 任务组日志
 const taskDialog= defineAsyncComponent(() => import('/src/views/fops/task/taskAppDialog.vue'));
 // 日志
-const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logV2Dialog.vue'));
+const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logDetailDialog.vue'));
 const dockerDialog = defineAsyncComponent(() => import('/src/views/fops/task/dockerDialog.vue'));
 const editAppNum = defineAsyncComponent(() => import('/src/views/fops/build/editAppNum.vue'));
 const elFirmBox = defineAsyncComponent(() => import('/src/views/fops/build/elFirmBox.vue'));
-const logDialogRef = ref();
+const logDetailDialogRef = ref();
 // 定义变量内容
 const appDialogRef = ref();
 const appAddDialogRef = ref();
@@ -263,7 +263,7 @@ const getTableLogData = () => {
 
 // 打开FS日志
 const showFsLogLevel=(level:any,appName:any)=>{
-  logDialogRef.value.openDialogLogLevel(level,appName);
+  logDetailDialogRef.value.openDialogLogLevel(level,appName);
 }
 // 任务组日志
 const showTask=(st:any,appName:any)=>{

@@ -183,11 +183,11 @@ export default {  //终端
         },
         // socket
         initSocket(loginIp) {
-            let host = window.location.host;
+            let host = 'wss://' + window.location.host+ '/';
             if (process.env.NODE_ENV === 'development') {
                host = import.meta.env.VITE_API_WS
             }
-            let w_s = 'wss://' + host + '/';
+            let w_s = host;
             const token = `${Session.get('token')}`; //terminal/ws/sshByLogin
             const ssh = this.sshByLogin?'sshByLogin':'ssh'
             const socketUrl = `${w_s}terminal/ws/${ssh}?Authorization=${token}`;

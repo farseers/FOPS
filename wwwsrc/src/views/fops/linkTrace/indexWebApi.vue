@@ -1,22 +1,27 @@
 <template>
-	<div class="system-user-container layout-padding">
-		<el-card shadow="hover" class="layout-padding-auto">
-			<div class="system-user-search mb15">
+  <div class="system-user-container layout-padding">
+    <el-card shadow="hover" class="layout-padding-auto">
+      <div class="system-user-search mb15">
         <label>TraceId</label>
-        <el-input class="ml5" size="default" v-model="state.traceId" placeholder="链路ID" clearable style="max-width: 165px;"> </el-input>
+        <el-input class="ml5" size="default" v-model="state.traceId" placeholder="链路ID" clearable
+          style="max-width: 165px;"> </el-input>
         <label class="ml5">应用</label>
         <el-select class="ml5" style="max-width: 110px;" size="small" v-model="state.appName">
           <el-option label="全部" value=""></el-option>
-          <el-option v-for="item in state.appData" :label="item.AppName" :value="item.AppName" ></el-option>
+          <el-option v-for="item in state.appData" :label="item.AppName" :value="item.AppName"></el-option>
         </el-select>
         <label class="ml10">执行端IP</label>
-        <el-input class="ml5" size="default" v-model="state.appIp" placeholder="执行端IP" clearable style="max-width: 130px;"> </el-input>
+        <el-input class="ml5" size="default" v-model="state.appIp" placeholder="执行端IP" clearable
+          style="max-width: 130px;"> </el-input>
         <label class="ml10">请求IP</label>
-        <el-input class="ml5" size="default" v-model="state.requestIp" placeholder="请求IP" clearable style="max-width: 130px;"> </el-input>
+        <el-input class="ml5" size="default" v-model="state.requestIp" placeholder="请求IP" clearable
+          style="max-width: 130px;"> </el-input>
         <label class="ml10">请求Url</label>
-        <el-input class="ml5" size="default" v-model="state.searchUrl" placeholder="请求Url" clearable style="max-width: 300px;"> </el-input>
+        <el-input class="ml5" size="default" v-model="state.searchUrl" placeholder="请求Url" clearable
+          style="max-width: 300px;"> </el-input>
         <label class="ml10">状态码</label>
-        <el-input class="ml5" size="default" v-model="state.statusCode" placeholder="状态码" clearable style="max-width: 60px;"> </el-input>
+        <el-input class="ml5" size="default" v-model="state.statusCode" placeholder="状态码" clearable
+          style="max-width: 60px;"> </el-input>
         <label class="ml10">耗时</label>
         <el-select class="ml5" v-model="state.startMin" placeholder="往前推N分钟的数据" style="max-width: 90px;" size="default">
           <el-option label="全部" :value="0"></el-option>
@@ -27,118 +32,113 @@
           <el-option label="1分钟" :value="1"></el-option>
         </el-select>
         <label class="ml10">执行时间</label>
-        <el-input class="ml5" size="default" v-model="state.searchUseTs" placeholder="执行时间大于毫秒的记录" clearable style="max-width: 80px;"> </el-input> ms
-        <el-checkbox v-model="state.onlyViewException" label="仅看异常" size="small" class="ml5" style="color:#ff5000;"/>
-				<el-button size="default" type="primary" class="ml5" @click="onQuery">
-					<el-icon>
-						<ele-Search />
-					</el-icon>
-					查询
-				</el-button>
+        <el-input class="ml5" size="default" v-model="state.searchUseTs" placeholder="执行时间大于毫秒的记录" clearable
+          style="max-width: 80px;"> </el-input> ms
+        <el-checkbox v-model="state.onlyViewException" label="仅看异常" size="small" class="ml5" style="color:#ff5000;" />
+        <el-button size="default" type="primary" class="ml5" @click="onQuery">
+          <el-icon>
+            <ele-Search />
+          </el-icon>
+          查询
+        </el-button>
         <el-button size="default" type="warning" class="ml5" @click="linkTraceDelete">
-					<el-icon><ele-Delete /></el-icon>
-					清除
-				</el-button>
-			</div>
-			<el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
-        <el-table-column width="180px" label="TraceID" show-overflow-tooltip>
-          <template #default="scope">
-            <span @click="onDetail(scope.row)">{{scope.row.tid}}</span>
-          </template>
-        </el-table-column>
+          <el-icon><ele-Delete /></el-icon>
+          清除
+        </el-button>
+      </div>
+      <el-table :data="state.tableData.data" v-loading="state.tableData.loading" style="width: 100%">
+        <el-table-column width="180px" prop="TraceId" label="TraceId" show-overflow-tooltip></el-table-column>
         <el-table-column width="200px" label="应用" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small">{{scope.row.an}} {{scope.row.aip}}</el-tag><br>
-            {{scope.row.aid}}
+            <el-tag size="small">{{ scope.row.AppName }} {{ scope.row.AppId }}</el-tag><br>
+            {{ scope.row.AppId }}
           </template>
         </el-table-column>
         <el-table-column width="120px" prop="UseDesc" label="执行耗时" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small" v-if="scope.row.ut > 100000000" type="danger">{{scope.row.ud}}</el-tag>
-            <el-tag size="small" v-else-if="scope.row.ut > 50000000" type="warning">{{scope.row.ud}}</el-tag>
-            <el-tag size="small" v-else-if="scope.row.ut > 1000000">{{scope.row.ud}}</el-tag>
-            <el-tag size="small" v-else type="success">{{scope.row.ud}}</el-tag>
+            <el-tag size="small" v-if="scope.row.UseTs > 100000000" type="danger">{{ scope.row.UseDesc }}</el-tag>
+            <el-tag size="small" v-else-if="scope.row.UseTs > 50000000" type="warning">{{ scope.row.UseDesc }}</el-tag>
+            <el-tag size="small" v-else-if="scope.row.UseTs > 1000000">{{ scope.row.UseDesc }}</el-tag>
+            <el-tag size="small" v-else type="success">{{ scope.row.UseDesc }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="请求内容" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag v-if="scope.row.wsc == 200 || scope.row.wsc == 301 || scope.row.wsc == 302 || scope.row.wsc == 303"  size="small">{{scope.row.wsc}}</el-tag> 
-            <el-tag v-else size="small" type="danger">{{scope.row.wsc}}</el-tag> 
-            {{scope.row.wip}} 
-            <el-tag type="success" size="small">{{scope.row.wm}}</el-tag>
-            <el-tag v-if="scope.row.wct!=''" type="info" size="small">{{scope.row.wct}}</el-tag>
-            <br />{{scope.row.wp}}
+            <el-tag
+              v-if="scope.row.WebStatusCode == 200 || scope.row.WebStatusCode == 301 || scope.row.WebStatusCode == 302 || scope.row.WebStatusCode == 303"
+              size="small">{{ scope.row.WebStatusCode }}</el-tag>
+            <el-tag v-else size="small" type="danger">{{ scope.row.WebStatusCode }}</el-tag>
+            {{ scope.row.WebRequestIp }}
+            <el-tag type="success" size="small">{{ scope.row.WebMethod }}</el-tag>
+            <el-tag v-if="scope.row.WebContentType != ''" type="info" size="small">{{ scope.row.WebContentType
+            }}</el-tag>
+            <br />{{ scope.row.WebPath }}
           </template>
         </el-table-column>
         <el-table-column width="200px" label="异常" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small" v-if="scope.row.e!=null" type="danger">{{scope.row.e.ExceptionDetails[0].ExceptionCallFile}}:{{scope.row.e.ExceptionDetails[0].ExceptionCallLine}} {{scope.row.e.ExceptionDetails[0].ExceptionCallFuncName}}</el-tag><br  v-if="scope.row.e!=null">
-            <el-tag size="small" v-if="scope.row.e!=null" type="danger">{{scope.row.e.ExceptionMessage}}</el-tag>
+            <el-tag size="small" v-if="scope.row.Exception != null" type="danger">{{
+              scope.row.Exception.ExceptionDetails[0].ExceptionCallFile }}:{{
+                scope.row.Exception.ExceptionDetails[0].ExceptionCallLine }}
+              {{ scope.row.Exception.ExceptionDetails[0].ExceptionCallFuncName }}</el-tag><br
+              v-if="scope.row.Exception != null">
+            <el-tag size="small" v-if="scope.row.Exception != null" type="danger">{{
+              scope.row.Exception.ExceptionMessage }}</el-tag>
             <el-tag size="small" v-else type="info">无</el-tag>
           </template>
         </el-table-column>
-        <el-table-column width="100px" prop="tc" label="追踪数量" show-overflow-tooltip></el-table-column>
-        <el-table-column width="180px" prop="ca" label="请求时间" show-overflow-tooltip></el-table-column>
-				<el-table-column label="操作" width="100">
-					<template #default="scope">
-						<el-button size="small" text type="primary" @click="onDetail(scope.row)">追踪</el-button>
-					</template>
-				</el-table-column>
-			</el-table>
-			<el-pagination
-				@size-change="onHandleSizeChange"
-				@current-change="onHandleCurrentChange"
-				class="mt15"
-				:pager-count="5"
-				:page-sizes="[10, 20, 30]"
-				v-model:current-page="state.tableData.param.pageNum"
-				background
-				v-model:page-size="state.tableData.param.pageSize"
-				layout="total, sizes, prev, pager, next, jumper"
-				:total="state.tableData.total"
-			>
-			</el-pagination>
-		</el-card>
-    <detailDialog ref="detailDialogRef" @refresh="getTableData()" />
-
-	</div>
+        <el-table-column label="操作" width="180px">
+          <template #default="scope">
+            <el-button size="small" text type="primary" @click="onShowTraceDetailDialog(scope.row)">
+              <el-tag size="small" type="">{{ scope.row.TraceCount }}</el-tag>条链路</el-button>
+            <div>{{ scope.row.CreateAt }}</div>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination @size-change="onHandleSizeChange" @current-change="onHandleCurrentChange" class="mt15"
+        :pager-count="5" :page-sizes="[10, 20, 30]" v-model:current-page="state.tableData.param.pageNum" background
+        v-model:page-size="state.tableData.param.pageSize" layout="total, sizes, prev, pager, next, jumper"
+        :total="state.tableData.total">
+      </el-pagination>
+    </el-card>
+    <traceDetailDialog ref="traceDetailDialogRef" @refresh="getTableData()" />
+  </div>
 </template>
 
 <script setup lang="ts" name="fopsTaskRunning">
-import {defineAsyncComponent, reactive, onMounted, ref, watch} from 'vue';
+import { defineAsyncComponent, reactive, onMounted, ref, watch } from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
-import {fopsApi} from "/@/api/fops";
-import {friendlyJSONstringify} from "@intlify/shared";
+import { fopsApi } from "/@/api/fops";
+import { friendlyJSONstringify } from "@intlify/shared";
 
 // 引入 api 请求接口
 const serverApi = fopsApi();
 // 引入组件
-const detailDialog = defineAsyncComponent(() => import('/src/views/fops/linkTrace/detailV2Dialog.vue'));
-
+const traceDetailDialog = defineAsyncComponent(() => import('/src/views/fops/linkTrace/traceDetailDialog.vue'));
 // 定义变量内容
-const detailDialogRef = ref();
+const traceDetailDialogRef = ref();
 
 const state = reactive({
-  keyWord:'',
-  appName:'',
-  traceId:'',
-  appIp:'',
-  requestIp:'',
-  searchUrl:'',
-  searchUseTs:0,
-  statusCode:0,
-  startMin:0,
-  onlyViewException:false,
-	tableData: {
-		data: [],
-		total: 0,
-		loading: false,
-		param: {
-			pageNum: 1,
-			pageSize: 20,
-		},
-	},
-  appData:[],
+  keyWord: '',
+  appName: '',
+  traceId: '',
+  appIp: '',
+  requestIp: '',
+  searchUrl: '',
+  searchUseTs: 0,
+  statusCode: 0,
+  startMin: 0,
+  onlyViewException: false,
+  tableData: {
+    data: [],
+    total: 0,
+    loading: false,
+    param: {
+      pageNum: 1,
+      pageSize: 20,
+    },
+  },
+  appData: [],
 });
 
 // 监听 state.startMin 的变化
@@ -152,77 +152,79 @@ watch(() => state.appName, (newValue, oldValue) => {
 
 // 初始化表格数据
 const getTableData = () => {
-	state.tableData.loading = true;
+  state.tableData.loading = true;
 
-  var data={
-    appName:state.appName,
-    traceId:state.traceId,
-    appIp:state.appIp,
-    requestIp:state.requestIp,
-    searchUrl:state.searchUrl,
-    startMin:state.startMin.toString(),
-    searchUseTs:state.searchUseTs.toString(),
-    statusCode:state.statusCode.toString(),
-    onlyViewException:state.onlyViewException,
-    pageSize:state.tableData.param.pageSize.toString(),
-    pageIndex:state.tableData.param.pageNum.toString(),
+  var data = {
+    appName: state.appName,
+    traceId: state.traceId,
+    appIp: state.appIp,
+    requestIp: state.requestIp,
+    searchUrl: state.searchUrl,
+    startMin: state.startMin.toString(),
+    searchUseTs: state.searchUseTs.toString(),
+    statusCode: state.statusCode.toString(),
+    onlyViewException: state.onlyViewException,
+    pageSize: state.tableData.param.pageSize.toString(),
+    pageIndex: state.tableData.param.pageNum.toString(),
   }
+
   const params = new URLSearchParams(data).toString();
   // 请求接口
-  serverApi.linkTraceWebApi(params).then(function (res){
-    if (res.Status){
+  serverApi.linkTraceWebApi(params).then(function (res) {
+    if (res.Status) {
       state.tableData.data = res.Data.List;
       state.tableData.total = res.Data.RecordCount;
       state.tableData.loading = false;
-    }else{
-      state.tableData.data=[]
+    } else {
+      state.tableData.data = []
       state.tableData.loading = false;
     }
   })
 
 };
-const onDetail=(row: any)=>{
-  detailDialogRef.value.openDialog(row);
+const onShowTraceDetailDialog = (row: any) => {
+  traceDetailDialogRef.value.openDialog(row);
 }
-const getAppData=()=>{
-  serverApi.dropDownList({}).then(function (res){
-    if (res.Status){
-      state.appData=res.Data
-    }else{
-      state.appData=[]
+
+const getAppData = () => {
+  serverApi.dropDownList({}).then(function (res) {
+    if (res.Status) {
+      state.appData = res.Data
+    } else {
+      state.appData = []
     }
   })
 }
 // 分页改变
 const onHandleSizeChange = (val: number) => {
-	state.tableData.param.pageSize = val;
-	getTableData();
+  state.tableData.param.pageSize = val;
+  getTableData();
 };
 // 分页改变
 const onHandleCurrentChange = (val: number) => {
-	state.tableData.param.pageNum = val;
-	getTableData();
+  state.tableData.param.pageNum = val;
+  getTableData();
 };
-const linkTraceDelete = ()=>{
+const linkTraceDelete = () => {
   ElMessageBox.confirm(`删除七天前的数据，是否继续?`, '提示', {
-		confirmButtonText: '确认',
-		cancelButtonText: '取消',
-		type: 'warning',
-	})
-		.then(() => {
-			serverApi.linkTraceDelete({traceType:0}).then((res)=>{
-				if(res.Status){
-					onQuery();
-					ElMessage.success('删除成功');
-				}else{
-				ElMessage.error(res.StatusMessage);
-			}
-			})
-			
-		})
-		.catch(() => {});
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(() => {
+      serverApi.linkTraceDelete({ traceType: 0 }).then((res) => {
+        if (res.Status) {
+          onQuery();
+          ElMessage.success('删除成功');
+        } else {
+          ElMessage.error(res.StatusMessage);
+        }
+      })
+
+    })
+    .catch(() => { });
 }
-const onQuery=()=>{
+const onQuery = () => {
   state.tableData.param.pageNum = 1;
   getTableData();
 }
@@ -234,14 +236,15 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .system-user-container {
-	:deep(.el-card__body) {
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-		overflow: auto;
-		.el-table {
-			flex: 1;
-		}
-	}
+  :deep(.el-card__body) {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    overflow: auto;
+
+    .el-table {
+      flex: 1;
+    }
+  }
 }
 </style>

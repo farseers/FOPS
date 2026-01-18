@@ -8,13 +8,12 @@ import (
 
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/exception"
-	"github.com/farseer-go/fs/trace"
 )
 
 // WebApiList WebApi链路追踪列表
 // @get webApiList
 // @filter application.Jwt
-func WebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode int, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceContext] {
+func WebApiList(traceId, appName, appIp, requestIp, searchUrl string, statusCode int, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[any] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -41,7 +40,7 @@ func Delete(traceType int, linkTraceRepository linkTrace.Repository) {
 // WebSocketList WebSocket链路追踪列表
 // @get webSocketList
 // @filter application.Jwt
-func WebSocketList(traceId, appName, appIp, requestIp, searchUrl string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceContext] {
+func WebSocketList(traceId, appName, appIp, requestIp, searchUrl string, searchUseTs int64, onlyViewException bool, startMin, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[any] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -60,7 +59,7 @@ func WebSocketList(traceId, appName, appIp, requestIp, searchUrl string, searchU
 // TaskList Task链路追踪列表
 // @get taskList
 // @filter application.Jwt
-func TaskList(traceId, appName, appIp, taskName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceContext] {
+func TaskList(traceId, appName, appIp, taskName string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[any] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -78,7 +77,7 @@ func TaskList(traceId, appName, appIp, taskName string, searchUseTs int64, onlyV
 // FScheduleList FSchedule链路追踪列表
 // @get fScheduleList
 // @filter application.Jwt
-func FScheduleList(traceId, appName, appIp, taskName string, taskGroupId, taskId, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceContext] {
+func FScheduleList(traceId, appName, appIp, taskName string, taskGroupId, taskId, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[any] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -96,7 +95,7 @@ func FScheduleList(traceId, appName, appIp, taskName string, taskGroupId, taskId
 // ConsumerList Consumer链路追踪列表
 // @get consumerList
 // @filter application.Jwt
-func ConsumerList(traceId, appName, appIp, server, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceContext] {
+func ConsumerList(traceId, appName, appIp, server, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[any] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -116,7 +115,7 @@ func ConsumerList(traceId, appName, appIp, server, queueName, routingKey string,
 // QueueList Queue链路追踪列表
 // @get queueList
 // @filter application.Jwt
-func QueueList(traceId, appName, appIp, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceContext] {
+func QueueList(traceId, appName, appIp, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[any] {
 	if pageSize < 1 {
 		pageSize = 20
 	}
@@ -135,7 +134,7 @@ func QueueList(traceId, appName, appIp, queueName, routingKey string, searchUseT
 // EventList Event链路追踪列表
 // @get eventList
 // @filter application.Jwt
-func EventList(traceId, appName, appIp, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[trace.TraceContext] {
+func EventList(traceId, appName, appIp, queueName, routingKey string, searchUseTs int64, onlyViewException bool, startMin int, pageSize, pageIndex int, linkTraceRepository linkTrace.Repository) collections.PageList[any] {
 	if pageSize < 1 {
 		pageSize = 20
 	}

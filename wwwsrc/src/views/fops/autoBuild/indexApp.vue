@@ -151,6 +151,7 @@ const scrollableBuildLog = ref();
 const state = reactive({
   isShowBuildLogDialog: false,
   buildLogContent: '',
+  buildLogLines: 0, // 当前日志行数，用于增量获取
 	tableData: {
 		data: [],
 		total: 0,
@@ -316,10 +317,13 @@ watch(() => state.isShowBuildLogDialog, (newValue, oldValue) => {
 // 显示构建日志
 const showBuildLog=(row:any)=>{
   state.buildLogId = row.Id
+  state.buildLogLines = 0 // 重置行数，首次获取全量
   serverApi.buildLog(state.buildLogId.toString()).then(function (res){
     state.buildLogContent = res
+    // 计算行数（用于后续增量获取）
+    state.buildLogLines = res.split('\n').length
     state.isShowBuildLogDialog= true;
-    setTimeout(() => {   //自动跳到底部 
+    setTimeout(() => {   //自动跳到底部
         scrollableBuildLog.value.scrollTop = scrollableBuildLog.value.scrollHeight;
         }, 500)
     if(row.Status == 2){
@@ -329,27 +333,36 @@ const showBuildLog=(row:any)=>{
       clearInterval(intervalId);
       intervalId = setInterval(onShowLog, 500);
     }
-   
-    
+
+
   })
 }
 
 
 const onShowLog=()=>{
-  serverApi.buildLog(state.buildLogId.toString()).then(function (res) {
-    // 如果从接口获取到的内容与本地内容一样时，则不用滚动
-   if(state.buildLogContent != res){
-    state.buildLogContent = res;
-    // 自动刷新日志
-    // console.log(state.autoLog)
-    if (state.autoLog ) {
-      setTimeout(() => {   //自动跳到底部 
-        scrollableBuildLog.value.scrollTop = scrollableBuildLog.value.scrollHeight;
+  // 使用增量日志 API
+  serverApi.buildLogIncremental(state.buildLogId.toString(), state.buildLogLines).then(function (response) {
+    const res = response.data || response
+    // 如果有新增日志内容
+    if(res && res.length > 0){
+      // 追加日志内容 - 前端负责拼接换行符
+      if(state.buildLogContent) {
+        state.buildLogContent += '\n' + res
+      } else {
+        state.buildLogContent = res
+      }
+      // 更新行数（后端返回已去掉末尾换行符）
+      const lines = res.split('\n')
+      state.buildLogLines += lines.length
+
+      // 自动刷新日志，滚动到底部
+      if (state.autoLog ) {
+        setTimeout(() => {
+          scrollableBuildLog.value.scrollTop = scrollableBuildLog.value.scrollHeight;
         }, 500)
-       
-    }
+      }
    }
-    
+
   })
 }
 

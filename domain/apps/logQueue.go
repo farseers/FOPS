@@ -52,6 +52,20 @@ func (receiver *LogQueue) View() []string {
 	return []string{}
 }
 
+// ViewFromLine 从指定行开始查看日志（增量读取）
+// fromLine: 起始行号（0表示第一行），返回从该行开始的所有日志
+func (receiver *LogQueue) ViewFromLine(fromLine int) []string {
+	path := SavePath + parse.ToString(receiver.BuildId) + ".txt"
+	if file.IsExists(path) {
+		allLines := file.ReadAllLines(path)
+		if fromLine >= len(allLines) {
+			return []string{}
+		}
+		return allLines[fromLine:]
+	}
+	return []string{}
+}
+
 // GenerateFilename 生成文件名
 func (receiver *LogQueue) GenerateFilename() string {
 	logfile := SavePath + parse.ToString(receiver.BuildId) + ".txt"

@@ -6,16 +6,24 @@
         <el-input class="ml5" size="default" v-model="state.traceId" placeholder="链路ID" clearable
           style="max-width: 165px;"> </el-input>
         <label class="ml5">应用</label>
-        <el-select class="ml5" style="max-width: 110px;" size="small" v-model="state.appName">
+        <el-select class="ml5" style="max-width: 110px;" size="default" v-model="state.appName">
           <el-option label="全部" value=""></el-option>
           <el-option v-for="item in state.appData" :label="item.AppName" :value="item.AppName"></el-option>
         </el-select>
-        <label class="ml10">执行端IP</label>
-        <el-input class="ml5" size="default" v-model="state.appIp" placeholder="执行端IP" clearable
-          style="max-width: 130px;"> </el-input>
-        <label class="ml10">队列名称</label>
-        <el-input class="ml5" size="default" v-model="state.queueName" placeholder="队列名称" clearable
-          style="max-width: 180px;"> </el-input>
+        <label class="ml10">方法</label>
+        <el-select class="ml5" v-model="state.method" placeholder="请求方法" style="max-width: 90px;" size="default">
+          <el-option label="全部" value=""></el-option>
+          <el-option label="GET" value="GET"></el-option>
+          <el-option label="POST" value="POST"></el-option>
+          <el-option label="PUT" value="PUT"></el-option>
+          <el-option label="DELETE" value="DELETE"></el-option>
+        </el-select>
+        <label class="ml10">请求地址</label>
+        <el-input class="ml5" size="default" v-model="state.url" placeholder="请求地址" clearable style="max-width: 200px;">
+        </el-input>
+        <label class="ml10">报文</label>
+        <el-input class="ml5" size="default" v-model="state.body" placeholder="请求报文" clearable
+          style="max-width: 200px;"> </el-input>
         <label class="ml10">耗时</label>
         <el-select class="ml5" v-model="state.startMin" placeholder="往前推N分钟的数据" style="max-width: 90px;" size="default">
           <el-option label="全部" :value="0"></el-option>
@@ -26,7 +34,7 @@
           <el-option label="1分钟" :value="1"></el-option>
         </el-select>
         <label class="ml10">执行时间</label>
-        <el-input class="ml5" size="default" v-model="state.searchUseTs" placeholder="执行时间大于毫秒的记录" clearable
+        <el-input class="ml5" size="default" v-model="state.searchUseTs" placeholder="执行时间大于毫秒的记录"
           style="max-width: 80px;"> </el-input> ms
         <el-checkbox v-model="state.onlyViewException" label="仅看异常" size="small" class="ml5" style="color:#ff5000;" />
         <el-button size="default" type="primary" class="ml10" @click="onQuery">
@@ -35,7 +43,7 @@
           </el-icon>
           查询
         </el-button>
-        <el-button size="default" type="warning" class="ml5" @click="linkTraceDelete">
+        <el-button size="default" type="warning" class="ml5" @click="linkTraceDeleteSlow">
           <el-icon><ele-Delete /></el-icon>
           清除
         </el-button>
@@ -44,7 +52,7 @@
         <el-table-column width="180px" prop="TraceId" label="TraceId" show-overflow-tooltip></el-table-column>
         <el-table-column width="200px" label="应用" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small">{{ scope.row.AppName }} {{ scope.row.AppId }}</el-tag><br>
+            <el-tag size="small">{{ scope.row.AppName }} {{ scope.row.AppIp }}</el-tag><br>
             {{ scope.row.AppId }}
           </template>
         </el-table-column>
@@ -56,27 +64,32 @@
             <el-tag size="small" v-else type="success">{{ scope.row.UseDesc }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="队列名称" show-overflow-tooltip>
+        <el-table-column label="请求内容" show-overflow-tooltip>
           <template #default="scope">
-            {{ scope.row.ConsumerQueueName }}
+            <el-tag
+              v-if="scope.row.HttpStatusCode == 200 || scope.row.HttpStatusCode == 301 || scope.row.HttpStatusCode == 302 || scope.row.HttpStatusCode == 303"
+              size="small">{{ scope.row.HttpStatusCode }}</el-tag>
+            <el-tag v-else size="small" type="danger">{{ scope.row.HttpStatusCode }}</el-tag>
+
+            <el-tag type="success" size="small">{{ scope.row.HttpMethod }}</el-tag>
+            <br />{{ scope.row.HttpUrl }}
           </template>
         </el-table-column>
         <el-table-column width="200px" label="异常" show-overflow-tooltip>
           <template #default="scope">
-            <el-tag size="small" v-if="scope.row.Exception != null"
-              type="danger">{{ scope.row.Exception.ExceptionDetails[0].ExceptionCallFile }}:{{ scope.row.Exception.ExceptionDetails[0].ExceptionCallLine }}
-              {{ scope.row.Exception.ExceptionDetails[0].ExceptionCallFuncName }}</el-tag><br
-              v-if="scope.row.Exception != null">
-            <el-tag size="small" v-if="scope.row.Exception != null"
-              type="danger">{{ scope.row.Exception.ExceptionMessage }}</el-tag>
+            <el-tag size="small" v-if="scope.row.Exception != null" type="danger">{{
+              scope.row.Exception.ExceptionCallFile }}:{{ scope.row.Exception.ExceptionCallLine }}
+              {{ scope.row.Exception.ExceptionCallFuncName }}</el-tag><br v-if="scope.row.Exception != null">
+            <el-tag size="small" v-if="scope.row.Exception != null" type="danger">{{
+              scope.row.Exception.ExceptionMessage }}</el-tag>
             <el-tag size="small" v-else type="info">无</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180px">
+        <el-table-column width="180px" prop="CreateAt" label="执行时间" show-overflow-tooltip></el-table-column>
+        <el-table-column label="操作" width="100">
           <template #default="scope">
-            <el-button size="small" text type="primary" @click="onShowTraceDetailDialog(scope.row)">
-              <el-tag size="small" type="">{{ scope.row.TraceCount }}</el-tag>条链路</el-button>
-            <div>{{ scope.row.CreateAt }}</div>
+            <el-button size="small" text type="primary" @click="onShowHeadDialog(scope.row)">查看报文</el-button>
+            <el-button size="small" text type="primary" @click="onShowTraceDetailDialog(scope.row)">追踪</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -87,6 +100,7 @@
       </el-pagination>
     </el-card>
     <traceDetailDialog ref="traceDetailDialogRef" @refresh="getTableData()" />
+    <showHttpHeadDialog ref="showHttpHeadDialogRef" @refresh="getTableData()" />
   </div>
 </template>
 
@@ -100,18 +114,21 @@ import { friendlyJSONstringify } from "@intlify/shared";
 const serverApi = fopsApi();
 // 引入组件
 const traceDetailDialog = defineAsyncComponent(() => import('/src/views/fops/linkTrace/traceDetailDialog.vue'));
+const showHttpHeadDialog = defineAsyncComponent(() => import('/src/views/fops/linkTrace/httpHeadDialog.vue'));
 
 
 // 定义变量内容
 const traceDetailDialogRef = ref();
+// 报文窗口
+const showHttpHeadDialogRef = ref();
 const state = reactive({
-  keyWord: '',
   appName: '',
   traceId: '',
-  appIp: '',
-  queueName: '',
-  searchUseTs: 0,
+  method: '',
+  url: '',
+  body: '',
   startMin: 0,
+  searchUseTs: 0,
   onlyViewException: false,
   tableData: {
     data: [],
@@ -128,6 +145,10 @@ watch(() => state.startMin, (newValue, oldValue) => {
   console.log(`count 从 ${oldValue} 变为 ${newValue}`);
   getTableData()
 });
+watch(() => state.method, (newValue, oldValue) => {
+  console.log(`count 从 ${oldValue} 变为 ${newValue}`);
+  getTableData()
+});
 watch(() => state.appName, (newValue, oldValue) => {
   console.log(`count 从 ${oldValue} 变为 ${newValue}`);
   getTableData()
@@ -139,8 +160,10 @@ const getTableData = () => {
   var data = {
     traceId: state.traceId,
     appName: state.appName,
-    appIp: state.appIp,
-    queueName: state.queueName,
+    appIp: '',
+    method: state.method,
+    url: state.url,
+    body: state.body,
     startMin: state.startMin.toString(),
     searchUseTs: state.searchUseTs.toString(),
     onlyViewException: state.onlyViewException,
@@ -149,7 +172,7 @@ const getTableData = () => {
   }
   const params = new URLSearchParams(data).toString();
   // 请求接口
-  serverApi.linkTraceQueueList(params).then(function (res) {
+  serverApi.slowHttp(params).then(function (res) {
     if (res.Status) {
       state.tableData.data = res.Data.List;
       state.tableData.total = res.Data.RecordCount;
@@ -158,12 +181,17 @@ const getTableData = () => {
       state.tableData.data = []
       state.tableData.loading = false;
     }
-
   })
-
 };
+
 const onShowTraceDetailDialog = (row: any) => {
+  row.tid = row.TraceId;
   traceDetailDialogRef.value.openDialog(row);
+}
+// 报文窗口
+const onShowHeadDialog = (row: any) => {
+  row.tid = row.TraceId;
+  showHttpHeadDialogRef.value.openDialog(1, row);
 }
 const getAppData = () => {
   serverApi.dropDownList({}).then(function (res) {
@@ -174,6 +202,26 @@ const getAppData = () => {
     }
   })
 }
+// 删除用户
+const onDel = (row: any) => {
+  ElMessageBox.confirm(`此操作将永久删除：“${row.Name}”，是否继续?`, '提示', {
+    confirmButtonText: '确认',
+    cancelButtonText: '取消',
+    type: 'warning',
+  })
+    .then(() => {
+      // 删除逻辑
+      serverApi.taskDel({ "TaskGroupId": row.Id }).then(function (res) {
+        if (res.Status) {
+          getTableData();
+          ElMessage.success('删除成功');
+        } else {
+          ElMessage.error(res.StatusMessage)
+        }
+      })
+    })
+    .catch(() => { });
+};
 // 分页改变
 const onHandleSizeChange = (val: number) => {
   state.tableData.param.pageSize = val;
@@ -184,14 +232,14 @@ const onHandleCurrentChange = (val: number) => {
   state.tableData.param.pageNum = val;
   getTableData();
 };
-const linkTraceDelete = () => {
+const linkTraceDeleteSlow = () => {
   ElMessageBox.confirm(`删除七天前的数据，是否继续?`, '提示', {
     confirmButtonText: '确认',
     cancelButtonText: '取消',
     type: 'warning',
   })
     .then(() => {
-      serverApi.linkTraceDelete({ traceType: 2 }).then((res) => {
+      serverApi.linkTraceDeleteSlow({ dbName: 'Http' }).then((res) => {
         if (res.Status) {
           onQuery();
           ElMessage.success('删除成功');
@@ -210,7 +258,6 @@ const onQuery = () => {
 // 页面加载时
 onMounted(() => {
   getAppData();
-  //getTableData();
 });
 </script>
 

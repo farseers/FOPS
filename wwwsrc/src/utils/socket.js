@@ -19,14 +19,12 @@ class WebSocketService {
     if(!token){
       return
     }
-    let host = window.location.host;
+    let host = 'wss://' + window.location.host+ '/';
     if (process.env.NODE_ENV === 'development') {
        host = import.meta.env.VITE_API_WS
-       
     }
-    // let host = 'fops.fsgit.cc'
-    const w_s = 'wss://' + host;
-    const ws = `${w_s}/${this.url}?Authorization=${token}`
+    const w_s = host;
+    const ws = `${w_s}${this.url}?Authorization=${token}`
     this.socket = new WebSocket(ws);
     if(this.socket){
       this.socket.onopen = () => {

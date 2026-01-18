@@ -22,12 +22,20 @@ type gitDevice struct {
 func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch string, gitRemote string, progress chan string) bool {
 	if !file.IsExists(gitPath) {
 		file.CreateDir766(gitPath)
-		exec.RunShell("git init", progress, nil, gitPath, true)
-		exec.RunShell(fmt.Sprintf("git remote add -f origin %s", gitRemote), progress, nil, gitPath, true)
-		exec.RunShell("git config core.sparsecheckout true", progress, nil, gitPath, true)
-		exec.RunShell("echo .fops/workflows/ >> .git/info/sparse-checkout", progress, nil, gitPath, true)
+		lstResult, wait := exec.RunShell("git init", nil, gitPath, true)
+		exec.SaveToChan(progress, lstResult, wait)
+
+		lstResult, wait = exec.RunShell(fmt.Sprintf("git remote add -f origin %s", gitRemote), nil, gitPath, true)
+		exec.SaveToChan(progress, lstResult, wait)
+
+		lstResult, wait = exec.RunShell("git config core.sparsecheckout true", nil, gitPath, true)
+		exec.SaveToChan(progress, lstResult, wait)
+
+		lstResult, wait = exec.RunShell("echo .fops/workflows/ >> .git/info/sparse-checkout", nil, gitPath, true)
+		exec.SaveToChan(progress, lstResult, wait)
 	}
-	exec.RunShell("git config --global http.timeout 10", progress, nil, "", true)
+	lstResult, wait := exec.RunShell("git config --global http.timeout 10", nil, "", true)
+	exec.SaveToChan(progress, lstResult, wait)
 
 	var exitCode int
 	for i := 0; i < 3; i++ {
@@ -36,7 +44,8 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 			progress <- "同步工作流文件失败，停止构建"
 			return false
 		default:
-			if exitCode = exec.RunShellContext(ctx, fmt.Sprintf("timeout 10 git pull origin %s", branch), progress, nil, gitPath, true); exitCode == 0 {
+			lstResult, wait := exec.RunShellContext(ctx, fmt.Sprintf("timeout 10 git pull origin %s", branch), nil, gitPath, true)
+			if exitCode = exec.SaveToChan(progress, lstResult, wait); exitCode == 0 {
 				return true
 			}
 			if i == 2 {
@@ -51,13 +60,13 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 
 func (receiver *gitDevice) GetRemoteBranch(ctx context.Context, gitPath string) collections.List[apps.RemoteBranchVO] {
 	lst := collections.NewList[apps.RemoteBranchVO]()
-	progress := make(chan string, 10000)
 	// git ls-remote --heads
 	// git branch -vr
-	if exitCode := exec.RunShellContext(ctx, "git remote update origin --prune && timeout 10 git ls-remote --heads", progress, nil, gitPath, false); exitCode != 0 {
+	lstResult, wait := exec.RunShellContext(ctx, "git remote update origin --prune && timeout 10 git ls-remote --heads", nil, gitPath, false)
+	if wait() != 0 {
 		return lst
 	}
-	lstContent := collections.NewListFromChan(progress)
+	lstContent := collections.NewListFromChan(lstResult)
 	if lstContent.Any() {
 		lstContent.RemoveAt(0)
 	}

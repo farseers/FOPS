@@ -99,10 +99,6 @@ var errorTips = collections.NewList(
 // View 构建日志
 // @get build/view-{buildId}
 func View(buildId int64) action.IResult {
-	//if id != buildId {
-	//	globalStr = []string{}
-	//}
-	//id = buildId
 	logQueue := apps.LogQueue{
 		BuildId: buildId,
 	}
@@ -141,7 +137,55 @@ func View(buildId int64) action.IResult {
 		}
 		logContent[i] = dateTimePart + " " + logPart
 	}
-	return action.Content(strings.Join(logContent, "\n"))
+	// 返回内容时去掉末尾的换行符，由前端负责拼接换行符
+	content := strings.Join(logContent, "\n")
+	return action.Content(strings.TrimSuffix(content, "\n"))
+}
+
+// ViewIncremental 增量获取构建日志（返回从指定行开始的日志）
+// @get build/viewIncremental-{buildId}-{fromLine}
+func ViewIncremental(buildId int64, fromLine int) action.IResult {
+	logQueue := apps.LogQueue{
+		BuildId: buildId,
+	}
+	logContent := logQueue.ViewFromLine(fromLine)
+	for i := 0; i < len(logContent); i++ {
+		if len(logContent[i]) < 20 {
+			continue
+		}
+		dateTimePart := logContent[i][:19] // 提取日期时间部分
+		logPart := logContent[i][20:]      // 提取日志内容部分
+		dateTimePart = fmt.Sprintf("<span style=\"color:#9caf62\">%s</span>", dateTimePart)
+
+		if chineseTips.Contains(logPart) {
+			logPart = fmt.Sprintf("<span style=\"color:#cfbbfc\">%s</span>", logPart)
+		} else if cmdResultTips.ContainsAny(logPart) || strings.HasPrefix(logPart, "The push refers to repository ") || regexp.MustCompile(`\w+\.apps/\w+ image updated`).MatchString(logPart) {
+			logPart = fmt.Sprintf("<span style=\"color:#fff\">%s</span>", logPart)
+		} else if cmdPrefix.ContainsAny(logPart) {
+			logPart = fmt.Sprintf("<span style=\"color:#ffe127\">%s</span>", logPart)
+		} else if errorTips.ContainsAny(strings.ToLower(logPart)) {
+			logPart = fmt.Sprintf("<span style=\"color:#ff5b5b\">%s</span>", logPart)
+		} else {
+			dockerLogMatch := regexp.MustCompile(`#\d+ \[.+ \d+/\d+\] (?P<cmd>.+)`).FindStringSubmatch(logPart)
+			if dockerLogMatch == nil {
+				dockerLogMatch = regexp.MustCompile(`#\d+ \d+\.\d+ (?P<cmd>.+)`).FindStringSubmatch(logPart)
+			}
+			if dockerLogMatch == nil {
+				dockerLogMatch = regexp.MustCompile(`Step \d+/\d+ :(?P<cmd>.+)`).FindStringSubmatch(logPart)
+			}
+			if dockerLogMatch != nil {
+				cmd := dockerLogMatch[1]
+				logPart = strings.Replace(logPart, cmd, fmt.Sprintf("<span style=\"color:#38e4c6\">%s</span>", cmd), 1)
+				logPart = fmt.Sprintf("<span style=\"color:#a6a49a\">%s</span>", logPart)
+			} else {
+				logPart = fmt.Sprintf("<span style=\"color:#a6a49a\">%s</span>", logPart)
+			}
+		}
+		logContent[i] = dateTimePart + " " + logPart
+	}
+	// 返回内容时去掉末尾的换行符，由前端负责拼接换行符
+	content := strings.Join(logContent, "\n")
+	return action.Content(strings.TrimSuffix(content, "\n"))
 }
 
 // Stop 停止构建

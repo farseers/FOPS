@@ -30,7 +30,7 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 		serviceLog := logs.First()
 		// 没有取到日志时
 		if serviceLog.Logs.Count() < 2 {
-			serviceLog.Logs.Clear()
+			serviceLog.Logs = collections.NewList[string]()
 			item.Tasks.Foreach(func(taskInstanceVO *docker.TaskInstanceVO) {
 				serviceLog.Logs.Add(fmt.Sprintf("%s\t%s\t%s\t%s\t%s", taskInstanceVO.TaskId, taskInstanceVO.Image, taskInstanceVO.Node, taskInstanceVO.State, taskInstanceVO.Error))
 			})

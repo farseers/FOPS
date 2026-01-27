@@ -30,7 +30,7 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 
 		// 没有取到日志时
 		if logs.Count() < 2 {
-
+			logs.Clear()
 		}
 		rsp.Add(response.DockerSwarmResponse{
 			ServiceTaskVO: *item,

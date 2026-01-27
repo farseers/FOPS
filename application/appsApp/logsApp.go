@@ -14,39 +14,34 @@ import (
 // @post logs/dockerSwarm
 // @filter application.Jwt
 func DockerSwarm(appName string, tailCount int) collections.List[response.DockerSwarmResponse] {
+	rsp := collections.NewList[response.DockerSwarmResponse]()
+
 	client := docker.NewClient()
 	lst := client.Service.PS(appName)
-	// 移除第一行的服务信息
-	lst.RemoveAt(0)
-	lstRunning := lst.Where(func(item docker.TaskInstanceVO) bool {
-		return item.State != "Shutdown"
-	}).ToList()
-	rsp := collections.NewList[response.DockerSwarmResponse]()
-	// 有运行中的容器，则只需要正常的容器日志
-	if lstRunning.Count() > 0 {
-		lst = lstRunning
-	}
-
-	lst.Foreach(func(item *docker.TaskInstanceVO) {
+	lst.Foreach(func(item *docker.ServiceTaskVO) {
 		// 通过容器id获取日志
-		logs, _ := client.Service.Logs(item.TaskId, tailCount)
-		// 有错误时，则通过docker inspect r6r8uboagmln 获取错误详情
+		logs, _ := client.Service.Logs(item.ServiceTaskId, tailCount)
 		if item.Error != "" {
-			containerInspectJson, _ := client.Container.InspectByServiceId(item.TaskId)
+			containerInspectJson, _ := client.Container.InspectByServiceId(item.ServiceTaskId)
 			if len(containerInspectJson) > 0 {
 				item.Error = containerInspectJson[0].Status.Err
 			}
 		}
-		if item.Error != "" || logs.Count() > 1 {
-			rsp.Add(response.DockerSwarmResponse{
-				TaskInstanceVO: *item,
-				Log:            flog.ClearColor(logs.ToString("\r\n")),
-			})
+
+		// 没有取到日志时
+		if logs.Count() < 2 {
+
 		}
+		rsp.Add(response.DockerSwarmResponse{
+			ServiceTaskVO: *item,
+			Log:           flog.ClearColor(logs.ToString("\r\n")),
+		})
 	})
 
-	// 没有取到日志时，取全部
-	if lstRunning.Count() == 0 {
+	// 所有日志都没有取到时
+	if rsp.All(func(item response.DockerSwarmResponse) bool {
+		return item.Log == ""
+	}) {
 		var image string
 		inspect, _ := client.Service.Inspect(appName)
 		if len(inspect) > 0 {
@@ -64,17 +59,17 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 			containerId := strings.TrimSpace((*item)[:logIndex])
 			content := strings.TrimSpace((*item)[logIndex+1:])
 			if curRsp := rsp.Find(func(item *response.DockerSwarmResponse) bool {
-				return strings.Contains(containerId, item.TaskId)
+				return strings.Contains(containerId, item.ServiceTaskId)
 			}); curRsp == nil {
 				rsp.Add(response.DockerSwarmResponse{
-					TaskInstanceVO: docker.TaskInstanceVO{
-						TaskId:    containerId,
-						Name:      appName,
-						Image:     image,
-						Node:      strings.Split(containerId, "@")[1],
-						State:     "",
-						StateInfo: "",
-						Error:     "",
+					ServiceTaskVO: docker.ServiceTaskVO{
+						ServiceTaskId: containerId,
+						Name:          appName,
+						Image:         image,
+						Node:          strings.Split(containerId, "@")[1],
+						State:         "",
+						StateInfo:     "",
+						Error:         "",
 					},
 					Log: flog.ClearColor(content),
 				})
@@ -83,5 +78,6 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 			}
 		})
 	}
+
 	return rsp
 }

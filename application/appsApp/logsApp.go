@@ -3,7 +3,6 @@ package appsApp
 
 import (
 	"fops/application/appsApp/response"
-	"strings"
 
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
@@ -54,34 +53,26 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 
 		// 这里取到的是服务日志，即所有容器的日志。需要把他们区分开来
 		logs, _ := client.Service.Logs(appName, tailCount*2)
-		logs.Foreach(func(item *string) {
-			logIndex := strings.Index(*item, "|")
-			// 分割不成功，则过滤
-			if logIndex <= 0 {
-				flog.Infof("|分割不成功，则过滤：%s", *item)
-				return
-			}
-			containerId := strings.TrimSpace((*item)[:logIndex])
-			content := strings.TrimSpace((*item)[logIndex+1:])
+		logs.Foreach(func(serviceLogVO *docker.ServiceLogVO) {
 			if curRsp := rsp.Find(func(item *response.DockerSwarmResponse) bool {
-				return strings.Contains(containerId, item.ServiceTaskId)
+				return serviceLogVO.ContainerId == item.ServiceTaskId
 			}); curRsp == nil {
 				rsp.Add(response.DockerSwarmResponse{
 					ServiceTaskVO: docker.ServiceTaskVO{
-						ServiceTaskId: containerId,
+						ServiceTaskId: serviceLogVO.ContainerId,
 						Name:          appName,
 						Image:         image,
-						Node:          strings.Split(containerId, "@")[1],
+						Node:          serviceLogVO.NodeName,
 						State:         "",
 						StateInfo:     "",
 						Error:         "",
 					},
-					Log: flog.ClearColor(content),
+					Log: flog.ClearColor(serviceLogVO.Logs.ToString("\r\n")),
 				})
-				flog.Infof("添加日志：%s,%s", containerId, content)
+				flog.Infof("添加日志：%s,%s", serviceLogVO.ContainerId, serviceLogVO.Logs.ToString("\r\n"))
 			} else {
-				curRsp.Log += flog.ClearColor("\r\n" + content)
-				flog.Infof("追加日志：%s,%s", containerId, content)
+				curRsp.Log += flog.ClearColor("\r\n" + serviceLogVO.Logs.ToString("\r\n"))
+				flog.Infof("追加日志：%s,%s", serviceLogVO.ContainerId, serviceLogVO.Logs.ToString("\r\n"))
 			}
 		})
 	}

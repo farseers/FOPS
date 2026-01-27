@@ -22,9 +22,11 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 		// 通过容器id获取日志
 		logs, _ := client.Service.Logs(item.ServiceTaskId, tailCount)
 		if item.Error != "" {
+			flog.Infof("%s 发现错误日志：%s", item.ServiceTaskId, item.Error)
 			containerInspectJson, _ := client.Container.InspectByServiceId(item.ServiceTaskId)
 			if len(containerInspectJson) > 0 {
 				item.Error = containerInspectJson[0].Status.Err
+				flog.Infof("%s 重新取错误日志：%s", item.ServiceTaskId, item.Error)
 			}
 		}
 
@@ -42,10 +44,12 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 	if rsp.All(func(item response.DockerSwarmResponse) bool {
 		return item.Log == ""
 	}) {
+		flog.Infof("发现没有取到日志")
 		var image string
 		inspect, _ := client.Service.Inspect(appName)
 		if len(inspect) > 0 {
 			image = inspect[0].Spec.TaskTemplate.ContainerSpec.Image
+			flog.Infof("重新获取镜像：%s", image)
 		}
 
 		// 这里取到的是服务日志，即所有容器的日志。需要把他们区分开来
@@ -54,6 +58,7 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 			logIndex := strings.Index(*item, "|")
 			// 分割不成功，则过滤
 			if logIndex <= 0 {
+				flog.Infof("|分割不成功，则过滤：%s", *item)
 				return
 			}
 			containerId := strings.TrimSpace((*item)[:logIndex])
@@ -73,8 +78,10 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 					},
 					Log: flog.ClearColor(content),
 				})
+				flog.Infof("添加日志：%s,%s", containerId, content)
 			} else {
 				curRsp.Log += flog.ClearColor("\r\n" + content)
+				flog.Infof("追加日志：%s,%s", containerId, content)
 			}
 		})
 	}

@@ -66,24 +66,24 @@
       </el-header>
             <h3 style="padding: 5px;">构建队列 </h3>
             <template v-if="state.tableLogData.data.length > 0">
-              <el-table  :data="state.tableLogData.data" v-loading="state.tableLogData.loading" style="width: 100%;background: #ffffff;" :cell-style="{padding:'2px 0'}">
-                <el-table-column prop="FinishAt" width="130" label="构建时间"></el-table-column>
+              <el-table :data="state.tableLogData.data" v-loading="state.tableLogData.loading"
+                style="width: 100%;background: #ffffff;" :cell-style="{padding:'2px 0'}">
                 <el-table-column label="应用名称" show-overflow-tooltip>
                   <template #default="scope">
-                    <el-tag v-if="scope.row.Status==0" size="small" type="info">{{ scope.row.BranchName }}</el-tag>
-                    <el-tag v-else-if="scope.row.Status==1" size="small" type="warning">{{ scope.row.BranchName }}</el-tag>
-                    <el-tag v-else-if="scope.row.Status==2 && scope.row.IsSuccess == true" size="small" type="success">{{ scope.row.BranchName }}</el-tag>
-                    <el-tag v-else-if="scope.row.Status==2 && scope.row.IsSuccess == false" size="small" type="danger">{{ scope.row.BranchName }}</el-tag>
-                    <el-tag v-else-if="scope.row.Status==3" size="small" type="info">{{ scope.row.BranchName }}</el-tag>
-                    <!-- <el-tag v-if="scope.row.BranchName !=''" size="small">{{ scope.row.BranchName }}</el-tag> -->
-
-                    <span style="margin-left: 5px;">{{ scope.row.AppName }}:{{ scope.row.BuildNumber }}</span>
+                    <el-button v-if="scope.row.Status == 0 || scope.row.Status == 1" size="small" type="danger" @click="onStopBuild(scope.row.Id)">停止</el-button>
+                    <el-tag size="small" type="info">{{ scope.row.WorkflowsName }}</el-tag>
+                    <el-tag size="small" type="" :title="scope.row.BuildNumber">{{ scope.row.AppName }}</el-tag>
+                    <el-tag @click="onBranchAgain(scope.row)" v-if="scope.row.Status == 0" size="small" type="info">{{ scope.row.BranchName.length>18? scope.row.BranchName.substring(0,18):scope.row.BranchName }}</el-tag>
+                    <el-tag @click="onBranchAgain(scope.row)" v-else-if="scope.row.Status == 1" size="small" type="warning">{{ scope.row.BranchName.length>18? scope.row.BranchName.substring(0,18):scope.row.BranchName }}</el-tag>
+                    <el-tag @click="onBranchAgain(scope.row)" v-else-if="scope.row.Status == 2 && scope.row.IsSuccess == true" size="small" type="success">{{ scope.row.BranchName.length>18? scope.row.BranchName.substring(0,18):scope.row.BranchName }}</el-tag>
+                    <el-tag @click="onBranchAgain(scope.row)" v-else-if="scope.row.Status == 2 && scope.row.IsSuccess == false" size="small" type="danger">{{ scope.row.BranchName.length>18? scope.row.BranchName.substring(0,18):scope.row.BranchName }}</el-tag>
+                    <el-tag @click="onBranchAgain(scope.row)" v-else-if="scope.row.Status == 3" size="small" type="info">{{ scope.row.BranchName.length>18? scope.row.BranchName.substring(0,18):scope.row.BranchName }}</el-tag>
+                    <br />
                   </template>
                 </el-table-column>
-                <el-table-column label="操作" width="80">
+                <el-table-column prop="FinishAt" width="100" label="构建时间">
                   <template #default="scope">
-                    <el-button v-if="scope.row.Status!=0" size="small" type="success" @click="showBuildLog(scope.row)">日志</el-button>
-                    <el-button v-else size="small" type="danger" @click="onStopBuild(scope.row.Id)">停止</el-button>
+                    <span style="cursor: pointer;" @click="showBuildLog(scope.row)">{{ scope.row.FinishAt }}</span>
                   </template>
                 </el-table-column>
               </el-table>
@@ -166,7 +166,7 @@ const state = reactive({
     loading: false,
     param: {
       pageNum: 1,
-      pageSize: 22,
+      pageSize: 30,
     },
 
   },
@@ -213,7 +213,6 @@ const getTableData = () => {
 };
 
 const getTableLogData = () => {
-  state.tableLogData.loading = true;
   const data = {
     appName:"",//state.appName
     buildType:1,
@@ -228,7 +227,6 @@ const getTableLogData = () => {
     }else{
       state.tableLogData.data=[]
     }
-    state.tableLogData.loading = false;
   })
 };
 const setAutoBuild = (item:any)=>{
@@ -415,6 +413,9 @@ onUnmounted(()=>{
 })
 </script>
 <style lang="scss">
+.el-table .cell {
+  padding: 0 0;
+}
 .buildMain{
   padding: 0;overflow: hidden;
   display: flex;

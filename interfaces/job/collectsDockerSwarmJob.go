@@ -94,22 +94,22 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			return
 		}
 		// 只保留运行中的实例
-		runInstanceList := allInstanceList.Where(func(item docker.TaskInstanceVO) bool {
+		runInstanceList := allInstanceList.Where(func(item docker.ServiceTaskVO) bool {
 			return item.State == "Running" //return item.State != "Shutdown"
 		}).ToList()
 
 		// 清空不存在的实例列表
 		appDO.DockerInspect.RemoveAll(func(dockerInspectVO apps.DockerInspectVO) bool {
-			return !runInstanceList.Where(func(serviceVO docker.TaskInstanceVO) bool {
-				return dockerInspectVO.TaskId == serviceVO.TaskId
+			return !runInstanceList.Where(func(serviceVO docker.ServiceTaskVO) bool {
+				return dockerInspectVO.TaskId == serviceVO.ServiceTaskId
 			}).Any()
 		})
 
 		// 遍历每个实例，得到容器ID、IP
-		runInstanceList.Foreach(func(serviceVO *docker.TaskInstanceVO) {
+		runInstanceList.Foreach(func(serviceVO *docker.ServiceTaskVO) {
 			// 服务已存在于本地实例列表中，则跳过
 			curInstance := appDO.DockerInspect.Find(func(dockerInspectVO *apps.DockerInspectVO) bool {
-				return dockerInspectVO.TaskId == serviceVO.TaskId
+				return dockerInspectVO.TaskId == serviceVO.ServiceTaskId
 			})
 			// 匹配对应的节点
 			node := clusterNode.NodeList.Find(func(node *docker.DockerNodeVO) bool {
@@ -117,22 +117,22 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			})
 			// 实例存在，则只更新资源信息
 			if node != nil && curInstance != nil {
-				curInstance.DockerStatsVO = apps.GetDockerStats(node.IP, serviceVO.TaskId)
+				curInstance.DockerStatsVO = apps.GetDockerStats(node.IP, serviceVO.ServiceTaskId)
 				return
 			}
 
 			// 只有当节点是健康状态才加入到实例列表中。
 			if node != nil && node.IsHealth {
 				// 读取单个实例的详情
-				containerInspectJson, _ := dockerClient.Container.InspectByServiceId(serviceVO.TaskId)
+				containerInspectJson, _ := dockerClient.Container.InspectByServiceId(serviceVO.ServiceTaskId)
 				if len(containerInspectJson) == 0 {
 					return
 				}
 				// 通过代理节点同步到的容器资源信息
 				dockerInspectVO := apps.DockerInspectVO{
 					// containerInspectJson[0].Status.ContainerStatus.ContainerID
-					DockerStatsVO: apps.GetDockerStats(node.IP, serviceVO.TaskId),
-					TaskId:        serviceVO.TaskId,
+					DockerStatsVO: apps.GetDockerStats(node.IP, serviceVO.ServiceTaskId),
+					TaskId:        serviceVO.ServiceTaskId,
 					Node:          serviceVO.Node,
 					NodeIP:        node.IP,
 					CreatedAt:     containerInspectJson[0].CreatedAt.Format(time.DateTime),

@@ -81,7 +81,7 @@
                     <span style="float:left;position:absolute;margin: 0 5px;color:#8c8b8b">{{ index }}</span>
                     <span
                       :style="{ 'margin-left': info.StartRate + '%', 'float': 'left', 'position': 'relative', 'width': '100%', 'cursor': 'pointer' }"
-                      @click="copyText(info.Desc)" :title="info.Desc">
+                      @click="copyText(info.CopyContent)" :title="info.Desc">
                       <div class="el-progress el-progress--line is-exception el-progress--text-inside"
                         role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"
                         :style="{ 'width': info.UseRate + '%' }">
@@ -191,6 +191,7 @@ const state = reactive({
     UseRate: 0,
     Caption: '',
     Desc: '',
+    CopyContent: '',
     UseDesc: '',
     Exception: '',
   }],

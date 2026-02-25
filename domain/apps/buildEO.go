@@ -568,14 +568,23 @@ func (receiver *BuildEO) SetCancel() {
 // WatchStatus 监控当前构建
 func (receiver *BuildEO) WatchStatus() {
 	for {
-		time.Sleep(3 * time.Second)
 		curBuildEO := container.Resolve[Repository]().ToBuildEntity(receiver.Id)
-		if curBuildEO.Status == eumBuildStatus.Cancel {
+		switch curBuildEO.Status {
+		case eumBuildStatus.Cancel:
 			receiver.Status = eumBuildStatus.Cancel
 			if receiver.cancel != nil && !curBuildEO.IsSuccess {
 				receiver.cancel()
 			}
 			return
+		case eumBuildStatus.Finish:
+			return
+		}
+
+		// 休眠3秒后继续监控
+		select {
+		case <-receiver.ctx.Done():
+			return
+		case <-time.After(3 * time.Second):
 		}
 	}
 }

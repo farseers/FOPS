@@ -2,9 +2,10 @@ package device
 
 import (
 	"fops/domain/apps"
+	"strconv"
+
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/utils/str"
-	"strconv"
 )
 
 func RegisterDockerDevice() {
@@ -19,8 +20,7 @@ type dockerDevice struct {
 func (dockerDevice) GetDockerHub(dockerHubAddress string) string {
 	var dockerHub = "localhost"
 	if dockerHubAddress != "" {
-		dockerHub = dockerHubAddress
-		dockerHub = str.CutRight(dockerHub, "/")
+		dockerHub = str.CutRight(dockerHubAddress, "/")
 	}
 	return dockerHub
 }

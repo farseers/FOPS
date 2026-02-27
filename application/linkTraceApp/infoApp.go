@@ -115,20 +115,27 @@ func (receiver *linkTraceWarp) addEntry(po trace.TraceContext) {
 	case eumTraceType.WebApi:
 		entryTrace.Caption = fmt.Sprintf("收到%s请求【%s】 => %s", po.WebRequestIp, po.WebMethod, po.WebPath)
 		entryTrace.Desc = fmt.Sprintf("%s 客户端IP：%s", po.WebContentType, po.WebRequestIp)
+		entryTrace.CopyContent = po.WebPath
 	case eumTraceType.MqConsumer:
 		entryTrace.Caption = fmt.Sprintf("MQ订阅 => %s %s %s", po.ConsumerServer, po.ConsumerQueueName, po.ConsumerRoutingKey)
+		entryTrace.CopyContent = po.ConsumerQueueName
 	case eumTraceType.QueueConsumer:
 		entryTrace.Caption = fmt.Sprintf("本地Queue订阅 => %s", po.ConsumerQueueName)
+		entryTrace.CopyContent = po.ConsumerQueueName
 	case eumTraceType.EventConsumer:
 		entryTrace.Caption = fmt.Sprintf("事件订阅 => %s %s", po.ConsumerServer, po.ConsumerQueueName)
+		entryTrace.CopyContent = po.ConsumerQueueName
 	case eumTraceType.FSchedule:
 		entryTrace.Caption = fmt.Sprintf("任务调度 => 任务组：%s 任务ID：%v", po.TaskGroupName, po.TaskId)
 		dataJson, _ := snc.Marshal(po.TaskData)
 		entryTrace.Desc = fmt.Sprintf("参数 %s", string(dataJson))
+		entryTrace.CopyContent = po.TaskGroupName
 	case eumTraceType.Task:
 		entryTrace.Caption = fmt.Sprintf("本地任务 => %s", po.TaskName)
+		entryTrace.CopyContent = po.TaskName
 	case eumTraceType.WatchKey:
 		entryTrace.Caption = fmt.Sprintf("监控KEY => %s", po.WatchKey)
+		entryTrace.CopyContent = po.WatchKey
 	}
 	receiver.lst.Add(entryTrace)
 	receiver.addDetail(po)
@@ -166,7 +173,8 @@ func (receiver *linkTraceWarp) addDetail(po trace.TraceContext) {
 					detailTrace.Caption = fmt.Sprintf("SQL <span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s</span> => %s.<b>%s</b> 影响%v行", detail.Comment, detail.DbName, detail.DbTableName, detail.DbRowsAffected)
 				}
 			}
-			detailTrace.Desc = detail.DbSql
+			detailTrace.Desc = detail.DbConnectionString
+			detailTrace.CopyContent = detail.DbSql
 		case eumCallType.Http:
 			detailTrace.Caption = fmt.Sprintf("调用http <span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s</span> => %v %s <span style='background-color: #ead996;'>%s</span>", detail.Comment, detail.HttpStatusCode, detail.HttpMethod, detail.HttpUrl)
 			lstHeader := collections.NewList[string]()
@@ -174,6 +182,7 @@ func (receiver *linkTraceWarp) addDetail(po trace.TraceContext) {
 				lstHeader.Add(fmt.Sprintf("%s=%v", k, v))
 			}
 			detailTrace.Desc = fmt.Sprintf("头部：%s 入参：%s 出参：%s", lstHeader.ToString(","), detail.HttpRequestBody, detail.HttpResponseBody)
+			detailTrace.CopyContent = detail.HttpUrl
 		case eumCallType.Grpc:
 			detailTrace.Caption = fmt.Sprintf("调用http <span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s</span> => %v %s <span style='background-color: #ead996;'>%s</span>", detail.Comment, detail.GrpcStatusCode, detail.GrpcMethod, detail.GrpcUrl)
 			lstHeader := collections.NewList[string]()
@@ -181,6 +190,7 @@ func (receiver *linkTraceWarp) addDetail(po trace.TraceContext) {
 				lstHeader.Add(fmt.Sprintf("%s=%v", k, v))
 			}
 			detailTrace.Desc = fmt.Sprintf("头部：%s 入参：%s 出参：%s", lstHeader.ToString(","), detail.GrpcRequestBody, detail.GrpcResponseBody)
+			detailTrace.CopyContent = detail.GrpcUrl
 		case eumCallType.Redis:
 			detailTrace.Caption = fmt.Sprintf("Redis <span class=\"el-tag el-tag--danger el-tag--small el-tag--light\">%s</span> => <span style='background-color: #ead996;'>%s</span> %s %s 影响%v行", detail.Comment, detail.MethodName, detail.RedisKey, detail.RedisField, detail.RedisRowsAffected)
 			detailTrace.Desc = fmt.Sprintf("%s %s", detail.RedisKey, detail.RedisField)
@@ -206,6 +216,9 @@ func (receiver *linkTraceWarp) addDetail(po trace.TraceContext) {
 		}
 
 		detailTrace.Caption = strings.ReplaceAll(detailTrace.Caption, "<span class=\"el-tag el-tag--danger el-tag--small el-tag--light\"></span>", "")
+		if detailTrace.CopyContent == "" {
+			detailTrace.CopyContent = detailTrace.Desc
+		}
 		receiver.lst.Add(detailTrace)
 
 		// 在明细执行期间，会穿插下游服务。所以通过查找的方式来获取下游。然后在回到当前明细

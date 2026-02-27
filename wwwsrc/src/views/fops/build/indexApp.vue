@@ -362,13 +362,13 @@ const showBuildLog = (row: any) => {
     state.isShowBuildLogDialog = true;
     setTimeout(() => {   //自动跳到底部
       scrollableBuildLog.value.scrollTop = scrollableBuildLog.value.scrollHeight;
-    }, 500)
+    }, 200)
     if (row.Status == 2) {
       state.autoLog = false
     } else {
       state.autoLog = true
       clearInterval(intervalId);
-      intervalId = setInterval(onShowLog, 500);
+      intervalId = setInterval(onShowLog, 1000);
     }
   })
 }
@@ -394,7 +394,7 @@ const onShowLog = () => {
       if (state.autoLog) {
         setTimeout(() => {
           scrollableBuildLog.value.scrollTop = scrollableBuildLog.value.scrollHeight;
-        }, 500)
+        }, 200)
       }
     }
   })

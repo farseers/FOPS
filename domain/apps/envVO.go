@@ -10,13 +10,13 @@ import (
 
 const (
 	FopsRoot         = "/var/lib/fops/"                   // Fops根目录
-	WithJsonPath     = "/var/lib/fops/dist/with.json"     // with.json文件位置
-	KubeRoot         = "/var/lib/fops/kube/"              // kubectlConfig配置
-	NpmModulesRoot   = "/var/lib/fops/npm"                // NpmModules
 	DistRoot         = "/var/lib/fops/dist/"              // 编译保存的根目录
-	GitRoot          = "/var/lib/fops/git/"               // GIT根目录
+	WithJsonPath     = "/var/lib/fops/dist/with.json"     // with.json文件位置
 	DockerfilePath   = "/var/lib/fops/dist/Dockerfile"    // Dockerfile文件地址
 	DockerIgnorePath = "/var/lib/fops/dist/.dockerignore" // DockerIgnore文件地址
+	KubeRoot         = "/var/lib/fops/kube/"              // kubectlConfig配置
+	NpmModulesRoot   = "/var/lib/fops/npm"                // NpmModules
+	GitRoot          = "/var/lib/fops/git/"               // GIT根目录
 	ShellRoot        = "/var/lib/fops/shell/"             // 生成Shell脚本的存放路径
 	ActionsRoot      = "/var/lib/fops/actions/"           // 执行Actions的缓存目录
 	WorkflowsRoot    = "/var/lib/fops/workflows/"         // 存放工作流文件的目录

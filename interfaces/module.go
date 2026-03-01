@@ -33,7 +33,7 @@ func (module Module) PostInitialize() {
 		tasks.Run("开启构建应用", time.Second*1, job.BuildAppJob, context.Background())
 		tasks.Run("开启自动构建", time.Second*1, job.AutoBuildAppJob, context.Background())
 		tasks.Run("同步Git分支", time.Second*30, job.SyncAppsBranchJob, context.Background())
-		flog.Info("Docker version：" + color.Blue(client.GetVersion()))
+		flog.Info("Docker version: " + color.Blue(client.GetVersion()))
 
 		// 3秒收集一次Docker集群信息
 		tasks.RunNow("收集Docker Swarm集群信息", time.Second*10, job.CollectsNodeJob, context.Background())

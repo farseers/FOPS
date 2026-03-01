@@ -62,7 +62,8 @@ func (receiver *gitDevice) GetRemoteBranch(ctx context.Context, gitPath string) 
 	lst := collections.NewList[apps.RemoteBranchVO]()
 	// git ls-remote --heads
 	// git branch -vr
-	lstResult, wait := exec.RunShellContext(ctx, "git remote update origin --prune && timeout 10 git ls-remote --heads", nil, gitPath, false)
+	//lstResult, wait := exec.RunShellContext(ctx, "timeout 10 git remote update origin --prune && timeout 10 git ls-remote --heads", nil, gitPath, false)
+	lstResult, wait := exec.RunShellContext(ctx, "timeout 10 git ls-remote --heads origin", nil, gitPath, false)
 	if wait() != 0 {
 		return lst
 	}

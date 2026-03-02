@@ -29,7 +29,7 @@ func (module Module) DependsModule() []modules.FarseerModule {
 
 func (module Module) PostInitialize() {
 	client := docker.NewClient()
-	if client.IsMaster() {
+	if client.GetInfo().Swarm.ControlAvailable {
 		tasks.Run("开启构建应用", time.Second*1, job.BuildAppJob, context.Background())
 		tasks.Run("开启自动构建", time.Second*1, job.AutoBuildAppJob, context.Background())
 		tasks.Run("同步Git分支", time.Second*30, job.SyncAppsBranchJob, context.Background())

@@ -106,14 +106,14 @@ func Delete(appName string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionError(403, err)
 }
 
-// DropDownList 应用列表
+// DropDownList Docker swarm集群节点列表（下拉选择用）
 // @post dropDownList
 // @filter application.Jwt
 func DropDownList(isAll bool, appsRepository apps.Repository) collections.List[apps.ShortEO] {
 	resList := appsRepository.ToShortList(isAll)
 	// cluster_node 节点信息
 	clusterNode.NodeList.Foreach(func(node *docker.DockerNodeVO) {
-		resList.Add(apps.ShortEO{AppName: fmt.Sprintf("%s(%s)", node.IP, node.NodeName)})
+		resList.Add(apps.ShortEO{AppName: fmt.Sprintf("%s(%s)", node.Status.Addr, node.Description.Hostname)})
 	})
 	return resList
 }

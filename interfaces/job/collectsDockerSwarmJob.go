@@ -113,11 +113,11 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			})
 			// 匹配对应的节点
 			node := clusterNode.NodeList.Find(func(node *docker.DockerNodeVO) bool {
-				return node.NodeName == serviceVO.Node
+				return node.Description.Hostname == serviceVO.Node
 			})
 			// 实例存在，则只更新资源信息
 			if node != nil && curInstance != nil {
-				curInstance.DockerStatsVO = apps.GetDockerStats(node.IP, serviceVO.ServiceTaskId)
+				curInstance.DockerStatsVO = apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId)
 				return
 			}
 
@@ -131,10 +131,10 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 				// 通过代理节点同步到的容器资源信息
 				dockerInspectVO := apps.DockerInspectVO{
 					// containerInspectJson[0].Status.ContainerStatus.ContainerID
-					DockerStatsVO: apps.GetDockerStats(node.IP, serviceVO.ServiceTaskId),
+					DockerStatsVO: apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId),
 					TaskId:        serviceVO.ServiceTaskId,
 					Node:          serviceVO.Node,
-					NodeIP:        node.IP,
+					NodeIP:        node.Status.Addr,
 					CreatedAt:     containerInspectJson[0].CreatedAt.Format(time.DateTime),
 					UpdatedAt:     containerInspectJson[0].UpdatedAt.Format(time.DateTime),
 					State:         containerInspectJson[0].Status.State,

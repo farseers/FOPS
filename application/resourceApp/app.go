@@ -28,31 +28,34 @@ func Resource(context *websocket.Context[request.Request]) {
 
 			// 更新集群节点资源信息
 			node := clusterNode.NodeList.Find(func(item *docker.DockerNodeVO) bool {
-				return item.IP == req.Host.IP
+				return item.Status.Addr == req.Host.IP
 			})
 			if node == nil {
-				clusterNode.NodeList.Add(docker.DockerNodeVO{
-					IP:            req.Host.IP,
-					NodeName:      req.Host.HostName,
-					Status:        "Ready",
-					Availability:  "Active",
-					IsMaster:      req.IsDockerMaster,
-					IsHealth:      true,
-					EngineVersion: req.DockerEngineVersion,
-					OS:            req.Host.OS,
-					Architecture:  req.Host.Architecture,
-					CPUs:          strconv.Itoa(req.Host.CpuCores),
-					Memory:        memoryTotal,
-					Label:         collections.List[docker.DockerLabelVO]{},
-					UpdateAt:      time.Now(),
-				})
+				dockerNodeVO := docker.DockerNodeVO{}
+				dockerNodeVO.Status.Addr = req.Host.IP
+				dockerNodeVO.Status.State = "Ready"
+				dockerNodeVO.Spec.Availability = "Active"
+				dockerNodeVO.Spec.Role = "Manager"
+				dockerNodeVO.ManagerStatus.Leader = true
+				dockerNodeVO.IsHealth = true
+				dockerNodeVO.Engine.EngineVersion = req.DockerEngineVersion
+				dockerNodeVO.Description.Hostname = req.Host.HostName
+				dockerNodeVO.Description.Platform.OS = req.Host.OS
+				dockerNodeVO.Description.Platform.Architecture = req.Host.Architecture
+				dockerNodeVO.Description.Resources.NanoCPUs = int64(req.Host.CpuCores)
+				dockerNodeVO.Description.Resources.MemoryBytes = parse.ToInt64(req.Host.MemoryTotal)
+				dockerNodeVO.Description.Resources.Memory = memoryTotal
+				dockerNodeVO.Label = collections.NewList[docker.DockerLabelVO]()
+				dockerNodeVO.UpdatedAt = time.Now()
+				clusterNode.NodeList.Add(dockerNodeVO)
+
 				// 重新排序
 				clusterNode.NodeList = clusterNode.NodeList.OrderBy(func(item docker.DockerNodeVO) any {
-					return item.IP
+					return item.Status.Addr
 				}).ToList()
 
 				node = clusterNode.NodeList.Find(func(item *docker.DockerNodeVO) bool {
-					return item.IP == req.Host.IP
+					return item.Status.Addr == req.Host.IP
 				})
 			}
 
@@ -60,16 +63,16 @@ func Resource(context *websocket.Context[request.Request]) {
 			if node != nil {
 				req.Host.CpuUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", req.Host.CpuUsagePercent), 64)
 
-				node.EngineVersion = req.DockerEngineVersion
-				node.OS = req.Host.OS
-				node.Architecture = req.Host.Architecture
-				node.NodeName = req.Host.HostName
-				node.CPUs = strconv.Itoa(req.Host.CpuCores)
-				node.Memory = memoryTotal
-				node.CpuUsagePercent = req.Host.CpuUsagePercent
-				node.MemoryUsagePercent = req.Host.MemoryUsagePercent
-				node.MemoryUsage = memoryUsage
-				node.UpdateAt = time.Now()
+				node.Description.Hostname = req.Host.HostName
+				node.Engine.EngineVersion = req.DockerEngineVersion
+				node.Description.Platform.OS = req.Host.OS
+				node.Description.Platform.Architecture = req.Host.Architecture
+				node.Description.Resources.NanoCPUs = int64(req.Host.CpuCores)
+				node.Description.Resources.Memory = memoryTotal
+				node.Description.Resources.CpuUsagePercent = req.Host.CpuUsagePercent
+				node.Description.Resources.MemoryUsagePercent = req.Host.MemoryUsagePercent
+				node.Description.Resources.MemoryUsage = memoryUsage
+				node.UpdatedAt = time.Now()
 				node.IsHealth = true
 
 				var diskList []docker.DiskVO
@@ -87,8 +90,8 @@ func Resource(context *websocket.Context[request.Request]) {
 						DiskUsagePercent: diskUsagePercent,
 					})
 				}
-				node.DiskTotal = fmt.Sprintf("%.1fGB", parse.ToFloat64(diskTotal)/1024/1024/1024)
-				node.Disk = diskList
+				node.Description.Resources.DiskTotal = fmt.Sprintf("%.1fGB", parse.ToFloat64(diskTotal)/1024/1024/1024)
+				node.Description.Resources.Disk = diskList
 			}
 		}
 

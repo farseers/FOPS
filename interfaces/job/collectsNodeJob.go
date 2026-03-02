@@ -22,41 +22,28 @@ func CollectsNodeJob(*tasks.TaskContext) {
 
 	dockerNodeList.Foreach(func(node *docker.DockerNodeVO) {
 		// 通过ps节点信息，拿到节点的资源信息
-		dockerNode := dockerClient.Node.Info(node.NodeName)
-		if dockerNode.IP == "" {
+		dockerNode := dockerClient.Node.Info(node.Description.Hostname)
+		if dockerNode.Status.Addr == "" {
 			return
 		}
 
-		node.IP = dockerNode.IP
-		node.Label = dockerNode.Label
-		// 以下属性暂时不需要，由代理节点获取
-		// node.OS = dockerNode.OS
-		// node.Architecture = dockerNode.Architecture
-		// node.CPUs = dockerNode.CPUs
-		// node.Memory = dockerNode.Memory
-
 		// 加入到本地列表
 		dockerNodeVO := clusterNode.NodeList.Find(func(dockerItem *docker.DockerNodeVO) bool {
-			return dockerItem.IP == node.IP
+			return dockerItem.Status.Addr == node.Status.Addr
 		})
 		if dockerNodeVO == nil {
-			flog.Infof("发现新的集群节点：%s", node.IP)
+			flog.Infof("发现新的集群节点：%s", node.Status.Addr)
 			clusterNode.NodeList.Add(*node)
 			// 重新排序
 			clusterNode.NodeList = clusterNode.NodeList.OrderBy(func(item docker.DockerNodeVO) any {
-				return item.IP
+				return item.Status.Addr
 			}).ToList()
 		} else {
 			dockerNodeVO.IsHealth = node.IsHealth
 			dockerNodeVO.Label = node.Label
-			dockerNodeVO.UpdateAt = time.Now()
+			dockerNodeVO.UpdatedAt = time.Now()
 			dockerNodeVO.Status = node.Status
-			dockerNodeVO.Availability = node.Availability
-			// 以下属性暂时不需要，由代理节点获取
-			// dockerNodeVO.OS = node.OS
-			// dockerNodeVO.Architecture = node.Architecture
-			// dockerNodeVO.CPUs = node.CPUs
-			// dockerNodeVO.Memory = node.Memory
+			dockerNodeVO.Spec.Availability = node.Spec.Availability
 		}
 	})
 }

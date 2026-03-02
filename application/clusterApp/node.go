@@ -16,7 +16,7 @@ func NodeList() collections.List[docker.DockerNodeVO] {
 	lst := clusterNode.NodeList
 	lst.Foreach(func(item *docker.DockerNodeVO) {
 		// 10s未更新，标记为不健康
-		item.IsHealth = time.Since(item.UpdateAt).Seconds() <= 10
+		item.IsHealth = time.Since(item.UpdatedAt).Seconds() <= 10
 	})
 	return lst
 }

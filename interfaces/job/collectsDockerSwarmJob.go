@@ -38,7 +38,7 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 		return
 	}
 
-	// 先把fops中的应用缺少的给补上
+	// 先把fops中缺少的应用的给补上
 	serviceList.Foreach(func(item *docker.ServiceListVO) {
 		appDO := lstApp.Find(func(appDO *apps.DomainObject) bool {
 			return appDO.AppName == item.Spec.Name
@@ -48,13 +48,13 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			_ = appsRepository.Add(apps.DomainObject{
 				AppName:         item.Spec.Name,
 				DockerInstances: 0,
-				DockerReplicas:  item.Replicas,
+				DockerReplicas:  item.Spec.Mode.Replicated.Replicas,
 				IsSys:           true,
 			})
 		}
 	})
 
-	// 遍历所有应用，更新实际的docker swarm副本、实例数量、镜像
+	// 遍历所有应用，更新实际的docker swarm副本、镜像
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
 		dockerService := serviceList.Find(func(item *docker.ServiceListVO) bool {
 			return item.Spec.Name == appDO.AppName
@@ -78,7 +78,7 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 		}
 		// 当系统应用 或 global模式，才要更新副本数量
 		if appDO.IsSys || appDO.DockerNodeRole == "global" {
-			appDO.DockerReplicas = dockerService.Replicas
+			appDO.DockerReplicas = dockerService.Spec.Mode.Replicated.Replicas
 		}
 	})
 
@@ -96,7 +96,7 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 		}
 		// 只保留运行中的实例
 		runInstanceList := allInstanceList.Where(func(item docker.ServiceTaskVO) bool {
-			return item.State == "Running" //return item.State != "Shutdown"
+			return item.State == "running" //return item.State != "Shutdown"
 		}).ToList()
 
 		// 清空不存在的实例列表

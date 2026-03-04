@@ -25,6 +25,8 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 	localCluster := clusterRepository.GetLocalCluster()
 	// 收集所有服务的运行情况
 	serviceList := dockerClient.Service.List()
+	// 所有节点信息
+	lstNode := dockerClient.Node.List()
 	// 没有读取到应用，则退出
 	if serviceList.Count() == 0 {
 		return
@@ -39,13 +41,13 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 	// 先把fops中的应用缺少的给补上
 	serviceList.Foreach(func(item *docker.ServiceListVO) {
 		appDO := lstApp.Find(func(appDO *apps.DomainObject) bool {
-			return appDO.AppName == item.Name
+			return appDO.AppName == item.Spec.Name
 		})
 		// 本地应用不存在，则添加到fops
 		if appDO == nil {
 			_ = appsRepository.Add(apps.DomainObject{
-				AppName:         item.Name,
-				DockerInstances: item.Instances,
+				AppName:         item.Spec.Name,
+				DockerInstances: 0,
 				DockerReplicas:  item.Replicas,
 				IsSys:           true,
 			})
@@ -55,7 +57,7 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 	// 遍历所有应用，更新实际的docker swarm副本、实例数量、镜像
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
 		dockerService := serviceList.Find(func(item *docker.ServiceListVO) bool {
-			return item.Name == appDO.AppName
+			return item.Spec.Name == appDO.AppName
 		})
 		// 应用没有启用容器服务，跳过
 		if dockerService == nil {
@@ -71,14 +73,13 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 		if !localCluster.IsNil() {
 			appDO.InitCluster(localCluster.Id)
 			appDO.ClusterVer.Update(localCluster.Id, func(value *apps.ClusterVerVO) {
-				value.DockerImage = dockerService.Image
+				value.DockerImage = dockerService.Spec.TaskTemplate.ContainerSpec.Image
 			})
 		}
 		// 当系统应用 或 global模式，才要更新副本数量
 		if appDO.IsSys || appDO.DockerNodeRole == "global" {
 			appDO.DockerReplicas = dockerService.Replicas
 		}
-		appDO.DockerInstances = dockerService.Instances
 	})
 
 	// 遍历所有应用，得到每个应用的inspect详情
@@ -89,7 +90,7 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 		}
 
 		// 根据ServiceId获取所有实例
-		allInstanceList := dockerClient.Service.PS(appDO.AppName)
+		allInstanceList := dockerClient.Service.PS(lstNode, appDO.AppName)
 		if allInstanceList.Count() == 0 {
 			return
 		}
@@ -124,27 +125,25 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			// 只有当节点是健康状态才加入到实例列表中。
 			if node != nil && node.IsHealth {
 				// 读取单个实例的详情
-				containerInspectJson, _ := dockerClient.Container.InspectByServiceId(serviceVO.ServiceTaskId)
-				if len(containerInspectJson) == 0 {
-					return
-				}
-				// 通过代理节点同步到的容器资源信息
-				dockerInspectVO := apps.DockerInspectVO{
-					// containerInspectJson[0].Status.ContainerStatus.ContainerID
-					DockerStatsVO: apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId),
-					TaskId:        serviceVO.ServiceTaskId,
-					Node:          serviceVO.Node,
-					NodeIP:        node.Status.Addr,
-					CreatedAt:     containerInspectJson[0].CreatedAt.Format(time.DateTime),
-					UpdatedAt:     containerInspectJson[0].UpdatedAt.Format(time.DateTime),
-					State:         containerInspectJson[0].Status.State,
-				}
+				containerInspectJson, _ := dockerClient.Task.Inspect(serviceVO.ServiceTaskId)
+				if containerInspectJson.ID != "" {
+					// 通过代理节点同步到的容器资源信息
+					dockerInspectVO := apps.DockerInspectVO{
+						DockerStatsVO: apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId),
+						TaskId:        serviceVO.ServiceTaskId,
+						Node:          serviceVO.Node,
+						NodeIP:        node.Status.Addr,
+						CreatedAt:     containerInspectJson.CreatedAt.Format(time.DateTime),
+						UpdatedAt:     containerInspectJson.UpdatedAt.Format(time.DateTime),
+						State:         containerInspectJson.Status.State,
+					}
 
-				// 容器IP
-				if len(containerInspectJson[0].NetworksAttachments) > 0 && len(containerInspectJson[0].NetworksAttachments[0].Addresses) > 0 {
-					dockerInspectVO.ContainerIP = strings.Split(containerInspectJson[0].NetworksAttachments[0].Addresses[0], "/")[0]
+					// 容器IP
+					if len(containerInspectJson.NetworksAttachments) > 0 && len(containerInspectJson.NetworksAttachments[0].Addresses) > 0 {
+						dockerInspectVO.ContainerIP = strings.Split(containerInspectJson.NetworksAttachments[0].Addresses[0], "/")[0]
+					}
+					appDO.DockerInspect.Add(dockerInspectVO)
 				}
-				appDO.DockerInspect.Add(dockerInspectVO)
 			}
 		})
 		// 实例数量

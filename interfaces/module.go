@@ -49,9 +49,9 @@ func (module Module) PostInitialize() {
 
 		if strings.EqualFold(buildEO.AppName, "fops") && buildEO.Status == eumBuildStatus.Building {
 			fopsService := docker.NewClient().Service.List().Find(func(item *docker.ServiceListVO) bool {
-				return strings.EqualFold(item.Name, "fops")
+				return strings.EqualFold(item.Spec.Name, "fops")
 			})
-			if fopsService != nil && buildEO.DockerImage == fopsService.Image {
+			if fopsService != nil && buildEO.DockerImage == fopsService.Spec.TaskTemplate.ContainerSpec.Image {
 				flog.Infof("恭喜，你正在使用最新的FOPS版本：%s", buildEO.DockerImage)
 				// 发布事件
 				event.BuildFinishedEvent{AppName: buildEO.AppName, BuildId: buildEO.Id, ClusterId: buildEO.ClusterId, IsSuccess: true, DockerVer: buildEO.BuildNumber, DockerImage: buildEO.DockerImage}.PublishEvent()

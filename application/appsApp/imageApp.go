@@ -74,8 +74,7 @@ func ClearDockerImage() {
 	client := docker.NewClient()
 	client.Container.Kill("FOPS-Build")
 	client.Container.Kill("FOPS-AutoBuild")
-	_, wait := client.Images.ClearImages()
-	wait()
+	client.Images.ClearImages()
 }
 
 // RestartDocker 重启容器
@@ -118,8 +117,10 @@ func DeleteService(appName string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(strings.Trim(appName, "") == "", 403, "参数不完整")
 	// 删除服务
 	client := docker.NewClient()
-	_, wait := client.Service.Delete(appName)
-	wait()
+	err := client.Service.Delete(appName)
+	if err != nil {
+		exception.ThrowWebExceptionError(403, err)
+	}
 
 	// 验证
 	exists := client.Service.Exists(appName)

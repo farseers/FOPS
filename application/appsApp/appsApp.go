@@ -97,8 +97,8 @@ func Delete(appName string, appsRepository apps.Repository) {
 	client := docker.NewClient()
 	exists := client.Service.Exists(appName)
 	if exists {
-		result, wait := client.Service.Delete(appName)
-		exception.ThrowRefuseExceptionBool(wait() != 0, collections.NewListFromChan(result).ToString(","))
+		err := client.Service.Delete(appName)
+		exception.ThrowRefuseExceptionBool(err != nil, "删除服务失败: "+err.Error())
 	}
 
 	// 删除应用

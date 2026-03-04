@@ -21,7 +21,7 @@ import (
 func Resource(context *websocket.Context[request.Request]) {
 	// 如果appId为空直接返回
 	context.ForReceiverFunc(func(req *request.Request) {
-		flog.Debug("接收资源监控数据：%+v", req)
+		flog.Infof("接收资源监控数据：%+v", req)
 		// 主机IP为空直接返回
 		if req.Host.IP == "" {
 			return

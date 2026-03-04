@@ -34,10 +34,8 @@ func Add(req request.AddRequest, appsRepository apps.Repository) {
 	do := mapper.Single[apps.DomainObject](req)
 	do.IsSys = false
 	exception.ThrowWebExceptionBool(appsRepository.IsExists(req.AppName), 403, "应用不能重复")
-	// 删除末尾的/
-	if strings.HasSuffix(do.AdditionalScripts, "\\") {
-		do.AdditionalScripts = do.AdditionalScripts[:len(do.AdditionalScripts)-1]
-	}
+	// 删除末尾的\
+	do.AdditionalScripts = strings.TrimSuffix(do.AdditionalScripts, "\\")
 	// 添加
 	err := appsRepository.Add(do)
 	exception.ThrowWebExceptionError(403, err)

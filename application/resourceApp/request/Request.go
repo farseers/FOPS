@@ -11,4 +11,7 @@ type Request struct {
 	IsDockerMaster      bool                                   // 是否是Docker主节点
 	DockerEngineVersion string                                 // Docker引擎版本
 	Dockers             collections.List[docker.DockerStatsVO] // Docker容器资源
+	Availability        string                                 // Docker节点状态
+	Label               collections.List[docker.DockerLabelVO] // Docker节点标签
+	Role                string                                 // 节点角色   manager worker
 }

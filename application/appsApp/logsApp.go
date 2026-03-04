@@ -20,6 +20,8 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 	lstNode := client.Node.List()
 	lst := client.Service.PS(lstNode, appName)
 	lst.Foreach(func(item *docker.ServiceTaskVO) {
+		flog.Debugf("正在获取日志，服务：%s，任务ID：%s", item.Name, item.ServiceTaskId)
+
 		// 通过容器id获取日志
 		logs, _ := client.Service.Logs(item.ServiceTaskId, tailCount)
 		if item.Error != "" {

@@ -11,17 +11,25 @@ import (
 
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/webapi/websocket"
 )
 
-// WsReceive 监控数据接收
+// WsReceive 监控数据接收,更新到本地内存中，供页面展示使用
 // @ws resource
 func Resource(context *websocket.Context[request.Request]) {
 	// 如果appId为空直接返回
 	context.ForReceiverFunc(func(req *request.Request) {
+		flog.Debug("接收资源监控数据：%+v", req)
+		// 主机IP为空直接返回
+		if req.Host.IP == "" {
+			return
+		}
+
 		// 更新主机节点资源信息
 		if req.Host.CpuUsagePercent > 0 {
+			req.Host.CpuUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", req.Host.CpuUsagePercent), 64)
 			req.Host.MemoryUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", req.Host.MemoryUsagePercent), 64)
 			memoryTotal := fmt.Sprintf("%.1fGB", parse.ToFloat64(req.Host.MemoryTotal)/1024/1024/1024)
 			memoryUsage, _ := strconv.ParseFloat(fmt.Sprintf("%.1f", parse.ToFloat64(req.Host.MemoryUsage)/1024/1024), 64)
@@ -32,21 +40,10 @@ func Resource(context *websocket.Context[request.Request]) {
 			})
 			if node == nil {
 				dockerNodeVO := docker.DockerNodeVO{}
-				dockerNodeVO.Status.Addr = req.Host.IP
-				dockerNodeVO.Status.State = "Ready"
-				dockerNodeVO.Spec.Availability = "Active"
-				dockerNodeVO.Spec.Role = "Manager"
-				dockerNodeVO.ManagerStatus.Leader = true
-				dockerNodeVO.IsHealth = true
-				dockerNodeVO.Engine.EngineVersion = req.DockerEngineVersion
-				dockerNodeVO.Description.Hostname = req.Host.HostName
-				dockerNodeVO.Description.Platform.OS = req.Host.OS
-				dockerNodeVO.Description.Platform.Architecture = req.Host.Architecture
-				dockerNodeVO.Description.Resources.NanoCPUs = int64(req.Host.CpuCores)
-				dockerNodeVO.Description.Resources.MemoryBytes = parse.ToInt64(req.Host.MemoryTotal)
-				dockerNodeVO.Description.Resources.Memory = memoryTotal
 				dockerNodeVO.Label = collections.NewList[docker.DockerLabelVO]()
-				dockerNodeVO.UpdatedAt = time.Now()
+				dockerNodeVO.Status.Addr = req.Host.IP
+
+				flog.Infof("新增集群节点：%s, 角色：%s", req.Host.IP, req.Role)
 				clusterNode.NodeList.Add(dockerNodeVO)
 
 				// 重新排序
@@ -61,19 +58,23 @@ func Resource(context *websocket.Context[request.Request]) {
 
 			// 更新集群节点资源信息
 			if node != nil {
-				req.Host.CpuUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", req.Host.CpuUsagePercent), 64)
-
-				node.Description.Hostname = req.Host.HostName
 				node.Engine.EngineVersion = req.DockerEngineVersion
+				node.ManagerStatus.Leader = req.IsDockerMaster
+				node.Spec.Role = req.Role
+				node.Description.Hostname = req.Host.HostName
 				node.Description.Platform.OS = req.Host.OS
 				node.Description.Platform.Architecture = req.Host.Architecture
 				node.Description.Resources.NanoCPUs = int64(req.Host.CpuCores)
+				node.Description.Resources.MemoryBytes = parse.ToInt64(req.Host.MemoryTotal)
 				node.Description.Resources.Memory = memoryTotal
 				node.Description.Resources.CpuUsagePercent = req.Host.CpuUsagePercent
 				node.Description.Resources.MemoryUsagePercent = req.Host.MemoryUsagePercent
 				node.Description.Resources.MemoryUsage = memoryUsage
 				node.UpdatedAt = time.Now()
-				node.IsHealth = true
+				node.Label = req.Label
+				node.Status.State = "Ready"
+				node.Spec.Availability = req.Availability
+				node.IsHealth = node.Spec.Availability == "Active"
 
 				var diskList []docker.DiskVO
 				var diskTotal uint64
@@ -96,7 +97,7 @@ func Resource(context *websocket.Context[request.Request]) {
 		}
 
 		// 更新docker应用资源信息
-		if req.Host.IP != "" && req.Dockers.Count() > 0 {
+		if req.Dockers.Count() > 0 {
 			apps.NodeDockerStatsList.Add(req.Host.IP, req.Dockers)
 		}
 	})

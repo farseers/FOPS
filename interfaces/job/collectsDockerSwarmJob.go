@@ -60,7 +60,6 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 
 	// 遍历所有应用，更新实际的docker swarm副本、镜像
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
-		flog.Infof("正在更新应用的服务和实例信息: %s", appDO.AppName)
 		dockerService := serviceList.Find(func(item *docker.ServiceListVO) bool {
 			return item.Spec.Name == appDO.AppName
 		})
@@ -127,10 +126,9 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			node := clusterNode.NodeList.Find(func(node *docker.DockerNodeVO) bool {
 				return node.Description.Hostname == serviceVO.NodeName
 			})
-			if node != nil {
-				flog.Infof("正在更新应用实例的详情: %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, node.Description.Hostname)
-			} else {
-				flog.Infof("正在更新应用实例的详情: %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, "节点信息未找到")
+
+			if node == nil {
+				flog.Infof("节点信息未找到: %s, %s", appDO.AppName, serviceVO.ServiceTaskId)
 			}
 
 			// 实例存在，则只更新资源信息
@@ -149,27 +147,29 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			if node != nil && node.IsHealth {
 				// 读取单个实例的详情
 				containerInspectJson, _ := dockerClient.Task.Inspect(serviceVO.ServiceTaskId)
-				if containerInspectJson.ID != "" {
-					// 通过代理节点同步到的容器资源信息
-					dockerInspectVO := apps.DockerInspectVO{
-						DockerStatsVO: apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId),
-						NodeID:        serviceVO.NodeID,
-						NodeName:      serviceVO.NodeName,
-						NodeIP:        serviceVO.NodeIP,
-						CreatedAt:     containerInspectJson.CreatedAt.Format(time.DateTime),
-						UpdatedAt:     containerInspectJson.UpdatedAt.Format(time.DateTime),
-						State:         containerInspectJson.Status.State,
-					}
-
-					// 容器IP
-					if len(containerInspectJson.NetworksAttachments) > 0 && len(containerInspectJson.NetworksAttachments[0].Addresses) > 0 {
-						dockerInspectVO.ContainerIP = strings.Split(containerInspectJson.NetworksAttachments[0].Addresses[0], "/")[0]
-					}
-					appDO.DockerInspect.Add(dockerInspectVO)
-
-					json, _ := snc.Marshal(dockerInspectVO)
-					flog.Infof("找到了新的实例,添加: %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, json)
+				if containerInspectJson.ID == "" {
+					flog.Infof("实例详情未找到: %s, %s", appDO.AppName, serviceVO.ServiceTaskId)
+					return
 				}
+				// 通过代理节点同步到的容器资源信息
+				dockerInspectVO := apps.DockerInspectVO{
+					DockerStatsVO: apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId),
+					NodeID:        serviceVO.NodeID,
+					NodeName:      serviceVO.NodeName,
+					NodeIP:        serviceVO.NodeIP,
+					CreatedAt:     containerInspectJson.CreatedAt.Format(time.DateTime),
+					UpdatedAt:     containerInspectJson.UpdatedAt.Format(time.DateTime),
+					State:         containerInspectJson.Status.State,
+				}
+
+				// 容器IP
+				if len(containerInspectJson.NetworksAttachments) > 0 && len(containerInspectJson.NetworksAttachments[0].Addresses) > 0 {
+					dockerInspectVO.ContainerIP = strings.Split(containerInspectJson.NetworksAttachments[0].Addresses[0], "/")[0]
+				}
+				appDO.DockerInspect.Add(dockerInspectVO)
+
+				json, _ := snc.Marshal(dockerInspectVO)
+				flog.Infof("找到了新的实例,添加: %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, json)
 			}
 		})
 		// 实例数量

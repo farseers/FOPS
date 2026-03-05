@@ -128,7 +128,8 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			})
 
 			if node == nil {
-				flog.Infof("节点信息未找到: %s, %s", appDO.AppName, serviceVO.ServiceTaskId)
+				json, _ := snc.Marshal(clusterNode.NodeList)
+				flog.Infof("node节点信息未找到: %s, %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, serviceVO.NodeName, json)
 			}
 
 			// 实例存在，则只更新资源信息

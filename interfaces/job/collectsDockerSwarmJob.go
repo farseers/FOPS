@@ -10,6 +10,8 @@ import (
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
+	"github.com/farseer-go/fs/flog"
+	"github.com/farseer-go/fs/snc"
 	"github.com/farseer-go/tasks"
 )
 
@@ -122,6 +124,8 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			// 实例存在，则只更新资源信息
 			if node != nil && curInstance != nil {
 				curInstance.DockerStatsVO = apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId)
+				json, _ := snc.Marshal(curInstance.DockerStatsVO)
+				flog.Infof("找到了存在的实例,只更新就好: %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, json)
 				return
 			}
 
@@ -146,6 +150,9 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 						dockerInspectVO.ContainerIP = strings.Split(containerInspectJson.NetworksAttachments[0].Addresses[0], "/")[0]
 					}
 					appDO.DockerInspect.Add(dockerInspectVO)
+
+					json, _ := snc.Marshal(dockerInspectVO)
+					flog.Infof("找到了新的实例,添加: %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, json)
 				}
 			}
 		})

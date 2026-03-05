@@ -100,14 +100,12 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 		// 根据ServiceId获取所有实例
 		allInstanceList := dockerClient.Service.PS(lstNode, appDO.AppName)
 		if allInstanceList.Count() == 0 {
-			flog.Infof("应用 %s 没有运行的实例", appDO.AppName)
 			return
 		}
 		// 只保留运行中的实例
 		runInstanceList := allInstanceList.Where(func(item docker.ServiceTaskVO) bool {
 			return item.State == "running" //return item.State != "Shutdown"
 		}).ToList()
-		flog.Infof("应用 %s 的运行中实例数量: %d", appDO.AppName, runInstanceList.Count())
 
 		// 清空不存在的实例列表
 		appDO.DockerInspect.RemoveAll(func(dockerInspectVO apps.DockerInspectVO) bool {
@@ -135,8 +133,6 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			// 实例存在，则只更新资源信息
 			if node != nil && curInstance != nil {
 				curInstance.DockerStatsVO = apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId)
-				json, _ := snc.Marshal(curInstance.DockerStatsVO)
-				flog.Infof("找到了存在的实例,只更新就好: %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, json)
 				return
 			}
 
@@ -162,9 +158,6 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 					dockerInspectVO.ContainerIP = strings.Split(serviceVO.Addresses[0], "/")[0]
 				}
 				appDO.DockerInspect.Add(dockerInspectVO)
-
-				json, _ := snc.Marshal(dockerInspectVO)
-				flog.Infof("找到了新的实例,添加: %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, json)
 			}
 		})
 		// 实例数量

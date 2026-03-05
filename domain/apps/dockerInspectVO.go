@@ -3,6 +3,8 @@ package apps
 import (
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
+	"github.com/farseer-go/fs/flog"
+	"github.com/farseer-go/fs/snc"
 )
 
 // key = nodeIP
@@ -30,5 +32,9 @@ func GetDockerStats(nodeIP, taskId string) docker.DockerStatsVO {
 	if dockerStatsVO != nil {
 		return *dockerStatsVO
 	}
+
+	json, _ := snc.Marshal(lstDockerStats)
+	flog.Infof("未找到对应的容器资源信息: %s, %s, %s", nodeIP, taskId, json)
+
 	return docker.DockerStatsVO{TaskId: taskId}
 }

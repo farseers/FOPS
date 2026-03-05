@@ -254,7 +254,6 @@ const showDockerTag = (row: any, type: any) => {
 const getTableData = () => {
   state.tableData.loading = true;
   let param = {
-    "IsSys": false,
   };
   // 获取应用列表
   serverApi.appsList(param).then(function (res) {

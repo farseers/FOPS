@@ -51,7 +51,13 @@ export function fopsApi() {
 		},appsList: (param: object) => {
 			return request({
 				url: '/apps/list',
-				method: 'post',
+				method: 'get',
+				data:param,
+			});
+		},appsSysList: (param: object) => {
+			return request({
+				url: '/apps/syslist',
+				method: 'get',
 				data:param,
 			});
 		}

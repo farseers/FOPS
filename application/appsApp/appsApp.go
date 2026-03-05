@@ -117,9 +117,9 @@ func DropDownList(isAll bool, appsRepository apps.Repository) collections.List[a
 }
 
 // List 应用列表
-// @post list
+// @get list
 // @filter application.Jwt
-func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.Repository, clusterRepository cluster.Repository, fScheduleHttp fSchedule.Http) collections.List[response.AppsResponse] {
+func List(appsRepository apps.Repository, logDataRepository logData.Repository, clusterRepository cluster.Repository, fScheduleHttp fSchedule.Http) collections.List[response.AppsResponse] {
 	countList := logDataRepository.StatCount()
 	// 获取任务组的数据统计
 	var taskGroupStatList collections.List[fSchedule.StatTaskEO]
@@ -128,11 +128,7 @@ func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.
 	}
 	lstCluster := clusterRepository.ToList()
 	lst := collections.NewList[response.AppsResponse]()
-	appsRepository.ToListBySys(isSys).Foreach(func(item *apps.DomainObject) {
-		// 在监控中心，副本数量=0的，不显示
-		if isSys && item.DockerReplicas == 0 {
-			return
-		}
+	appsRepository.ToListBySys(false).Foreach(func(item *apps.DomainObject) {
 		appsResponse := doToAppsResponse(lstCluster, *item)
 		// 统计日志数量
 		countList.Foreach(func(logItem *logData.LogCountEO) {
@@ -181,6 +177,63 @@ func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.
 				}
 			}
 		}
+
+		lst.Add(appsResponse)
+	})
+	return lst
+}
+
+// List 应用列表
+// @get syslist
+// @filter application.Jwt
+func SysList(appsRepository apps.Repository, logDataRepository logData.Repository, clusterRepository cluster.Repository, fScheduleHttp fSchedule.Http) collections.List[response.AppsSysResponse] {
+	countList := logDataRepository.StatCount()
+	// 获取任务组的数据统计
+	var taskGroupStatList collections.List[fSchedule.StatTaskEO]
+	if clusterDO := clusterRepository.GetLocalCluster(); clusterDO.FScheduleAddr != "" {
+		taskGroupStatList = fScheduleHttp.StatList(clusterDO.FScheduleAddr)
+	}
+	lst := collections.NewList[response.AppsSysResponse]()
+	appsRepository.ToListBySys(true).Foreach(func(item *apps.DomainObject) {
+		// 在监控中心，副本数量=0的，不显示
+		if item.DockerReplicas == 0 {
+			return
+		}
+		appsResponse := response.AppsSysResponse{
+			AppName:         item.AppName,
+			DockerInstances: item.DockerInstances,
+			DockerNodeRole:  item.DockerNodeRole,
+			DockerReplicas:  item.DockerReplicas,
+			IsHealth:        item.DockerInstances >= item.DockerReplicas,
+			LimitCpus:       item.LimitCpus,
+			LimitMemory:     item.LimitMemory,
+		}
+		// 统计日志数量
+		countList.Foreach(func(logItem *logData.LogCountEO) {
+			if item.AppName != logItem.AppName {
+				return
+			}
+			switch logItem.LogLevel {
+			case eumLogLevel.Error: // 日志异常数量
+				appsResponse.LogErrorCount += logItem.LogCount
+			case eumLogLevel.Warning: // 日志警告数量
+				appsResponse.LogWaringCount += logItem.LogCount
+			default:
+			}
+		})
+
+		// 统计任务组执行数量
+		taskGroupStatList.Foreach(func(statTaskEO *fSchedule.StatTaskEO) {
+			if statTaskEO.ClientName != item.AppName {
+				return
+			}
+			switch statTaskEO.ExecuteStatus {
+			case 3: // 任务组执行失败数量
+				appsResponse.TaskFailCount += statTaskEO.Count
+			case 2: // 任务组执行成功数量
+				appsResponse.TaskSuccessCount += statTaskEO.Count
+			}
+		})
 
 		// 容器资源占用统计
 		appsResponse.CpuUsagePercent = item.DockerInspect.Where(func(item apps.DockerInspectVO) bool {

@@ -24,10 +24,6 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 
 		// 通过容器id获取日志
 		logs, _ := client.Service.Logs(item.ServiceTaskId, tailCount)
-		if item.Error != "" {
-			containerInspectJson, _ := client.Task.Inspect(item.ServiceTaskId)
-			item.Error = containerInspectJson.Status.Err
-		}
 		serviceLog := logs.First()
 		// 没有取到日志时
 		if serviceLog.Logs.Count() < 2 {

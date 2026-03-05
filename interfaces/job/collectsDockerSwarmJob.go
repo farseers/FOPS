@@ -77,8 +77,11 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			})
 		}
 		// 当系统应用 或 global模式，才要更新副本数量
-		if appDO.IsSys || appDO.DockerNodeRole == "global" {
+		if appDO.IsSys {
 			appDO.DockerReplicas = dockerService.Spec.Mode.Replicated.Replicas
+		}
+		if appDO.DockerNodeRole == "global" {
+			appDO.DockerReplicas = lstNode.Count()
 		}
 	})
 

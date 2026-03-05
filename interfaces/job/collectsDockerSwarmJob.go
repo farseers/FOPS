@@ -29,14 +29,16 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 	serviceList := dockerClient.Service.List()
 	// 所有节点信息
 	lstNode := dockerClient.Node.List()
-	// 没有读取到应用，则退出
+	// 没有读取到服务，退出
 	if serviceList.Count() == 0 {
+		flog.Infof("没有读取到服务，退出")
 		return
 	}
 	// 如果服务不存在，则添加到列表中，用于更新到数据库中，指明服务的实例为0
 	lstApp := appsRepository.ToList()
-	// 没有读取到应用，则退出
+	// 没有读取到应用，退出
 	if lstApp.Count() == 0 {
+		flog.Infof("没有读取到应用，退出")
 		return
 	}
 
@@ -58,6 +60,7 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 
 	// 遍历所有应用，更新实际的docker swarm副本、镜像
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
+		flog.Infof("正在更新应用的服务和实例信息: %s", appDO.AppName)
 		dockerService := serviceList.Find(func(item *docker.ServiceListVO) bool {
 			return item.Spec.Name == appDO.AppName
 		})
@@ -66,6 +69,7 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			appDO.DockerInstances = 0
 			// 系统应用，同时在服务列表中又没有，则删除
 			if appDO.IsSys {
+				flog.Infof("应用 %s 在服务列表中不存在，正在删除", appDO.AppName)
 				_, _ = appsRepository.Delete(appDO.AppName)
 			}
 			return
@@ -97,12 +101,14 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 		// 根据ServiceId获取所有实例
 		allInstanceList := dockerClient.Service.PS(lstNode, appDO.AppName)
 		if allInstanceList.Count() == 0 {
+			flog.Infof("应用 %s 没有运行的实例", appDO.AppName)
 			return
 		}
 		// 只保留运行中的实例
 		runInstanceList := allInstanceList.Where(func(item docker.ServiceTaskVO) bool {
 			return item.State == "running" //return item.State != "Shutdown"
 		}).ToList()
+		flog.Infof("应用 %s 的运行中实例数量: %d", appDO.AppName, runInstanceList.Count())
 
 		// 清空不存在的实例列表
 		appDO.DockerInspect.RemoveAll(func(dockerInspectVO apps.DockerInspectVO) bool {
@@ -121,12 +127,22 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			node := clusterNode.NodeList.Find(func(node *docker.DockerNodeVO) bool {
 				return node.Description.Hostname == serviceVO.NodeName
 			})
+			if node != nil {
+				flog.Infof("正在更新应用实例的详情: %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, node.Description.Hostname)
+			} else {
+				flog.Infof("正在更新应用实例的详情: %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, "节点信息未找到")
+			}
+
 			// 实例存在，则只更新资源信息
 			if node != nil && curInstance != nil {
 				curInstance.DockerStatsVO = apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId)
 				json, _ := snc.Marshal(curInstance.DockerStatsVO)
 				flog.Infof("找到了存在的实例,只更新就好: %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, json)
 				return
+			}
+
+			if node != nil && !node.IsHealth {
+				flog.Infof("节点 %s 的状态不健康，跳过更新应用实例的详情: %s, %s", node.Description.Hostname, appDO.AppName, serviceVO.ServiceTaskId)
 			}
 
 			// 只有当节点是健康状态才加入到实例列表中。

@@ -7,7 +7,7 @@
 							<el-tag size="default" :type="item.Id == state.dockerLog.Id ? '' : 'info'"
 								@click="clickDockerLog(item)" v-for="item in state.dockerLogContent" :key="item.Id"
 								style="cursor: pointer;margin:0 15px 5px 0">
-								{{ item.Name }}（{{ item.Node }}）
+								{{ item.Name }}（{{ item.NodeName }}）
 							</el-tag>
 							<el-button size="small" type="primary" @click="refreshDockerLog">刷新</el-button>
 						</div>

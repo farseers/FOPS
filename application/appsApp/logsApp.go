@@ -33,7 +33,7 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 		if serviceLog.Logs.Count() < 2 {
 			serviceLog.Logs = collections.NewList[string]()
 			item.Tasks.Foreach(func(taskInstanceVO *docker.TaskInstanceVO) {
-				serviceLog.Logs.Add(fmt.Sprintf("%s\t%s\t%s\t%s\t%s", taskInstanceVO.TaskId, taskInstanceVO.Image, taskInstanceVO.Node, taskInstanceVO.State, taskInstanceVO.Error))
+				serviceLog.Logs.Add(fmt.Sprintf("%s\t%s\t%s\t%s\t%s", taskInstanceVO.TaskId, taskInstanceVO.Image, taskInstanceVO.NodeName, taskInstanceVO.State, taskInstanceVO.Error))
 			})
 		}
 		rsp.Add(response.DockerSwarmResponse{
@@ -61,7 +61,7 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 						ServiceTaskId: serviceLogVO.ContainerId,
 						Name:          serviceLogVO.ServiceName,
 						Image:         image,
-						Node:          serviceLogVO.NodeName,
+						NodeName:      serviceLogVO.NodeName,
 						State:         "",
 						StateInfo:     "",
 						Error:         "",

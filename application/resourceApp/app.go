@@ -13,7 +13,6 @@ import (
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/fs/parse"
-	"github.com/farseer-go/fs/snc"
 	"github.com/farseer-go/webapi/websocket"
 )
 
@@ -98,8 +97,8 @@ func Resource(context *websocket.Context[request.Request]) {
 
 		// 更新docker应用资源信息
 		if req.Dockers.Count() > 0 {
-			json, _ := snc.Marshal(req.Dockers)
-			flog.Infof("接收docker资源监控数据: %s", json)
+			//json, _ := snc.Marshal(req.Dockers)
+			//flog.Infof("接收docker资源监控数据: %s", json)
 			apps.NodeDockerStatsList.Add(req.Host.IP, req.Dockers)
 		}
 	})

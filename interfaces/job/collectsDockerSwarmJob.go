@@ -146,26 +146,20 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 
 			// 只有当节点是健康状态才加入到实例列表中。
 			if node != nil && node.IsHealth {
-				// 读取单个实例的详情
-				containerInspectJson, _ := dockerClient.Task.Inspect(serviceVO.ServiceTaskId)
-				if containerInspectJson.ID == "" {
-					flog.Infof("实例详情未找到: %s, %s", appDO.AppName, serviceVO.ServiceTaskId)
-					return
-				}
 				// 通过代理节点同步到的容器资源信息
 				dockerInspectVO := apps.DockerInspectVO{
 					DockerStatsVO: apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId),
 					NodeID:        serviceVO.NodeID,
 					NodeName:      serviceVO.NodeName,
 					NodeIP:        serviceVO.NodeIP,
-					CreatedAt:     containerInspectJson.CreatedAt.Format(time.DateTime),
-					UpdatedAt:     containerInspectJson.UpdatedAt.Format(time.DateTime),
-					State:         containerInspectJson.Status.State,
+					CreatedAt:     serviceVO.CreatedAt.Format(time.DateTime),
+					UpdatedAt:     serviceVO.UpdatedAt.Format(time.DateTime),
+					State:         serviceVO.State,
 				}
 
 				// 容器IP
-				if len(containerInspectJson.NetworksAttachments) > 0 && len(containerInspectJson.NetworksAttachments[0].Addresses) > 0 {
-					dockerInspectVO.ContainerIP = strings.Split(containerInspectJson.NetworksAttachments[0].Addresses[0], "/")[0]
+				if len(serviceVO.Addresses) > 0 {
+					dockerInspectVO.ContainerIP = strings.Split(serviceVO.Addresses[0], "/")[0]
 				}
 				appDO.DockerInspect.Add(dockerInspectVO)
 

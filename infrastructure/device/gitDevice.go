@@ -2,9 +2,11 @@ package device
 
 import (
 	"context"
-	"fmt"
 	"fops/domain/apps"
+	"os"
+	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/container"
@@ -22,19 +24,40 @@ type gitDevice struct {
 func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch string, gitRemote string, progress chan string) bool {
 	if !file.IsExists(gitPath) {
 		file.CreateDir766(gitPath)
-		lstResult, wait := exec.RunShell("git init", nil, gitPath, true)
+
+		// git init
+		lstResult, wait := exec.RunShellContext(ctx, "git", []string{"init"}, nil, gitPath, true)
+		if exitCode := exec.SaveToChan(progress, lstResult, wait); exitCode != 0 {
+			progress <- "git init 失败"
+			return false
+		}
+
+		// git remote add
+		lstResult, wait = exec.RunShellContext(ctx, "git", []string{"remote", "add", "-f", "origin", gitRemote}, nil, gitPath, true)
+		if exitCode := exec.SaveToChan(progress, lstResult, wait); exitCode != 0 {
+			progress <- "添加远程仓库失败"
+			return false
+		}
+
+		// 配置稀疏检出
+		lstResult, wait = exec.RunShellContext(ctx, "git", []string{"config", "core.sparsecheckout", "true"}, nil, gitPath, true)
 		exec.SaveToChan(progress, lstResult, wait)
 
-		lstResult, wait = exec.RunShell(fmt.Sprintf("git remote add -f origin %s", gitRemote), nil, gitPath, true)
-		exec.SaveToChan(progress, lstResult, wait)
-
-		lstResult, wait = exec.RunShell("git config core.sparsecheckout true", nil, gitPath, true)
-		exec.SaveToChan(progress, lstResult, wait)
-
-		lstResult, wait = exec.RunShell("echo .fops/workflows/ >> .git/info/sparse-checkout", nil, gitPath, true)
-		exec.SaveToChan(progress, lstResult, wait)
+		// 写入稀疏检出配置（覆盖写入，避免重复）
+		sparseCheckoutPath := filepath.Join(gitPath, ".git", "info", "sparse-checkout")
+		sparseCheckoutDir := filepath.Dir(sparseCheckoutPath)
+		if !file.IsExists(sparseCheckoutDir) {
+			file.CreateDir766(sparseCheckoutDir)
+		}
+		// 使用 WriteFile 覆盖写入，避免重复追加
+		if err := os.WriteFile(sparseCheckoutPath, []byte(".fops/workflows/\n"), 0644); err != nil {
+			progress <- "写入稀疏检出配置失败: " + err.Error()
+			return false
+		}
 	}
-	lstResult, wait := exec.RunShell("git config --global http.timeout 10", nil, "", true)
+
+	// 使用本地配置，不污染全局
+	lstResult, wait := exec.RunShellContext(ctx, "git", []string{"config", "http.timeout", "10"}, nil, gitPath, true)
 	exec.SaveToChan(progress, lstResult, wait)
 
 	var exitCode int
@@ -44,7 +67,11 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 			progress <- "同步工作流文件失败，停止构建"
 			return false
 		default:
-			lstResult, wait := exec.RunShellContext(ctx, fmt.Sprintf("timeout 10 git pull origin %s", branch), nil, gitPath, true)
+			// 使用 context 控制超时，不依赖外部 timeout 命令
+			pullCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+			defer cancel()
+
+			lstResult, wait := exec.RunShellContext(pullCtx, "timeout", []string{"10", "git", "pull", "origin", branch}, nil, gitPath, true)
 			if exitCode = exec.SaveToChan(progress, lstResult, wait); exitCode == 0 {
 				return true
 			}
@@ -57,33 +84,41 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 	}
 	return exitCode == 0
 }
-
 func (receiver *gitDevice) GetRemoteBranch(ctx context.Context, gitPath string) collections.List[apps.RemoteBranchVO] {
 	lst := collections.NewList[apps.RemoteBranchVO]()
-	// git ls-remote --heads
-	// git branch -vr
-	//lstResult, wait := exec.RunShellContext(ctx, "timeout 10 git remote update origin --prune && timeout 10 git ls-remote --heads", nil, gitPath, false)
-	lstResult, wait := exec.RunShellContext(ctx, "timeout 10 git ls-remote --heads origin", nil, gitPath, false)
+	lstResult, wait := exec.RunShellContext(ctx, "timeout", []string{"10", "git", "ls-remote", "--heads", "origin"}, nil, gitPath, false)
 	if wait() != 0 {
 		return lst
 	}
+
 	lstContent := collections.NewListFromChan(lstResult)
-	if lstContent.Any() {
-		lstContent.RemoveAt(0)
-	}
 	for _, content := range lstContent.ToArray() {
+		// 跳过空行
+		content = strings.TrimSpace(content)
+		if content == "" {
+			continue
+		}
+
 		fields := strings.Fields(content)
 		if len(fields) < 2 {
 			continue
 		}
-		if len(fields[0]) < 16 {
+
+		commitHash := fields[0]
+		if len(commitHash) < 8 {
 			continue
 		}
-		remoteBranch := apps.RemoteBranchVO{
-			CommitId: fields[0][:16],
-			//CommitMessage: content[len(fields[0])+len(fields[1])+3:], // 消息带有空格，不能直接取fields[2]
+
+		// refs/heads/xxx -> xxx
+		branchName, found := strings.CutPrefix(fields[1], "refs/heads/")
+		if !found {
+			continue
 		}
-		remoteBranch.BranchName, _ = strings.CutPrefix(fields[1], "refs/heads/")
+
+		remoteBranch := apps.RemoteBranchVO{
+			CommitId: commitHash[:8],
+		}
+		remoteBranch.BranchName = branchName
 		lst.Add(remoteBranch)
 	}
 	return lst

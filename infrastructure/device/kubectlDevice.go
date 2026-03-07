@@ -60,14 +60,14 @@ func (device kubectlDevice) SetYaml(clusterName string, projectName string, yaml
 	configFile := device.GetConfigFile(clusterName)
 
 	// 发布
-	lstResult, wait := exec.RunShellContext(ctx, "kubectl", []string{
+	wait := exec.RunShellContext(ctx, "kubectl", []string{
 		"apply",
 		"-f", fileName,
 		"--kubeconfig=" + configFile,
 		"--insecure-skip-tls-verify",
 	}, nil, "", true)
 
-	if exitCode := exec.SaveToChan(progress, lstResult, wait); exitCode != 0 {
+	if exitCode := wait.WaitToChan(progress); exitCode != 0 {
 		progress <- "K8S更新镜像失败。"
 		return false
 	}
@@ -91,7 +91,7 @@ func (device kubectlDevice) SetImagesByClusterName(clusterName string, clusterCo
 	resource := resourceType + "/" + projectName
 	containerImage := projectName + "=" + dockerImages
 
-	lstResult, wait := exec.RunShellContext(ctx, "kubectl", []string{
+	wait := exec.RunShellContext(ctx, "kubectl", []string{
 		"set", "image",
 		resource,
 		containerImage,
@@ -99,7 +99,7 @@ func (device kubectlDevice) SetImagesByClusterName(clusterName string, clusterCo
 		"--insecure-skip-tls-verify",
 	}, nil, "", true)
 
-	if exitCode := exec.SaveToChan(progress, lstResult, wait); exitCode != 0 {
+	if exitCode := wait.WaitToChan(progress); exitCode != 0 {
 		progress <- "K8S更新镜像失败。"
 		return false
 	}

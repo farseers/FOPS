@@ -11,7 +11,6 @@ import (
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/fs/flog"
-	"github.com/farseer-go/fs/snc"
 	"github.com/farseer-go/tasks"
 )
 
@@ -126,22 +125,19 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			})
 
 			if node == nil {
-				json, _ := snc.Marshal(clusterNode.NodeList)
-				flog.Infof("node节点信息未找到: %s, %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, serviceVO.NodeName, json)
+				//json, _ := snc.Marshal(clusterNode.NodeList)
+				//flog.Infof("node节点信息未找到: %s, %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, serviceVO.NodeName, json)
+				return
 			}
 
 			// 实例存在，则只更新资源信息
-			if node != nil && curInstance != nil {
+			if curInstance != nil {
 				curInstance.DockerStatsVO = apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId)
 				return
 			}
 
-			if node != nil && !node.IsHealth {
-				flog.Infof("节点 %s 的状态不健康，跳过更新应用实例的详情: %s, %s", node.Description.Hostname, appDO.AppName, serviceVO.ServiceTaskId)
-			}
-
 			// 只有当节点是健康状态才加入到实例列表中。
-			if node != nil && node.IsHealth {
+			if node.IsHealth {
 				// 通过代理节点同步到的容器资源信息
 				dockerInspectVO := apps.DockerInspectVO{
 					DockerStatsVO: apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId),
@@ -158,6 +154,8 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 					dockerInspectVO.ContainerIP = strings.Split(serviceVO.Addresses[0], "/")[0]
 				}
 				appDO.DockerInspect.Add(dockerInspectVO)
+			} else {
+				flog.Infof("节点 %s 的状态不健康，跳过更新应用实例的详情: %s, %s", node.Description.Hostname, appDO.AppName, serviceVO.ServiceTaskId)
 			}
 		})
 		// 实例数量

@@ -7,7 +7,6 @@ import (
 	"fops/domain/cluster"
 	"strings"
 
-	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/fs/dateTime"
@@ -46,18 +45,21 @@ func UpdateDockerImage(appName string, dockerImage string, updateDelay int, buil
 
 	client := docker.NewClient()
 	// 先登陆仓库
-	result, wait := client.Hub.Login(dockerHub, dockerUserName, dockerUserPwd)
-	exception.ThrowRefuseExceptionBool(wait() != 0, "镜像登陆失败:"+collections.NewListFromChan(result).ToString(","))
+	wait := client.Hub.Login(dockerHub, dockerUserName, dockerUserPwd)
+	result, exitCode := wait.WaitToList()
+	exception.ThrowRefuseExceptionBool(exitCode != 0, "镜像登陆失败:"+result.ToString(","))
 
 	// 先拉取镜像
-	result, wait = client.Images.Pull(dockerImage)
-	exception.ThrowRefuseExceptionBool(wait() != 0, collections.NewListFromChan(result).ToString(","))
+	wait = client.Images.Pull(dockerImage)
+	result, exitCode = wait.WaitToList()
+	exception.ThrowRefuseExceptionBool(exitCode != 0, result.ToString(","))
 
 	// 服务存在，才更新，否则自动创建
 	if !createService(client, appName, dockerImage, appsRepository, clusterRepository) {
 		// 更新镜像
-		result, wait = client.Service.SetImages(appName, dockerImage, updateDelay)
-		exception.ThrowRefuseExceptionBool(wait() != 0, collections.NewListFromChan(result).ToString(","))
+		wait = client.Service.SetImages(appName, dockerImage, updateDelay)
+		result, exitCode = wait.WaitToList()
+		exception.ThrowRefuseExceptionBool(exitCode != 0, result.ToString(","))
 	}
 
 	// 更新集群版本信息
@@ -84,8 +86,9 @@ func RestartDocker(appName string, clusterRepository cluster.Repository, appsRep
 	client := docker.NewClient()
 	// 服务存在，才重启，否则自动创建
 	if !createService(client, appName, "", appsRepository, clusterRepository) {
-		result, wait := client.Service.Restart(appName)
-		exception.ThrowRefuseExceptionBool(wait() != 0, collections.NewListFromChan(result).ToString(","))
+		wait := client.Service.Restart(appName)
+		result, exitCode := wait.WaitToList()
+		exception.ThrowRefuseExceptionBool(exitCode != 0, result.ToString(","))
 	}
 }
 
@@ -101,8 +104,9 @@ func SetReplicas(appName string, dockerReplicas int, appsRepository apps.Reposit
 
 	// 更新副本数量
 	if exists {
-		result, wait := client.Service.SetReplicas(appName, dockerReplicas)
-		exception.ThrowRefuseExceptionBool(wait() != 0, collections.NewListFromChan(result).ToString(","))
+		wait := client.Service.SetReplicas(appName, dockerReplicas)
+		result, exitCode := wait.WaitToList()
+		exception.ThrowRefuseExceptionBool(exitCode != 0, result.ToString(","))
 	}
 
 	do.DockerReplicas = dockerReplicas
@@ -145,8 +149,9 @@ func createService(client *docker.Client, appName, dockerImage string, appsRepos
 			clusterDO.DockerNetwork = "net"
 		}
 
-		result, wait := client.Service.Create(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, dockerImage, do.LimitCpus, do.LimitMemory)
-		exception.ThrowRefuseExceptionBool(wait() != 0, collections.NewListFromChan(result).ToString(","))
+		wait := client.Service.Create(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, dockerImage, do.LimitCpus, do.LimitMemory)
+		result, exitCode := wait.WaitToList()
+		exception.ThrowRefuseExceptionBool(exitCode != 0, result.ToString(","))
 		return true
 	}
 	return false

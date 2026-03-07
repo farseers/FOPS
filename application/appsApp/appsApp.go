@@ -53,13 +53,15 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, clusterRe
 	if exists := client.Service.Exists(req.AppName); exists {
 		// 更新镜像
 		if (req.ClusterDockerImage != "" && req.ClusterDockerImage != do.ClusterVer.GetValue(clusterDO.Id).DockerImage) || do.DockerReplicas != req.DockerReplicas {
-			result, wait := client.Service.SetImagesAndReplicas(req.AppName, req.ClusterDockerImage, req.DockerReplicas)
-			exception.ThrowRefuseExceptionBool(wait() != 0, collections.NewListFromChan(result).ToString(","))
+			wait := client.Service.SetImagesAndReplicas(req.AppName, req.ClusterDockerImage, req.DockerReplicas)
+			lst, code := wait.WaitToList()
+			exception.ThrowRefuseExceptionBool(code != 0, lst.ToString(","))
 
 		} else if do.DockerReplicas != req.DockerReplicas {
 			// 更新副本数量
-			result, wait := client.Service.SetReplicas(req.AppName, req.DockerReplicas)
-			exception.ThrowRefuseExceptionBool(wait() != 0, collections.NewListFromChan(result).ToString(","))
+			wait := client.Service.SetReplicas(req.AppName, req.DockerReplicas)
+			lst, code := wait.WaitToList()
+			exception.ThrowRefuseExceptionBool(code != 0, lst.ToString(","))
 		}
 	}
 

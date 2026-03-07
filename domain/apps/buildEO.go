@@ -24,7 +24,6 @@ import (
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/fs/snc"
 	"github.com/farseer-go/queue"
-	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/http"
 )
@@ -158,21 +157,16 @@ func (receiver *BuildEO) StartBuild() {
 		// 添加自定义的挂载
 		builderArgs := configure.GetSlice("Fops.Builder")
 		args = append(args, builderArgs...)
-		lstResult, wait := receiver.dockerClient.Container.Run(receiver.fopsBuildName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env.ToMap(), receiver.ctx) // , "-v /var/lib/fops:/var/lib/fops"
-		if wait() != 0 {
-			for result := range lstResult {
-				receiver.logQueue.progress <- result
-			}
-			receiver.checkResult(false)
-		}
+		wait := receiver.dockerClient.Container.Run(receiver.fopsBuildName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env.ToMap(), receiver.ctx) // , "-v /var/lib/fops:/var/lib/fops"
+		wait.WaitToChan(receiver.logQueue.progress)
 	}
 	//defer receiver.dockerClient.Container.Kill(receiver.fopsBuildName)
 
 	// 获取外网IP
 	if extranetIpUrl := configure.GetString("Fops.ExtranetIpUrl"); extranetIpUrl != "" {
 		receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
-		lstResult, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, fmt.Sprintf("echo '公网IP：$(curl -s %s)'", extranetIpUrl), nil, receiver.ctx)
-		exec.SaveToChan(receiver.logQueue.progress, lstResult, wait)
+		wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, fmt.Sprintf("echo '公网IP：$(curl -s %s)'", extranetIpUrl), nil, receiver.ctx)
+		wait.WaitToChan(receiver.logQueue.progress)
 	}
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 
@@ -224,8 +218,8 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 		}
 
 		// 将action文件复制到容器
-		_, wait := receiver.dockerClient.Container.Cp(receiver.fopsBuildName, step.GetActionPath(), step.GetActionPath(), receiver.ctx)
-		wait()
+		wait := receiver.dockerClient.Container.Cp(receiver.fopsBuildName, step.GetActionPath(), step.GetActionPath(), receiver.ctx)
+		wait.Wait()
 
 		// 支持checkout默认拉取应用
 		if step.ActionName == "checkout" {
@@ -262,15 +256,15 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 		file.Delete(WithJsonPath)
 		withContent, _ := snc.Marshal(step.With)
 		file.WriteByte(WithJsonPath, withContent)
-		_, wait = receiver.dockerClient.Container.Cp(receiver.fopsBuildName, WithJsonPath, WithJsonPath, receiver.ctx)
-		wait()
+		wait = receiver.dockerClient.Container.Cp(receiver.fopsBuildName, WithJsonPath, WithJsonPath, receiver.ctx)
+		wait.Wait()
 
 		// 设置超时
 		receiver.ctx, receiver.cancel = context.WithTimeout(receiver.ctx, time.Duration(step.Timeout)*time.Minute)
 
 		// 执行 docker exec FOPS-Build /bin/bash -c "action"
-		lstResult, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.ctx)
-		exitCode := exec.SaveToChan(receiver.logQueue.progress, lstResult, wait)
+		wait = receiver.dockerClient.Container.Exec(receiver.fopsBuildName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.ctx)
+		exitCode := wait.WaitToChan(receiver.logQueue.progress)
 		receiver.checkResult(exitCode == 0)
 	}
 
@@ -291,12 +285,12 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 		}
 		shellPath := fmt.Sprintf("%s%d-%d.sh", ShellRoot, receiver.Env.BuildNumber, index+1)
 		file.WriteString(shellPath, script)
-		_, wait := receiver.dockerClient.Container.Cp(receiver.fopsBuildName, shellPath, shellPath, receiver.ctx)
-		wait()
+		wait := receiver.dockerClient.Container.Cp(receiver.fopsBuildName, shellPath, shellPath, receiver.ctx)
+		wait.Wait()
 
 		// 执行脚本 docker exec FOPS-Build /bin/bash -c "xxx.sh"
-		lstResult, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, shellPath, receiver.WorkflowsAction.Env, receiver.ctx)
-		exitCode := exec.SaveToChan(receiver.logQueue.progress, lstResult, wait)
+		wait = receiver.dockerClient.Container.Exec(receiver.fopsBuildName, shellPath, receiver.WorkflowsAction.Env, receiver.ctx)
+		exitCode := wait.WaitToChan(receiver.logQueue.progress)
 		receiver.checkResult(exitCode == 0)
 	}
 	receiver.logQueue.progress <- "---------------------------------------------------------"
@@ -307,9 +301,10 @@ func (receiver *BuildEO) getCommitId() {
 	cmd := fmt.Sprintf("git -C %s rev-parse HEAD", receiver.appGit.GetAbsolutePath())
 	//  docker exec FOPS-Build /bin/bash -c "git -C /var/lib/fops/git/fops rev-parse HEAD"
 
-	progress, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, receiver.ctx)
-	if wait() == 0 {
-		if commitId := collections.NewListFromChan(progress).First(); len(commitId) >= 16 {
+	wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, receiver.ctx)
+	commitId, code := wait.WaitToFirstResult()
+	if code == 0 {
+		if len(commitId) >= 16 {
 			receiver.Env.CommitId = commitId[:16]
 			receiver.logQueue.progress <- fmt.Sprintf("应用的CommitId：%s", receiver.Env.CommitId)
 		}
@@ -321,9 +316,10 @@ func (receiver *BuildEO) getSha256sum() {
 	// find /var/lib/fops/dist -type f ! -path "*/.git/*" ! -name ".gitignore" ! -name ".gitmodules" ! -name "with.json" -exec sha256sum {} + |sort -k2|sha256sum
 	cmd := fmt.Sprintf("find %s -type f ! -path \"*/.git/*\" ! -name \".gitignore\" ! -name \".gitmodules\" ! -name \"with.json\" -exec sha256sum {} + |sort -k2|sha256sum", DistRoot)
 	// docker exec FOPS-Build /bin/bash -c "find /var/lib/fops/dist -type f ! -path \"*/.git/*\" ! -name \".gitignore\" ! -name \".gitmodules\" ! -name \"with.json\" -exec sha256sum {} + |sort -k2|sha256sum"
-	progress, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, receiver.ctx)
-	if wait() == 0 {
-		if sha256sum := collections.NewListFromChan(progress).First(); len(sha256sum) >= 16 {
+	wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, receiver.ctx)
+	sha256sum, code := wait.WaitToFirstResult()
+	if code == 0 {
+		if len(sha256sum) >= 16 {
 			receiver.Env.Sha256sum = sha256sum[:16]
 			receiver.logQueue.progress <- fmt.Sprintf("打包目录Sha256：%s", receiver.Env.Sha256sum)
 		}
@@ -352,8 +348,9 @@ func (receiver *BuildEO) useCache(index int, gits collections.List[GitEO]) bool 
 
 	// 将之前的镜像更新成新的镜像名称
 	cmd := fmt.Sprintf("docker tag %s %s", dockerImage, receiver.Env.DockerImage)
-	lstResult, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, receiver.ctx)
-	if exitCode := exec.SaveToChan(receiver.logQueue.progress, lstResult, wait); exitCode != 0 {
+	wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, receiver.ctx)
+	exitCode := wait.WaitToChan(receiver.logQueue.progress)
+	if exitCode != 0 {
 		return false
 	}
 

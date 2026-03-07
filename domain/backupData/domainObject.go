@@ -246,8 +246,9 @@ func (receiver *DomainObject) backupClickhouse(backupRoot, database string) (Bac
 
 	// 压缩
 	flog.Infof("准备压缩：%s", backupRoot+fileName)
-	result, code := exec.RunShellCommand("gzip", []string{backupRoot + fileName}, nil, path, false)
-	if code != 0 {
+	wait := exec.RunShell("gzip", []string{backupRoot + fileName}, nil, path, false)
+	result, exitCode := wait.WaitToList()
+	if exitCode != 0 {
 		cmd := fmt.Sprintf("gzip %s", backupRoot+fileName)
 		return BackupHistoryData{}, fmt.Errorf("压纹文件%s 时失败：%s", cmd, result.ToString(","))
 	}
@@ -309,8 +310,9 @@ func (receiver *DomainObject) RecoverBackupFile(database string, fileName string
 	flog.Infof("正在解压文件:%s", fileName)
 	// 解压文件
 	path := filepath.Dir(backupRoot + fileName)
-	result, code := exec.RunShellCommand("gzip", []string{"-df", backupRoot + fileName}, nil, path, false)
-	if code != 0 {
+	wait := exec.RunShell("gzip", []string{"-df", backupRoot + fileName}, nil, path, false)
+	result, exitCode := wait.WaitToList()
+	if exitCode != 0 {
 		cmd := fmt.Sprintf("gzip -df %s", backupRoot+fileName)
 		return fmt.Errorf("解压文件：%s 时失败：%s", cmd, result.ToString(","))
 	}

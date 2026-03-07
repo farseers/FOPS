@@ -26,22 +26,22 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 		file.CreateDir766(gitPath)
 
 		// git init
-		lstResult, wait := exec.RunShellContext(ctx, "git", []string{"init"}, nil, gitPath, true)
-		if exitCode := exec.SaveToChan(progress, lstResult, wait); exitCode != 0 {
+		wait := exec.RunShellContext(ctx, "git", []string{"init"}, nil, gitPath, true)
+		if wait.WaitToChan(progress) != 0 {
 			progress <- "git init 失败"
 			return false
 		}
 
 		// git remote add
-		lstResult, wait = exec.RunShellContext(ctx, "git", []string{"remote", "add", "-f", "origin", gitRemote}, nil, gitPath, true)
-		if exitCode := exec.SaveToChan(progress, lstResult, wait); exitCode != 0 {
+		wait = exec.RunShellContext(ctx, "git", []string{"remote", "add", "-f", "origin", gitRemote}, nil, gitPath, true)
+		if wait.WaitToChan(progress) != 0 {
 			progress <- "添加远程仓库失败"
 			return false
 		}
 
 		// 配置稀疏检出
-		lstResult, wait = exec.RunShellContext(ctx, "git", []string{"config", "core.sparsecheckout", "true"}, nil, gitPath, true)
-		exec.SaveToChan(progress, lstResult, wait)
+		wait = exec.RunShellContext(ctx, "git", []string{"config", "core.sparsecheckout", "true"}, nil, gitPath, true)
+		wait.WaitToChan(progress)
 
 		// 写入稀疏检出配置（覆盖写入，避免重复）
 		sparseCheckoutPath := filepath.Join(gitPath, ".git", "info", "sparse-checkout")
@@ -57,8 +57,8 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 	}
 
 	// 使用本地配置，不污染全局
-	lstResult, wait := exec.RunShellContext(ctx, "git", []string{"config", "http.timeout", "10"}, nil, gitPath, true)
-	exec.SaveToChan(progress, lstResult, wait)
+	wait := exec.RunShellContext(ctx, "git", []string{"config", "http.timeout", "10"}, nil, gitPath, true)
+	wait.WaitToChan(progress)
 
 	var exitCode int
 	for i := 0; i < 3; i++ {
@@ -71,27 +71,23 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 			pullCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 			defer cancel()
 
-			lstResult, wait := exec.RunShellContext(pullCtx, "timeout", []string{"10", "git", "pull", "origin", branch}, nil, gitPath, true)
-			if exitCode = exec.SaveToChan(progress, lstResult, wait); exitCode == 0 {
+			wait := exec.RunShellContext(pullCtx, "timeout", []string{"10", "git", "pull", "origin", branch}, nil, gitPath, true)
+			if exitCode = wait.WaitToChan(progress); exitCode == 0 {
 				return true
-			}
-			if i == 2 {
-				progress <- "同步工作流文件失败，停止构建"
-			} else {
-				progress <- "拉取失败，正在尝试重新拉取"
 			}
 		}
 	}
 	return exitCode == 0
 }
+
 func (receiver *gitDevice) GetRemoteBranch(ctx context.Context, gitPath string) collections.List[apps.RemoteBranchVO] {
 	lst := collections.NewList[apps.RemoteBranchVO]()
-	lstResult, wait := exec.RunShellContext(ctx, "timeout", []string{"10", "git", "ls-remote", "--heads", "origin"}, nil, gitPath, false)
-	if wait() != 0 {
+	wait := exec.RunShellContext(ctx, "timeout", []string{"10", "git", "ls-remote", "--heads", "origin"}, nil, gitPath, false)
+	lstContent, exitCode := wait.WaitToList()
+	if exitCode != 0 {
 		return lst
 	}
 
-	lstContent := collections.NewListFromChan(lstResult)
 	for _, content := range lstContent.ToArray() {
 		// 跳过空行
 		content = strings.TrimSpace(content)

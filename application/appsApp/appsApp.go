@@ -57,7 +57,7 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, clusterRe
 			lst, code := wait.WaitToList()
 			exception.ThrowRefuseExceptionBool(code != 0, lst.ToString(","))
 
-		} else if do.DockerReplicas != req.DockerReplicas {
+		} else if do.DockerReplicas != req.DockerReplicas && do.DockerNodeRole == "worker" {
 			// 更新副本数量
 			wait := client.Service.SetReplicas(req.AppName, req.DockerReplicas)
 			lst, code := wait.WaitToList()

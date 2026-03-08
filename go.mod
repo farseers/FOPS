@@ -18,6 +18,7 @@ require (
 	github.com/farseer-go/tasks v0.17.3
 	github.com/farseer-go/utils v0.17.3
 	github.com/farseer-go/webapi v0.17.3
+	github.com/farseer-go/linkTrace v0.17.3
 	github.com/robfig/cron/v3 v3.0.1
 	golang.org/x/crypto v0.48.0
 )

@@ -363,7 +363,7 @@ func (receiver *BuildEO) useCache(index int, gits collections.List[GitEO]) bool 
 // GenerateWorkflowsContent 生成Workflows（并更新集群ID）
 func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 	// 更新工作流文件到本地
-	if isSuccess := receiver.gitDevice.PullWorkflows(receiver.ctx, receiver.apps.GetWorkflowsRoot(), receiver.appGit.Branch, receiver.appGit.GetAuthHub(), receiver.logQueue.progress); !isSuccess {
+	if isSuccess := receiver.gitDevice.PullWorkflows(receiver.ctx, receiver.apps.GetWorkflowsRoot(), receiver.BranchName, receiver.appGit.GetAuthHub(), receiver.logQueue.progress); !isSuccess {
 		return false
 	}
 

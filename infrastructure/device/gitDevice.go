@@ -60,6 +60,14 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 	wait := exec.RunShellContext(ctx, "git", []string{"config", "http.timeout", "10"}, nil, gitPath, true)
 	wait.WaitToChan(progress)
 
+	// 先切换到目标分支
+	// 尝试检出分支，如果不存在则创建并跟踪远程分支
+	wait = exec.RunShellContext(ctx, "git", []string{"checkout", "-B", branch, "origin/" + branch}, nil, gitPath, true)
+	if wait.WaitToChan(progress) != 0 {
+		progress <- "切换到分支 " + branch + " 失败"
+		return false
+	}
+
 	var exitCode int
 	for i := 0; i < 3; i++ {
 		select {
@@ -71,7 +79,7 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 			pullCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 			defer cancel()
 
-			wait := exec.RunShellContext(pullCtx, "timeout", []string{"10", "git", "pull", "origin", branch}, nil, gitPath, true)
+			wait := exec.RunShellContext(pullCtx, "git", []string{"pull", "origin", branch}, nil, gitPath, true)
 			if exitCode = wait.WaitToChan(progress); exitCode == 0 {
 				return true
 			}

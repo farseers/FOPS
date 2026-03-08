@@ -272,7 +272,7 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 	if len(step.Run) > 0 {
 		receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 		shellScript := collections.NewList[string]()
-		//shellScript.Add("source /root/.bashrc")
+		shellScript.Add("source /root/.bashrc") // 必须,加载环境变量
 		shellScript.Add("mkdir -p " + DistRoot + receiver.appGit.GetRelativePath())
 		shellScript.Add("cd " + DistRoot + receiver.appGit.GetRelativePath())
 		shellScript.Add("set -xe")
@@ -288,7 +288,7 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 		wait := receiver.dockerClient.Container.Cp(receiver.fopsBuildName, shellPath, shellPath, receiver.ctx)
 		wait.Wait()
 
-		// 执行脚本 docker exec FOPS-Build /bin/bash -c "xxx.sh"
+		// 执行脚本 docker exec FOPS-Build /bin/bash -c "/var/lib/fops/shell/1554-4.sh"
 		wait = receiver.dockerClient.Container.Exec(receiver.fopsBuildName, shellPath, receiver.WorkflowsAction.Env, receiver.ctx)
 		exitCode := wait.WaitToChan(receiver.logQueue.progress)
 		receiver.checkResult(exitCode == 0)

@@ -36,6 +36,8 @@ var route = []webapi.Route{
     {"GET", "/apps/build/view-{buildId}", appsApp.View, "", []context.IFilter{}, []string{"buildId"}},
     {"GET", "/apps/build/viewIncremental-{buildId}-{fromLine}", appsApp.ViewIncremental, "", []context.IFilter{}, []string{"buildId", "fromLine"}},
     {"POST", "/apps/build/stop", appsApp.Stop, "", []context.IFilter{application.Jwt{}}, []string{"buildId", "buildType", ""}},
+    {"GET", "/apps/config/config/get", appsApp.GetConfig, "", []context.IFilter{application.Jwt{}}, []string{"appName", ""}},
+    {"POST", "/apps/config/config/save", appsApp.SaveConfig, "", []context.IFilter{application.Jwt{}}, []string{"appName", "content", ""}},
     {"POST", "/apps/updateDockerImage", appsApp.UpdateDockerImage, "", []context.IFilter{}, []string{"appName", "dockerImage", "updateDelay", "buildNumber", "dockerHub", "dockerUserName", "dockerUserPwd", "", ""}},
     {"POST", "/apps/build/clearDockerImage", appsApp.ClearDockerImage, "", []context.IFilter{application.Jwt{}}, []string{}},
     {"POST", "/apps/restartDocker", appsApp.RestartDocker, "", []context.IFilter{application.Jwt{}}, []string{"appName", "", ""}},

@@ -21,6 +21,7 @@ type DomainObject struct {
 	LimitMemory       string                                      // 内存限制
 	IsSys             bool                                        // 是否系统应用
 	UTWorkflowsName   string                                      // UT工作流名称（文件的名称）
+	ConfigVer         int                                         // 配置文件版本号
 }
 
 func (receiver *DomainObject) IsNil() bool {

@@ -155,6 +155,18 @@ export function fopsApi() {
 				method: 'post',
 				data:param,
 			});
+		},getConfig: (param: object) => {
+			return requestGet({
+				url: '/apps/config/config/get',
+				method: 'get',
+				data:param,
+			});
+		},saveConfig: (param: object) => {
+			return request({
+				url: '/apps/config/config/save',
+				method: 'post',
+				data:param,
+			});
 		},buildLog: (param: string) => {
 			return requestGet({
 				url: '/apps/build/view-'+param,

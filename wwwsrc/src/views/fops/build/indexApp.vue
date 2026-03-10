@@ -55,6 +55,10 @@
                       <el-icon style="margin-left: 10px;cursor: pointer;color: #19d4ae;font-size: 18px"
                         @click="showFsLogLevel(2, v.AppName)"><ele-Document /></el-icon>
                     </el-tooltip>
+                    <el-tooltip content="配置管理" slot="label">
+                      <el-icon style="margin-left: 10px;cursor: pointer;color: #E6A23C;font-size: 18px"
+                        @click="showConfigDialog(v.AppName)"><ele-Setting /></el-icon>
+                    </el-tooltip>
                   </span>
                   <div class="appItem">
                     <el-tooltip :content="item.DeploySuccessAt" slot="label">
@@ -175,6 +179,7 @@
     <dockerDialog ref="dockerDialogRef" />
     <editAppNum ref="editAppNumRef" @refresh="getTableData()" />
     <elFirmBox ref="elFirmBoxRef" @refresh="getTableLogData()" />
+    <configDialog ref="configDialogRef" />
     <div v-if="state.showOverlay" class="overlay">
       <div class="overlay-content">
         <img :src="Image" style="width: 200px" alt="Image">
@@ -206,6 +211,7 @@ const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logDeta
 const dockerDialog = defineAsyncComponent(() => import('/src/views/fops/task/dockerDialog.vue'));
 const editAppNum = defineAsyncComponent(() => import('/src/views/fops/build/editAppNum.vue'));
 const elFirmBox = defineAsyncComponent(() => import('/src/views/fops/build/elFirmBox.vue'));
+const configDialog = defineAsyncComponent(() => import('/src/views/fops/build/configDialog.vue'));
 const logDetailDialogRef = ref();
 // 定义变量内容
 const appDialogRef = ref();
@@ -215,6 +221,7 @@ const scrollableBuildLog = ref();
 const dockerDialogRef = ref();
 const editAppNumRef = ref();
 const elFirmBoxRef = ref();
+const configDialogRef = ref();
 const state = reactive({
   isShowBuildLogDialog: false,
   buildLogContent: '',
@@ -243,6 +250,10 @@ const state = reactive({
   statTask: [],
   autoLog: true,
 });
+
+const showConfigDialog = (appName: string) => {
+  configDialogRef.value.openDialog(appName);
+};
 
 const showDockerLog = (AppName: any) => {
   dockerDialogRef.value.openDockerLog(AppName);

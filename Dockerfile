@@ -1,7 +1,7 @@
 FROM steden88/cicd:3.0
 WORKDIR /app
 # 复制配置（没有配置需要注释掉）
-COPY /fops/farseer.yaml .
+COPY /fops/config.yaml .
 COPY /fops/fops .
 COPY /fops/wwwroot ./wwwroot
 

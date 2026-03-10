@@ -23,7 +23,7 @@ type chContext struct {
 // InitChContextContext 初始化上下文
 func InitChContextContext() {
 	if linkTrace.Config.ConnString == "" {
-		panic("[farseer.yaml]FOPS.LinkTrace.ConnString，配置不正确")
+		panic("[config.yaml]FOPS.LinkTrace.ConnString，配置不正确")
 	}
 	data.RegisterInternalContext("LinkTrace", linkTrace.Config.ConnString)
 	CHContext = data.NewContext[chContext]("LinkTrace")

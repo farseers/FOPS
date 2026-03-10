@@ -15,6 +15,7 @@
 **/FOPS/wwwsrc/src/views/fops**: 前端页面
 **/FOPS/wwwsrc/src/router/route.ts**: 前端菜单路由
 **/FOPS/wwwsrc/src/api/fops/index.ts**: 定义后端api接口
+**/FOPS/wwwsrc/src/views/fops/build/indexApp.vue**: 应用中心
 
 ## 依赖项目
 **/farseer-go/**: 基础框架

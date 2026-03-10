@@ -46,7 +46,7 @@ const openDialog = (appName: string) => {
   state.loading = true;
 
   // 获取配置内容
-  serverApi.getConfig({ appName }).then((res: any) => {
+  serverApi.getConfig(appName).then((res: any) => {
     state.loading = false;
     if (res.Status) {
       state.ruleForm.content = res.Data;

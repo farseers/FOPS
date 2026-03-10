@@ -155,9 +155,9 @@ export function fopsApi() {
 				method: 'post',
 				data:param,
 			});
-		},getConfig: (param: object) => {
+		},getConfig: (appName: string) => {
 			return requestGet({
-				url: '/apps/config/config/get?appName='+param,
+				url: '/apps/config/config/get?appName='+appName,
 				method: 'get',
 				data:{},
 			});

@@ -30,7 +30,7 @@ func GetConfig(appName string, appsRepository apps.Repository) string {
 	}
 
 	// 如果不存在，返回默认模板
-	defaultConfig, err := os.ReadFile("/home/code/FOPS/config.yaml")
+	defaultConfig, err := os.ReadFile("./tpl.yaml")
 	if err != nil {
 		exception.ThrowWebExceptionf(403, "读取默认配置模板失败: %v", err)
 	}

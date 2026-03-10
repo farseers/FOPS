@@ -1,0 +1,40 @@
+Database:
+  default: "DataType=mysql,PoolMaxSize=5,PoolMinSize=1,ConnectionString=root:steden@123@tcp(192.168.1.8:3306)/fops?charset=utf8&parseTime=True&loc=Local"
+Redis:
+  default: "Server={{redis_ip}}:6379,DB=14,Password={{redis_pwd}},ConnectTimeout=600000,SyncTimeout=10000,ResponseTimeout=10000"
+Rabbit:
+  CustomExchange: "Server={{rabbit_ip}}:5672,UserName={{rabbit_usr}},Password={{rabbit_pwd}},Exchange=CustomExchange,RoutingKey=,Type=fanout,UseConfirm=true,AutoCreate=true,IsDurable=true"
+FSchedule:
+  ClientIp: ""
+  ClientPort: 8888
+  Server:
+    Token: ""
+    Address:
+      - "{{fschedule_addr}}"
+LinkTrace:
+  Enable: true
+  PrintLog: false
+WebApi:
+  Url: ":8889"
+  Jwt:
+    Key: "uwzpaAfMYjgs"
+  Session:
+    Store: "Redis"
+    StoreConfigName: "default"
+    Age: 1800
+Log:
+  Default:
+    LogLevel: "info"          # 只记录级别>=info的日志内容
+    Format: "json"            # 默认使用json格式输出
+    TimeFormat: "yyyy-MM-dd hh:mm:ss" # 打印的时间格式，默认为：yyyy-MM-dd hh:mm:ss.ffffff
+  Console:
+    LogLevel: "info"          # 只记录级别>=info的日志内容
+    Format: "text"            # 控制台打印，使用text格式输出
+  Component:
+    task: true                # 打印task组件的日志
+    cacheManage: true         # 打印cacheManage组件的日志
+    webapi: true              # 打印webapi组件的日志
+    event: true               # 打印event组件的日志
+    httpRequest: true         # 打印httpRequest组件的日志
+    queue: true               # 打印queue组件的日志
+    fSchedule: true           # 打印fSchedule组件的日志

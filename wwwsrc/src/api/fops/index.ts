@@ -157,9 +157,9 @@ export function fopsApi() {
 			});
 		},getConfig: (param: object) => {
 			return requestGet({
-				url: '/apps/config/config/get',
+				url: '/apps/config/config/get?appName='+param,
 				method: 'get',
-				data:param,
+				data:{},
 			});
 		},saveConfig: (param: object) => {
 			return request({

@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="配置管理" v-model="state.isShowDialog" width="80%" top="50px">
+  <el-dialog title="配置管理" v-model="state.isShowDialog" width="80%" top="5vh">
     <el-form :model="state.ruleForm" size="default" label-width="100px">
       <el-form-item label="应用名称">
         <el-input v-model="state.ruleForm.appName" disabled></el-input>

@@ -4,16 +4,16 @@ package appsApp
 import (
 	"fmt"
 	"fops/domain/apps"
-	"os"
 
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/exception"
+	"github.com/farseer-go/fs/parse"
 )
 
 // ConfigResponse 配置响应
 type ConfigResponse struct {
 	Content         string // 配置内容
-	AppConfigVer    int    // 应用数据库中的配置版本号
+	AppConfigVer    string // 应用数据库中的配置版本号
 	DockerConfigVer string // Docker中实际使用的配置版本号
 }
 
@@ -22,15 +22,15 @@ type ConfigResponse struct {
 // @filter application.Jwt
 func GetConfig(appName string, appsRepository apps.Repository) ConfigResponse {
 	exception.ThrowWebExceptionBool(appName == "", 403, "应用名称不能为空")
-
-	// 获取应用信息
-	do := appsRepository.ToEntity(appName)
-	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
+	exception.ThrowWebExceptionBool(!appsRepository.IsExists(appName), 403, "应用不存在")
 
 	client := docker.NewClient()
-
+	appVer, _ := client.Service.GetCurConfigVersion(appName)
 	response := ConfigResponse{
-		AppConfigVer: do.ConfigVer,
+		AppConfigVer: parse.ToString(appVer),
+	}
+	if appVer == 0 {
+		response.AppConfigVer = "未使用"
 	}
 
 	// 尝试从 Docker Config 获取配置
@@ -46,12 +46,11 @@ func GetConfig(appName string, appsRepository apps.Repository) ConfigResponse {
 	}
 
 	// 如果不存在，返回默认模板
-	defaultConfig, err := os.ReadFile("./tpl.yaml")
-	if err != nil {
-		exception.ThrowWebExceptionf(403, "读取默认配置模板失败: %v", err)
-	}
-
-	response.Content = string(defaultConfig)
+	// defaultConfig, err := os.ReadFile("./tpl.yaml")
+	// if err != nil {
+	// 	exception.ThrowWebExceptionf(403, "读取默认配置模板失败: %v", err)
+	// }
+	// response.Content = string(defaultConfig)
 	response.DockerConfigVer = "未创建"
 	return response
 }
@@ -62,15 +61,13 @@ func GetConfig(appName string, appsRepository apps.Repository) ConfigResponse {
 func SaveConfig(appName string, content string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(appName == "", 403, "应用名称不能为空")
 	exception.ThrowWebExceptionBool(content == "", 403, "配置内容不能为空")
-
-	// 获取应用信息
-	do := appsRepository.ToEntity(appName)
-	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
+	exception.ThrowWebExceptionBool(!appsRepository.IsExists(appName), 403, "应用不存在")
 
 	client := docker.NewClient()
 
 	// 新版本号
-	newVersion := do.ConfigVer + 1
+	lastVersion, _ := client.Config.GetLastVersion(appName)
+	newVersion := lastVersion.Version + 1
 
 	// 创建新的 Docker Config
 	configName := fmt.Sprintf("%s_config_v%d", appName, newVersion)
@@ -84,8 +81,5 @@ func SaveConfig(appName string, content string, appsRepository apps.Repository) 
 		exception.ThrowWebExceptionf(403, "创建 Docker Config 失败: %v", err)
 	}
 
-	// 更新应用的配置版本号
-	do.ConfigVer = newVersion
-	err = appsRepository.UpdateApp(do)
 	exception.ThrowWebExceptionError(403, err)
 }

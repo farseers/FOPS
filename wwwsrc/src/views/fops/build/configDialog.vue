@@ -7,7 +7,7 @@
           </el-form-item>
           <el-form-item label="配置版本">
             <el-space>
-              <el-tag type="info">应用版本: {{ state.ruleForm.appConfigVer }}</el-tag>
+              <el-tag :type="state.ruleForm.appConfigVer === '未使用' ? 'warning' : 'info'">应用版本: {{ state.ruleForm.appConfigVer }}</el-tag>
               <el-tag :type="state.ruleForm.dockerConfigVer === '未创建' ? 'warning' : 'success'">Docker版本: {{ state.ruleForm.dockerConfigVer }}</el-tag>
             </el-space>
           </el-form-item>
@@ -38,7 +38,7 @@ const state = reactive({
   ruleForm: {
     appName: '',
     content: '',
-    appConfigVer: 0,
+    appConfigVer: '',
     dockerConfigVer: '未创建',
   },
 });
@@ -55,7 +55,7 @@ const openDialog = (appName: string) => {
     if (res.Status) {
       // 处理新的响应格式
       const data = res.Data;
-      state.ruleForm.content = data.Content || data;
+      state.ruleForm.content = data.Content;
       state.ruleForm.appConfigVer = data.AppConfigVer || 0;
       state.ruleForm.dockerConfigVer = data.DockerConfigVer || '未创建';
     } else {
@@ -108,6 +108,6 @@ defineExpose({
   font-family: 'Courier New', Consolas, Monaco, monospace;
   font-size: 13px;
   line-height: 2;
-  height: 1000px;
+  height: 900px;
 }
 </style>

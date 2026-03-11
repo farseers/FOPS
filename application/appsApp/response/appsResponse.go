@@ -32,7 +32,6 @@ type AppsResponse struct {
 	LimitCpus         float64                        // Cpu核数限制
 	LimitMemory       string                         // 内存限制
 	UTWorkflowsName   string                         // UT工作流名称（文件的名称）
-	ConfigVer         int                            // 配置文件版本号
 }
 
 type AppsSysResponse struct {

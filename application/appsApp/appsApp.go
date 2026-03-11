@@ -332,6 +332,5 @@ func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps
 		AdditionalScripts: do.AdditionalScripts,
 		DockerfilePath:    do.DockerfilePath,
 		UTWorkflowsName:   do.UTWorkflowsName,
-		ConfigVer:         do.ConfigVer,
 	}
 }

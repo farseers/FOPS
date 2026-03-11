@@ -23,7 +23,6 @@ type AppsPO struct {
 	LimitCpus         float64                                `gorm:"type:decimal(6,3);not null;default:0;comment:Cpu核数限制"`
 	LimitMemory       string                                 `gorm:"not null;default:'';comment:内存限制"`
 	IsSys             bool                                   `gorm:"size:1;not null;default:0;comment:是否系统应用"`
-	ConfigVer         int                                    `gorm:"type:int;not null;default:0;comment:配置文件版本号"`
 }
 
 // 创建索引

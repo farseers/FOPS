@@ -2,11 +2,9 @@
 package appsApp
 
 import (
-	"fmt"
 	"fops/domain/_/eumBuildStatus"
 	"fops/domain/apps"
 	"fops/domain/cluster"
-	"os"
 	"strings"
 
 	"github.com/farseer-go/docker"
@@ -32,9 +30,6 @@ func UpdateDockerImage(appName string, dockerImage string, updateDelay int, buil
 		DockerImage:   dockerImage,
 	}
 
-	// 更新仓库版本
-	//event.DockerPushedEvent{BuildNumber: buildNumber, AppName: appName, ImageName: dockerImage}.PublishEvent()
-
 	defer func() {
 		// 手动创建一个构建记录
 		buildLogEO.FinishAt = dateTime.Now()
@@ -59,7 +54,7 @@ func UpdateDockerImage(appName string, dockerImage string, updateDelay int, buil
 	// 服务存在，才更新，否则自动创建
 	if !createService(client, appName, dockerImage, appsRepository, clusterRepository) {
 		// 检查并更新配置版本（这里不需要返回值，因为后续的 SetImages 会触发服务更新）
-		_ = updateServiceConfigIfNeeded(client, appName, appsRepository)
+		_ = client.SyncConfig(appName, "/app/config.yaml")
 
 		// 更新镜像
 		wait = client.Service.SetImages(appName, dockerImage, updateDelay)
@@ -92,7 +87,7 @@ func RestartDocker(appName string, clusterRepository cluster.Repository, appsRep
 	// 服务存在，才重启，否则自动创建
 	if !createService(client, appName, "", appsRepository, clusterRepository) {
 		// 检查并更新配置版本（更新配置会自动触发服务滚动更新）
-		configUpdated := updateServiceConfigIfNeeded(client, appName, appsRepository)
+		configUpdated := client.SyncConfig(appName, "/app/config.yaml")
 
 		// 如果配置没有更新，才执行重启
 		if !configUpdated {
@@ -161,85 +156,16 @@ func createService(client *docker.Client, appName, dockerImage string, appsRepos
 		}
 
 		// 准备配置文件
-		configName := ensureConfigExists(client, appName, do.ConfigVer, appsRepository)
+		configVersion, err := client.Config.GetLastVersion(appName)
+		exception.ThrowRefuseExceptionError(err)
 
-		wait := client.Service.Create(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, dockerImage, do.LimitCpus, do.LimitMemory, configName)
+		wait := client.Service.Create(appName, do.DockerNodeRole, do.AdditionalScripts, clusterDO.DockerNetwork, do.DockerReplicas, dockerImage, do.LimitCpus, do.LimitMemory, docker.ConfigTarget{
+			Name:   configVersion.Spec.Name,
+			Target: "/app/config.yaml",
+		})
 		result, exitCode := wait.WaitToList()
 		exception.ThrowRefuseExceptionBool(exitCode != 0, result.ToString(","))
 		return true
 	}
-	return false
-}
-
-// ensureConfigExists 确保配置文件存在，如果不存在则创建默认配置
-func ensureConfigExists(client *docker.Client, appName string, configVer int, appsRepository apps.Repository) string {
-	// 如果版本号为0，说明还没有配置，创建默认配置
-	if configVer == 0 {
-		// 读取默认配置模板
-		defaultConfig, err := os.ReadFile("./tpl.yaml")
-		if err != nil {
-			// 如果读取失败，使用空配置
-			defaultConfig = []byte("")
-		}
-
-		// 创建配置
-		configName := fmt.Sprintf("%s_config_v1", appName)
-		labels := map[string]string{
-			"owner_service": appName,
-			"version":       "1",
-		}
-
-		_, err = client.Config.Create(configName, defaultConfig, labels)
-		if err != nil {
-			// 如果创建失败，返回空字符串（不挂载配置）
-			return ""
-		}
-
-		// 更新应用的配置版本号
-		do := appsRepository.ToEntity(appName)
-		do.ConfigVer = 1
-		_ = appsRepository.UpdateApp(do)
-
-		return configName
-	}
-
-	// 如果已有配置版本，返回配置名称
-	return fmt.Sprintf("%s_config_v%d", appName, configVer)
-}
-
-// updateServiceConfigIfNeeded 检查并更新服务的配置版本
-// 返回值：是否更新了配置
-func updateServiceConfigIfNeeded(client *docker.Client, appName string, appsRepository apps.Repository) bool {
-	// 获取应用信息
-	do := appsRepository.ToEntity(appName)
-	if do.IsNil() || do.ConfigVer == 0 {
-		return false
-	}
-
-	// 获取服务当前使用的配置
-	serviceInfo, err := client.Service.Inspect(appName)
-	if err != nil {
-		return false
-	}
-
-	// 检查服务没有配置时,则更新
-	if len(serviceInfo.Spec.TaskTemplate.ContainerSpec.Configs) == 0 {
-		configName := fmt.Sprintf("%s_config_v%d", appName, do.ConfigVer)
-		_ = client.Service.UpdateServiceConfig(appName, configName, "/app/config.yaml")
-		return true
-	}
-
-	// 从配置名称中解析版本号（格式：appName_config_v{version}）
-	currentConfig := serviceInfo.Spec.TaskTemplate.ContainerSpec.Configs[0]
-	currentVersion := 0
-	fmt.Sscanf(currentConfig.ConfigName, appName+"_config_v%d", &currentVersion)
-
-	// 如果版本不一致，更新配置
-	if currentVersion != do.ConfigVer {
-		configName := fmt.Sprintf("%s_config_v%d", appName, do.ConfigVer)
-		_ = client.Service.UpdateServiceConfig(appName, configName, "/app/config.yaml")
-		return true
-	}
-
 	return false
 }

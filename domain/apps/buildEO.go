@@ -503,7 +503,7 @@ func (receiver *BuildEO) fail() {
 
 	// 更新本次构建状态 = 失败
 	container.Resolve[Repository]().SetFail(receiver.Id, receiver.Env)
-	queue.Push("monitor", monitor.NewDataEO(receiver.AppName, "build", fmt.Sprintf("分支%s 构建失败", receiver.Env.BranchName)))
+	queue.Push("monitor", monitor.NewDataEO(receiver.AppName, "build", fmt.Sprintf("分支%s %s 构建失败", receiver.Env.BranchName, receiver.WorkflowsName)))
 }
 
 // 设置任务成功
@@ -525,7 +525,7 @@ func (receiver *BuildEO) success() {
 	receiver.IsSuccess = true
 	receiver.FinishAt = dateTime.Now()
 	container.Resolve[Repository]().SetSuccess(receiver.Id, receiver.Env)
-	queue.Push("monitor", monitor.NewDataEO(receiver.AppName, "build", fmt.Sprintf("分支%s 构建成功：%s", receiver.Env.BranchName, receiver.Env.DockerImage)))
+	queue.Push("monitor", monitor.NewDataEO(receiver.AppName, "build", fmt.Sprintf("分支%s %s 构建成功：%s", receiver.Env.BranchName, receiver.WorkflowsName, receiver.Env.DockerImage)))
 }
 
 // 得到所有Git

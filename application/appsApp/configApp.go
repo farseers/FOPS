@@ -10,10 +10,17 @@ import (
 	"github.com/farseer-go/fs/exception"
 )
 
+// ConfigResponse 配置响应
+type ConfigResponse struct {
+	Content         string // 配置内容
+	AppConfigVer    int    // 应用数据库中的配置版本号
+	DockerConfigVer string // Docker中实际使用的配置版本号
+}
+
 // GetConfig 获取应用配置文件
 // @get config/get
 // @filter application.Jwt
-func GetConfig(appName string, appsRepository apps.Repository) string {
+func GetConfig(appName string, appsRepository apps.Repository) ConfigResponse {
 	exception.ThrowWebExceptionBool(appName == "", 403, "应用名称不能为空")
 
 	// 获取应用信息
@@ -22,11 +29,20 @@ func GetConfig(appName string, appsRepository apps.Repository) string {
 
 	client := docker.NewClient()
 
+	response := ConfigResponse{
+		AppConfigVer: do.ConfigVer,
+	}
+
 	// 尝试从 Docker Config 获取配置
 	configInfo, err := client.Config.InspectByService(appName)
 	if err == nil && configInfo.ID != "" {
 		// 返回配置内容
-		return configInfo.Spec.Data
+		response.Content = configInfo.Spec.Data
+		// 从 Labels 中获取 Docker Config 的版本号
+		if version, ok := configInfo.Spec.Labels["version"]; ok {
+			response.DockerConfigVer = version
+		}
+		return response
 	}
 
 	// 如果不存在，返回默认模板
@@ -35,7 +51,9 @@ func GetConfig(appName string, appsRepository apps.Repository) string {
 		exception.ThrowWebExceptionf(403, "读取默认配置模板失败: %v", err)
 	}
 
-	return string(defaultConfig)
+	response.Content = string(defaultConfig)
+	response.DockerConfigVer = "未创建"
+	return response
 }
 
 // SaveConfig 保存应用配置文件

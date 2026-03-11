@@ -58,8 +58,8 @@ func UpdateDockerImage(appName string, dockerImage string, updateDelay int, buil
 
 	// 服务存在，才更新，否则自动创建
 	if !createService(client, appName, dockerImage, appsRepository, clusterRepository) {
-		// 检查并更新配置版本
-		updateServiceConfigIfNeeded(client, appName, appsRepository)
+		// 检查并更新配置版本（这里不需要返回值，因为后续的 SetImages 会触发服务更新）
+		_ = updateServiceConfigIfNeeded(client, appName, appsRepository)
 
 		// 更新镜像
 		wait = client.Service.SetImages(appName, dockerImage, updateDelay)
@@ -91,12 +91,15 @@ func RestartDocker(appName string, clusterRepository cluster.Repository, appsRep
 	client := docker.NewClient()
 	// 服务存在，才重启，否则自动创建
 	if !createService(client, appName, "", appsRepository, clusterRepository) {
-		// 检查并更新配置版本
-		updateServiceConfigIfNeeded(client, appName, appsRepository)
+		// 检查并更新配置版本（更新配置会自动触发服务滚动更新）
+		configUpdated := updateServiceConfigIfNeeded(client, appName, appsRepository)
 
-		wait := client.Service.Restart(appName)
-		result, exitCode := wait.WaitToList()
-		exception.ThrowRefuseExceptionBool(exitCode != 0, result.ToString(","))
+		// 如果配置没有更新，才执行重启
+		if !configUpdated {
+			wait := client.Service.Restart(appName)
+			result, exitCode := wait.WaitToList()
+			exception.ThrowRefuseExceptionBool(exitCode != 0, result.ToString(","))
+		}
 	}
 }
 
@@ -173,7 +176,7 @@ func ensureConfigExists(client *docker.Client, appName string, configVer int, ap
 	// 如果版本号为0，说明还没有配置，创建默认配置
 	if configVer == 0 {
 		// 读取默认配置模板
-		defaultConfig, err := os.ReadFile("/home/code/FOPS/config.yaml")
+		defaultConfig, err := os.ReadFile("./tpl.yaml")
 		if err != nil {
 			// 如果读取失败，使用空配置
 			defaultConfig = []byte("")
@@ -205,43 +208,38 @@ func ensureConfigExists(client *docker.Client, appName string, configVer int, ap
 }
 
 // updateServiceConfigIfNeeded 检查并更新服务的配置版本
-func updateServiceConfigIfNeeded(client *docker.Client, appName string, appsRepository apps.Repository) {
+// 返回值：是否更新了配置
+func updateServiceConfigIfNeeded(client *docker.Client, appName string, appsRepository apps.Repository) bool {
 	// 获取应用信息
 	do := appsRepository.ToEntity(appName)
 	if do.IsNil() || do.ConfigVer == 0 {
-		return
+		return false
 	}
 
 	// 获取服务当前使用的配置
 	serviceInfo, err := client.Service.Inspect(appName)
 	if err != nil {
-		return
+		return false
 	}
 
-	// 检查服务是否有配置
+	// 检查服务没有配置时,则更新
 	if len(serviceInfo.Spec.TaskTemplate.ContainerSpec.Configs) == 0 {
-		// 服务没有配置，需要添加
 		configName := fmt.Sprintf("%s_config_v%d", appName, do.ConfigVer)
 		_ = client.Service.UpdateServiceConfig(appName, configName, "/app/config.yaml")
-		return
+		return true
 	}
 
-	// 获取当前配置的版本
+	// 从配置名称中解析版本号（格式：appName_config_v{version}）
 	currentConfig := serviceInfo.Spec.TaskTemplate.ContainerSpec.Configs[0]
-	currentConfigInfo, err := client.Config.Inspect(currentConfig.ConfigID)
-	if err != nil {
-		return
-	}
-
-	// 比较版本号
 	currentVersion := 0
-	if v, ok := currentConfigInfo.Spec.Labels["version"]; ok {
-		fmt.Sscanf(v, "%d", &currentVersion)
-	}
+	fmt.Sscanf(currentConfig.ConfigName, appName+"_config_v%d", &currentVersion)
 
 	// 如果版本不一致，更新配置
 	if currentVersion != do.ConfigVer {
 		configName := fmt.Sprintf("%s_config_v%d", appName, do.ConfigVer)
 		_ = client.Service.UpdateServiceConfig(appName, configName, "/app/config.yaml")
+		return true
 	}
+
+	return false
 }

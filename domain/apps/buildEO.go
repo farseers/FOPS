@@ -80,6 +80,15 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.apps = appsRepository.ToEntity(receiver.AppName)
 	receiver.appGit = appsRepository.ToGitEntity(receiver.apps.AppGit)
 
+	// 尝试获取应用构建锁 并发构建同1个应用时,产生错误的镜像版本问题
+	if !lockManager.TryLock(receiver.AppName) {
+		receiver.logQueue.progress <- fmt.Sprintf("应用 %s 正在构建中，请等待当前构建完成后再试", receiver.AppName)
+		receiver.fail()
+		return
+	}
+	// 确保构建结束时释放锁
+	defer lockManager.Unlock(receiver.AppName)
+
 	// 开启异步监控状态
 	go receiver.WatchStatus()
 	defer receiver.catch()

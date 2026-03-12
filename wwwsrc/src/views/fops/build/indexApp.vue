@@ -354,6 +354,8 @@ const onHandleCurrentLogChange = (val: number) => {
 };
 // 定义定时器
 let intervalId = null;
+// 请求锁，防止并发请求导致日志顺序错乱
+let isLoadingLog = false;
 // 使用 watch 监听 state 中 count 属性的变化
 watch(() => state.isShowBuildLogDialog, (newValue, oldValue) => {
   if (!newValue) {
@@ -385,6 +387,14 @@ const showBuildLog = (row: any) => {
 
 
 const onShowLog = () => {
+  // 如果上一个请求还在进行中，跳过本次请求，避免并发导致日志顺序错乱
+  if (isLoadingLog) {
+    return
+  }
+
+  // 设置请求锁
+  isLoadingLog = true
+
   // 使用增量日志 API
   serverApi.buildLogIncremental(state.buildLogId.toString(), state.buildLogLines).then(function (response) {
     const res = response.data || response
@@ -407,6 +417,12 @@ const onShowLog = () => {
         }, 200)
       }
     }
+  }).catch(function (error) {
+    // 请求失败时也要释放锁
+    console.error('获取增量日志失败:', error)
+  }).finally(function () {
+    // 无论成功或失败，都释放请求锁
+    isLoadingLog = false
   })
 }
 

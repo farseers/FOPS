@@ -32,7 +32,7 @@ const state = reactive({
   inputValue: '',
   workflowsName: '',
   appName: '',
-  updateFramework: ''
+  updateFramework: false
 });
 const autoCompleteRef = ref();
 const handleSelect = (item: any) => {
@@ -58,6 +58,7 @@ const openDialog = (row: any, workflowsName: any, branchName: any) => {
   state.isShowDialog = true;
   state.workflowsName = workflowsName;
   state.appName = row.AppName;
+  state.updateFramework = false;
   if (branchName) { state.inputValue = branchName }
   let param = {
     "appName": state.appName

@@ -10,7 +10,6 @@ type DomainObject struct {
 	AppName           string                                      // 应用名称（链路追踪）
 	ClusterVer        collections.Dictionary[int64, ClusterVerVO] // 集群版本
 	AppGit            int64                                       // 应用的源代码
-	FrameworkGits     collections.List[int64]                     // 依赖的框架源代码
 	DockerfilePath    string                                      // Dockerfile路径
 	DockerInstances   int                                         // 运行的实例数量
 	DockerInspect     collections.List[DockerInspectVO]           // 运行的实例详情

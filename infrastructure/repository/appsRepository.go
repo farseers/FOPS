@@ -18,10 +18,11 @@ type appsRepository struct {
 	data.IRepository[apps.DomainObject]
 	buildRepository
 	gitRepository
+	appsFrameworkRepository
 }
 
 func (receiver *appsRepository) ToListBySys(isSys bool) collections.List[apps.DomainObject] {
-	ts := context.MysqlContext.Apps.Omit("framework_gits", "dockerfile_path", "additional_scripts", "is_sys")
+	ts := context.MysqlContext.Apps.Omit("dockerfile_path", "additional_scripts", "is_sys")
 	// 只显示手动添加的应用（不含系统应用）
 	if !isSys {
 		ts.Where("is_sys = 0")
@@ -31,7 +32,7 @@ func (receiver *appsRepository) ToListBySys(isSys bool) collections.List[apps.Do
 }
 
 func (receiver *appsRepository) ToShortList(isAll bool) collections.List[apps.ShortEO] {
-	ts := context.MysqlContext.Apps.Omit("framework_gits", "dockerfile_path", "additional_scripts", "is_sys")
+	ts := context.MysqlContext.Apps.Omit("dockerfile_path", "additional_scripts", "is_sys")
 	if !isAll {
 		ts.Where("is_sys = false")
 	}

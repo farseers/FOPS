@@ -544,8 +544,14 @@ func (receiver *BuildEO) getGits() collections.List[GitEO] {
 	if !receiver.appGit.IsNil() {
 		gits.Add(receiver.appGit)
 	}
-	// 依赖的框架
-	frameworkGits := container.Resolve[Repository]().ToGitList(receiver.apps.FrameworkGits)
+	// 依赖的框架 - 从新表读取
+	appsRepository := container.Resolve[Repository]()
+	appsFrameworkList := appsRepository.ToAppsFrameworkList(receiver.AppName)
+	frameworkIds := collections.NewList[int64]()
+	appsFrameworkList.Foreach(func(item *AppsFrameworkEO) {
+		frameworkIds.Add(item.FrameworkId)
+	})
+	frameworkGits := appsRepository.ToGitList(frameworkIds)
 	gits.AddList(frameworkGits)
 	return gits
 }

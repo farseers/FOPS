@@ -32,6 +32,8 @@ type mysqlContext struct {
 	Build data.DomainSet[model.BuildPO, apps.BuildEO] `data:"name=build;migrate;"`
 	// Git
 	Git data.DomainSet[model.GitPO, apps.GitEO] `data:"name=git;migrate;"`
+	// 应用框架关系表
+	AppsFramework data.DomainSet[model.AppsFrameworkPO, apps.AppsFrameworkEO] `data:"name=apps_framework;migrate;"`
 	// 配置中心
 	Configure data.DomainSet[model.ConfigurePO, configure.DomainObject] `data:"name=configure;migrate;"`
 	// 登录帐号

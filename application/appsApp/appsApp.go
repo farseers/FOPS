@@ -39,6 +39,18 @@ func Add(req request.AddRequest, appsRepository apps.Repository) {
 	// 添加
 	err := appsRepository.Add(do)
 	exception.ThrowWebExceptionError(403, err)
+
+	// 将 FrameworkGits 转换为新表数据
+	if req.FrameworkGits.Count() > 0 {
+		req.FrameworkGits.Foreach(func(frameworkId *int64) {
+			_ = appsRepository.AddAppsFramework(apps.AppsFrameworkEO{
+				AppName:      req.AppName,
+				FrameworkId:  *frameworkId,
+				CommitId:     "",
+				IsAutoUpdate: true, // 默认自动更新
+			})
+		})
+	}
 }
 
 // Update 修改应用
@@ -86,6 +98,19 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, clusterRe
 
 	err := appsRepository.UpdateApp(newDO)
 	exception.ThrowWebExceptionError(403, err)
+
+	// 更新 FrameworkGits - 先删除旧的，再添加新的
+	_, _ = appsRepository.DeleteAppsFrameworkByAppName(req.AppName)
+	if req.FrameworkGits.Count() > 0 {
+		req.FrameworkGits.Foreach(func(frameworkId *int64) {
+			_ = appsRepository.AddAppsFramework(apps.AppsFrameworkEO{
+				AppName:      req.AppName,
+				FrameworkId:  *frameworkId,
+				CommitId:     "",
+				IsAutoUpdate: true, // 默认自动更新
+			})
+		})
+	}
 }
 
 // Delete 删除应用
@@ -100,6 +125,9 @@ func Delete(appName string, appsRepository apps.Repository) {
 		err := client.Service.Delete(appName)
 		exception.ThrowRefuseExceptionBool(err != nil, "删除服务失败: "+err.Error())
 	}
+
+	// 删除应用框架关系
+	_, _ = appsRepository.DeleteAppsFrameworkByAppName(appName)
 
 	// 删除应用
 	_, err := appsRepository.Delete(appName)
@@ -131,7 +159,7 @@ func List(appsRepository apps.Repository, logDataRepository logData.Repository, 
 	lstCluster := clusterRepository.ToList()
 	lst := collections.NewList[response.AppsResponse]()
 	appsRepository.ToListBySys(false).Foreach(func(item *apps.DomainObject) {
-		appsResponse := doToAppsResponse(lstCluster, *item)
+		appsResponse := doToAppsResponse(lstCluster, *item, appsRepository)
 		// 统计日志数量
 		countList.Foreach(func(logItem *logData.LogCountEO) {
 			if item.AppName != logItem.AppName {
@@ -279,7 +307,7 @@ func Info(appName string, appsRepository apps.Repository, clusterRepository clus
 	clusterVerVO := do.ClusterVer.GetValue(localCluster.Id)
 
 	lstCluster := clusterRepository.ToList()
-	appsResponse := doToAppsResponse(lstCluster, do)
+	appsResponse := doToAppsResponse(lstCluster, do, appsRepository)
 	appsResponse.LocalClusterVer = response.ClusterVerVO{
 		ClusterId:       clusterVerVO.ClusterId,
 		ClusterName:     localCluster.Name,
@@ -304,7 +332,7 @@ func SyncWorkflows(appName string, appsRepository apps.Repository, gitDevice app
 	}
 }
 
-func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps.DomainObject) response.AppsResponse {
+func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps.DomainObject, appsRepository apps.Repository) response.AppsResponse {
 	clusterVer := collections.NewList[response.ClusterVerVO]()
 	do.ClusterVer.Values().Foreach(func(clusterVerVO *apps.ClusterVerVO) {
 		if curCluster := lstCluster.Find(func(item *cluster.DomainObject) bool {
@@ -318,12 +346,20 @@ func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps
 	clusterVer = clusterVer.OrderBy(func(item response.ClusterVerVO) any {
 		return item.ClusterId
 	}).ToList()
+
+	// 从新表读取 FrameworkGits
+	frameworkGits := collections.NewList[int64]()
+	appsFrameworkList := appsRepository.ToAppsFrameworkList(do.AppName)
+	appsFrameworkList.Foreach(func(item *apps.AppsFrameworkEO) {
+		frameworkGits.Add(item.FrameworkId)
+	})
+
 	return response.AppsResponse{
 		AppName:           do.AppName,
 		AppGit:            do.AppGit,
 		DockerInstances:   do.DockerInstances,
 		ClusterVer:        clusterVer,
-		FrameworkGits:     do.FrameworkGits,
+		FrameworkGits:     frameworkGits,
 		DockerNodeRole:    do.DockerNodeRole,
 		DockerReplicas:    do.DockerReplicas,
 		IsHealth:          do.DockerInstances >= do.DockerReplicas,

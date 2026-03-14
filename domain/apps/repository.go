@@ -19,6 +19,7 @@ type Repository interface {
 	ToUTList() collections.List[DomainObject] // 获取需要UT的应用
 	buildRepository
 	gitRepository
+	appsFrameworkRepository
 }
 
 type buildRepository interface {
@@ -46,4 +47,15 @@ type gitRepository interface {
 	UpdateGit(eo GitEO) (int64, error)
 	DeleteGit(id int64) (int64, error)
 	ExistsGit(id int64) bool
+}
+
+type appsFrameworkRepository interface {
+	ToAppsFrameworkList(appName string) collections.List[AppsFrameworkEO]                       // 获取应用的框架列表
+	AddAppsFramework(eo AppsFrameworkEO) error                                                  // 添加应用框架关系
+	UpdateAppsFramework(eo AppsFrameworkEO) (int64, error)                                      // 更新应用框架关系
+	DeleteAppsFramework(appName string, frameworkId int64) (int64, error)                       // 删除应用框架关系
+	DeleteAppsFrameworkByAppName(appName string) (int64, error)                                 // 删除应用的所有框架关系
+	UpdateCommitId(appName string, frameworkId int64, commitId string) (int64, error)           // 更新框架的CommitId
+	UpdateIsAutoUpdate(appName string, frameworkId int64, isAutoUpdate bool) (int64, error)     // 更新是否自动更新
+	ExistsAppsFramework(appName string, frameworkId int64) bool                                 // 判断应用框架关系是否存在
 }

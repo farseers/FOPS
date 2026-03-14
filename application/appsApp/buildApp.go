@@ -21,7 +21,7 @@ import (
 
 // BuildAdd 添加构建  这里不能加JWT，否则无法实现自动创建新的构建// @filter application.Jwt
 // @post build/add
-func BuildAdd(appName string, workflowsName string, branchName string, appsRepository apps.Repository, clusterRepository cluster.Repository, dockerDevice apps.IDockerDevice) {
+func BuildAdd(appName string, workflowsName string, branchName string, updateFramework bool, appsRepository apps.Repository, clusterRepository cluster.Repository, dockerDevice apps.IDockerDevice) {
 	appDO := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionfBool(appDO.IsNil(), 403, "应用不存在")
 	exception.ThrowWebExceptionfBool(workflowsName == "", 403, "工作流名称未设置")
@@ -30,14 +30,15 @@ func BuildAdd(appName string, workflowsName string, branchName string, appsRepos
 	}
 	buildNumber := appsRepository.GetBuildNumber(appName) + 1
 	buildDO := apps.BuildEO{
-		BuildServerId: core.AppId,
-		BuildNumber:   buildNumber,
-		CreateAt:      dateTime.Now(),
-		FinishAt:      dateTime.Now(),
-		Env:           apps.EnvVO{},
-		AppName:       appName,
-		WorkflowsName: workflowsName,
-		BranchName:    branchName,
+		BuildServerId:   core.AppId,
+		BuildNumber:     buildNumber,
+		CreateAt:        dateTime.Now(),
+		FinishAt:        dateTime.Now(),
+		Env:             apps.EnvVO{},
+		AppName:         appName,
+		WorkflowsName:   workflowsName,
+		BranchName:      branchName,
+		UpdateFramework: updateFramework,
 	}
 	err := appsRepository.AddBuild(&buildDO)
 	exception.ThrowWebExceptionError(403, err)

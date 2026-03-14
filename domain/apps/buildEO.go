@@ -45,6 +45,7 @@ type BuildEO struct {
 	BranchName      string              // 分支名称
 	DockerImage     string              // Docker镜像
 	WorkflowsAction ActionVO            // 工作流定义的内容（通过读取WorkflowsYmlPath）
+	UpdateFramework bool                // 依赖的框架是否使用最新版本(否则仅使用之前成功构建的框架版本)
 	dockerDevice    IDockerDevice
 	gitDevice       IGitDevice
 	logQueue        *LogQueue

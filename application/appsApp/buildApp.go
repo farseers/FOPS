@@ -26,7 +26,9 @@ func BuildAdd(appName string, workflowsName string, branchName string, updateFra
 	exception.ThrowWebExceptionfBool(appDO.IsNil(), 403, "应用不存在")
 	exception.ThrowWebExceptionfBool(workflowsName == "", 403, "工作流名称未设置")
 	if branchName == "" {
-		branchName = "main"
+		// 则读取Git的默认分支
+		appGit := appsRepository.ToGitEntity(appDO.AppGit)
+		branchName = appGit.Branch
 	}
 	buildNumber := appsRepository.GetBuildNumber(appName) + 1
 	buildDO := apps.BuildEO{

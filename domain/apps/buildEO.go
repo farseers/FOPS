@@ -80,6 +80,7 @@ func (receiver *BuildEO) StartBuild() {
 	// 应用
 	receiver.apps = appsRepository.ToEntity(receiver.AppName)
 	receiver.appGit = appsRepository.ToGitEntity(receiver.apps.AppGit)
+	receiver.appGit.Branch = receiver.BranchName // 使用构建传进来的分支
 
 	// 尝试获取应用构建锁 并发构建同1个应用时,产生错误的镜像版本问题
 	if !lockManager.TryLock(receiver.AppName) {
@@ -190,7 +191,12 @@ func (receiver *BuildEO) StartBuild() {
 		switch step.ActionName {
 		case "checkout":
 			// 得到应用的CommitId
-			receiver.getCommitId()
+			commitId := receiver.getCommitId(receiver.appGit.GetAbsolutePath())
+			if len(commitId) >= 16 {
+				receiver.Env.CommitId = commitId[:16]
+				receiver.logQueue.progress <- fmt.Sprintf("应用的CommitId：%s", receiver.Env.CommitId)
+			}
+
 			receiver.getSha256sum()
 			// 直接使用缓存
 			if receiver.useCache(index, gits) {
@@ -202,6 +208,15 @@ func (receiver *BuildEO) StartBuild() {
 			//event.DockerPushedEvent{BuildNumber: parse.ToInt(step.With["buildNumber"]), AppName: parse.ToString(step.With["appName"]), ImageName: parse.ToString(step.With["dockerImage"])}.PublishEvent()
 		case "dockerBuild": // 镜像打包成功后，需要更新到Git分支中，用于后续的缓存使用
 			container.Resolve[appsBranch.Repository]().UpdateDockerImage(receiver.AppName, receiver.Env.CommitId, receiver.Env.DockerImage, receiver.Env.Sha256sum)
+		case "dockerswarmUpdateVer": // 发布成功后,更新应用依赖框架的所有CommitId
+			gits.Foreach(func(item *GitEO) {
+				// 得到最新的CommitId
+				commitId := receiver.getCommitId(item.GetAbsolutePath())
+				if len(commitId) >= 16 {
+					commitId = commitId[:16]
+					appsRepository.UpdateCommitId(receiver.AppName, int64(item.Id), commitId)
+				}
+			})
 		}
 	}
 
@@ -214,6 +229,7 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 	// 使用action程序，需要判断是否要下载
 	if step.ActionName != "" {
 		receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
+		// 下载action逻辑
 		if !file.IsExists(step.GetActionPath()) {
 			receiver.logQueue.progress <- fmt.Sprintf("下载 %s", step.ActionDownloadUrl)
 			// 先创建目录
@@ -242,22 +258,6 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 					UserPwd:  parse.ToString(step.With["gitUserPwd"]),
 					Path:     parse.ToString(step.With["gitPath"]),
 				})
-			}
-			// 修改了应用的分支
-			if branch := parse.ToString(step.With["branch"]); branch != "" || receiver.BranchName != "" {
-				appGit := gits.Find(func(item *GitEO) bool {
-					return item.IsApp
-				})
-				// UI中传入
-				if receiver.BranchName != "" {
-					appGit.Branch = receiver.BranchName
-				} else {
-					// 使用工作流定义的分支
-					appGit.Branch = branch
-					receiver.BranchName = branch
-					receiver.Env.BranchName = branch
-					container.Resolve[Repository]().UpdateBuilding(receiver.Id, receiver.Env)
-				}
 			}
 		}
 		step.With["gits"] = gits
@@ -307,18 +307,16 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 }
 
 // 得到应用的CommitId
-func (receiver *BuildEO) getCommitId() {
-	cmd := fmt.Sprintf("git -C %s rev-parse HEAD", receiver.appGit.GetAbsolutePath())
+func (receiver *BuildEO) getCommitId(gitPath string) string {
+	cmd := fmt.Sprintf("git -C %s rev-parse HEAD", gitPath)
 	//  docker exec FOPS-Build /bin/bash -c "git -C /var/lib/fops/git/fops rev-parse HEAD"
 
 	wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, receiver.ctx)
 	commitId, code := wait.WaitToFirstResult()
 	if code == 0 {
-		if len(commitId) >= 16 {
-			receiver.Env.CommitId = commitId[:16]
-			receiver.logQueue.progress <- fmt.Sprintf("应用的CommitId：%s", receiver.Env.CommitId)
-		}
+		return commitId
 	}
+	return ""
 }
 
 // 得到整个目录的Sha256sum
@@ -540,19 +538,25 @@ func (receiver *BuildEO) success() {
 
 // 得到所有Git
 func (receiver *BuildEO) getGits() collections.List[GitEO] {
+	appsRepository := container.Resolve[Repository]()
+
+	// 先加载应用GIT
 	gits := collections.NewList[GitEO]()
 	if !receiver.appGit.IsNil() {
 		gits.Add(receiver.appGit)
 	}
+
 	// 依赖的框架 - 从新表读取
-	appsRepository := container.Resolve[Repository]()
 	appsFrameworkList := appsRepository.ToAppsFrameworkList(receiver.AppName)
-	frameworkIds := collections.NewList[int64]()
 	appsFrameworkList.Foreach(func(item *AppsFrameworkEO) {
-		frameworkIds.Add(item.FrameworkId)
+		gitEO := appsRepository.ToGitEntity(item.FrameworkId)
+		// 如果工作流和依赖框架都没有启用使用最新的版本,则使用依赖关系中的版本
+		if !receiver.UpdateFramework && !item.IsAutoUpdate && item.CommitId != "" {
+			gitEO.Branch = item.CommitId
+		}
+		gits.Add(gitEO)
 	})
-	frameworkGits := appsRepository.ToGitList(frameworkIds)
-	gits.AddList(frameworkGits)
+
 	return gits
 }
 

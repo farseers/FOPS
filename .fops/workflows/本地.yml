@@ -63,7 +63,7 @@ jobs:
           - mkdir wwwroot
           - cd ./wwwsrc
           - npm install
-          - npm run build
+          - export BROWSERSLIST_IGNORE_OLD_DATA=1 && export NODE_ENV=production && npm run build
           - cp -r dist/* ../wwwroot/
 
       - name: 打包镜像

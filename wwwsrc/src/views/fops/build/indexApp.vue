@@ -106,7 +106,7 @@
                   style="width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>
               </div>
               <div v-if="v.AppGit > 0" class="appItem appItem1">构建
-                <el-button v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v, 'main')"
+                <el-button v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v, item,'main')"
                   type="danger" style="margin-left: 5px;">{{ item }}</el-button>
               </div>
             </el-card>
@@ -432,8 +432,8 @@ const onHideOverlay = () => {
   state.showOverlay = false
 }
 // 构建
-const onBuildAdd = (row: any, workflowsName: string) => {
-  buildConfirmDialogRef.value.openDialog(row, workflowsName);
+const onBuildAdd = (row: any, workflowsName: any, branchName: any) => {
+  buildConfirmDialogRef.value.openDialog(row, workflowsName, branchName);
   return
   const t = '请填写分支名称，并确认构建到本地!'
   ElMessageBox.prompt(t, '提示', {

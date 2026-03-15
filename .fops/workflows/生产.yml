@@ -48,7 +48,7 @@ jobs:
           - mkdir wwwroot
           - cd ./wwwsrc
           - npm install
-          - npm run build
+          - npm run build -s
           - cp -r dist/* ../wwwroot/
 
       - name: 打包镜像

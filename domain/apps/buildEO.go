@@ -286,6 +286,7 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 		shellScript.Add("mkdir -p " + DistRoot + receiver.appGit.GetRelativePath())
 		shellScript.Add("cd " + DistRoot + receiver.appGit.GetRelativePath())
 		shellScript.Add("set -xe")
+		shellScript.Add("export BROWSERSLIST_IGNORE_OLD_DATA=1") // 过滤npm 无关紧要的信息
 		shellScript.AddArray(step.Run)
 		shellScript.Add("")
 		script := shellScript.ToString("\n")

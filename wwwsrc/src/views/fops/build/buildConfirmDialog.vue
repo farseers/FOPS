@@ -28,7 +28,26 @@
             </el-checkbox>
           </div>
           <div class="section-body">
-            
+            <el-table :data="state.appFrameworkList" style="width: 100%">
+              <el-table-column prop="Id" label="编号" width="60" />
+              <el-table-column prop="Name" label="Git名称" show-overflow-tooltip width="80"></el-table-column>
+              <el-table-column prop="Hub" label="托管地址" show-overflow-tooltip></el-table-column>
+              <el-table-column prop="CommitId" label="CommitId" width="140">
+                <template #default="scope">
+                  <span>{{ scope.row.CommitId || '未构建' }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="自动更新" width="60">
+                <template #default="scope">
+                  <el-switch v-model="scope.row.IsAutoUpdate" disable="true" />
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="60">
+                <template #default="scope">
+                  <el-button size="small" text type="primary" @click="delGit(scope.row)">删除</el-button>
+                </template>
+              </el-table-column>
+            </el-table>
             <!-- <div class="checkbox-hint">勾选后将自动更新到最新版本</div> -->
           </div>
         </div>
@@ -58,7 +77,8 @@ const state = reactive({
   inputValue: '',
   workflowsName: '',
   appName: '',
-  updateFramework: false
+  updateFramework: false,
+  appFrameworkList: [],
 });
 
 // 打开弹窗
@@ -66,6 +86,7 @@ const openDialog = (row: any, workflowsName: any, branchName: any) => {
   // console.log(row,workflowsName,branchName)
   state.inputValue = '';
   state.restaurants = [];
+  state.appFrameworkList = [];
   state.isShowDialog = true;
   state.workflowsName = workflowsName;
   state.appName = row.AppName;
@@ -75,12 +96,20 @@ const openDialog = (row: any, workflowsName: any, branchName: any) => {
     "appName": state.appName
   };
 
+  // 读取分支列表
   serverApi.autobuildBranchList(param).then(function (res) {
     if (res.Status) {
       const arr = res.Data.map((item: any) => {
         return { value: item.BranchName }
       });
       state.restaurants = arr
+    }
+  })
+
+  // 读取框架列表
+  serverApi.appFrameworkList(param).then(function (res) {
+    if (res.Status) {
+      state.appFrameworkList = res.Data
     }
   })
 };
@@ -213,6 +242,7 @@ defineExpose({
 
 .framework-checkbox {
   padding-left: 20px;
+
   :deep(.el-checkbox__label) {
     font-size: 14px;
   }

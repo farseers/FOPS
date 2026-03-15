@@ -2,10 +2,11 @@ package apps
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/farseer-go/fs/configure"
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/utils/file"
-	"strings"
 )
 
 type stepVO struct {
@@ -35,7 +36,7 @@ type ActionVO struct {
 func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (ActionVO, error) {
 	workflowsYmlContent := file.ReadString(workflowsYmlPath)
 	if workflowsYmlContent == "" {
-		return ActionVO{}, fmt.Errorf("WorkflowsYml没有定义。")
+		return ActionVO{}, fmt.Errorf("WorkflowsYml没有定义: %s", workflowsYmlPath)
 	}
 
 	// 替换项目名称

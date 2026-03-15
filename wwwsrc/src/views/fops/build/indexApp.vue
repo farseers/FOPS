@@ -178,7 +178,7 @@
     </el-dialog>
     <dockerDialog ref="dockerDialogRef" />
     <editAppNum ref="editAppNumRef" @refresh="getTableData()" />
-    <elFirmBox ref="elFirmBoxRef" @refresh="getTableLogData()" />
+    <buildConfirmDialog ref="buildConfirmDialogRef" @refresh="getTableLogData()" />
     <configDialog ref="configDialogRef" />
     <div v-if="state.showOverlay" class="overlay">
       <div class="overlay-content">
@@ -210,7 +210,7 @@ const taskDialog = defineAsyncComponent(() => import('/src/views/fops/task/taskA
 const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logDetailDialog.vue'));
 const dockerDialog = defineAsyncComponent(() => import('/src/views/fops/task/dockerDialog.vue'));
 const editAppNum = defineAsyncComponent(() => import('/src/views/fops/build/editAppNum.vue'));
-const elFirmBox = defineAsyncComponent(() => import('/src/views/fops/build/elFirmBox.vue'));
+const buildConfirmDialog = defineAsyncComponent(() => import('/src/views/fops/build/buildConfirmDialog.vue'));
 const configDialog = defineAsyncComponent(() => import('/src/views/fops/build/configDialog.vue'));
 const logDetailDialogRef = ref();
 // 定义变量内容
@@ -220,7 +220,7 @@ const taskDialogRef = ref();
 const scrollableBuildLog = ref();
 const dockerDialogRef = ref();
 const editAppNumRef = ref();
-const elFirmBoxRef = ref();
+const buildConfirmDialogRef = ref();
 const configDialogRef = ref();
 const state = reactive({
   isShowBuildLogDialog: false,
@@ -317,7 +317,7 @@ const onOpenEdit = (type: string, row: any) => {
 //重新构建
 const onBranchAgain = (row: any) => {
   if (row.Status == 2) {
-    elFirmBoxRef.value.openDialog(row, row.WorkflowsName, row.BranchName);
+    buildConfirmDialogRef.value.openDialog(row, row.WorkflowsName, row.BranchName);
   }
 }
 // 清除镜像
@@ -434,7 +434,7 @@ const onHideOverlay = () => {
 }
 // 构建
 const onBuildAdd = (row: any, workflowsName: any) => {
-  elFirmBoxRef.value.openDialog(row, workflowsName);
+  buildConfirmDialogRef.value.openDialog(row, workflowsName);
   return
   const t = '请填写分支名称，并确认构建到本地!'
   ElMessageBox.prompt(t, '提示', {

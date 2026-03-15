@@ -64,7 +64,17 @@
               <el-table-column prop="Id" label="编号" width="60" />
               <el-table-column prop="Name" label="Git名称" show-overflow-tooltip width="120"></el-table-column>
               <el-table-column prop="Hub" label="托管地址" show-overflow-tooltip></el-table-column>
-              <el-table-column label="操作" width="100">
+              <el-table-column prop="CommitId" label="CommitId" width="120">
+                <template #default="scope">
+                  <span>{{ scope.row.CommitId || '未构建' }}</span>
+                </template>
+              </el-table-column>
+              <el-table-column label="自动更新" width="60">
+                <template #default="scope">
+                  <el-switch v-model="scope.row.IsAutoUpdate" @change="onAutoUpdateChange(scope.row)" />
+                </template>
+              </el-table-column>
+              <el-table-column label="操作" width="60">
                 <template #default="scope">
                   <el-button size="small" text type="primary" @click="delGit(scope.row)">删除</el-button>
                 </template>
@@ -118,18 +128,27 @@ const { proxy } = getCurrentInstance() as any;
 // 定义变量内容
 const gitDialogFormRef = ref();
 const multipleTableRef = ref<InstanceType<typeof ElTable>>();
+
+// 定义 FrameworkItem 类型
+interface FrameworkItem {
+  FrameworkId: number;
+  CommitId: string;
+  IsAutoUpdate: boolean;
+}
+
 const state = reactive({
   ruleForm: {
     ClusterId: 0, // 集群ID
     AppName: '', //应用名称
     DockerVer: '', // 镜像版本
+    DockerImage: '', // Docker镜像
     LocalClusterVer: { // 集群版本
       ClusterId: 0,
       DockerImage: '',
     },
     AppGit: 0, // 应用的源代码
     AppGitName: '', // 应用的源代码
-    FrameworkGits: [], // 依赖的框架源代码
+    FrameworkList: [] as FrameworkItem[], // 依赖的框架源代码
     DockerfilePath: '', // Dockerfile路径
     IsHealth: false, // 是否健康
     DockerInstances: 0, // 实例数量
@@ -178,12 +197,13 @@ const openDialog = (type: string, row: any, clusterId: number) => {
       // 绑定数据
       state.ruleForm.AppName = row.AppName
       state.ruleForm.DockerVer = row.DockerVer
-      state.ruleForm.ClusterVer = row.ClusterVer
+      state.ruleForm.DockerImage = row.DockerImage || ''
       state.ruleForm.LocalClusterVer = row.LocalClusterVer
       state.ruleForm.AppGit = row.AppGit
-      state.ruleForm.FrameworkGits = row.FrameworkGits
+      state.ruleForm.FrameworkList = row.FrameworkList || []
       state.ruleForm.DockerfilePath = row.DockerfilePath
-      state.SelectItem = row.FrameworkGits
+      // 从 FrameworkList 中提取 ID 列表用于选择
+      state.SelectItem = row.FrameworkList ? row.FrameworkList.map((item: any) => item.FrameworkId) : []
       state.ruleForm.IsHealth = row.IsHealth
       state.ruleForm.DockerReplicas = row.DockerReplicas
       state.ruleForm.DockerNodeRole = row.DockerNodeRole
@@ -200,7 +220,7 @@ const openDialog = (type: string, row: any, clusterId: number) => {
       state.ruleForm.AppGitName = row.AppGitName
       //loadGitInfo(row.AppGit)
       // 加载git数据
-      loadGit(row.FrameworkGits)
+      loadGit()
     }
   })
   state.dialog.isShowDialog = true;
@@ -209,12 +229,18 @@ const openDialog = (type: string, row: any, clusterId: number) => {
 const loadGit = () => {
   serverApi.gitList({ isApp: 0 }).then(function (res) {
     if (res.Status) {
-      // state.tableData.data = res.Data;
-      // state.tableData.total = res.Data.length;
-      const SelectItem = state.ruleForm.FrameworkGits;
-      const arr = res.Data.filter(item => SelectItem.includes(item.Id));
-      state.gitList = arr;
-      // console.log(state.gitList,state.SelectItem)
+      // 从 FrameworkList 中提取 ID 列表
+      const SelectItem = state.ruleForm.FrameworkList.map((item: any) => item.FrameworkId);
+      const arr = res.Data.filter((item: any) => SelectItem.includes(item.Id));
+      // 将 git 信息与 FrameworkList 合并，添加 Name 等信息
+      state.gitList = arr.map((gitItem: any) => {
+        const framework = state.ruleForm.FrameworkList.find((f: any) => f.FrameworkId === gitItem.Id);
+        return {
+          ...gitItem,
+          CommitId: framework?.CommitId || '',
+          IsAutoUpdate: framework?.IsAutoUpdate !== undefined ? framework.IsAutoUpdate : true
+        };
+      });
     } else {
       state.gitList = []
     }
@@ -230,8 +256,17 @@ const loadGitInfo = (id: any) => {
   })
 }
 const delGit = (row: any) => {
-  state.ruleForm.FrameworkGits = state.ruleForm.FrameworkGits.filter(number => number !== parseInt(row.Id));
-  loadGit(state.ruleForm.FrameworkGits)
+  state.ruleForm.FrameworkList = state.ruleForm.FrameworkList.filter((item: any) => item.FrameworkId !== parseInt(row.Id));
+  loadGit()
+}
+
+// 处理自动更新开关变化
+const onAutoUpdateChange = (row: any) => {
+  // 更新 FrameworkList 中对应项的 IsAutoUpdate 值
+  const framework = state.ruleForm.FrameworkList.find((item: any) => item.FrameworkId === row.Id);
+  if (framework) {
+    framework.IsAutoUpdate = row.IsAutoUpdate;
+  }
 }
 
 // 关闭弹窗
@@ -295,7 +330,11 @@ const onSubmit = () => {
     "ClusterDockerImage": state.ruleForm.LocalClusterVer.DockerImage,
     "AppName": state.ruleForm.AppName,
     "AppGit": parseInt(state.ruleForm.AppGit),
-    "FrameworkGits": state.ruleForm.FrameworkGits,
+    "FrameworkList": state.ruleForm.FrameworkList.map((item: any) => ({
+      FrameworkId: item.FrameworkId,
+      CommitId: item.CommitId || '',
+      IsAutoUpdate: item.IsAutoUpdate !== undefined ? item.IsAutoUpdate : true
+    })),
     "DockerfilePath": state.ruleForm.DockerfilePath,
     "DockerReplicas": parseInt(state.ruleForm.DockerReplicas),
     "AdditionalScripts": state.ruleForm.AdditionalScripts,
@@ -321,7 +360,8 @@ const onSubmit = () => {
 const getTableData = (type: any) => {
   if (type == 1) {
     state.isApp = 0
-    state.SelectItem = state.ruleForm.FrameworkGits // 清空
+    // 从 FrameworkList 中提取 ID 列表
+    state.SelectItem = state.ruleForm.FrameworkList.map((item: any) => item.FrameworkId)
   } else {
     state.isApp = 1
     var select = []
@@ -347,8 +387,10 @@ const onloadSelect = (type: number) => {
     setCurrent(item, false)
   })
   if (type == 1) {
+    // 从 FrameworkList 中提取 ID 列表
+    const frameworkIds = state.ruleForm.FrameworkList.map((item: any) => item.FrameworkId);
     state.tableData.data.forEach(function (item, index) {
-      var rowArray = state.ruleForm.FrameworkGits.filter(t => t == item.Id);
+      var rowArray = frameworkIds.filter((id: any) => id == item.Id);
       if (rowArray.length > 0) {
         setCurrent(item, true)
       } else {
@@ -397,8 +439,17 @@ const setCurrent = (row: any, isSelect: boolean) => {
 // 确认选择
 const SureCheck = () => {
   if (state.gitType == 1) {
-    state.ruleForm.FrameworkGits = state.SelectItem
-    loadGit(state.ruleForm.FrameworkGits)
+    // 更新 FrameworkList：保留已存在的项并更新，添加新选择的项
+    const existingMap = new Map(state.ruleForm.FrameworkList.map((item: any) => [item.FrameworkId, item]));
+    state.ruleForm.FrameworkList = state.SelectItem.map((id: any) => {
+      const existing = existingMap.get(id);
+      return existing || {
+        FrameworkId: id,
+        CommitId: '',
+        IsAutoUpdate: true
+      };
+    });
+    loadGit()
   } else {
     state.ruleForm.AppGit = state.SelectItem[0]
     loadGitInfo(state.ruleForm.AppGit)

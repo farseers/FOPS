@@ -99,15 +99,15 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, clusterRe
 	err := appsRepository.UpdateApp(newDO)
 	exception.ThrowWebExceptionError(403, err)
 
-	// 更新 FrameworkGits - 先删除旧的，再添加新的
+	// 更新 FrameworkList - 先删除旧的，再添加新的
 	_, _ = appsRepository.DeleteAppsFrameworkByAppName(req.AppName)
-	if req.FrameworkGits.Count() > 0 {
-		req.FrameworkGits.Foreach(func(frameworkId *int64) {
+	if req.FrameworkList.Count() > 0 {
+		req.FrameworkList.Foreach(func(item *request.FrameworkItem) {
 			_ = appsRepository.AddAppsFramework(apps.AppsFrameworkEO{
 				AppName:      req.AppName,
-				FrameworkId:  *frameworkId,
-				CommitId:     "",
-				IsAutoUpdate: true, // 默认自动更新
+				FrameworkId:  item.FrameworkId,
+				CommitId:     item.CommitId,
+				IsAutoUpdate: item.IsAutoUpdate,
 			})
 		})
 	}
@@ -314,6 +314,7 @@ func Info(appName string, appsRepository apps.Repository, clusterRepository clus
 		DockerImage:     clusterVerVO.DockerImage,
 		DeploySuccessAt: clusterVerVO.DeploySuccessAt,
 	}
+	appsResponse.FrameworkList = appsRepository.ToAppsFrameworkList(do.AppName)
 	return appsResponse
 }
 
@@ -347,19 +348,19 @@ func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps
 		return item.ClusterId
 	}).ToList()
 
-	// 从新表读取 FrameworkGits
-	frameworkGits := collections.NewList[int64]()
-	appsFrameworkList := appsRepository.ToAppsFrameworkList(do.AppName)
-	appsFrameworkList.Foreach(func(item *apps.AppsFrameworkEO) {
-		frameworkGits.Add(item.FrameworkId)
-	})
+	// // 从新表读取 FrameworkGits
+	// frameworkGits := collections.NewList[int64]()
+	// appsFrameworkList := appsRepository.ToAppsFrameworkList(do.AppName)
+	// appsFrameworkList.Foreach(func(item *apps.AppsFrameworkEO) {
+	// 	frameworkGits.Add(item.FrameworkId)
+	// })
 
 	return response.AppsResponse{
-		AppName:           do.AppName,
-		AppGit:            do.AppGit,
-		DockerInstances:   do.DockerInstances,
-		ClusterVer:        clusterVer,
-		FrameworkGits:     frameworkGits,
+		AppName:         do.AppName,
+		AppGit:          do.AppGit,
+		DockerInstances: do.DockerInstances,
+		ClusterVer:      clusterVer,
+		// FrameworkGits:     frameworkGits,
 		DockerNodeRole:    do.DockerNodeRole,
 		DockerReplicas:    do.DockerReplicas,
 		IsHealth:          do.DockerInstances >= do.DockerReplicas,

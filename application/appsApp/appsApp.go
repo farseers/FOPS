@@ -307,15 +307,22 @@ func Info(appName string, appsRepository apps.Repository, clusterRepository clus
 	clusterVerVO := do.ClusterVer.GetValue(localCluster.Id)
 
 	lstCluster := clusterRepository.ToList()
-	appsResponse := doToAppsResponse(lstCluster, do, appsRepository)
+	appsResponse := doToAppsResponse(lstCluster, do)
 	appsResponse.LocalClusterVer = response.ClusterVerVO{
 		ClusterId:       clusterVerVO.ClusterId,
 		ClusterName:     localCluster.Name,
 		DockerImage:     clusterVerVO.DockerImage,
 		DeploySuccessAt: clusterVerVO.DeploySuccessAt,
 	}
-	appsResponse.FrameworkList = appsRepository.ToAppsFrameworkList(do.AppName)
+	appsResponse.FrameworkList = appsRepository.ToAppsFrameworkList(appName)
 	return appsResponse
+}
+
+// AppFrameworkList 该应用依赖的框架列表
+// @post appFrameworkList
+// @filter application.Jwt
+func AppFrameworkList(appName string, appsRepository apps.Repository) collections.List[apps.AppsFrameworkEO] {
+	return appsRepository.ToAppsFrameworkList(appName)
 }
 
 // SyncWorkflows 同步工作流文件
@@ -333,7 +340,7 @@ func SyncWorkflows(appName string, appsRepository apps.Repository, gitDevice app
 	}
 }
 
-func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps.DomainObject, appsRepository apps.Repository) response.AppsResponse {
+func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps.DomainObject) response.AppsResponse {
 	clusterVer := collections.NewList[response.ClusterVerVO]()
 	do.ClusterVer.Values().Foreach(func(clusterVerVO *apps.ClusterVerVO) {
 		if curCluster := lstCluster.Find(func(item *cluster.DomainObject) bool {

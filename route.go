@@ -26,6 +26,7 @@ var route = []webapi.Route{
     {"GET", "/apps/list", appsApp.List, "", []context.IFilter{application.Jwt{}}, []string{"", "", "", ""}},
     {"GET", "/apps/syslist", appsApp.SysList, "", []context.IFilter{application.Jwt{}}, []string{"", "", "", ""}},
     {"POST", "/apps/info", appsApp.Info, "", []context.IFilter{application.Jwt{}}, []string{"appName", "", ""}},
+    {"POST", "/apps/appFrameworkList", appsApp.AppFrameworkList, "", []context.IFilter{application.Jwt{}}, []string{"appName", ""}},
     {"POST", "/apps/syncWorkflows", appsApp.SyncWorkflows, "", []context.IFilter{application.Jwt{}}, []string{"appName", "", ""}},
     {"POST", "/apps/autobuild/list", appsApp.AllBranchList, "", []context.IFilter{application.Jwt{}}, []string{""}},
     {"POST", "/apps/autobuild/branchList", appsApp.BranchList, "", []context.IFilter{application.Jwt{}}, []string{"appName", ""}},

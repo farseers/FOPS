@@ -598,6 +598,13 @@ export function fopsApi() {
 				data:param,
 			});
 		},
+		appFrameworkList:(param: object) => { // 获取指定应用的框架列表
+			return request({
+				url: '/apps/appFrameworkList',
+				method:'post',
+				data:param,
+			});
+		},
 		autobuildResetCommitId:(param: object) => { // 自动构建
 			return request({
 				url: '/apps/autobuild/resetCommitId',

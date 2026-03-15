@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog title="构建配置" v-model="state.isShowDialog" width="600px" :close-on-click-modal="false">
+    <el-dialog title="构建配置" v-model="state.isShowDialog" width="600px" :close-on-click-modal="true">
       <div class="dialog-content">
         <!-- 分支选择区域 -->
         <div class="section-card branch-section">
@@ -23,12 +23,13 @@
           <div class="section-header">
             <i class="el-icon-setting"></i>
             <span class="section-title">框架配置</span>
-          </div>
-          <div class="section-body">
             <el-checkbox v-model="state.updateFramework" class="framework-checkbox">
               <span class="checkbox-label">使用最新的框架版本</span>
             </el-checkbox>
-            <div class="checkbox-hint">勾选后将自动更新到最新版本</div>
+          </div>
+          <div class="section-body">
+            
+            <!-- <div class="checkbox-hint">勾选后将自动更新到最新版本</div> -->
           </div>
         </div>
       </div>
@@ -132,7 +133,7 @@ defineExpose({
 .section-card {
   background: #f8f9fa;
   border-radius: 8px;
-  padding: 20px;
+  padding: 10px;
   margin-bottom: 20px;
   border: 1px solid #e4e7ed;
   transition: all 0.3s ease;
@@ -187,7 +188,7 @@ defineExpose({
 
   .branch-radio-item {
     background: white;
-    padding: 12px 16px;
+    padding: 20px 16px;
     border-radius: 6px;
     border: 1px solid #dcdfe6;
     transition: all 0.3s ease;
@@ -207,9 +208,11 @@ defineExpose({
 
 .framework-section {
   background: linear-gradient(135deg, #fef5f5 0%, #f8f9fa 100%);
+  padding-left: 10px;
 }
 
 .framework-checkbox {
+  padding-left: 20px;
   :deep(.el-checkbox__label) {
     font-size: 14px;
   }

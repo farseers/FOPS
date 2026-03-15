@@ -106,7 +106,7 @@
                   style="width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>
               </div>
               <div v-if="v.AppGit > 0" class="appItem appItem1">构建
-                <el-button v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v, item)"
+                <el-button v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v, "main")"
                   type="danger" style="margin-left: 5px;">{{ item }}</el-button>
               </div>
             </el-card>
@@ -384,7 +384,6 @@ const showBuildLog = (row: any) => {
     }
   })
 }
-
 
 const onShowLog = () => {
   // 如果上一个请求还在进行中，跳过本次请求，避免并发导致日志顺序错乱

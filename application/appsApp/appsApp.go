@@ -159,7 +159,7 @@ func List(appsRepository apps.Repository, logDataRepository logData.Repository, 
 	lstCluster := clusterRepository.ToList()
 	lst := collections.NewList[response.AppsResponse]()
 	appsRepository.ToListBySys(false).Foreach(func(item *apps.DomainObject) {
-		appsResponse := doToAppsResponse(lstCluster, *item, appsRepository)
+		appsResponse := doToAppsResponse(lstCluster, *item)
 		// 统计日志数量
 		countList.Foreach(func(logItem *logData.LogCountEO) {
 			if item.AppName != logItem.AppName {

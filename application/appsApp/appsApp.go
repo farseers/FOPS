@@ -321,8 +321,17 @@ func Info(appName string, appsRepository apps.Repository, clusterRepository clus
 // AppFrameworkList 该应用依赖的框架列表
 // @post appFrameworkList
 // @filter application.Jwt
-func AppFrameworkList(appName string, appsRepository apps.Repository) collections.List[apps.AppsFrameworkEO] {
-	return appsRepository.ToAppsFrameworkList(appName)
+func AppFrameworkList(appName string, appsRepository apps.Repository) collections.List[apps.GitEO] {
+	gits := collections.NewList[apps.GitEO]()
+	lst := appsRepository.ToAppsFrameworkList(appName)
+	lst.Foreach(func(item *apps.AppsFrameworkEO) {
+		gitEO := appsRepository.ToGitEntity(item.FrameworkId)
+		if !item.IsAutoUpdate && item.CommitId != "" {
+			gitEO.Branch = item.CommitId
+		}
+		gits.Add(gitEO)
+	})
+	return gits
 }
 
 // SyncWorkflows 同步工作流文件

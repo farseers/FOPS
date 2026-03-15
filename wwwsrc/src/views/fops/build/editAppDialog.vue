@@ -1,6 +1,6 @@
 <template>
   <div class="system-user-dialog-container">
-    <el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="900px">
+    <el-dialog :title="state.dialog.title" v-model="state.dialog.isShowDialog" width="1100px">
       <el-form ref="gitDialogFormRef" :model="state.ruleForm" size="default" label-width="120px">
         <el-row :gutter="35">
           <el-form-item label="应用名称">
@@ -62,9 +62,9 @@
             <el-button type="success" @click="onOpenGit(1)" size="default" style="margin-left: 5px;">添加依赖的仓库</el-button>
             <el-table :data="state.gitList" style="width: 100%">
               <el-table-column prop="Id" label="编号" width="60" />
-              <el-table-column prop="Name" label="Git名称" show-overflow-tooltip width="120"></el-table-column>
+              <el-table-column prop="Name" label="Git名称" show-overflow-tooltip width="80"></el-table-column>
               <el-table-column prop="Hub" label="托管地址" show-overflow-tooltip></el-table-column>
-              <el-table-column prop="CommitId" label="CommitId" width="120">
+              <el-table-column prop="CommitId" label="CommitId" width="140">
                 <template #default="scope">
                   <span>{{ scope.row.CommitId || '未构建' }}</span>
                 </template>

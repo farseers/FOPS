@@ -19,6 +19,8 @@ type GitEO struct {
 	UserPwd  string // 账户密码
 	Path     string // 存储目录
 	IsApp    bool   // 是否为应用
+	// 非数据库字段
+	IsAutoUpdate bool // 是否自动更新(false:锁定;true:永远拉main)
 }
 
 func (receiver *GitEO) IsNil() bool {

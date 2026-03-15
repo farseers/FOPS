@@ -329,6 +329,7 @@ func AppFrameworkList(appName string, appsRepository apps.Repository) collection
 		if !item.IsAutoUpdate && item.CommitId != "" {
 			gitEO.Branch = item.CommitId
 		}
+		gitEO.IsAutoUpdate = item.IsAutoUpdate
 		gits.Add(gitEO)
 	})
 	return gits

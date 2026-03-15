@@ -28,23 +28,13 @@
             </el-checkbox>
           </div>
           <div class="section-body">
-            <el-table :data="state.appFrameworkList" style="width: 100%">
-              <el-table-column prop="Id" label="编号" width="60" />
-              <el-table-column prop="Name" label="Git名称" show-overflow-tooltip width="80"></el-table-column>
-              <el-table-column prop="Hub" label="托管地址" show-overflow-tooltip></el-table-column>
-              <el-table-column prop="CommitId" label="CommitId" width="140">
+            <el-table :data="state.appFrameworkList" style="width: 100%;"  :cell-style="{ backgroundColor: '#fef5f5', padding: '0 20px' }" :header-cell-style="{ backgroundColor: '#f5f7fa', padding: '0 20px',height: '30px' }">
+              <el-table-column prop="Id" label="编号" width="80"/>
+              <el-table-column prop="Name" label="Git名称" show-overflow-tooltip></el-table-column>
+              <!-- <el-table-column prop="Hub" label="托管地址" show-overflow-tooltip></el-table-column> -->
+              <el-table-column prop="Branch" label="CommitId" width="180">
                 <template #default="scope">
-                  <span>{{ scope.row.CommitId || '未构建' }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column label="自动更新" width="60">
-                <template #default="scope">
-                  <el-switch v-model="scope.row.IsAutoUpdate" disable="true" />
-                </template>
-              </el-table-column>
-              <el-table-column label="操作" width="60">
-                <template #default="scope">
-                  <el-button size="small" text type="primary" @click="delGit(scope.row)">删除</el-button>
+                  <span>{{ scope.row.IsAutoUpdate ? '自动' : scope.row.Branch}}</span>
                 </template>
               </el-table-column>
             </el-table>
@@ -179,7 +169,7 @@ defineExpose({
 .section-header {
   display: flex;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: 6px;
   padding-bottom: 12px;
   border-bottom: 2px solid #e4e7ed;
 
@@ -237,7 +227,6 @@ defineExpose({
 
 .framework-section {
   background: linear-gradient(135deg, #fef5f5 0%, #f8f9fa 100%);
-  padding-left: 10px;
 }
 
 .framework-checkbox {

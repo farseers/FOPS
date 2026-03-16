@@ -6,7 +6,25 @@
         <div class="section-card branch-section">
           <div class="section-header">
             <i class="el-icon-branch"></i>
-            <span class="section-title">选择应用分支</span>
+            <span class="section-title">模式</span>
+            <!-- <el-select v-model="state.DockerNodeRole" placeholder="请输入容器节点角色" class="ml10" style="max-width: 300px;" size="default">
+              <el-option label="优先匹配同名分支" value="manager"></el-option>
+              <el-option label="自定义依赖库" value="worker"></el-option>
+              <el-option label="历史构建清单" value="global"></el-option>
+            </el-select> -->
+            <el-radio-group v-model="state.inputValue2" style="padding-left: 20px;">
+              <el-radio key="item.value1" label="1" size="default">优先匹配同名分支</el-radio>
+              <el-radio key="item.value2" label="2" size="default">自定义依赖库</el-radio>
+              <el-radio key="item.value3" label="3" size="default">历史构建清单</el-radio>
+            </el-radio-group>
+          </div>
+        </div>
+
+        <!-- 分支选择区域 -->
+        <div class="section-card branch-section">
+          <div class="section-header">
+            <i class="el-icon-branch"></i>
+            <span class="section-title">应用分支</span>
           </div>
           <div class="section-body">
             <el-radio-group v-model="state.inputValue" class="branch-radio-group">
@@ -28,13 +46,17 @@
             </el-checkbox>
           </div>
           <div class="section-body">
-            <el-table :data="state.appFrameworkList" style="width: 100%;"  :cell-style="{ backgroundColor: '#fef5f5', padding: '0 20px' }" :header-cell-style="{ backgroundColor: '#f5f7fa', padding: '0 20px',height: '30px' }">
-              <el-table-column prop="Id" label="编号" width="80"/>
-              <el-table-column prop="Name" label="Git名称" show-overflow-tooltip></el-table-column>
+            <el-table :data="state.appFrameworkList" style="width: 100%;"
+              :cell-style="{ backgroundColor: '#fef5f5', padding: '5px 20px' }"
+              :header-cell-style="{ backgroundColor: '#f5f7fa', padding: '5px 20px', height: '30px' }">
+              <!-- <el-table-column prop="Id" label="编号" width="80"/> -->
+              <el-table-column prop="Name" label="框架"  width="150"></el-table-column>
               <!-- <el-table-column prop="Hub" label="托管地址" show-overflow-tooltip></el-table-column> -->
-              <el-table-column prop="Branch" label="CommitId" width="180">
+              <el-table-column prop="Branch" label="分支">
                 <template #default="scope">
-                  <span>{{ scope.row.IsAutoUpdate ? '自动' : scope.row.Branch}}</span>
+                  <!-- <span>{{ scope.row.IsAutoUpdate ? scope.row.Branch : scope.row.Branch}}</span> -->
+                  <!-- <el-input v-model="scope.row.Branch" clearable style="height: 30px;"></el-input> -->
+                   <el-autocomplete v-if="state.isShowDialog" class="inline-input" style="width: 100%;" ref="autoCompleteRef" clearable v-model="state.inputValue" :fetch-suggestions="querySearch" placeholder="请输入分支名称" :trigger-on-focus="true" @select="handleSelect" @keyup.enter.native="onSubmit"></el-autocomplete>
                 </template>
               </el-table-column>
             </el-table>

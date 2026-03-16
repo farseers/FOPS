@@ -92,7 +92,7 @@
 
     </el-dialog>
 
-    <el-dialog title="Git列表" v-model="state.gitDialogIsShow" width="700px;" height="300px;">
+    <el-dialog title="框架列表" v-model="state.gitDialogIsShow" width="700px;" height="300px;">
       <el-card shadow="hover" class="layout-padding-auto">
         <div class="system-user-search mb15">
           <el-button size="default" type="success" class="ml10" @click="SureCheck()">

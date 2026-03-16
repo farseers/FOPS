@@ -208,7 +208,7 @@ func (receiver *BuildEO) StartBuild() {
 			//event.DockerPushedEvent{BuildNumber: parse.ToInt(step.With["buildNumber"]), AppName: parse.ToString(step.With["appName"]), ImageName: parse.ToString(step.With["dockerImage"])}.PublishEvent()
 		case "dockerBuild": // 镜像打包成功后，需要更新到Git分支中，用于后续的缓存使用
 			container.Resolve[appsBranch.Repository]().UpdateDockerImage(receiver.AppName, receiver.Env.CommitId, receiver.Env.DockerImage, receiver.Env.Sha256sum)
-		case "dockerswarmUpdateVer": // 发布成功后,更新应用依赖框架的所有CommitId
+			// 发布成功后,更新应用依赖框架的所有CommitId
 			// 记录构建清单
 			receiver.recordBuildManifest(gits)
 		}

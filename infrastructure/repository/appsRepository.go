@@ -19,6 +19,7 @@ type appsRepository struct {
 	buildRepository
 	gitRepository
 	appsFrameworkRepository
+	buildManifestRepository
 }
 
 func (receiver *appsRepository) ToListBySys(isSys bool) collections.List[apps.DomainObject] {

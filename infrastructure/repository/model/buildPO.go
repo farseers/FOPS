@@ -33,8 +33,8 @@ type BuildPO struct {
 // 创建索引
 func (*BuildPO) CreateIndex() map[string]data.IdxField {
 	return map[string]data.IdxField{
-		"idx_app_name":   {false, "app_name, build_number, id"},
-		"idx_build_type": {false, "build_type, id desc"},
-		"idx_status":     {false, "build_type, status, id asc"},
+		"idx_app_name":   {IsUNIQUE: false, Fields: "app_name, build_number, id"},
+		"idx_build_type": {IsUNIQUE: false, Fields: "build_type, id desc"},
+		"idx_status":     {IsUNIQUE: false, Fields: "build_type, status, id asc"},
 	}
 }

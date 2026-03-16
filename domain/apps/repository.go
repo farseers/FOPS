@@ -20,6 +20,7 @@ type Repository interface {
 	buildRepository
 	gitRepository
 	appsFrameworkRepository
+	buildManifestRepository
 }
 
 type buildRepository interface {
@@ -58,4 +59,10 @@ type appsFrameworkRepository interface {
 	UpdateCommitId(appName string, frameworkId int64, commitId string) (int64, error)           // 更新框架的CommitId
 	UpdateIsAutoUpdate(appName string, frameworkId int64, isAutoUpdate bool) (int64, error)     // 更新是否自动更新
 	ExistsAppsFramework(appName string, frameworkId int64) bool                                 // 判断应用框架关系是否存在
+}
+
+type buildManifestRepository interface {
+	AddBuildManifestBatch(lst collections.List[BuildManifestEO]) error                      // 批量添加构建清单
+	GetLastBuilds(appName string, limit int) collections.List[BuildManifestEO]             // 获取应用最近N次构建记录
+	GetManifestsByDockerImage(dockerImage string) collections.List[BuildManifestEO]        // 根据镜像获取构建清单
 }

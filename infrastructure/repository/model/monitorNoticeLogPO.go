@@ -21,6 +21,6 @@ type MonitorNoticeLogPO struct {
 // 创建索引
 func (*MonitorNoticeLogPO) CreateIndex() map[string]data.IdxField {
 	return map[string]data.IdxField{
-		"is_read": {false, "is_read, notice_at desc"},
+		"is_read": {IsUNIQUE: false, Fields: "is_read, notice_at desc"},
 	}
 }

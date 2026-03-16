@@ -27,6 +27,6 @@ type AppsPO struct {
 // 创建索引
 func (*AppsPO) CreateIndex() map[string]data.IdxField {
 	return map[string]data.IdxField{
-		"idx_is_sys": {false, "is_sys"},
+		"idx_is_sys": {IsUNIQUE: false, Fields: "is_sys"},
 	}
 }

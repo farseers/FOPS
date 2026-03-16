@@ -209,14 +209,8 @@ func (receiver *BuildEO) StartBuild() {
 		case "dockerBuild": // 镜像打包成功后，需要更新到Git分支中，用于后续的缓存使用
 			container.Resolve[appsBranch.Repository]().UpdateDockerImage(receiver.AppName, receiver.Env.CommitId, receiver.Env.DockerImage, receiver.Env.Sha256sum)
 		case "dockerswarmUpdateVer": // 发布成功后,更新应用依赖框架的所有CommitId
-			gits.Foreach(func(item *GitEO) {
-				// 得到最新的CommitId
-				commitId := receiver.getCommitId(item.GetAbsolutePath())
-				if len(commitId) >= 16 {
-					commitId = commitId[:16]
-					appsRepository.UpdateCommitId(receiver.AppName, int64(item.Id), commitId)
-				}
-			})
+			// 记录构建清单
+			receiver.recordBuildManifest(gits)
 		}
 	}
 
@@ -604,5 +598,40 @@ func (receiver *BuildEO) WatchStatus() {
 			return
 		case <-time.After(3 * time.Second):
 		}
+	}
+}
+
+// recordBuildManifest 记录构建清单
+func (receiver *BuildEO) recordBuildManifest(gits collections.List[GitEO]) {
+	appsRepository := container.Resolve[Repository]()
+	manifests := collections.NewList[BuildManifestEO]()
+
+	// 遍历所有git（包含应用和依赖框架）
+	gits.Foreach(func(git *GitEO) {
+		// 得到最新的CommitId
+		commitId := receiver.getCommitId(git.GetAbsolutePath())
+		if len(commitId) >= 16 {
+			commitId = commitId[:16]
+			appsRepository.UpdateCommitId(receiver.AppName, int64(git.Id), commitId)
+		}
+
+		manifest := BuildManifestEO{
+			AppName:       receiver.AppName,
+			GitName:       git.GetName(),
+			BuildNumber:   receiver.BuildNumber,
+			WorkflowsName: receiver.WorkflowsName,
+			DockerImage:   receiver.DockerImage,
+			GitBranch:     git.Branch,
+			GitCommitId:   commitId,
+			CreateAt:      dateTime.Now(),
+		}
+		manifests.Add(manifest)
+	})
+
+	// 批量保存
+	if err := appsRepository.AddBuildManifestBatch(manifests); err != nil {
+		receiver.logQueue.progress <- fmt.Sprintf("记录构建清单失败：%s", err.Error())
+	} else {
+		receiver.logQueue.progress <- fmt.Sprintf("已记录构建清单：%d 条", manifests.Count())
 	}
 }

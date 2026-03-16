@@ -204,3 +204,46 @@ func Stop(buildId int64, buildType eumBuildType.Enum, appsRepository apps.Reposi
 	}
 	buildEO.SetCancel()
 }
+
+// ManifestList 获取应用最近的构建清单列表
+// @post build/manifest-list
+// @filter application.Jwt
+func ManifestList(appName string, appsRepository apps.Repository) collections.List[response.BuildManifestResponse] {
+	lst := appsRepository.GetLastBuilds(appName, 10)
+	return mapper.ToList(lst, func(r *response.BuildManifestResponse, a any) {
+		manifestEO := a.(apps.BuildManifestEO)
+		r.CreateAt = manifestEO.CreateAt.ToString("MM-dd HH:mm:ss")
+	})
+}
+
+// ManifestDetail 根据镜像获取构建清单详情（包含所有依赖）
+// @post build/manifest-detail
+// @filter application.Jwt
+func ManifestDetail(dockerImage string, appsRepository apps.Repository) response.BuildManifestDetailResponse {
+	lst := appsRepository.GetManifestsByDockerImage(dockerImage)
+
+	// 分离应用和依赖
+	var appManifest apps.BuildManifestEO
+	dependencies := collections.NewList[apps.BuildManifestEO]()
+
+	lst.Foreach(func(item *apps.BuildManifestEO) {
+		if item.AppName == item.GitName {
+			appManifest = *item
+		} else {
+			dependencies.Add(*item)
+		}
+	})
+
+	// 转换为响应对象
+	appResponse := mapper.Single[response.BuildManifestResponse](appManifest)
+	appResponse.CreateAt = appManifest.CreateAt.ToString("MM-dd HH:mm:ss")
+
+	return response.BuildManifestDetailResponse{
+		App: appResponse,
+		Dependencies: mapper.ToList(dependencies, func(r *response.BuildManifestResponse, a any) {
+			manifestEO := a.(apps.BuildManifestEO)
+			r.CreateAt = manifestEO.CreateAt.ToString("MM-dd HH:mm:ss")
+		}).ToArray(),
+	}
+}
+

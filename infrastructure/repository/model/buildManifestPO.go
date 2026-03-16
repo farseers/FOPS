@@ -13,6 +13,7 @@ type BuildManifestPO struct {
 	BuildNumber   int       `gorm:"type:int;not null;default:0;comment:构建号"`
 	WorkflowsName string    `gorm:"size:32;not null;default:'';comment:工作流名称"`
 	DockerImage   string    `gorm:"size:128;not null;default:'';comment:镜像名称"`
+	GitId         int       `gorm:"type:int;not null;default:0;comment:Git主键"`
 	GitBranch     string    `gorm:"size:64;not null;default:'';comment:GIT分支"`
 	GitCommitId   string    `gorm:"size:64;not null;default:'';comment:git commitId"`
 	CreateAt      time.Time `gorm:"type:timestamp;size:6;not null;default:CURRENT_TIMESTAMP;comment:构建时间"`

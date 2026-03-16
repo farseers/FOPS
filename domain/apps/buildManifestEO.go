@@ -9,6 +9,7 @@ type BuildManifestEO struct {
 	BuildNumber   int               // 构建号
 	WorkflowsName string            // 工作流名称
 	DockerImage   string            // 镜像名称
+	GitId         int               // Git主键
 	GitBranch     string            // GIT分支
 	GitCommitId   string            // git commitId
 	CreateAt      dateTime.DateTime // 构建时间

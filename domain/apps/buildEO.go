@@ -615,13 +615,20 @@ func (receiver *BuildEO) recordBuildManifest(gits collections.List[GitEO]) {
 			appsRepository.UpdateCommitId(receiver.AppName, int64(git.Id), commitId)
 		}
 
+		// 有可能,git名称和应用名称不一致,所以这里强制设为一样,代表这是应用
+		gitName := git.GetName()
+		if git.IsApp {
+			gitName = receiver.AppName
+		}
+
 		manifest := BuildManifestEO{
 			AppName:       receiver.AppName,
-			GitName:       git.GetName(),
+			GitName:       gitName,
 			BuildNumber:   receiver.BuildNumber,
 			WorkflowsName: receiver.WorkflowsName,
 			DockerImage:   receiver.DockerImage,
 			GitBranch:     git.Branch,
+			GitId:         git.Id,
 			GitCommitId:   commitId,
 			CreateAt:      dateTime.Now(),
 		}

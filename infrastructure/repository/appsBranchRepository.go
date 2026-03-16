@@ -66,7 +66,6 @@ func (receiver *appsBranchRepository) ResetCommitId(commitId string) error {
 	_, err := context.MysqlContext.AppsBranch.Select("build_success", "build_error_count", "commit_id", "build_id", "build_at").Where("commit_id = ?", commitId).Update(model.AppsBranchPO{
 		BuildSuccess:    false,
 		BuildErrorCount: 0,
-		CommitId:        commitId,
 		BuildId:         0,
 		BuildAt:         dateTime.Now(),
 		Sha256sum:       "",

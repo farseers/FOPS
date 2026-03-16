@@ -109,7 +109,7 @@ func (receiver *gitDevice) GetRemoteBranch(ctx context.Context, gitPath string) 
 		}
 
 		commitHash := fields[0]
-		if len(commitHash) < 8 {
+		if len(commitHash) < 16 {
 			continue
 		}
 
@@ -120,7 +120,7 @@ func (receiver *gitDevice) GetRemoteBranch(ctx context.Context, gitPath string) 
 		}
 
 		remoteBranch := apps.RemoteBranchVO{
-			CommitId: commitHash[:8],
+			CommitId: commitHash[:16],
 		}
 		remoteBranch.BranchName = branchName
 		lst.Add(remoteBranch)

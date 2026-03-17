@@ -26,6 +26,10 @@ func Resource(context *websocket.Context[request.Request]) {
 			return
 		}
 
+		if req.DockerEngineVersion == "未安装" {
+			req.Availability = "Active"
+		}
+
 		// 更新主机节点资源信息
 		if req.Host.CpuUsagePercent > 0 {
 			req.Host.CpuUsagePercent, _ = strconv.ParseFloat(fmt.Sprintf("%.1f", req.Host.CpuUsagePercent), 64)

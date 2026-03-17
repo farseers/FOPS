@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-dialog :title="'构建 ' + state.appName" v-model="state.isShowDialog" width="600px" :close-on-click-modal="true">
+    <el-dialog :title="'构建 ' + state.appName + '('+state.workflowsName+')'" v-model="state.isShowDialog" width="600px" :close-on-click-modal="true">
       <div class="dialog-content">
         <!-- 分支选择区域 -->
         <div class="section-card branch-section">

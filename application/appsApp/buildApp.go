@@ -239,7 +239,7 @@ func ManifestList(appName string, appsRepository apps.Repository) collections.Li
 	lst := appsRepository.GetLastBuilds(appName, 10)
 	return mapper.ToList(lst, func(r *response.BuildManifestResponse, a any) {
 		manifestEO := a.(apps.BuildManifestEO)
-		r.CreateAt = manifestEO.CreateAt.ToString("YY-MM-dd HH:mm:ss")
+		r.CreateAt = manifestEO.CreateAt.ToString("yy-MM-dd HH:mm:ss")
 	})
 }
 

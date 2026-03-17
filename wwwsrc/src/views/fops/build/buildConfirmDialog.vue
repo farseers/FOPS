@@ -7,25 +7,20 @@
           <div class="section-header">
             <i class="el-icon-branch"></i>
             <span class="section-title">应用配置</span>
-            <el-select placeholder="历史构建清单" v-model="state.manifestSelect" class="ml10" style="width: 450px;"
-              size="default" @change="manifestSelectChange">
+            <el-select placeholder="历史构建清单" v-model="state.manifestSelect" class="ml10" style="width: 450px;" size="default" @change="manifestSelectChange" clearable>
               <el-option v-for="item in state.buildManifestList" :key="item.GitCommitId"
                 :label="' 分支: ' + item.GitBranch + '        ' + item.DockerImage + '       ' + item.CreateAt"
                 :value="item">
                 <!-- 自定义下拉选项的样式 -->
                 <span style="float: left">分支: {{ item.GitBranch }}</span>
-                <span
-                  style="float: right; color: var(--el-text-color-secondary); font-size: 13px;padding-left: 30px;">{{
-                  item.CreateAt }}</span>
-                <span style="float: right; color: var(--el-text-color-secondary); font-size: 13px;">{{ item.DockerImage
-                  }}</span>
+                <span style="float: right; color: var(--el-text-color-secondary); font-size: 13px;padding-left: 30px;">{{ item.CreateAt }}</span>
+                <span style="float: right; color: var(--el-text-color-secondary); font-size: 13px;">{{ item.DockerImage }}</span>
               </el-option>
             </el-select>
           </div>
           <div class="section-body">
             <el-radio-group v-model="state.appBranchName" class="branch-radio-group">
-              <el-radio v-for="item in state.appBranchList" :key="item.value" :label="item.value" size="default"
-                class="branch-radio-item" @change="appBranchNameChange">
+              <el-radio v-for="item in state.appBranchList" :key="item.value" :label="item.value" size="default" class="branch-radio-item" @click="appBranchNameChange">
                 {{ item.value }}
               </el-radio>
             </el-radio-group>
@@ -237,11 +232,12 @@ const frameworkSearch = (queryString, cb) => {
 };
 
 // 应用分支选择事件
-const appBranchNameChange = (appBranchName: any) => {
-  if (state.enableBackDefaultBranch) {
-    state.appFrameworkList.forEach(curItem => {
-      curItem.Branch = appBranchName;
-    });
+const appBranchNameChange = () => {
+  console.log(state.manifestSelect)
+  if (state.enableBackDefaultBranch && !state.manifestSelect || JSON.stringify(state.manifestSelect) === '{}') {
+      state.appFrameworkList.forEach(curItem => {
+        curItem.Branch = state.appBranchName;
+      });
   }
 };
 

@@ -612,7 +612,14 @@ func (receiver *BuildEO) recordBuildManifest(gits collections.List[GitEO]) {
 		commitId := receiver.getCommitId(git.GetAbsolutePath())
 		if len(commitId) >= 16 {
 			commitId = commitId[:16]
-			appsRepository.UpdateCommitId(receiver.AppName, int64(git.Id), commitId)
+			// 如果上次传进来的不是commitID,则更新为分支名称
+			if curFramework := receiver.FrameworkList.Find(func(item *AppsFrameworkEO) bool {
+				return item.FrameworkId == int64(git.Id)
+			}); curFramework != nil && !curFramework.IsCommitId() {
+				appsRepository.UpdateCommitId(receiver.AppName, int64(git.Id), curFramework.CommitId)
+			} else {
+				appsRepository.UpdateCommitId(receiver.AppName, int64(git.Id), commitId)
+			}
 		}
 
 		// 有可能,git名称和应用名称不一致,所以这里强制设为一样,代表这是应用

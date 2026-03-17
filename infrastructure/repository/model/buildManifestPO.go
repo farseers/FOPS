@@ -10,7 +10,7 @@ import (
 type BuildManifestPO struct {
 	AppName       string    `gorm:"primaryKey;size:32;not null;comment:应用名称"`
 	GitName       string    `gorm:"primaryKey;size:64;not null;comment:应用或库名称"`
-	BuildNumber   int       `gorm:"type:int;not null;default:0;comment:构建号"`
+	BuildNumber   int       `gorm:"primaryKey;type:int;not null;default:0;comment:构建号"`
 	WorkflowsName string    `gorm:"size:32;not null;default:'';comment:工作流名称"`
 	DockerImage   string    `gorm:"size:128;not null;default:'';comment:镜像名称"`
 	GitId         int       `gorm:"type:int;not null;default:0;comment:Git主键"`

@@ -26,7 +26,7 @@ type BuildPO struct {
 	BranchName              string                                 `gorm:"size:32;not null;default:'';comment:分支名称"`
 	DockerImage             string                                 `gorm:"size:64;not null;default:'';comment:Docker镜像"`
 	Env                     apps.EnvVO                             `gorm:"type:text;json;not null;comment:环境变量"`
-	FrameworkList           collections.List[apps.AppsFrameworkEO] `gorm:"type:text;json;not null;comment:依赖库的分支或CommitID"`
+	FrameworkList           collections.List[apps.AppsFrameworkEO] `gorm:"type:text;json;not null;default:'[]';comment:依赖库的分支或CommitID"`
 	EnableBackDefaultBranch bool                                   `gorm:"size:1;not null;default:0;comment:匹配失败时退回到默认分支"`
 	CommitId                string                                 `gorm:"size:64;not null;default:'';comment:应用的CommitId"`
 	Sha256sum               string                                 `gorm:"size:64;not null;default:'';comment:构建成功时的sha256sum"`

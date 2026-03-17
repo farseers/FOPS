@@ -83,6 +83,7 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.appGit = appsRepository.ToGitEntity(receiver.apps.AppGit)
 	receiver.appGit.Branch = receiver.BranchName   // 使用构建传进来的分支
 	receiver.appGit.CommitId = receiver.BranchName // 使用构建传进来的分支
+	receiver.appGit.EnableBackDefaultBranch = receiver.EnableBackDefaultBranch
 
 	// 尝试获取应用构建锁 并发构建同1个应用时,产生错误的镜像版本问题
 	if !lockManager.TryLock(receiver.AppName) {
@@ -546,6 +547,7 @@ func (receiver *BuildEO) getGits() collections.List[GitEO] {
 	// 依赖的框架 - 从新表读取
 	receiver.FrameworkList.Foreach(func(item *AppsFrameworkEO) {
 		gitEO := appsRepository.ToGitEntity(item.FrameworkId)
+		gitEO.EnableBackDefaultBranch = receiver.EnableBackDefaultBranch
 		gitEO.CommitId = item.CommitId
 		gits.Add(gitEO)
 	})

@@ -40,7 +40,7 @@
       <el-card style="color: #fff;background-color:#393d49;height: 100%;line-height:35px;overflow: auto;"
         class="layout-padding-auto">
         <p v-for="(v, k) in state.tableData.data" :key="k">
-          <span style="color: #9caf62">{{ v.CreateAt }}</span>
+          <span style="color: #9caf62;margin-right: 5px;">{{ v.CreateAt }}</span>
           <el-tag size="small" style="margin-right: 5px;">{{ v.AppName }} {{ v.AppIp }}</el-tag>
           {{ v.TraceId }}
           <el-tag v-if="v.LogLevel == 'Info'" size="small">{{ v.LogLevel }}</el-tag>

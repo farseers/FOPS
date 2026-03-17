@@ -1,35 +1,31 @@
 <template>
   <div>
-    <el-dialog title="构建配置" v-model="state.isShowDialog" width="600px" :close-on-click-modal="true">
+    <el-dialog :title="'构建 ' + state.appName" v-model="state.isShowDialog" width="600px" :close-on-click-modal="true">
       <div class="dialog-content">
         <!-- 分支选择区域 -->
         <div class="section-card branch-section">
           <div class="section-header">
             <i class="el-icon-branch"></i>
-            <span class="section-title">模式</span>
-            <!-- <el-select v-model="state.DockerNodeRole" placeholder="请输入容器节点角色" class="ml10" style="max-width: 300px;" size="default">
-              <el-option label="优先匹配同名分支" value="manager"></el-option>
-              <el-option label="自定义依赖库" value="worker"></el-option>
-              <el-option label="历史构建清单" value="global"></el-option>
-            </el-select> -->
-            <el-radio-group v-model="state.inputValue2" style="padding-left: 20px;">
-              <el-radio key="item.value1" label="1" size="default">优先匹配同名分支</el-radio>
-              <el-radio key="item.value2" label="2" size="default">自定义依赖库</el-radio>
-              <el-radio key="item.value3" label="3" size="default">历史构建清单</el-radio>
-            </el-radio-group>
-          </div>
-        </div>
-
-        <!-- 分支选择区域 -->
-        <div class="section-card branch-section">
-          <div class="section-header">
-            <i class="el-icon-branch"></i>
-            <span class="section-title">应用分支</span>
+            <span class="section-title">应用配置</span>
+            <el-select placeholder="历史构建清单" v-model="state.manifestSelect" class="ml10" style="width: 450px;"
+              size="default" @change="manifestSelectChange">
+              <el-option v-for="item in state.buildManifestList" :key="item.GitCommitId"
+                :label="' 分支: ' + item.GitBranch + '        ' + item.DockerImage + '       ' + item.CreateAt"
+                :value="item">
+                <!-- 自定义下拉选项的样式 -->
+                <span style="float: left">分支: {{ item.GitBranch }}</span>
+                <span
+                  style="float: right; color: var(--el-text-color-secondary); font-size: 13px;padding-left: 30px;">{{
+                  item.CreateAt }}</span>
+                <span style="float: right; color: var(--el-text-color-secondary); font-size: 13px;">{{ item.DockerImage
+                  }}</span>
+              </el-option>
+            </el-select>
           </div>
           <div class="section-body">
-            <el-radio-group v-model="state.inputValue" class="branch-radio-group">
-              <el-radio v-for="item in state.restaurants" :key="item.value" :label="item.value" size="default"
-                class="branch-radio-item">
+            <el-radio-group v-model="state.appBranchName" class="branch-radio-group">
+              <el-radio v-for="item in state.appBranchList" :key="item.value" :label="item.value" size="default"
+                class="branch-radio-item" @change="appBranchNameChange">
                 {{ item.value }}
               </el-radio>
             </el-radio-group>
@@ -41,8 +37,8 @@
           <div class="section-header">
             <i class="el-icon-setting"></i>
             <span class="section-title">框架配置</span>
-            <el-checkbox v-model="state.updateFramework" class="framework-checkbox">
-              <span class="checkbox-label">使用最新的框架版本</span>
+            <el-checkbox v-model="state.enableBackDefaultBranch" class="framework-checkbox">
+              <span class="checkbox-label">匹配失败时退回到默认分支</span>
             </el-checkbox>
           </div>
           <div class="section-body">
@@ -50,13 +46,16 @@
               :cell-style="{ backgroundColor: '#fef5f5', padding: '5px 20px' }"
               :header-cell-style="{ backgroundColor: '#f5f7fa', padding: '5px 20px', height: '30px' }">
               <!-- <el-table-column prop="Id" label="编号" width="80"/> -->
-              <el-table-column prop="Name" label="框架"  width="150"></el-table-column>
+              <el-table-column prop="Name" label="框架" width="150"></el-table-column>
               <!-- <el-table-column prop="Hub" label="托管地址" show-overflow-tooltip></el-table-column> -->
               <el-table-column prop="Branch" label="分支">
                 <template #default="scope">
                   <!-- <span>{{ scope.row.IsAutoUpdate ? scope.row.Branch : scope.row.Branch}}</span> -->
                   <!-- <el-input v-model="scope.row.Branch" clearable style="height: 30px;"></el-input> -->
-                   <el-autocomplete v-if="state.isShowDialog" class="inline-input" style="width: 100%;" ref="autoCompleteRef" clearable v-model="state.inputValue" :fetch-suggestions="querySearch" placeholder="请输入分支名称" :trigger-on-focus="true" @select="handleSelect" @keyup.enter.native="onSubmit"></el-autocomplete>
+                  <el-autocomplete v-if="state.isShowDialog" class="inline-input" style="width: 100%;"
+                    ref="autoCompleteRef" clearable v-model="scope.row.Branch" :debounce="0"
+                    :fetch-suggestions="frameworkSearch" @focus="handleFrameworkFocus(scope.row)" placeholder="请输入分支名称"
+                    :trigger-on-focus="true" @keyup.enter.native="onSubmit"></el-autocomplete>
                 </template>
               </el-table-column>
             </el-table>
@@ -76,7 +75,7 @@
 </template>
 
 <script setup lang="ts" name="cropper">
-import { reactive } from 'vue';
+import { ref, reactive } from 'vue';
 import { ElMessage } from 'element-plus';
 import { fopsApi } from "/@/api/fops";
 const emit = defineEmits(['refresh']);
@@ -85,43 +84,57 @@ const serverApi = fopsApi();
 // 定义变量内容
 const state = reactive({
   isShowDialog: false,
-  restaurants: [] as Array<{ value: string }>,
-  inputValue: '',
+  enableBackDefaultBranch: false,
+  appBranchList: [] as Array<{ value: string }>,
+  appBranchName: '',
   workflowsName: '',
   appName: '',
-  updateFramework: false,
-  appFrameworkList: [],
+  appFrameworkList: [{
+    Name: '',
+    Branch: '',
+  }],
+  buildManifestList: [],
+  manifestSelect: [],
 });
 
 // 打开弹窗
 const openDialog = (row: any, workflowsName: any, branchName: any) => {
   // console.log(row,workflowsName,branchName)
-  state.inputValue = '';
-  state.restaurants = [];
+  state.appBranchName = '';
+  state.appBranchList = [];
   state.appFrameworkList = [];
+  state.buildManifestList = [];
+  state.manifestSelect = [];
   state.isShowDialog = true;
+  state.enableBackDefaultBranch = true;
   state.workflowsName = workflowsName;
   state.appName = row.AppName;
-  state.updateFramework = false;
-  if (branchName) { state.inputValue = branchName }
+  if (branchName) { state.appBranchName = branchName }
   let param = {
     "appName": state.appName
   };
 
-  // 读取分支列表
-  serverApi.autobuildBranchList(param).then(function (res) {
+  // 读取应用分支列表
+  serverApi.buildBranchList(param).then(function (res) {
     if (res.Status) {
       const arr = res.Data.map((item: any) => {
         return { value: item.BranchName }
       });
-      state.restaurants = arr
+      state.appBranchList = arr
     }
   })
 
-  // 读取框架列表
+  // 读取依赖库列表
   serverApi.appFrameworkList(param).then(function (res) {
     if (res.Status) {
       state.appFrameworkList = res.Data
+    }
+  })
+
+  // 读取构建历史列表
+  serverApi.BuildManifestList(param).then(function (res) {
+    if (res.Status) {
+      state.buildManifestList = res.Data
     }
   })
 };
@@ -129,19 +142,28 @@ const openDialog = (row: any, workflowsName: any, branchName: any) => {
 const closeDialog = () => {
   state.isShowDialog = false;
 };
+
 // 取消
 const onCancel = () => {
   closeDialog();
 };
-// 更换
+
+// 提交构建
 const onSubmit = () => {
-  if (state.inputValue) {
+  if (state.appBranchName) {
     var param = {
       "AppName": state.appName,
       "WorkflowsName": state.workflowsName,
-      "branchName": state.inputValue,
-      "updateFramework": state.updateFramework
+      "BranchName": state.appBranchName,
+      "EnableBackDefaultBranch": state.enableBackDefaultBranch,
+      "FrameworkList": state.appFrameworkList.map(row => {
+        return {
+          "FrameworkId": row.Id,
+          "CommitId": row.Branch,
+        };
+      }),
     }
+
     // console.log(param)
     serverApi.buildAdd(param).then(async function (res) {
       if (res.Status) {
@@ -156,9 +178,111 @@ const onSubmit = () => {
   } else {
     ElMessage.error('请输入分支名称')
   }
-
 };
 
+// 1. 定义缓存变量
+// 用来存储每个仓库对应的分支列表，避免重复请求
+const branchCache = ref({});
+
+// 2. 记录当前行
+let currentEditRow = null;
+const handleFrameworkFocus = (row) => {
+  currentEditRow = row;
+};
+
+// 3. frameworkSearch 核心逻辑
+const frameworkSearch = (queryString, cb) => {
+  if (!currentEditRow) {
+    cb([]);
+    return;
+  }
+
+  // 生成唯一的缓存 Key，防止不同仓库的数据串掉
+  const cacheKey = `git_${currentEditRow.Id}`;
+
+  // === 情况 A：缓存里有数据 ===
+  // 用户是在输入内容，或者第二次点击。我们要做的是“前端过滤”，而不是请求接口。
+  const cachedList = branchCache.value[cacheKey];
+  if (cachedList) {
+    console.log('使用缓存数据进行前端过滤');
+    cb(cachedList);
+    return;
+  }
+
+  var param = {
+    "gitId": currentEditRow.Id
+  };
+
+  serverApi.RemoteBranchList(param).then(res => {
+    if (res.Status && res.Data) {
+      const results = res.Data.map(item => {
+        return {
+          value: item.BranchName,
+          CommitId: item.CommitId,
+          CommitMessage: item.CommitMessage
+        };
+      });
+
+      // 存入缓存！下次就不会再请求了
+      branchCache.value[cacheKey] = results;
+
+      // 返回数据
+      cb(results);
+    } else {
+      cb([]);
+    }
+  }).catch(() => {
+    cb([]);
+  });
+};
+
+// 应用分支选择事件
+const appBranchNameChange = (appBranchName: any) => {
+  if (state.enableBackDefaultBranch) {
+    state.appFrameworkList.forEach(curItem => {
+      curItem.Branch = appBranchName;
+    });
+  }
+};
+
+// 构建清单选择事件
+const manifestSelectChange = (item: any) => {
+  // 此时 item 是整行对象
+  const param = {
+    dockerImage: item.DockerImage
+  };
+
+  serverApi.BuildManifestDetail(param).then(res => {
+    if (res.Status) {
+      const apiData = res.Data;
+      state.enableBackDefaultBranch = false
+
+      // ================= 需求 1：自动选择 Radio =================
+      // 判断返回的数据中是否有 App 和 GitBranch
+      if (apiData.App && apiData.App.GitBranch) {
+        // 直接赋值，el-radio-group 会自动选中 label 匹配的项
+        state.appBranchName = apiData.App.GitBranch;
+      }
+
+      // ================= 需求 2：填充 Table 数据 =================
+      if (apiData.Dependencies && apiData.Dependencies.length > 0) {
+        // 遍历 API 返回的依赖列表
+        apiData.Dependencies.forEach(dep => {
+          // 1. 在当前表格数据中，查找 Name 匹配的行
+          // 注意：这里假设 API 返回的 GitName 和表格里的 Name 是对应的
+          const targetRow = state.appFrameworkList.find(row => row.Name === dep.GitName);
+
+          // 2. 如果找到了，更新该行的 Branch 字段
+          if (targetRow) {
+            // 这里将 GitCommitId 赋值给 Branch 字段
+            // 如果你需要的是 GitBranch 而不是 CommitId，请改为 dep.GitBranch
+            targetRow.Branch = dep.GitCommitId;
+          }
+        });
+      }
+    }
+  });
+};
 
 // 暴露变量
 defineExpose({

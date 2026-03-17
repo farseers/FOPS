@@ -45,11 +45,6 @@ func (receiver *appsFrameworkRepository) UpdateCommitId(appName string, framewor
 	return context.MysqlContext.AppsFramework.Where("app_name = ? and framework_id = ?", appName, frameworkId).UpdateValue("commit_id", commitId)
 }
 
-// UpdateIsAutoUpdate 更新是否自动更新
-func (receiver *appsFrameworkRepository) UpdateIsAutoUpdate(appName string, frameworkId int64, isAutoUpdate bool) (int64, error) {
-	return context.MysqlContext.AppsFramework.Where("app_name = ? and framework_id = ?", appName, frameworkId).UpdateValue("is_auto_update", isAutoUpdate)
-}
-
 // ExistsAppsFramework 判断应用框架关系是否存在
 func (receiver *appsFrameworkRepository) ExistsAppsFramework(appName string, frameworkId int64) bool {
 	return context.MysqlContext.AppsFramework.Where("app_name = ? and framework_id = ?", appName, frameworkId).IsExists()

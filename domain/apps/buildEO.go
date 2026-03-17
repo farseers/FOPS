@@ -30,31 +30,32 @@ import (
 
 // BuildEO 聚合
 type BuildEO struct {
-	Id              int64               // 主键
-	ClusterId       int64               // 集群信息
-	BuildNumber     int                 // 构建号
-	Status          eumBuildStatus.Enum // 状态
-	BuildType       eumBuildType.Enum   // 构建类型
-	IsSuccess       bool                // 是否成功
-	CreateAt        dateTime.DateTime   // 开始时间
-	FinishAt        dateTime.DateTime   // 完成时间
-	BuildServerId   int64               // 构建的服务端id（防止生产、开发环境混淆）
-	Env             EnvVO               // 环境变量
-	AppName         string              // 应用名称
-	WorkflowsName   string              // 工作流名称（文件的名称）
-	BranchName      string              // 分支名称
-	DockerImage     string              // Docker镜像
-	WorkflowsAction ActionVO            // 工作流定义的内容（通过读取WorkflowsYmlPath）
-	UpdateFramework bool                // 依赖的框架是否使用最新版本(否则仅使用之前成功构建的框架版本)
-	dockerDevice    IDockerDevice
-	gitDevice       IGitDevice
-	logQueue        *LogQueue
-	ctx             context.Context
-	cancel          context.CancelFunc
-	apps            DomainObject
-	appGit          GitEO // 应用的源代码
-	dockerClient    *docker.Client
-	fopsBuildName   string // 构建的容器名称
+	Id                      int64                             // 主键
+	ClusterId               int64                             // 集群信息
+	BuildNumber             int                               // 构建号
+	Status                  eumBuildStatus.Enum               // 状态
+	BuildType               eumBuildType.Enum                 // 构建类型
+	IsSuccess               bool                              // 是否成功
+	CreateAt                dateTime.DateTime                 // 开始时间
+	FinishAt                dateTime.DateTime                 // 完成时间
+	BuildServerId           int64                             // 构建的服务端id（防止生产、开发环境混淆）
+	Env                     EnvVO                             // 环境变量
+	AppName                 string                            // 应用名称
+	WorkflowsName           string                            // 工作流名称（文件的名称）
+	BranchName              string                            // 分支名称
+	DockerImage             string                            // Docker镜像
+	WorkflowsAction         ActionVO                          // 工作流定义的内容（通过读取WorkflowsYmlPath）
+	EnableBackDefaultBranch bool                              // 匹配失败时退回到默认分支
+	FrameworkList           collections.List[AppsFrameworkEO] // 依赖库的分支或CommitID
+	dockerDevice            IDockerDevice
+	gitDevice               IGitDevice
+	logQueue                *LogQueue
+	ctx                     context.Context
+	cancel                  context.CancelFunc
+	apps                    DomainObject
+	appGit                  GitEO // 应用的源代码
+	dockerClient            *docker.Client
+	fopsBuildName           string // 构建的容器名称
 }
 
 func (receiver *BuildEO) IsNil() bool {
@@ -80,7 +81,8 @@ func (receiver *BuildEO) StartBuild() {
 	// 应用
 	receiver.apps = appsRepository.ToEntity(receiver.AppName)
 	receiver.appGit = appsRepository.ToGitEntity(receiver.apps.AppGit)
-	receiver.appGit.Branch = receiver.BranchName // 使用构建传进来的分支
+	receiver.appGit.Branch = receiver.BranchName   // 使用构建传进来的分支
+	receiver.appGit.CommitId = receiver.BranchName // 使用构建传进来的分支
 
 	// 尝试获取应用构建锁 并发构建同1个应用时,产生错误的镜像版本问题
 	if !lockManager.TryLock(receiver.AppName) {
@@ -542,13 +544,9 @@ func (receiver *BuildEO) getGits() collections.List[GitEO] {
 	}
 
 	// 依赖的框架 - 从新表读取
-	appsFrameworkList := appsRepository.ToAppsFrameworkList(receiver.AppName)
-	appsFrameworkList.Foreach(func(item *AppsFrameworkEO) {
+	receiver.FrameworkList.Foreach(func(item *AppsFrameworkEO) {
 		gitEO := appsRepository.ToGitEntity(item.FrameworkId)
-		// 如果工作流和依赖框架都没有启用使用最新的版本,则使用依赖关系中的版本
-		if !receiver.UpdateFramework && !item.IsAutoUpdate && item.CommitId != "" {
-			gitEO.Branch = item.CommitId
-		}
+		gitEO.CommitId = item.CommitId
 		gits.Add(gitEO)
 	})
 

@@ -88,9 +88,49 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 	return exitCode == 0
 }
 
-func (receiver *gitDevice) GetRemoteBranch(ctx context.Context, gitPath string) collections.List[apps.RemoteBranchVO] {
+func (receiver *gitDevice) GetLocalBranch(ctx context.Context, gitPath string) collections.List[apps.RemoteBranchVO] {
 	lst := collections.NewList[apps.RemoteBranchVO]()
-	wait := exec.RunShellContext(ctx, "timeout", []string{"10", "git", "ls-remote", "--heads", "origin"}, nil, gitPath, false)
+	wait := exec.RunShellContext(ctx, "git", []string{"ls-remote", "--heads", "origin"}, nil, gitPath, false)
+	lstContent, exitCode := wait.WaitToList()
+	if exitCode != 0 {
+		return lst
+	}
+
+	for _, content := range lstContent.ToArray() {
+		// 跳过空行
+		content = strings.TrimSpace(content)
+		if content == "" {
+			continue
+		}
+
+		fields := strings.Fields(content)
+		if len(fields) < 2 {
+			continue
+		}
+
+		commitHash := fields[0]
+		if len(commitHash) < 16 {
+			continue
+		}
+
+		// refs/heads/xxx -> xxx
+		branchName, found := strings.CutPrefix(fields[1], "refs/heads/")
+		if !found {
+			continue
+		}
+
+		remoteBranch := apps.RemoteBranchVO{
+			CommitId: commitHash[:16],
+		}
+		remoteBranch.BranchName = branchName
+		lst.Add(remoteBranch)
+	}
+	return lst
+}
+
+func (receiver *gitDevice) GetRemoteBranch(ctx context.Context, gitAuthHb string) collections.List[apps.RemoteBranchVO] {
+	lst := collections.NewList[apps.RemoteBranchVO]()
+	wait := exec.RunShellContext(ctx, "git", []string{"ls-remote", gitAuthHb}, nil, "", false)
 	lstContent, exitCode := wait.WaitToList()
 	if exitCode != 0 {
 		return lst

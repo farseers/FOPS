@@ -51,18 +51,17 @@ type gitRepository interface {
 }
 
 type appsFrameworkRepository interface {
-	ToAppsFrameworkList(appName string) collections.List[AppsFrameworkEO]                       // 获取应用的框架列表
-	AddAppsFramework(eo AppsFrameworkEO) error                                                  // 添加应用框架关系
-	UpdateAppsFramework(eo AppsFrameworkEO) (int64, error)                                      // 更新应用框架关系
-	DeleteAppsFramework(appName string, frameworkId int64) (int64, error)                       // 删除应用框架关系
-	DeleteAppsFrameworkByAppName(appName string) (int64, error)                                 // 删除应用的所有框架关系
-	UpdateCommitId(appName string, frameworkId int64, commitId string) (int64, error)           // 更新框架的CommitId
-	UpdateIsAutoUpdate(appName string, frameworkId int64, isAutoUpdate bool) (int64, error)     // 更新是否自动更新
-	ExistsAppsFramework(appName string, frameworkId int64) bool                                 // 判断应用框架关系是否存在
+	ToAppsFrameworkList(appName string) collections.List[AppsFrameworkEO]             // 获取应用的框架列表
+	AddAppsFramework(eo AppsFrameworkEO) error                                        // 添加应用框架关系
+	UpdateAppsFramework(eo AppsFrameworkEO) (int64, error)                            // 更新应用框架关系
+	DeleteAppsFramework(appName string, frameworkId int64) (int64, error)             // 删除应用框架关系
+	DeleteAppsFrameworkByAppName(appName string) (int64, error)                       // 删除应用的所有框架关系
+	UpdateCommitId(appName string, frameworkId int64, commitId string) (int64, error) // 更新框架的CommitId
+	ExistsAppsFramework(appName string, frameworkId int64) bool                       // 判断应用框架关系是否存在
 }
 
 type buildManifestRepository interface {
-	AddBuildManifestBatch(lst collections.List[BuildManifestEO]) error                      // 批量添加构建清单
-	GetLastBuilds(appName string, limit int) collections.List[BuildManifestEO]             // 获取应用最近N次构建记录
-	GetManifestsByDockerImage(dockerImage string) collections.List[BuildManifestEO]        // 根据镜像获取构建清单
+	AddBuildManifestBatch(lst collections.List[BuildManifestEO]) error              // 批量添加构建清单
+	GetLastBuilds(appName string, limit int) collections.List[BuildManifestEO]      // 获取应用最近N次构建记录
+	GetManifestsByDockerImage(dockerImage string) collections.List[BuildManifestEO] // 根据镜像获取构建清单
 }

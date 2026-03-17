@@ -44,10 +44,9 @@ func Add(req request.AddRequest, appsRepository apps.Repository) {
 	if req.FrameworkGits.Count() > 0 {
 		req.FrameworkGits.Foreach(func(frameworkId *int64) {
 			_ = appsRepository.AddAppsFramework(apps.AppsFrameworkEO{
-				AppName:      req.AppName,
-				FrameworkId:  *frameworkId,
-				CommitId:     "",
-				IsAutoUpdate: true, // 默认自动更新
+				AppName:     req.AppName,
+				FrameworkId: *frameworkId,
+				CommitId:    "",
 			})
 		})
 	}
@@ -102,13 +101,9 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, clusterRe
 	// 更新 FrameworkList - 先删除旧的，再添加新的
 	_, _ = appsRepository.DeleteAppsFrameworkByAppName(req.AppName)
 	if req.FrameworkList.Count() > 0 {
-		req.FrameworkList.Foreach(func(item *request.FrameworkItem) {
-			_ = appsRepository.AddAppsFramework(apps.AppsFrameworkEO{
-				AppName:      req.AppName,
-				FrameworkId:  item.FrameworkId,
-				CommitId:     item.CommitId,
-				IsAutoUpdate: item.IsAutoUpdate,
-			})
+		req.FrameworkList.Foreach(func(item *apps.AppsFrameworkEO) {
+			item.AppName = req.AppName
+			_ = appsRepository.AddAppsFramework(*item)
 		})
 	}
 }
@@ -316,23 +311,6 @@ func Info(appName string, appsRepository apps.Repository, clusterRepository clus
 	}
 	appsResponse.FrameworkList = appsRepository.ToAppsFrameworkList(appName)
 	return appsResponse
-}
-
-// AppFrameworkList 该应用依赖的框架列表
-// @post appFrameworkList
-// @filter application.Jwt
-func AppFrameworkList(appName string, appsRepository apps.Repository) collections.List[apps.GitEO] {
-	gits := collections.NewList[apps.GitEO]()
-	lst := appsRepository.ToAppsFrameworkList(appName)
-	lst.Foreach(func(item *apps.AppsFrameworkEO) {
-		gitEO := appsRepository.ToGitEntity(item.FrameworkId)
-		if !item.IsAutoUpdate && item.CommitId != "" {
-			gitEO.Branch = item.CommitId
-		}
-		gitEO.IsAutoUpdate = item.IsAutoUpdate
-		gits.Add(gitEO)
-	})
-	return gits
 }
 
 // SyncWorkflows 同步工作流文件

@@ -591,16 +591,37 @@ export function fopsApi() {
 				data:param,
 			});
 		},
-		autobuildBranchList:(param: object) => { // 获取指定应用的分支列表
+		buildBranchList:(param: object) => { // 获取指定应用的分支列表
 			return request({
-				url: '/apps/autobuild/branchList',
+				url: '/apps/build/branchList',
 				method:'post',
 				data:param,
 			});
 		},
 		appFrameworkList:(param: object) => { // 获取指定应用的框架列表
 			return request({
-				url: '/apps/appFrameworkList',
+				url: '/apps/build/appFrameworkList',
+				method:'post',
+				data:param,
+			});
+		},
+		RemoteBranchList:(param: object) => { // 获取获取远程分支列表
+			return request({
+				url: '/apps/build/remoteBranchList',
+				method:'post',
+				data:param,
+			});
+		},
+		BuildManifestList:(param: object) => { // 获取应用最近的构建清单列表
+			return request({
+				url: '/apps/build/manifestList',
+				method:'post',
+				data:param,
+			});
+		},
+		BuildManifestDetail:(param: object) => { // 根据镜像获取构建清单详情（包含所有依赖）
+			return request({
+				url: '/apps/build/manifestDetail',
 				method:'post',
 				data:param,
 			});

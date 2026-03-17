@@ -64,16 +64,17 @@
               <el-table-column prop="Id" label="编号" width="60" />
               <el-table-column prop="Name" label="Git名称" show-overflow-tooltip width="80"></el-table-column>
               <el-table-column prop="Hub" label="托管地址" show-overflow-tooltip></el-table-column>
-              <el-table-column prop="CommitId" label="CommitId" width="140">
+              <el-table-column prop="CommitId" label="CommitId" width="200">
                 <template #default="scope">
-                  <span>{{ scope.row.CommitId || '未构建' }}</span>
+                  <el-input v-model="scope.row.CommitId" size="small" clearable placeholder="请输入CommitId" @change="onCommitIdChange(scope.row)"></el-input>
+                  <!-- <span>{{ scope.row.CommitId || '未构建' }}</span> -->
                 </template>
               </el-table-column>
-              <el-table-column label="自动更新" width="60">
+              <!-- <el-table-column label="自动更新" width="60">
                 <template #default="scope">
                   <el-switch v-model="scope.row.IsAutoUpdate" @change="onAutoUpdateChange(scope.row)" />
                 </template>
-              </el-table-column>
+              </el-table-column> -->
               <el-table-column label="操作" width="60">
                 <template #default="scope">
                   <el-button size="small" text type="primary" @click="delGit(scope.row)">删除</el-button>
@@ -133,7 +134,7 @@ const multipleTableRef = ref<InstanceType<typeof ElTable>>();
 interface FrameworkItem {
   FrameworkId: number;
   CommitId: string;
-  IsAutoUpdate: boolean;
+  //IsAutoUpdate: boolean;
 }
 
 const state = reactive({
@@ -238,7 +239,7 @@ const loadGit = () => {
         return {
           ...gitItem,
           CommitId: framework?.CommitId || '',
-          IsAutoUpdate: framework?.IsAutoUpdate !== undefined ? framework.IsAutoUpdate : true
+          //IsAutoUpdate: framework?.IsAutoUpdate !== undefined ? framework.IsAutoUpdate : true
         };
       });
     } else {
@@ -260,14 +261,23 @@ const delGit = (row: any) => {
   loadGit()
 }
 
-// 处理自动更新开关变化
-const onAutoUpdateChange = (row: any) => {
+// 处理CommitId变化
+const onCommitIdChange = (row: any) => {
   // 更新 FrameworkList 中对应项的 IsAutoUpdate 值
   const framework = state.ruleForm.FrameworkList.find((item: any) => item.FrameworkId === row.Id);
   if (framework) {
-    framework.IsAutoUpdate = row.IsAutoUpdate;
+    framework.CommitId = row.CommitId;
   }
 }
+
+// // 处理自动更新开关变化
+// const onAutoUpdateChange = (row: any) => {
+//   // 更新 FrameworkList 中对应项的 IsAutoUpdate 值
+//   const framework = state.ruleForm.FrameworkList.find((item: any) => item.FrameworkId === row.Id);
+//   if (framework) {
+//     framework.IsAutoUpdate = row.IsAutoUpdate;
+//   }
+// }
 
 // 关闭弹窗
 const closeDialog = () => {
@@ -300,28 +310,6 @@ const onDeleteApp = () => {
     .catch(() => { });
 };
 
-// 删除服务
-const onDeleteService = () => {
-  ElMessageBox.confirm(`此操作将删除容器服务：“${state.ruleForm.AppName}”，是否继续?`, '提示', {
-    confirmButtonText: '确认',
-    cancelButtonText: '取消',
-    type: 'warning',
-  })
-    .then(() => {
-      // 删除逻辑
-      serverApi.appsServiceDel({ "appName": state.ruleForm.AppName }).then(function (res) {
-        if (res.Status) {
-          closeDialog();
-          ElMessage.success('删除成功');
-          emit('refresh');
-        } else {
-          ElMessage.error(res.StatusMessage)
-        }
-      })
-    })
-    .catch(() => { });
-};
-
 // 提交
 const onSubmit = () => {
   // 提交数据
@@ -333,7 +321,7 @@ const onSubmit = () => {
     "FrameworkList": state.ruleForm.FrameworkList.map((item: any) => ({
       FrameworkId: item.FrameworkId,
       CommitId: item.CommitId || '',
-      IsAutoUpdate: item.IsAutoUpdate !== undefined ? item.IsAutoUpdate : true
+      //IsAutoUpdate: item.IsAutoUpdate !== undefined ? item.IsAutoUpdate : true
     })),
     "DockerfilePath": state.ruleForm.DockerfilePath,
     "DockerReplicas": parseInt(state.ruleForm.DockerReplicas),
@@ -446,7 +434,7 @@ const SureCheck = () => {
       return existing || {
         FrameworkId: id,
         CommitId: '',
-        IsAutoUpdate: true
+        //IsAutoUpdate: true
       };
     });
     loadGit()

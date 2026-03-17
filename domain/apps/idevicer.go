@@ -31,8 +31,10 @@ type IKubectlDevice interface {
 type IGitDevice interface {
 	// PullWorkflows 拉取工作流
 	PullWorkflows(ctx context.Context, gitPath, branch string, gitRemote string, progress chan string) bool
+	// 获取本地分支和提交的CommitId、Message
+	GetLocalBranch(ctx context.Context, gitPath string) collections.List[RemoteBranchVO]
 	// 获取远程分支和提交的CommitId、Message
-	GetRemoteBranch(ctx context.Context, gitPath string) collections.List[RemoteBranchVO]
+	GetRemoteBranch(ctx context.Context, gitAuthHb string) collections.List[RemoteBranchVO]
 }
 
 // DockerLabelVO 标签

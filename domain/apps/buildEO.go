@@ -209,11 +209,16 @@ func (receiver *BuildEO) StartBuild() {
 
 		case "dockerPush": // 上传成功后，需要更新项目中的镜像版本属性
 			//event.DockerPushedEvent{BuildNumber: parse.ToInt(step.With["buildNumber"]), AppName: parse.ToString(step.With["appName"]), ImageName: parse.ToString(step.With["dockerImage"])}.PublishEvent()
-		case "dockerBuild": // 镜像打包成功后，需要更新到Git分支中，用于后续的缓存使用
+		case "dockerBuild":
+			// 镜像打包成功后，需要更新到Git分支中，用于下次构建时的缓存使用
 			container.Resolve[appsBranch.Repository]().UpdateDockerImage(receiver.AppName, receiver.Env.CommitId, receiver.Env.DockerImage, receiver.Env.Sha256sum)
-			// 发布成功后,更新应用依赖框架的所有CommitId
-			// 记录构建清单
+			// 记录构建清单, 发布成功后,更新应用依赖框架的所有CommitId
 			receiver.recordBuildManifest(gits)
+			// 开启自动打标签
+			if receiver.WorkflowsAction.AutoTag {
+				tagName := fmt.Sprintf("v%s.%d", receiver.CreateAt.ToString("yyyy.MM.dd"), receiver.BuildNumber)
+				receiver.gitDevice.CreateTag(receiver.ctx, receiver.appGit.GetAuthHub(), receiver.appGit.CommitId, tagName)
+			}
 		}
 	}
 
@@ -626,6 +631,7 @@ func (receiver *BuildEO) recordBuildManifest(gits collections.List[GitEO]) {
 		gitName := git.GetName()
 		if git.IsApp {
 			gitName = receiver.AppName
+			receiver.appGit.CommitId = commitId // 这里更新后,如果后续需要开启自动打标签时,会用到
 		}
 
 		manifest := BuildManifestEO{

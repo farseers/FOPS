@@ -35,6 +35,8 @@ type IGitDevice interface {
 	GetLocalBranch(ctx context.Context, gitPath string) collections.List[RemoteBranchVO]
 	// 获取远程分支和提交的CommitId、Message
 	GetRemoteBranch(ctx context.Context, gitAuthHb string) collections.List[RemoteBranchVO]
+	// CreateTag 核心方法：使用自定义 HTTP 工具实现打 Tag
+	CreateTag(ctx context.Context, gitAuthHb, branchOrCommitId, tagName string) error
 }
 
 // DockerLabelVO 标签

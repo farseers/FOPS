@@ -25,12 +25,13 @@ func (receiver *stepVO) GetActionPath() string {
 }
 
 type ActionVO struct {
-	Name      string // 工作流名称
-	ClusterId int64  // 使用哪个集群的仓库配置
-	RunsOn    string // 基础镜像系统
-	Env       map[string]string
-	With      map[string]any // 全局参数
-	Steps     []stepVO       // 步骤
+	Name      string            // 工作流名称
+	ClusterId int64             // 使用哪个集群的仓库配置
+	RunsOn    string            // 基础镜像系统
+	Env       map[string]string // 环境参数
+	With      map[string]any    // 全局参数
+	Steps     []stepVO          // 步骤
+	AutoTag   bool              // 构建成功后,是否为应用自动打上tag
 }
 
 func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (ActionVO, error) {
@@ -51,6 +52,7 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 
 	name, _ := workflowsYml.Get("name")
 	clusterId, _ := workflowsYml.Get("jobs.clusterId")
+	autoTag, _ := workflowsYml.Get("jobs.autoTag")
 	proxy, _ := workflowsYml.Get("jobs.build.proxy")
 	sysImage, _ := workflowsYml.Get("jobs.build.runs-on")
 	env, _ := workflowsYml.GetSubNodes("jobs.build.env")
@@ -62,6 +64,7 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 	act := ActionVO{
 		Name:      strings.TrimSpace(parse.ToString(name)),
 		ClusterId: parse.ToInt64(clusterId),
+		AutoTag:   parse.ToBool(autoTag),
 		//Proxy:  strings.TrimSpace(parse.ToString(proxy)),
 		RunsOn: strings.TrimSpace(parse.ToString(sysImage)),
 		With:   with,

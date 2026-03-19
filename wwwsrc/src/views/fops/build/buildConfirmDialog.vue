@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="state.isShowDialog">
     <el-dialog :title="'构建 ' + state.appName + '('+state.workflowsName+')'" v-model="state.isShowDialog" width="600px" :close-on-click-modal="true">
       <div class="dialog-content">
         <!-- 分支选择区域 -->
@@ -20,7 +20,7 @@
           </div>
           <div class="section-body">
             <el-radio-group v-model="state.appBranchName" class="branch-radio-group">
-              <el-radio v-for="item in state.appBranchList" :key="item.value" :label="item.value" size="default" class="branch-radio-item" @change="appBranchNameChange">
+              <el-radio v-for="item in state.appBranchList" :key="item.value" :label="item.value" size="default" class="branch-radio-item" @click="appBranchNameChange(item.value)">
                 {{ item.value }}
               </el-radio>
             </el-radio-group>
@@ -108,7 +108,7 @@ const openDialog = (row: any, workflowsName: any, branchName: any) => {
   let param = {
     "appName": state.appName
   };
-
+   document.addEventListener('keydown', handleKeydown)
   // 读取应用分支列表
   serverApi.buildBranchList(param).then(function (res) {
     if (res.Status) {
@@ -136,13 +136,20 @@ const openDialog = (row: any, workflowsName: any, branchName: any) => {
 // 关闭弹窗
 const closeDialog = () => {
   state.isShowDialog = false;
+   document.removeEventListener('keydown', handleKeydown)
 };
 
 // 取消
 const onCancel = () => {
   closeDialog();
 };
-
+// 回车事件处理函数
+const handleKeydown = (e:any) => {
+  if (e.key === 'Enter' && state.isShowDialog) {
+    e.preventDefault() // 防止表单提交等默认行为
+    onSubmit()
+  }
+}
 // 提交构建
 const onSubmit = () => {
   if (state.appBranchName) {
@@ -232,14 +239,14 @@ const frameworkSearch = (queryString, cb) => {
 };
 
 // 应用分支选择事件
-const appBranchNameChange = () => {
-  console.log(state.manifestSelect,state.appBranchName ,state.appFrameworkList)
+const appBranchNameChange = (val:any) => {
+  state.appBranchName = val;
   if (state.enableBackDefaultBranch && !state.manifestSelect || JSON.stringify(state.manifestSelect) === '{}') {
       state.appFrameworkList.forEach(curItem => {
         curItem.Branch = state.appBranchName;
       });
   }
-   console.log(state.manifestSelect,state.appBranchName ,state.appFrameworkList)
+  //  console.log(state.manifestSelect,state.appBranchName ,state.appFrameworkList)
 };
 
 // 构建清单选择事件

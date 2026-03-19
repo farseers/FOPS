@@ -217,7 +217,11 @@ func (receiver *BuildEO) StartBuild() {
 			// 开启自动打标签
 			if receiver.WorkflowsAction.AutoTag {
 				tagName := fmt.Sprintf("v%s.%d", receiver.CreateAt.ToString("yyyy.MM.dd"), receiver.BuildNumber)
-				receiver.gitDevice.CreateTag(receiver.ctx, receiver.appGit.GetAuthHub(), receiver.appGit.CommitId, tagName)
+				if err := receiver.gitDevice.CreateTag(receiver.ctx, receiver.appGit.GetAuthHub(), receiver.appGit.CommitId, tagName); err != nil {
+					receiver.logQueue.progress <- fmt.Sprintf("打标签%s时出现了错误: %s", tagName, err.Error())
+				} else {
+					receiver.logQueue.progress <- fmt.Sprintf("成功打上标签: %s", tagName)
+				}
 			}
 		}
 	}

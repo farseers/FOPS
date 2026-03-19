@@ -223,6 +223,8 @@ func (receiver *BuildEO) StartBuild() {
 				} else {
 					receiver.logQueue.progress <- fmt.Sprintf("成功打上标签: %s", tagName)
 				}
+			} else {
+				receiver.logQueue.progress <- "不需要打标签"
 			}
 		}
 	}
@@ -246,7 +248,7 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 				receiver.logQueue.progress <- fmt.Sprintf("下载action %s 时发生错误：%s", step.ActionDownloadUrl, err.Error())
 				receiver.checkResult(false)
 			}
-			_ = os.Chmod(step.GetActionPath(), 777)
+			_ = os.Chmod(step.GetActionPath(), 0777)
 			receiver.logQueue.progress <- "下载完成"
 		}
 

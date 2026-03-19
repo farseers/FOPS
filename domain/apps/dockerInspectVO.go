@@ -3,6 +3,8 @@ package apps
 import (
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
+	"github.com/farseer-go/fs/flog"
+	"github.com/farseer-go/fs/snc"
 )
 
 // key = nodeIP
@@ -11,8 +13,8 @@ var NodeDockerStatsList = collections.NewDictionary[string, collections.List[doc
 
 type DockerInspectVO struct {
 	docker.DockerStatsVO
-	TaskId      string // 任务ID（docker service ps xxx 得到）
-	Node        string // 节点
+	NodeID      string // 节点ID
+	NodeName    string // 节点名称
 	NodeIP      string // 集群节点
 	ContainerIP string // 容器IP
 	CreatedAt   string
@@ -30,5 +32,9 @@ func GetDockerStats(nodeIP, taskId string) docker.DockerStatsVO {
 	if dockerStatsVO != nil {
 		return *dockerStatsVO
 	}
+
+	json, _ := snc.Marshal(lstDockerStats)
+	flog.Infof("未找到对应的容器资源信息: %s, %s, %s", nodeIP, taskId, json)
+
 	return docker.DockerStatsVO{TaskId: taskId}
 }

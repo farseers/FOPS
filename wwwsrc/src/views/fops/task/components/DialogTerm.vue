@@ -69,7 +69,7 @@ export default {
         init(row) {
             this.pRow = { ...defaultRow }
             this.$refs.initTerm && this.$refs.initTerm.clearWs()
-            this.pRow.LoginIp = row.IP;
+            this.pRow.LoginIp = row.Status.Addr;
             this.dialogVisible = true;
             this.onOpenEditRole(this.pRow)
             // submitForm();

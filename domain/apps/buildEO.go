@@ -24,37 +24,38 @@ import (
 	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/fs/snc"
 	"github.com/farseer-go/queue"
-	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/http"
 )
 
 // BuildEO 聚合
 type BuildEO struct {
-	Id              int64               // 主键
-	ClusterId       int64               // 集群信息
-	BuildNumber     int                 // 构建号
-	Status          eumBuildStatus.Enum // 状态
-	BuildType       eumBuildType.Enum   // 构建类型
-	IsSuccess       bool                // 是否成功
-	CreateAt        dateTime.DateTime   // 开始时间
-	FinishAt        dateTime.DateTime   // 完成时间
-	BuildServerId   int64               // 构建的服务端id（防止生产、开发环境混淆）
-	Env             EnvVO               // 环境变量
-	AppName         string              // 应用名称
-	WorkflowsName   string              // 工作流名称（文件的名称）
-	BranchName      string              // 分支名称
-	DockerImage     string              // Docker镜像
-	WorkflowsAction ActionVO            // 工作流定义的内容（通过读取WorkflowsYmlPath）
-	dockerDevice    IDockerDevice
-	gitDevice       IGitDevice
-	logQueue        *LogQueue
-	ctx             context.Context
-	cancel          context.CancelFunc
-	apps            DomainObject
-	appGit          GitEO // 应用的源代码
-	dockerClient    *docker.Client
-	fopsBuildName   string // 构建的容器名称
+	Id                      int64                             // 主键
+	ClusterId               int64                             // 集群信息
+	BuildNumber             int                               // 构建号
+	Status                  eumBuildStatus.Enum               // 状态
+	BuildType               eumBuildType.Enum                 // 构建类型
+	IsSuccess               bool                              // 是否成功
+	CreateAt                dateTime.DateTime                 // 开始时间
+	FinishAt                dateTime.DateTime                 // 完成时间
+	BuildServerId           int64                             // 构建的服务端id（防止生产、开发环境混淆）
+	Env                     EnvVO                             // 环境变量
+	AppName                 string                            // 应用名称
+	WorkflowsName           string                            // 工作流名称（文件的名称）
+	BranchName              string                            // 分支名称
+	DockerImage             string                            // Docker镜像
+	WorkflowsAction         ActionVO                          // 工作流定义的内容（通过读取WorkflowsYmlPath）
+	EnableBackDefaultBranch bool                              // 匹配失败时退回到默认分支
+	FrameworkList           collections.List[AppsFrameworkEO] // 依赖库的分支或CommitID
+	dockerDevice            IDockerDevice
+	gitDevice               IGitDevice
+	logQueue                *LogQueue
+	ctx                     context.Context
+	cancel                  context.CancelFunc
+	apps                    DomainObject
+	appGit                  GitEO // 应用的源代码
+	dockerClient            *docker.Client
+	fopsBuildName           string // 构建的容器名称
 }
 
 func (receiver *BuildEO) IsNil() bool {
@@ -80,6 +81,18 @@ func (receiver *BuildEO) StartBuild() {
 	// 应用
 	receiver.apps = appsRepository.ToEntity(receiver.AppName)
 	receiver.appGit = appsRepository.ToGitEntity(receiver.apps.AppGit)
+	receiver.appGit.Branch = receiver.BranchName   // 使用构建传进来的分支
+	receiver.appGit.CommitId = receiver.BranchName // 使用构建传进来的分支
+	receiver.appGit.EnableBackDefaultBranch = receiver.EnableBackDefaultBranch
+
+	// 尝试获取应用构建锁 并发构建同1个应用时,产生错误的镜像版本问题
+	if !lockManager.TryLock(receiver.AppName) {
+		receiver.logQueue.progress <- fmt.Sprintf("应用 %s 正在构建中，请等待当前构建完成后再试", receiver.AppName)
+		receiver.fail()
+		return
+	}
+	// 确保构建结束时释放锁
+	defer lockManager.Unlock(receiver.AppName)
 
 	// 开启异步监控状态
 	go receiver.WatchStatus()
@@ -158,21 +171,16 @@ func (receiver *BuildEO) StartBuild() {
 		// 添加自定义的挂载
 		builderArgs := configure.GetSlice("Fops.Builder")
 		args = append(args, builderArgs...)
-		lstResult, wait := receiver.dockerClient.Container.Run(receiver.fopsBuildName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env.ToMap(), receiver.ctx) // , "-v /var/lib/fops:/var/lib/fops"
-		if wait() != 0 {
-			for result := range lstResult {
-				receiver.logQueue.progress <- result
-			}
-			receiver.checkResult(false)
-		}
+		wait := receiver.dockerClient.Container.Run(receiver.fopsBuildName, "host", receiver.WorkflowsAction.RunsOn, args, true, receiver.Env.ToMap(), receiver.ctx) // , "-v /var/lib/fops:/var/lib/fops"
+		wait.WaitToChan(receiver.logQueue.progress)
 	}
 	//defer receiver.dockerClient.Container.Kill(receiver.fopsBuildName)
 
 	// 获取外网IP
 	if extranetIpUrl := configure.GetString("Fops.ExtranetIpUrl"); extranetIpUrl != "" {
 		receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
-		lstResult, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, fmt.Sprintf("echo '公网IP：$(curl -s %s)'", extranetIpUrl), nil, receiver.ctx)
-		exec.SaveToChan(receiver.logQueue.progress, lstResult, wait)
+		wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, fmt.Sprintf("echo '公网IP：$(curl -s %s)'", extranetIpUrl), nil, receiver.ctx)
+		wait.WaitToChan(receiver.logQueue.progress)
 	}
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 
@@ -186,7 +194,13 @@ func (receiver *BuildEO) StartBuild() {
 		switch step.ActionName {
 		case "checkout":
 			// 得到应用的CommitId
-			receiver.getCommitId()
+			appCommitId := receiver.getCommitId(receiver.appGit.GetAbsolutePath())
+			if len(appCommitId) >= 16 {
+				receiver.Env.CommitId = appCommitId[:16]
+				receiver.appGit.CommitId = appCommitId // 这里更新后,如果后续需要开启自动打标签时,会用到
+				receiver.logQueue.progress <- fmt.Sprintf("应用的CommitId：%s", receiver.Env.CommitId)
+			}
+
 			receiver.getSha256sum()
 			// 直接使用缓存
 			if receiver.useCache(index, gits) {
@@ -196,8 +210,22 @@ func (receiver *BuildEO) StartBuild() {
 
 		case "dockerPush": // 上传成功后，需要更新项目中的镜像版本属性
 			//event.DockerPushedEvent{BuildNumber: parse.ToInt(step.With["buildNumber"]), AppName: parse.ToString(step.With["appName"]), ImageName: parse.ToString(step.With["dockerImage"])}.PublishEvent()
-		case "dockerBuild": // 镜像打包成功后，需要更新到Git分支中，用于后续的缓存使用
+		case "dockerBuild":
+			// 镜像打包成功后，需要更新到Git分支中，用于下次构建时的缓存使用
 			container.Resolve[appsBranch.Repository]().UpdateDockerImage(receiver.AppName, receiver.Env.CommitId, receiver.Env.DockerImage, receiver.Env.Sha256sum)
+			// 记录构建清单, 发布成功后,更新应用依赖框架的所有CommitId
+			receiver.recordBuildManifest(gits)
+			// 开启自动打标签
+			if receiver.WorkflowsAction.AutoTag {
+				tagName := fmt.Sprintf("v%s.%d", receiver.CreateAt.ToString("yyyy.MM.dd"), receiver.BuildNumber)
+				if err := receiver.gitDevice.CreateTag(receiver.ctx, receiver.appGit.GetAuthHub(), receiver.appGit.CommitId, tagName); err != nil {
+					receiver.logQueue.progress <- fmt.Sprintf("打标签%s时出现了错误: %s", tagName, err.Error())
+				} else {
+					receiver.logQueue.progress <- fmt.Sprintf("成功打上标签: %s", tagName)
+				}
+			} else {
+				receiver.logQueue.progress <- "不需要打标签"
+			}
 		}
 	}
 
@@ -210,6 +238,7 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 	// 使用action程序，需要判断是否要下载
 	if step.ActionName != "" {
 		receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
+		// 下载action逻辑
 		if !file.IsExists(step.GetActionPath()) {
 			receiver.logQueue.progress <- fmt.Sprintf("下载 %s", step.ActionDownloadUrl)
 			// 先创建目录
@@ -219,13 +248,13 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 				receiver.logQueue.progress <- fmt.Sprintf("下载action %s 时发生错误：%s", step.ActionDownloadUrl, err.Error())
 				receiver.checkResult(false)
 			}
-			_ = os.Chmod(step.GetActionPath(), 777)
+			_ = os.Chmod(step.GetActionPath(), 0777)
 			receiver.logQueue.progress <- "下载完成"
 		}
 
 		// 将action文件复制到容器
-		_, wait := receiver.dockerClient.Container.Cp(receiver.fopsBuildName, step.GetActionPath(), step.GetActionPath(), receiver.ctx)
-		wait()
+		wait := receiver.dockerClient.Container.Cp(receiver.fopsBuildName, step.GetActionPath(), step.GetActionPath(), receiver.ctx)
+		wait.Wait()
 
 		// 支持checkout默认拉取应用
 		if step.ActionName == "checkout" {
@@ -239,22 +268,6 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 					Path:     parse.ToString(step.With["gitPath"]),
 				})
 			}
-			// 修改了应用的分支
-			if branch := parse.ToString(step.With["branch"]); branch != "" || receiver.BranchName != "" {
-				appGit := gits.Find(func(item *GitEO) bool {
-					return item.IsApp
-				})
-				// UI中传入
-				if receiver.BranchName != "" {
-					appGit.Branch = receiver.BranchName
-				} else {
-					// 使用工作流定义的分支
-					appGit.Branch = branch
-					receiver.BranchName = branch
-					receiver.Env.BranchName = branch
-					container.Resolve[Repository]().UpdateBuilding(receiver.Id, receiver.Env)
-				}
-			}
 		}
 		step.With["gits"] = gits
 
@@ -262,15 +275,15 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 		file.Delete(WithJsonPath)
 		withContent, _ := snc.Marshal(step.With)
 		file.WriteByte(WithJsonPath, withContent)
-		_, wait = receiver.dockerClient.Container.Cp(receiver.fopsBuildName, WithJsonPath, WithJsonPath, receiver.ctx)
-		wait()
+		wait = receiver.dockerClient.Container.Cp(receiver.fopsBuildName, WithJsonPath, WithJsonPath, receiver.ctx)
+		wait.Wait()
 
 		// 设置超时
 		receiver.ctx, receiver.cancel = context.WithTimeout(receiver.ctx, time.Duration(step.Timeout)*time.Minute)
 
 		// 执行 docker exec FOPS-Build /bin/bash -c "action"
-		lstResult, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.ctx)
-		exitCode := exec.SaveToChan(receiver.logQueue.progress, lstResult, wait)
+		wait = receiver.dockerClient.Container.Exec(receiver.fopsBuildName, step.GetActionPath(), receiver.WorkflowsAction.Env, receiver.ctx)
+		exitCode := wait.WaitToChan(receiver.logQueue.progress)
 		receiver.checkResult(exitCode == 0)
 	}
 
@@ -278,10 +291,11 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 	if len(step.Run) > 0 {
 		receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
 		shellScript := collections.NewList[string]()
-		//shellScript.Add("source /root/.bashrc")
+		shellScript.Add("source /root/.bashrc") // 必须,加载环境变量
 		shellScript.Add("mkdir -p " + DistRoot + receiver.appGit.GetRelativePath())
 		shellScript.Add("cd " + DistRoot + receiver.appGit.GetRelativePath())
 		shellScript.Add("set -xe")
+		shellScript.Add("export BROWSERSLIST_IGNORE_OLD_DATA=1") // 过滤npm 无关紧要的信息
 		shellScript.AddArray(step.Run)
 		shellScript.Add("")
 		script := shellScript.ToString("\n")
@@ -291,29 +305,28 @@ func (receiver *BuildEO) runStep(index int, step stepVO, gits collections.List[G
 		}
 		shellPath := fmt.Sprintf("%s%d-%d.sh", ShellRoot, receiver.Env.BuildNumber, index+1)
 		file.WriteString(shellPath, script)
-		_, wait := receiver.dockerClient.Container.Cp(receiver.fopsBuildName, shellPath, shellPath, receiver.ctx)
-		wait()
+		wait := receiver.dockerClient.Container.Cp(receiver.fopsBuildName, shellPath, shellPath, receiver.ctx)
+		wait.Wait()
 
-		// 执行脚本 docker exec FOPS-Build /bin/bash -c "xxx.sh"
-		lstResult, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, shellPath, receiver.WorkflowsAction.Env, receiver.ctx)
-		exitCode := exec.SaveToChan(receiver.logQueue.progress, lstResult, wait)
+		// 执行脚本 docker exec FOPS-Build /bin/bash -c "/var/lib/fops/shell/1554-4.sh"
+		wait = receiver.dockerClient.Container.Exec(receiver.fopsBuildName, shellPath, receiver.WorkflowsAction.Env, receiver.ctx)
+		exitCode := wait.WaitToChan(receiver.logQueue.progress)
 		receiver.checkResult(exitCode == 0)
 	}
 	receiver.logQueue.progress <- "---------------------------------------------------------"
 }
 
 // 得到应用的CommitId
-func (receiver *BuildEO) getCommitId() {
-	cmd := fmt.Sprintf("git -C %s rev-parse HEAD", receiver.appGit.GetAbsolutePath())
+func (receiver *BuildEO) getCommitId(gitPath string) string {
+	cmd := fmt.Sprintf("git -C %s rev-parse HEAD", gitPath)
 	//  docker exec FOPS-Build /bin/bash -c "git -C /var/lib/fops/git/fops rev-parse HEAD"
 
-	progress, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, receiver.ctx)
-	if wait() == 0 {
-		if commitId := collections.NewListFromChan(progress).First(); len(commitId) >= 16 {
-			receiver.Env.CommitId = commitId[:16]
-			receiver.logQueue.progress <- fmt.Sprintf("应用的CommitId：%s", receiver.Env.CommitId)
-		}
+	wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, receiver.ctx)
+	commitId, code := wait.WaitToFirstResult()
+	if code == 0 {
+		return commitId
 	}
+	return ""
 }
 
 // 得到整个目录的Sha256sum
@@ -321,9 +334,10 @@ func (receiver *BuildEO) getSha256sum() {
 	// find /var/lib/fops/dist -type f ! -path "*/.git/*" ! -name ".gitignore" ! -name ".gitmodules" ! -name "with.json" -exec sha256sum {} + |sort -k2|sha256sum
 	cmd := fmt.Sprintf("find %s -type f ! -path \"*/.git/*\" ! -name \".gitignore\" ! -name \".gitmodules\" ! -name \"with.json\" -exec sha256sum {} + |sort -k2|sha256sum", DistRoot)
 	// docker exec FOPS-Build /bin/bash -c "find /var/lib/fops/dist -type f ! -path \"*/.git/*\" ! -name \".gitignore\" ! -name \".gitmodules\" ! -name \"with.json\" -exec sha256sum {} + |sort -k2|sha256sum"
-	progress, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, receiver.ctx)
-	if wait() == 0 {
-		if sha256sum := collections.NewListFromChan(progress).First(); len(sha256sum) >= 16 {
+	wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, receiver.ctx)
+	sha256sum, code := wait.WaitToFirstResult()
+	if code == 0 {
+		if len(sha256sum) >= 16 {
 			receiver.Env.Sha256sum = sha256sum[:16]
 			receiver.logQueue.progress <- fmt.Sprintf("打包目录Sha256：%s", receiver.Env.Sha256sum)
 		}
@@ -352,8 +366,9 @@ func (receiver *BuildEO) useCache(index int, gits collections.List[GitEO]) bool 
 
 	// 将之前的镜像更新成新的镜像名称
 	cmd := fmt.Sprintf("docker tag %s %s", dockerImage, receiver.Env.DockerImage)
-	lstResult, wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, receiver.ctx)
-	if exitCode := exec.SaveToChan(receiver.logQueue.progress, lstResult, wait); exitCode != 0 {
+	wait := receiver.dockerClient.Container.Exec(receiver.fopsBuildName, cmd, nil, receiver.ctx)
+	exitCode := wait.WaitToChan(receiver.logQueue.progress)
+	if exitCode != 0 {
 		return false
 	}
 
@@ -366,7 +381,7 @@ func (receiver *BuildEO) useCache(index int, gits collections.List[GitEO]) bool 
 // GenerateWorkflowsContent 生成Workflows（并更新集群ID）
 func (receiver *BuildEO) GenerateWorkflowsContent() bool {
 	// 更新工作流文件到本地
-	if isSuccess := receiver.gitDevice.PullWorkflows(receiver.ctx, receiver.apps.GetWorkflowsRoot(), receiver.appGit.Branch, receiver.appGit.GetAuthHub(), receiver.logQueue.progress); !isSuccess {
+	if isSuccess := receiver.gitDevice.PullWorkflows(receiver.ctx, receiver.apps.GetWorkflowsRoot(), receiver.BranchName, receiver.appGit.GetAuthHub(), receiver.logQueue.progress); !isSuccess {
 		return false
 	}
 
@@ -506,7 +521,7 @@ func (receiver *BuildEO) fail() {
 
 	// 更新本次构建状态 = 失败
 	container.Resolve[Repository]().SetFail(receiver.Id, receiver.Env)
-	queue.Push("monitor", monitor.NewDataEO(receiver.AppName, "build", fmt.Sprintf("分支%s 构建失败", receiver.Env.BranchName)))
+	queue.Push("monitor", monitor.NewDataEO(receiver.AppName, "build", fmt.Sprintf("分支%s %s 构建失败", receiver.Env.BranchName, receiver.WorkflowsName)))
 }
 
 // 设置任务成功
@@ -528,18 +543,27 @@ func (receiver *BuildEO) success() {
 	receiver.IsSuccess = true
 	receiver.FinishAt = dateTime.Now()
 	container.Resolve[Repository]().SetSuccess(receiver.Id, receiver.Env)
-	queue.Push("monitor", monitor.NewDataEO(receiver.AppName, "build", fmt.Sprintf("分支%s 构建成功：%s", receiver.Env.BranchName, receiver.Env.DockerImage)))
+	queue.Push("monitor", monitor.NewDataEO(receiver.AppName, "build", fmt.Sprintf("分支%s %s 构建成功：%s", receiver.Env.BranchName, receiver.WorkflowsName, receiver.Env.DockerImage)))
 }
 
 // 得到所有Git
 func (receiver *BuildEO) getGits() collections.List[GitEO] {
+	appsRepository := container.Resolve[Repository]()
+
+	// 先加载应用GIT
 	gits := collections.NewList[GitEO]()
 	if !receiver.appGit.IsNil() {
 		gits.Add(receiver.appGit)
 	}
-	// 依赖的框架
-	frameworkGits := container.Resolve[Repository]().ToGitList(receiver.apps.FrameworkGits)
-	gits.AddList(frameworkGits)
+
+	// 依赖的框架 - 从新表读取
+	receiver.FrameworkList.Foreach(func(item *AppsFrameworkEO) {
+		gitEO := appsRepository.ToGitEntity(item.FrameworkId)
+		gitEO.EnableBackDefaultBranch = receiver.EnableBackDefaultBranch
+		gitEO.CommitId = item.CommitId
+		gits.Add(gitEO)
+	})
+
 	return gits
 }
 
@@ -586,5 +610,60 @@ func (receiver *BuildEO) WatchStatus() {
 			return
 		case <-time.After(3 * time.Second):
 		}
+	}
+}
+
+// recordBuildManifest 记录构建清单
+func (receiver *BuildEO) recordBuildManifest(gits collections.List[GitEO]) {
+	appsRepository := container.Resolve[Repository]()
+	manifests := collections.NewList[BuildManifestEO]()
+
+	// 遍历所有git（包含应用和依赖框架）
+	gits.Foreach(func(git *GitEO) {
+		// 得到最新的CommitId
+		var commitId string
+		if git.IsApp {
+			commitId = receiver.appGit.CommitId
+		} else {
+			commitId = receiver.getCommitId(git.GetAbsolutePath())
+		}
+
+		if len(commitId) >= 16 {
+			commitId = commitId[:16]
+			// 如果上次传进来的不是commitID,则更新为分支名称
+			if curFramework := receiver.FrameworkList.Find(func(item *AppsFrameworkEO) bool {
+				return item.FrameworkId == int64(git.Id)
+			}); curFramework != nil && !curFramework.IsCommitId() {
+				appsRepository.UpdateCommitId(receiver.AppName, int64(git.Id), curFramework.CommitId)
+			} else {
+				appsRepository.UpdateCommitId(receiver.AppName, int64(git.Id), commitId)
+			}
+		}
+
+		// 有可能,git名称和应用名称不一致,所以这里强制设为一样,代表这是应用
+		gitName := git.GetName()
+		if git.IsApp {
+			gitName = receiver.AppName
+		}
+
+		manifest := BuildManifestEO{
+			AppName:       receiver.AppName,
+			GitName:       gitName,
+			BuildNumber:   receiver.BuildNumber,
+			WorkflowsName: receiver.WorkflowsName,
+			DockerImage:   receiver.DockerImage,
+			GitBranch:     git.Branch,
+			GitId:         git.Id,
+			GitCommitId:   commitId,
+			CreateAt:      dateTime.Now(),
+		}
+		manifests.Add(manifest)
+	})
+
+	// 批量保存
+	if err := appsRepository.AddBuildManifestBatch(manifests); err != nil {
+		receiver.logQueue.progress <- fmt.Sprintf("记录构建清单失败：%s", err.Error())
+	} else {
+		receiver.logQueue.progress <- fmt.Sprintf("已记录构建清单：%d 条", manifests.Count())
 	}
 }

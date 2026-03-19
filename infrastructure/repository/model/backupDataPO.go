@@ -27,6 +27,6 @@ type BackupDataPO struct {
 // 创建索引
 func (*BackupDataPO) CreateIndex() map[string]data.IdxField {
 	return map[string]data.IdxField{
-		"next_backup_at": {false, "next_backup_at"},
+		"next_backup_at": {IsUNIQUE: false, Fields: "next_backup_at"},
 	}
 }

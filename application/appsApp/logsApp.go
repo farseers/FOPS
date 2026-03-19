@@ -17,22 +17,19 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 	rsp := collections.NewList[response.DockerSwarmResponse]()
 
 	client := docker.NewClient()
-	lst := client.Service.PS(appName)
+	lstNode := client.Node.List()
+	lst := client.Service.PS(lstNode, appName)
 	lst.Foreach(func(item *docker.ServiceTaskVO) {
+		flog.Debugf("正在获取日志，服务：%s，任务ID：%s", item.Name, item.ServiceTaskId)
+
 		// 通过容器id获取日志
 		logs, _ := client.Service.Logs(item.ServiceTaskId, tailCount)
-		if item.Error != "" {
-			containerInspectJson, _ := client.Container.InspectByServiceId(item.ServiceTaskId)
-			if len(containerInspectJson) > 0 {
-				item.Error = containerInspectJson[0].Status.Err
-			}
-		}
 		serviceLog := logs.First()
 		// 没有取到日志时
 		if serviceLog.Logs.Count() < 2 {
 			serviceLog.Logs = collections.NewList[string]()
 			item.Tasks.Foreach(func(taskInstanceVO *docker.TaskInstanceVO) {
-				serviceLog.Logs.Add(fmt.Sprintf("%s\t%s\t%s\t%s\t%s", taskInstanceVO.TaskId, taskInstanceVO.Image, taskInstanceVO.Node, taskInstanceVO.State, taskInstanceVO.Error))
+				serviceLog.Logs.Add(fmt.Sprintf("%s\t%s\t%s\t%s\t%s", taskInstanceVO.TaskId, taskInstanceVO.Image, taskInstanceVO.NodeName, taskInstanceVO.State, taskInstanceVO.Error))
 			})
 		}
 		rsp.Add(response.DockerSwarmResponse{
@@ -47,9 +44,7 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 	}) {
 		var image string
 		inspect, _ := client.Service.Inspect(appName)
-		if len(inspect) > 0 {
-			image = inspect[0].Spec.TaskTemplate.ContainerSpec.Image
-		}
+		image = inspect.Spec.TaskTemplate.ContainerSpec.Image
 
 		// 这里取到的是服务日志，即所有容器的日志。需要把他们区分开来
 		logs, _ := client.Service.Logs(appName, tailCount*2)
@@ -62,7 +57,7 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 						ServiceTaskId: serviceLogVO.ContainerId,
 						Name:          serviceLogVO.ServiceName,
 						Image:         image,
-						Node:          serviceLogVO.NodeName,
+						NodeName:      serviceLogVO.NodeName,
 						State:         "",
 						StateInfo:     "",
 						Error:         "",

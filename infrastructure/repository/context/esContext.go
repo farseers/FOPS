@@ -3,6 +3,7 @@ package context
 import (
 	"fops/domain/linkTrace"
 	"fops/infrastructure/repository/model"
+
 	"github.com/farseer-go/elasticSearch"
 )
 
@@ -25,7 +26,7 @@ type esContext struct {
 // initEsContext 初始化上下文
 func initEsContext() {
 	if linkTrace.Config.ConnString == "" {
-		panic("[farseer.yaml]FOPS.LinkTrace.ConnString，配置不正确")
+		panic("[config.yaml]FOPS.LinkTrace.ConnString，配置不正确")
 	}
 	elasticSearch.RegisterInternalContext("LinkTrace", linkTrace.Config.ConnString)
 	ESContext = elasticSearch.NewContext[esContext]("LinkTrace")

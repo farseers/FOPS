@@ -165,11 +165,9 @@ const  format =(c,t,s)=> {
       }
 const getData = () => {
     var param = {
-        "ClusterId": state.clusterId,
-        "IsSys": true,
     }
     // 获取应用列表
-    serverApi.appsList(param).then(function (res) {
+    serverApi.appsSysList(param).then(function (res) {
         if (res.Status) {
             state.tableData = res.Data;
         } else {

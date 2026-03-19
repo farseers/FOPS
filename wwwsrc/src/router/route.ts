@@ -210,7 +210,7 @@ export const dynamicRoutes: Array<RouteRecordRaw> = [
 					{
 						path: '/app/Configuration',
 						name: 'Configuration',
-						component: () => import('/@/views/fops/configu/index.vue'),
+						component: () => import('/@/views/fops/config/index.vue'),
 						meta: {
 							title: 'message.router.Configuration',
 							isLink: '',

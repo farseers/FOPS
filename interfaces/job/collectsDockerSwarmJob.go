@@ -10,6 +10,7 @@ import (
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/container"
+	"github.com/farseer-go/fs/flog"
 	"github.com/farseer-go/tasks"
 )
 
@@ -25,43 +26,48 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 	localCluster := clusterRepository.GetLocalCluster()
 	// 收集所有服务的运行情况
 	serviceList := dockerClient.Service.List()
-	// 没有读取到应用，则退出
+	// 所有节点信息
+	lstNode := dockerClient.Node.List()
+	// 没有读取到服务，退出
 	if serviceList.Count() == 0 {
+		flog.Infof("没有读取到服务，退出")
 		return
 	}
 	// 如果服务不存在，则添加到列表中，用于更新到数据库中，指明服务的实例为0
 	lstApp := appsRepository.ToList()
-	// 没有读取到应用，则退出
+	// 没有读取到应用，退出
 	if lstApp.Count() == 0 {
+		flog.Infof("没有读取到应用，退出")
 		return
 	}
 
-	// 先把fops中的应用缺少的给补上
+	// 先把fops中缺少的应用的给补上
 	serviceList.Foreach(func(item *docker.ServiceListVO) {
 		appDO := lstApp.Find(func(appDO *apps.DomainObject) bool {
-			return appDO.AppName == item.Name
+			return appDO.AppName == item.Spec.Name
 		})
 		// 本地应用不存在，则添加到fops
 		if appDO == nil {
 			_ = appsRepository.Add(apps.DomainObject{
-				AppName:         item.Name,
-				DockerInstances: item.Instances,
-				DockerReplicas:  item.Replicas,
+				AppName:         item.Spec.Name,
+				DockerInstances: 0,
+				DockerReplicas:  item.Spec.Mode.Replicated.Replicas,
 				IsSys:           true,
 			})
 		}
 	})
 
-	// 遍历所有应用，更新实际的docker swarm副本、实例数量、镜像
+	// 遍历所有应用，更新实际的docker swarm副本、镜像
 	lstApp.Foreach(func(appDO *apps.DomainObject) {
 		dockerService := serviceList.Find(func(item *docker.ServiceListVO) bool {
-			return item.Name == appDO.AppName
+			return item.Spec.Name == appDO.AppName
 		})
 		// 应用没有启用容器服务，跳过
 		if dockerService == nil {
 			appDO.DockerInstances = 0
 			// 系统应用，同时在服务列表中又没有，则删除
 			if appDO.IsSys {
+				flog.Infof("应用 %s 在服务列表中不存在，正在删除", appDO.AppName)
 				_, _ = appsRepository.Delete(appDO.AppName)
 			}
 			return
@@ -71,14 +77,16 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 		if !localCluster.IsNil() {
 			appDO.InitCluster(localCluster.Id)
 			appDO.ClusterVer.Update(localCluster.Id, func(value *apps.ClusterVerVO) {
-				value.DockerImage = dockerService.Image
+				value.DockerImage = dockerService.Spec.TaskTemplate.ContainerSpec.Image
 			})
 		}
 		// 当系统应用 或 global模式，才要更新副本数量
-		if appDO.IsSys || appDO.DockerNodeRole == "global" {
-			appDO.DockerReplicas = dockerService.Replicas
+		if appDO.IsSys {
+			appDO.DockerReplicas = dockerService.Spec.Mode.Replicated.Replicas
 		}
-		appDO.DockerInstances = dockerService.Instances
+		if appDO.DockerNodeRole == "global" {
+			appDO.DockerReplicas = lstNode.Count()
+		}
 	})
 
 	// 遍历所有应用，得到每个应用的inspect详情
@@ -89,13 +97,13 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 		}
 
 		// 根据ServiceId获取所有实例
-		allInstanceList := dockerClient.Service.PS(appDO.AppName)
+		allInstanceList := dockerClient.Service.PS(lstNode, appDO.AppName)
 		if allInstanceList.Count() == 0 {
 			return
 		}
 		// 只保留运行中的实例
 		runInstanceList := allInstanceList.Where(func(item docker.ServiceTaskVO) bool {
-			return item.State == "Running" //return item.State != "Shutdown"
+			return item.State == "running" //return item.State != "Shutdown"
 		}).ToList()
 
 		// 清空不存在的实例列表
@@ -113,38 +121,41 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			})
 			// 匹配对应的节点
 			node := clusterNode.NodeList.Find(func(node *docker.DockerNodeVO) bool {
-				return node.NodeName == serviceVO.Node
+				return node.Description.Hostname == serviceVO.NodeName
 			})
+
+			if node == nil {
+				//json, _ := snc.Marshal(clusterNode.NodeList)
+				//flog.Infof("node节点信息未找到: %s, %s, %s, %s", appDO.AppName, serviceVO.ServiceTaskId, serviceVO.NodeName, json)
+				return
+			}
+
 			// 实例存在，则只更新资源信息
-			if node != nil && curInstance != nil {
-				curInstance.DockerStatsVO = apps.GetDockerStats(node.IP, serviceVO.ServiceTaskId)
+			if curInstance != nil {
+				curInstance.DockerStatsVO = apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId)
 				return
 			}
 
 			// 只有当节点是健康状态才加入到实例列表中。
-			if node != nil && node.IsHealth {
-				// 读取单个实例的详情
-				containerInspectJson, _ := dockerClient.Container.InspectByServiceId(serviceVO.ServiceTaskId)
-				if len(containerInspectJson) == 0 {
-					return
-				}
+			if node.IsHealth {
 				// 通过代理节点同步到的容器资源信息
 				dockerInspectVO := apps.DockerInspectVO{
-					// containerInspectJson[0].Status.ContainerStatus.ContainerID
-					DockerStatsVO: apps.GetDockerStats(node.IP, serviceVO.ServiceTaskId),
-					TaskId:        serviceVO.ServiceTaskId,
-					Node:          serviceVO.Node,
-					NodeIP:        node.IP,
-					CreatedAt:     containerInspectJson[0].CreatedAt.Format(time.DateTime),
-					UpdatedAt:     containerInspectJson[0].UpdatedAt.Format(time.DateTime),
-					State:         containerInspectJson[0].Status.State,
+					DockerStatsVO: apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId),
+					NodeID:        serviceVO.NodeID,
+					NodeName:      serviceVO.NodeName,
+					NodeIP:        serviceVO.NodeIP,
+					CreatedAt:     serviceVO.CreatedAt.Format(time.DateTime),
+					UpdatedAt:     serviceVO.UpdatedAt.Format(time.DateTime),
+					State:         serviceVO.State,
 				}
 
 				// 容器IP
-				if len(containerInspectJson[0].NetworksAttachments) > 0 && len(containerInspectJson[0].NetworksAttachments[0].Addresses) > 0 {
-					dockerInspectVO.ContainerIP = strings.Split(containerInspectJson[0].NetworksAttachments[0].Addresses[0], "/")[0]
+				if len(serviceVO.Addresses) > 0 {
+					dockerInspectVO.ContainerIP = strings.Split(serviceVO.Addresses[0], "/")[0]
 				}
 				appDO.DockerInspect.Add(dockerInspectVO)
+			} else {
+				flog.Infof("节点 %s 的状态不健康，跳过更新应用实例的详情: %s, %s", node.Description.Hostname, appDO.AppName, serviceVO.ServiceTaskId)
 			}
 		})
 		// 实例数量

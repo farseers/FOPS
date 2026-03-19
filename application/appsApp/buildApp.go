@@ -2,16 +2,21 @@
 package appsApp
 
 import (
+	"context"
 	"fmt"
+	"fops/application/appsApp/request"
 	"fops/application/appsApp/response"
 	"fops/domain/apps"
+	"fops/domain/appsBranch"
 	"fops/domain/cluster"
 	"regexp"
 	"strings"
+	"time"
 
 	"fops/domain/_/eumBuildType"
 
 	"github.com/farseer-go/collections"
+	"github.com/farseer-go/fs"
 	"github.com/farseer-go/fs/core"
 	"github.com/farseer-go/fs/dateTime"
 	"github.com/farseer-go/fs/exception"
@@ -21,23 +26,27 @@ import (
 
 // BuildAdd 添加构建  这里不能加JWT，否则无法实现自动创建新的构建// @filter application.Jwt
 // @post build/add
-func BuildAdd(appName string, workflowsName string, branchName string, appsRepository apps.Repository, clusterRepository cluster.Repository, dockerDevice apps.IDockerDevice) {
-	appDO := appsRepository.ToEntity(appName)
+func BuildAdd(request request.BuildAddRequest, appsRepository apps.Repository, clusterRepository cluster.Repository, dockerDevice apps.IDockerDevice) {
+	appDO := appsRepository.ToEntity(request.AppName)
 	exception.ThrowWebExceptionfBool(appDO.IsNil(), 403, "应用不存在")
-	exception.ThrowWebExceptionfBool(workflowsName == "", 403, "工作流名称未设置")
-	if branchName == "" {
-		branchName = "main"
+	exception.ThrowWebExceptionfBool(request.WorkflowsName == "", 403, "工作流名称未设置")
+	if request.BranchName == "" {
+		// 则读取Git的默认分支
+		appGit := appsRepository.ToGitEntity(appDO.AppGit)
+		request.BranchName = appGit.Branch
 	}
-	buildNumber := appsRepository.GetBuildNumber(appName) + 1
+	buildNumber := appsRepository.GetBuildNumber(request.AppName) + 1
 	buildDO := apps.BuildEO{
-		BuildServerId: core.AppId,
-		BuildNumber:   buildNumber,
-		CreateAt:      dateTime.Now(),
-		FinishAt:      dateTime.Now(),
-		Env:           apps.EnvVO{},
-		AppName:       appName,
-		WorkflowsName: workflowsName,
-		BranchName:    branchName,
+		BuildServerId:           core.AppId,
+		BuildNumber:             buildNumber,
+		CreateAt:                dateTime.Now(),
+		FinishAt:                dateTime.Now(),
+		Env:                     apps.EnvVO{},
+		AppName:                 request.AppName,
+		WorkflowsName:           request.WorkflowsName,
+		BranchName:              request.BranchName,
+		EnableBackDefaultBranch: request.EnableBackDefaultBranch,
+		FrameworkList:           request.FrameworkList,
 	}
 	err := appsRepository.AddBuild(&buildDO)
 	exception.ThrowWebExceptionError(403, err)
@@ -200,4 +209,80 @@ func Stop(buildId int64, buildType eumBuildType.Enum, appsRepository apps.Reposi
 		buildEO = appsRepository.GetLastBuilding(buildType)
 	}
 	buildEO.SetCancel()
+}
+
+// BuildList 获取指定应用的分支列表
+// @post build/branchList
+// @filter application.Jwt
+func BranchList(appName string, appsBranchRepository appsBranch.Repository) collections.List[appsBranch.DomainObject] {
+	return appsBranchRepository.ToListByAppName(appName)
+}
+
+// AppFrameworkList 该应用依赖的框架列表
+// @post build/appFrameworkList
+// @filter application.Jwt
+func AppFrameworkList(appName string, appsRepository apps.Repository) collections.List[apps.GitEO] {
+	gits := collections.NewList[apps.GitEO]()
+	lst := appsRepository.ToAppsFrameworkList(appName)
+	lst.Foreach(func(item *apps.AppsFrameworkEO) {
+		gitEO := appsRepository.ToGitEntity(item.FrameworkId)
+		gitEO.Branch = item.CommitId
+		gits.Add(gitEO)
+	})
+	return gits
+}
+
+// ManifestList 获取应用最近的构建清单列表
+// @post build/manifestList
+// @filter application.Jwt
+func ManifestList(appName string, appsRepository apps.Repository) collections.List[response.BuildManifestResponse] {
+	lst := appsRepository.GetLastBuilds(appName, 10)
+	return mapper.ToList(lst, func(r *response.BuildManifestResponse, a any) {
+		manifestEO := a.(apps.BuildManifestEO)
+		r.CreateAt = manifestEO.CreateAt.ToString("yy-MM-dd HH:mm:ss")
+	})
+}
+
+// ManifestDetail 根据镜像获取构建清单详情（包含所有依赖）
+// @post build/manifestDetail
+// @filter application.Jwt
+func ManifestDetail(dockerImage string, appsRepository apps.Repository) response.BuildManifestDetailResponse {
+	lst := appsRepository.GetManifestsByDockerImage(dockerImage)
+
+	// 分离应用和依赖
+	var appManifest apps.BuildManifestEO
+	dependencies := collections.NewList[apps.BuildManifestEO]()
+
+	lst.Foreach(func(item *apps.BuildManifestEO) {
+		if item.AppName == item.GitName {
+			appManifest = *item
+		} else {
+			dependencies.Add(*item)
+		}
+	})
+
+	// 转换为响应对象
+	appResponse := mapper.Single[response.BuildManifestResponse](appManifest)
+	appResponse.CreateAt = appManifest.CreateAt.ToString("MM-dd HH:mm:ss")
+
+	return response.BuildManifestDetailResponse{
+		App: appResponse,
+		Dependencies: mapper.ToList(dependencies, func(r *response.BuildManifestResponse, a any) {
+			manifestEO := a.(apps.BuildManifestEO)
+			r.CreateAt = manifestEO.CreateAt.ToString("MM-dd HH:mm:ss")
+		}).ToArray(),
+	}
+}
+
+// GitRemoteBranchList 获取远程分支列表
+// @post build/remoteBranchList
+// @filter application.Jwt
+func GitRemoteBranchList(gitId int64, appsRepository apps.Repository, appsIGitDevice apps.IGitDevice) collections.List[apps.RemoteBranchVO] {
+	gitEO := appsRepository.ToGitEntity(gitId)
+	gitHub := gitEO.GetAuthHub()
+
+	ctx, _ := context.WithTimeout(fs.Context, 10*time.Second)
+	lst := appsIGitDevice.GetRemoteBranch(ctx, gitHub)
+	return lst
+
 }

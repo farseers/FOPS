@@ -30,18 +30,25 @@ func AutoBuildAppJob(*tasks.TaskContext) {
 		return
 	}
 
+	// 读取应用依赖库
+	frameworkList := appsRepository.ToAppsFrameworkList(appsBranchDO.AppName)
+	frameworkList.Foreach(func(item *apps.AppsFrameworkEO) {
+		item.CommitId = appsBranchDO.BranchName
+	})
 	buildNumber := appsRepository.GetBuildNumber(appsBranchDO.AppName) + 1
 	buildDO := apps.BuildEO{
-		BuildType:     eumBuildType.Auto,
-		BuildServerId: core.AppId,
-		BuildNumber:   buildNumber,
-		CreateAt:      dateTime.Now(),
-		FinishAt:      dateTime.Now(),
-		Env:           apps.EnvVO{},
-		AppName:       appsBranchDO.AppName,
-		WorkflowsName: appDO.UTWorkflowsName,
-		BranchName:    appsBranchDO.BranchName,
-		Status:        eumBuildStatus.Building,
+		BuildType:               eumBuildType.Auto,
+		Status:                  eumBuildStatus.Building,
+		BuildServerId:           core.AppId,
+		BuildNumber:             buildNumber,
+		CreateAt:                dateTime.Now(),
+		FinishAt:                dateTime.Now(),
+		Env:                     apps.EnvVO{},
+		AppName:                 appsBranchDO.AppName,
+		WorkflowsName:           appDO.UTWorkflowsName,
+		BranchName:              appsBranchDO.BranchName,
+		EnableBackDefaultBranch: true,
+		FrameworkList:           frameworkList,
 	}
 	err := appsRepository.AddBuild(&buildDO)
 	exception.ThrowRefuseExceptionError(err)

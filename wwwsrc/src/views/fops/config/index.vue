@@ -1,6 +1,6 @@
 <template>
     <div class="system-user-container layout-padding">
-        <el-card shadow="hover" class="configu_m">
+        <el-card shadow="hover" class="config_m">
 			<div class="system-user-search">
                 <!-- <el-input placeholder="请输入内容" v-model="state.appName"  size="small" clearable style="width: 150px;"></el-input> -->
                 <el-button type="primary" size="small" @click="getTableData()">刷新</el-button>
@@ -31,10 +31,10 @@
         <Dialog ref="DialogRef" @refresh="getTableData()" />
     </div>
 </template>
-<script setup lang="ts" name="configu">
+<script setup lang="ts" name="config">
 import { defineAsyncComponent, reactive, onMounted, ref,watch} from 'vue';
 import { ElMessageBox, ElMessage } from 'element-plus';
-const Dialog = defineAsyncComponent(() => import('/@/views/fops/configu/dialog.vue'));
+const Dialog = defineAsyncComponent(() => import('/@/views/fops/config/dialog.vue'));
 import {fopsApi} from "/@/api/fops";
 const serverApi = fopsApi();
 const DialogRef = ref();
@@ -124,11 +124,11 @@ onMounted(() => {
 .el-table .el-table__body tr:nth-child(odd) {
   background-color: #f2f2f2;
 }
-.configu_m{
+.config_m{
     height: 100%;
    
 }
-.configu_m .el-card__body{
+.config_m .el-card__body{
     height: 100%;
     display: flex;
     flex-flow: column;

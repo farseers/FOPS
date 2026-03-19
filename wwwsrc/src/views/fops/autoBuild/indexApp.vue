@@ -371,9 +371,6 @@ const onHideOverlay=()=>{
   state.showOverlay=false
 }
 
-
-
-
 // 停止构建
 const onStopBuild=(rowId: any)=>{
   ElMessageBox.confirm(`请确认是否停止构建?`, '提示', {

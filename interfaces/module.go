@@ -29,14 +29,13 @@ func (module Module) DependsModule() []modules.FarseerModule {
 
 func (module Module) PostInitialize() {
 	client := docker.NewClient()
-	if client.IsMaster() {
+	if client.GetInfo().Swarm.ControlAvailable {
 		tasks.Run("开启构建应用", time.Second*1, job.BuildAppJob, context.Background())
 		tasks.Run("开启自动构建", time.Second*1, job.AutoBuildAppJob, context.Background())
 		tasks.Run("同步Git分支", time.Second*30, job.SyncAppsBranchJob, context.Background())
-		flog.Info("Docker version：" + color.Blue(client.GetVersion()))
+		flog.Info("Docker version: " + color.Blue(client.GetVersion()))
 
 		// 3秒收集一次Docker集群信息
-		tasks.RunNow("收集Docker Swarm集群信息", time.Second*10, job.CollectsNodeJob, context.Background())
 		tasks.Run("收集Docker应用信息", time.Second*3, job.CollectsDockerSwarmJob, context.Background())
 
 		tasks.Run("统计访问", time.Minute*1, job.StatVisitsJob, context.Background())
@@ -49,9 +48,9 @@ func (module Module) PostInitialize() {
 
 		if strings.EqualFold(buildEO.AppName, "fops") && buildEO.Status == eumBuildStatus.Building {
 			fopsService := docker.NewClient().Service.List().Find(func(item *docker.ServiceListVO) bool {
-				return strings.EqualFold(item.Name, "fops")
+				return strings.EqualFold(item.Spec.Name, "fops")
 			})
-			if fopsService != nil && buildEO.DockerImage == fopsService.Image {
+			if fopsService != nil && buildEO.DockerImage == fopsService.Spec.TaskTemplate.ContainerSpec.Image {
 				flog.Infof("恭喜，你正在使用最新的FOPS版本：%s", buildEO.DockerImage)
 				// 发布事件
 				event.BuildFinishedEvent{AppName: buildEO.AppName, BuildId: buildEO.Id, ClusterId: buildEO.ClusterId, IsSuccess: true, DockerVer: buildEO.BuildNumber, DockerImage: buildEO.DockerImage}.PublishEvent()

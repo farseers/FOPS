@@ -1,8 +1,10 @@
 package job
 
 import (
+	"context"
 	"fops/domain/apps"
 	"fops/domain/appsBranch"
+	"time"
 
 	"github.com/farseer-go/fs"
 	"github.com/farseer-go/fs/container"
@@ -33,7 +35,8 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 			return
 		}
 		// 在工作流根目录，获取远程分支名称
-		lstRemoteBranch := gitDevice.GetRemoteBranch(fs.Context, path)
+		ctx, _ := context.WithTimeout(fs.Context, 10*time.Second)
+		lstRemoteBranch := gitDevice.GetLocalBranch(ctx, path)
 		if lstRemoteBranch.Count() == 0 {
 			return
 		}

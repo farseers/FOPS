@@ -5,27 +5,24 @@
             <div v-for="item, index in state.tableData" :key="index.toString() + 'conly1'" class="conlyCol">
                 <el-card :class="item.IsHealth ? 'conlyCard' : 'conlyCard conly_w'">
                     <div class="name" style="text-align: center">
-                        <span>{{ item.IP }} <el-tag type="info" size="small">{{ item.NodeName }}</el-tag> <img
-                                v-show="item.OS == 'linux'" :src="linux" alt="" /></span>
+                        <span>{{ item.Status.Addr }} <el-tag type="info" size="small">{{ item.Description.Hostname }}</el-tag> <img
+                                v-show="item.Description.Platform.OS == 'linux'" :src="linux" alt="" /></span>
                     </div>
                     <div style="text-align: center">
                         <el-tag effect="dark" size="small" style="margin-right: 5px;"
-                            :type="item.Status == 'Ready' ? 'success' : 'danger'">{{ item.Status }}</el-tag>
+                            :type="item.Status.State == 'Ready' ? 'success' : 'danger'">{{ item.Status.State }}</el-tag>
                         <el-tag effect="dark" size="small" style="margin-right: 5px;"
-                            :type="item.Availability == 'Active' ? 'success' : 'danger'">{{ item.Availability
-                            }}</el-tag>
-                        <el-tag effect="dark" size="small" style="cursor: pointer;" type="success"
-                            @click="termRet(item)">终端</el-tag>
+                            :type="item.Spec.Availability == 'Active' ? 'success' : 'danger'">{{ item.Spec.Availability }}</el-tag>
+                        <el-tag effect="dark" size="small" style="cursor: pointer;" type="success" @click="termRet(item)">终端</el-tag>
                     </div>
-                    <div v-show="item.IsMaster">
-                        <el-tag type="danger" size="small">manager</el-tag> {{ item.Architecture }} | {{
-                        item.EngineVersion }}
+                    <div v-show="item.ManagerStatus.Leader">
+                        <el-tag type="danger" size="small">manager</el-tag> {{ item.Description.Platform.Architecture }} | {{ item.Engine.EngineVersion }}
                     </div>
-                    <div v-show="!item.IsMaster">
-                        <el-tag size="small">worker</el-tag> {{ item.Architecture }} | {{ item.EngineVersion }}
+                    <div v-show="!item.ManagerStatus.Leader">
+                        <el-tag size="small">worker</el-tag> {{ item.Description.Platform.Architecture }} | {{ item.Engine.EngineVersion }}
                     </div>
-                    <div><el-tag type="info" size="small">{{ item.OS }}</el-tag> <b>{{ item.Memory }}</b> | <b>{{
-                            item.DiskTotal }}</b></div>
+                    <div><el-tag type="info" size="small">{{ item.Description.Platform.OS }}</el-tag> <b>{{ item.Description.Resources.Memory }}</b> | <b>{{
+                            item.Description.Resources.DiskTotal }}</b></div>
 
                     <div class="progress_cs" style="margin-bottom: 3px;">
                          <el-tooltip class="item" effect="dark" content="CPU" placement="top-start">
@@ -38,8 +35,8 @@
                             class="custom-progress" 
                             :stroke-width="state.strokeWidth" 
                             :color="state.customColorsCpu" 
-                            :percentage="item.CpuUsagePercent">
-                            <span>{{ item.CpuUsagePercent || 0  }}% {{ item.CPUs}}核</span>
+                            :percentage="item.Description.Resources.CpuUsagePercent">
+                            <span>{{ item.Description.Resources.CpuUsagePercent || 0  }}% {{ item.Description.Resources.NanoCPUs}}核</span>
                         </el-progress> </span>
                         </div>
                     <div class="progress_cs" style="margin-bottom: 3px;">
@@ -54,13 +51,13 @@
                             class="custom-progress" 
                             :stroke-width="state.strokeWidth" 
                             :color="state.customColors" 
-                            :percentage="item.MemoryUsagePercent">
-                            <span>{{item.MemoryUsagePercent || 0 }}% {{item.MemoryUsage }}MB</span>
+                            :percentage="item.Description.Resources.MemoryUsagePercent">
+                            <span>{{item.Description.Resources.MemoryUsagePercent || 0 }}% {{item.Description.Resources.MemoryUsage }}MB</span>
                         </el-progress>
                        </span>
                        </div>
 
-                   <div class="progress_cs" v-for="row in item.Disk">
+                   <div class="progress_cs" v-for="row in item.Description.Resources.Disk">
                      <el-tooltip class="item" effect="dark" content="硬盘" placement="top-start">
                             <el-tag type="info" size="small"><img :src="yp" alt="" />{{ row.Path }}</el-tag> 
                         </el-tooltip>

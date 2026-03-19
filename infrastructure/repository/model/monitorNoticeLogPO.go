@@ -3,6 +3,8 @@ package model
 import (
 	"fops/domain/enum/noticeType"
 	"time"
+
+	"github.com/farseer-go/data"
 )
 
 type MonitorNoticeLogPO struct {
@@ -14,4 +16,11 @@ type MonitorNoticeLogPO struct {
 	NoticeMsg  string          `gorm:"size:4096;not null;comment:通知消息"`
 	NoticeAt   time.Time       `gorm:"type:timestamp;size:6;not null;default:CURRENT_TIMESTAMP;comment:通知时间"`
 	IsRead     bool            `gorm:"size:1;not null;default:0;comment:是否已读"`
+}
+
+// 创建索引
+func (*MonitorNoticeLogPO) CreateIndex() map[string]data.IdxField {
+	return map[string]data.IdxField{
+		"is_read": {IsUNIQUE: false, Fields: "is_read, notice_at desc"},
+	}
 }

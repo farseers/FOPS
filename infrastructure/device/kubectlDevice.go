@@ -5,6 +5,7 @@ import (
 	"fops/domain/_/eumK8SControllers"
 	"fops/domain/apps"
 	"fops/domain/cluster"
+	"os"
 
 	"github.com/farseer-go/fs/container"
 	"github.com/farseer-go/utils/exec"
@@ -38,16 +39,35 @@ func (device kubectlDevice) CreateConfigFile(clusterName string, clusterConfig s
 }
 
 func (device kubectlDevice) SetYaml(clusterName string, projectName string, yamlContent string, progress chan string, ctx context.Context) bool {
-	// 将yaml文件写入临时文件
-	fileName := "/tmp/" + projectName + ".yaml"
-	file.Delete(fileName)
-	file.WriteString(fileName, yamlContent)
+	// 使用安全的临时文件名（自动生成唯一文件名）
+	tmpFile, err := os.CreateTemp("", projectName+"-*.yaml")
+	if err != nil {
+		progress <- "创建临时文件失败: " + err.Error()
+		return false
+	}
+	fileName := tmpFile.Name()
+	tmpFile.Close()
+
+	// 确保退出时清理临时文件
+	defer os.Remove(fileName)
+
+	// 写入yaml内容
+	if err := os.WriteFile(fileName, []byte(yamlContent), 0644); err != nil {
+		progress <- "写入临时文件失败: " + err.Error()
+		return false
+	}
 
 	configFile := device.GetConfigFile(clusterName)
 
 	// 发布
-	lstResult, wait := exec.RunShellContext(ctx, "kubectl apply -f "+fileName+" --kubeconfig="+configFile+" --insecure-skip-tls-verify", nil, "", true)
-	if exitCode := exec.SaveToChan(progress, lstResult, wait); exitCode != 0 {
+	wait := exec.RunShellContext(ctx, "kubectl", []string{
+		"apply",
+		"-f", fileName,
+		"--kubeconfig=" + configFile,
+		"--insecure-skip-tls-verify",
+	}, nil, "", true)
+
+	if exitCode := wait.WaitToChan(progress); exitCode != 0 {
 		progress <- "K8S更新镜像失败。"
 		return false
 	}
@@ -61,13 +81,25 @@ func (device kubectlDevice) SetImages(cluster cluster.DomainObject, projectName 
 }
 
 func (device kubectlDevice) SetImagesByClusterName(clusterName string, clusterConfig string, projectName string, dockerImages string, k8SControllersType eumK8SControllers.Enum, progress chan string, ctx context.Context) bool {
-
 	progress <- "---------------------------------------------------------"
 	progress <- "开始更新K8S POD的镜像版本。"
 
 	var configFile = device.CreateConfigFile(clusterName, clusterConfig)
-	lstResult, wait := exec.RunShellContext(ctx, "kubectl set image "+k8SControllersType.String()+"/"+projectName+" "+projectName+"="+dockerImages+" --kubeconfig="+configFile+" --insecure-skip-tls-verify", nil, "", true)
-	if exitCode := exec.SaveToChan(progress, lstResult, wait); exitCode != 0 {
+
+	// kubectl set image deployment/<name> <container>=<image>
+	resourceType := k8SControllersType.String()
+	resource := resourceType + "/" + projectName
+	containerImage := projectName + "=" + dockerImages
+
+	wait := exec.RunShellContext(ctx, "kubectl", []string{
+		"set", "image",
+		resource,
+		containerImage,
+		"--kubeconfig=" + configFile,
+		"--insecure-skip-tls-verify",
+	}, nil, "", true)
+
+	if exitCode := wait.WaitToChan(progress); exitCode != 0 {
 		progress <- "K8S更新镜像失败。"
 		return false
 	}

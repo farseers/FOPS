@@ -55,6 +55,10 @@
                       <el-icon style="margin-left: 10px;cursor: pointer;color: #19d4ae;font-size: 18px"
                         @click="showFsLogLevel(2, v.AppName)"><ele-Document /></el-icon>
                     </el-tooltip>
+                    <el-tooltip content="配置管理" slot="label">
+                      <el-icon style="margin-left: 10px;cursor: pointer;color: #E6A23C;font-size: 18px"
+                        @click="showConfigDialog(v.AppName)"><ele-Setting /></el-icon>
+                    </el-tooltip>
                   </span>
                   <div class="appItem">
                     <el-tooltip :content="item.DeploySuccessAt" slot="label">
@@ -102,7 +106,7 @@
                   style="width:100%"><el-icon><ele-SwitchButton /></el-icon>刷新工作流</el-button>
               </div>
               <div v-if="v.AppGit > 0" class="appItem appItem1">构建
-                <el-button v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v, item)"
+                <el-button v-for="(item, index) in v.WorkflowsNames" size="small" @click="onBuildAdd(v, item,'main')"
                   type="danger" style="margin-left: 5px;">{{ item }}</el-button>
               </div>
             </el-card>
@@ -174,7 +178,8 @@
     </el-dialog>
     <dockerDialog ref="dockerDialogRef" />
     <editAppNum ref="editAppNumRef" @refresh="getTableData()" />
-    <elFirmBox ref="elFirmBoxRef" @refresh="getTableLogData()" />
+    <buildConfirmDialog ref="buildConfirmDialogRef" @refresh="getTableLogData()" />
+    <configDialog ref="configDialogRef" />
     <div v-if="state.showOverlay" class="overlay">
       <div class="overlay-content">
         <img :src="Image" style="width: 200px" alt="Image">
@@ -205,7 +210,8 @@ const taskDialog = defineAsyncComponent(() => import('/src/views/fops/task/taskA
 const logDialog = defineAsyncComponent(() => import('/src/views/fops/log/logDetailDialog.vue'));
 const dockerDialog = defineAsyncComponent(() => import('/src/views/fops/task/dockerDialog.vue'));
 const editAppNum = defineAsyncComponent(() => import('/src/views/fops/build/editAppNum.vue'));
-const elFirmBox = defineAsyncComponent(() => import('/src/views/fops/build/elFirmBox.vue'));
+const buildConfirmDialog = defineAsyncComponent(() => import('/src/views/fops/build/buildConfirmDialog.vue'));
+const configDialog = defineAsyncComponent(() => import('/src/views/fops/build/configDialog.vue'));
 const logDetailDialogRef = ref();
 // 定义变量内容
 const appDialogRef = ref();
@@ -214,7 +220,8 @@ const taskDialogRef = ref();
 const scrollableBuildLog = ref();
 const dockerDialogRef = ref();
 const editAppNumRef = ref();
-const elFirmBoxRef = ref();
+const buildConfirmDialogRef = ref();
+const configDialogRef = ref();
 const state = reactive({
   isShowBuildLogDialog: false,
   buildLogContent: '',
@@ -244,6 +251,10 @@ const state = reactive({
   autoLog: true,
 });
 
+const showConfigDialog = (appName: string) => {
+  configDialogRef.value.openDialog(appName);
+};
+
 const showDockerLog = (AppName: any) => {
   dockerDialogRef.value.openDockerLog(AppName);
 }
@@ -254,7 +265,6 @@ const showDockerTag = (row: any, type: any) => {
 const getTableData = () => {
   state.tableData.loading = true;
   let param = {
-    "IsSys": false,
   };
   // 获取应用列表
   serverApi.appsList(param).then(function (res) {
@@ -307,7 +317,7 @@ const onOpenEdit = (type: string, row: any) => {
 //重新构建
 const onBranchAgain = (row: any) => {
   if (row.Status == 2) {
-    elFirmBoxRef.value.openDialog(row, row.WorkflowsName, row.BranchName);
+    buildConfirmDialogRef.value.openDialog(row, row.WorkflowsName, row.BranchName);
   }
 }
 // 清除镜像
@@ -344,6 +354,8 @@ const onHandleCurrentLogChange = (val: number) => {
 };
 // 定义定时器
 let intervalId = null;
+// 请求锁，防止并发请求导致日志顺序错乱
+let isLoadingLog = false;
 // 使用 watch 监听 state 中 count 属性的变化
 watch(() => state.isShowBuildLogDialog, (newValue, oldValue) => {
   if (!newValue) {
@@ -373,8 +385,15 @@ const showBuildLog = (row: any) => {
   })
 }
 
-
 const onShowLog = () => {
+  // 如果上一个请求还在进行中，跳过本次请求，避免并发导致日志顺序错乱
+  if (isLoadingLog) {
+    return
+  }
+
+  // 设置请求锁
+  isLoadingLog = true
+
   // 使用增量日志 API
   serverApi.buildLogIncremental(state.buildLogId.toString(), state.buildLogLines).then(function (response) {
     const res = response.data || response
@@ -397,6 +416,12 @@ const onShowLog = () => {
         }, 200)
       }
     }
+  }).catch(function (error) {
+    // 请求失败时也要释放锁
+    console.error('获取增量日志失败:', error)
+  }).finally(function () {
+    // 无论成功或失败，都释放请求锁
+    isLoadingLog = false
   })
 }
 
@@ -407,8 +432,8 @@ const onHideOverlay = () => {
   state.showOverlay = false
 }
 // 构建
-const onBuildAdd = (row: any, workflowsName: any) => {
-  elFirmBoxRef.value.openDialog(row, workflowsName);
+const onBuildAdd = (row: any, workflowsName: any, branchName: any) => {
+  buildConfirmDialogRef.value.openDialog(row, workflowsName, branchName);
   return
   const t = '请填写分支名称，并确认构建到本地!'
   ElMessageBox.prompt(t, '提示', {

@@ -31,13 +31,6 @@ func AllBranchList(appsBranchRepository appsBranch.Repository) collections.List[
 	}).ToList()
 }
 
-// BuildList 获取指定应用的分支列表
-// @post autobuild/branchList
-// @filter application.Jwt
-func BranchList(appName string, appsBranchRepository appsBranch.Repository) collections.List[appsBranch.DomainObject] {
-	return appsBranchRepository.ToListByAppName(appName)
-}
-
 // ResetCommitId 重置错误次数
 // @post autobuild/resetCommitId
 // @filter application.Jwt

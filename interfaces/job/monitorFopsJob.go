@@ -51,37 +51,37 @@ func MonitorFopsJob(*tasks.TaskContext) {
 	// 节点数据
 	clusterNode.NodeList.Foreach(func(node *docker.DockerNodeVO) {
 		addMonitorData.Add(monitor.DataEO{
-			AppName:  fmt.Sprintf("%s(%s)", node.IP, node.NodeName),
+			AppName:  fmt.Sprintf("%s(%s)", node.Status.Addr, node.Description.Hostname),
 			Key:      "cpu",
-			Value:    parse.ToString(node.CpuUsagePercent),
+			Value:    parse.ToString(node.Description.Resources.CpuUsagePercent),
 			CreateAt: dateTime.Now(),
 		})
 		addMonitorData.Add(monitor.DataEO{
-			AppName:  fmt.Sprintf("%s(%s)", node.IP, node.NodeName),
+			AppName:  fmt.Sprintf("%s(%s)", node.Status.Addr, node.Description.Hostname),
 			Key:      "memory",
-			Value:    parse.ToString(node.MemoryUsagePercent),
+			Value:    parse.ToString(node.Description.Resources.MemoryUsagePercent),
 			CreateAt: dateTime.Now(),
 		})
 		// 多个硬盘路径，取最大占用值
-		diskUsagePercent := collections.NewList(node.Disk...).Max(func(item docker.DiskVO) any {
+		diskUsagePercent := collections.NewList(node.Description.Resources.Disk...).Max(func(item docker.DiskVO) any {
 			return item.DiskUsagePercent
 		}).(float64)
 		addMonitorData.Add(monitor.DataEO{
-			AppName:  fmt.Sprintf("%s(%s)", node.IP, node.NodeName),
+			AppName:  fmt.Sprintf("%s(%s)", node.Status.Addr, node.Description.Hostname),
 			Key:      "disk",
 			Value:    parse.ToString(diskUsagePercent),
 			CreateAt: dateTime.Now(),
 		})
 		addMonitorData.Add(monitor.DataEO{
-			AppName:  fmt.Sprintf("%s(%s)", node.IP, node.NodeName),
+			AppName:  fmt.Sprintf("%s(%s)", node.Status.Addr, node.Description.Hostname),
 			Key:      "pcStatus",
-			Value:    node.Status,
+			Value:    node.Status.State,
 			CreateAt: dateTime.Now(),
 		})
 		addMonitorData.Add(monitor.DataEO{
-			AppName:  fmt.Sprintf("%s(%s)", node.IP, node.NodeName),
+			AppName:  fmt.Sprintf("%s(%s)", node.Status.Addr, node.Description.Hostname),
 			Key:      "nodeAvailability",
-			Value:    node.Availability,
+			Value:    node.Spec.Availability,
 			CreateAt: dateTime.Now(),
 		})
 	})

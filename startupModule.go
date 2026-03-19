@@ -40,14 +40,19 @@ func (module StartupModule) PostInitialize() {
 	// 使用git代理
 	if proxyAgent := configure.GetString("Fops.Proxy"); proxyAgent != "" {
 		flog.Info("开启Git代理：", proxyAgent)
-		exec.RunShellCommand("git config --global http.https://github.com.proxy "+proxyAgent, nil, "", true)
-		exec.RunShellCommand("git config --global https.https://github.com.proxy "+proxyAgent, nil, "", true)
+		wait := exec.RunShell("git", []string{"config", "--global", "http.https://github.com.proxy", proxyAgent}, nil, "", true)
+		wait.Wait()
+
+		wait = exec.RunShell("git", []string{"config", "--global", "https.https://github.com.proxy", proxyAgent}, nil, "", true)
+		wait.Wait()
 	} else {
 		flog.Info("未开启Git代理")
-		exec.RunShellCommand("git config --global --unset http.https://github.com.proxy", nil, "", false)
-		exec.RunShellCommand("git config --global --unset https.https://github.com.proxy", nil, "", false)
-	}
+		wait := exec.RunShell("git", []string{"config", "--global", "--unset", "http.https://github.com.proxy"}, nil, "", false)
+		wait.Wait()
 
+		wait = exec.RunShell("git", []string{"config", "--global", "--unset", "https.https://github.com.proxy"}, nil, "", false)
+		wait.Wait()
+	}
 	// 初始化目录
 	apps.InitFopsDir()
 }

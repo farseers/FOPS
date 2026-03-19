@@ -34,13 +34,22 @@ func Add(req request.AddRequest, appsRepository apps.Repository) {
 	do := mapper.Single[apps.DomainObject](req)
 	do.IsSys = false
 	exception.ThrowWebExceptionBool(appsRepository.IsExists(req.AppName), 403, "应用不能重复")
-	// 删除末尾的/
-	if strings.HasSuffix(do.AdditionalScripts, "\\") {
-		do.AdditionalScripts = do.AdditionalScripts[:len(do.AdditionalScripts)-1]
-	}
+	// 删除末尾的\
+	do.AdditionalScripts = strings.TrimSuffix(do.AdditionalScripts, "\\")
 	// 添加
 	err := appsRepository.Add(do)
 	exception.ThrowWebExceptionError(403, err)
+
+	// 将 FrameworkGits 转换为新表数据
+	if req.FrameworkGits.Count() > 0 {
+		req.FrameworkGits.Foreach(func(frameworkId *int64) {
+			_ = appsRepository.AddAppsFramework(apps.AppsFrameworkEO{
+				AppName:     req.AppName,
+				FrameworkId: *frameworkId,
+				CommitId:    "",
+			})
+		})
+	}
 }
 
 // Update 修改应用
@@ -55,13 +64,15 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, clusterRe
 	if exists := client.Service.Exists(req.AppName); exists {
 		// 更新镜像
 		if (req.ClusterDockerImage != "" && req.ClusterDockerImage != do.ClusterVer.GetValue(clusterDO.Id).DockerImage) || do.DockerReplicas != req.DockerReplicas {
-			result, wait := client.Service.SetImagesAndReplicas(req.AppName, req.ClusterDockerImage, req.DockerReplicas)
-			exception.ThrowRefuseExceptionBool(wait() != 0, collections.NewListFromChan(result).ToString(","))
+			wait := client.Service.SetImagesAndReplicas(req.AppName, req.ClusterDockerImage, req.DockerReplicas)
+			lst, code := wait.WaitToList()
+			exception.ThrowRefuseExceptionBool(code != 0, lst.ToString(","))
 
-		} else if do.DockerReplicas != req.DockerReplicas {
+		} else if do.DockerReplicas != req.DockerReplicas && do.DockerNodeRole == "worker" {
 			// 更新副本数量
-			result, wait := client.Service.SetReplicas(req.AppName, req.DockerReplicas)
-			exception.ThrowRefuseExceptionBool(wait() != 0, collections.NewListFromChan(result).ToString(","))
+			wait := client.Service.SetReplicas(req.AppName, req.DockerReplicas)
+			lst, code := wait.WaitToList()
+			exception.ThrowRefuseExceptionBool(code != 0, lst.ToString(","))
 		}
 	}
 
@@ -86,6 +97,15 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, clusterRe
 
 	err := appsRepository.UpdateApp(newDO)
 	exception.ThrowWebExceptionError(403, err)
+
+	// 更新 FrameworkList - 先删除旧的，再添加新的
+	_, _ = appsRepository.DeleteAppsFrameworkByAppName(req.AppName)
+	if req.FrameworkList.Count() > 0 {
+		req.FrameworkList.Foreach(func(item *apps.AppsFrameworkEO) {
+			item.AppName = req.AppName
+			_ = appsRepository.AddAppsFramework(*item)
+		})
+	}
 }
 
 // Delete 删除应用
@@ -97,31 +117,34 @@ func Delete(appName string, appsRepository apps.Repository) {
 	client := docker.NewClient()
 	exists := client.Service.Exists(appName)
 	if exists {
-		result, wait := client.Service.Delete(appName)
-		exception.ThrowRefuseExceptionBool(wait() != 0, collections.NewListFromChan(result).ToString(","))
+		err := client.Service.Delete(appName)
+		exception.ThrowRefuseExceptionBool(err != nil, "删除服务失败: "+err.Error())
 	}
+
+	// 删除应用框架关系
+	_, _ = appsRepository.DeleteAppsFrameworkByAppName(appName)
 
 	// 删除应用
 	_, err := appsRepository.Delete(appName)
 	exception.ThrowWebExceptionError(403, err)
 }
 
-// DropDownList 应用列表
+// DropDownList Docker swarm集群节点列表（下拉选择用）
 // @post dropDownList
 // @filter application.Jwt
 func DropDownList(isAll bool, appsRepository apps.Repository) collections.List[apps.ShortEO] {
 	resList := appsRepository.ToShortList(isAll)
 	// cluster_node 节点信息
 	clusterNode.NodeList.Foreach(func(node *docker.DockerNodeVO) {
-		resList.Add(apps.ShortEO{AppName: fmt.Sprintf("%s(%s)", node.IP, node.NodeName)})
+		resList.Add(apps.ShortEO{AppName: fmt.Sprintf("%s(%s)", node.Status.Addr, node.Description.Hostname)})
 	})
 	return resList
 }
 
 // List 应用列表
-// @post list
+// @get list
 // @filter application.Jwt
-func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.Repository, clusterRepository cluster.Repository, fScheduleHttp fSchedule.Http) collections.List[response.AppsResponse] {
+func List(appsRepository apps.Repository, logDataRepository logData.Repository, clusterRepository cluster.Repository, fScheduleHttp fSchedule.Http) collections.List[response.AppsResponse] {
 	countList := logDataRepository.StatCount()
 	// 获取任务组的数据统计
 	var taskGroupStatList collections.List[fSchedule.StatTaskEO]
@@ -130,11 +153,7 @@ func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.
 	}
 	lstCluster := clusterRepository.ToList()
 	lst := collections.NewList[response.AppsResponse]()
-	appsRepository.ToListBySys(isSys).Foreach(func(item *apps.DomainObject) {
-		// 在监控中心，副本数量=0的，不显示
-		if isSys && item.DockerReplicas == 0 {
-			return
-		}
+	appsRepository.ToListBySys(false).Foreach(func(item *apps.DomainObject) {
 		appsResponse := doToAppsResponse(lstCluster, *item)
 		// 统计日志数量
 		countList.Foreach(func(logItem *logData.LogCountEO) {
@@ -183,6 +202,63 @@ func List(isSys bool, appsRepository apps.Repository, logDataRepository logData.
 				}
 			}
 		}
+
+		lst.Add(appsResponse)
+	})
+	return lst
+}
+
+// List 应用列表
+// @get syslist
+// @filter application.Jwt
+func SysList(appsRepository apps.Repository, logDataRepository logData.Repository, clusterRepository cluster.Repository, fScheduleHttp fSchedule.Http) collections.List[response.AppsSysResponse] {
+	countList := logDataRepository.StatCount()
+	// 获取任务组的数据统计
+	var taskGroupStatList collections.List[fSchedule.StatTaskEO]
+	if clusterDO := clusterRepository.GetLocalCluster(); clusterDO.FScheduleAddr != "" {
+		taskGroupStatList = fScheduleHttp.StatList(clusterDO.FScheduleAddr)
+	}
+	lst := collections.NewList[response.AppsSysResponse]()
+	appsRepository.ToListBySys(true).Foreach(func(item *apps.DomainObject) {
+		// 在监控中心，副本数量=0的，不显示
+		if item.DockerReplicas == 0 {
+			return
+		}
+		appsResponse := response.AppsSysResponse{
+			AppName:         item.AppName,
+			DockerInstances: item.DockerInstances,
+			DockerNodeRole:  item.DockerNodeRole,
+			DockerReplicas:  item.DockerReplicas,
+			IsHealth:        item.DockerInstances >= item.DockerReplicas,
+			LimitCpus:       item.LimitCpus,
+			LimitMemory:     item.LimitMemory,
+		}
+		// 统计日志数量
+		countList.Foreach(func(logItem *logData.LogCountEO) {
+			if item.AppName != logItem.AppName {
+				return
+			}
+			switch logItem.LogLevel {
+			case eumLogLevel.Error: // 日志异常数量
+				appsResponse.LogErrorCount += logItem.LogCount
+			case eumLogLevel.Warning: // 日志警告数量
+				appsResponse.LogWaringCount += logItem.LogCount
+			default:
+			}
+		})
+
+		// 统计任务组执行数量
+		taskGroupStatList.Foreach(func(statTaskEO *fSchedule.StatTaskEO) {
+			if statTaskEO.ClientName != item.AppName {
+				return
+			}
+			switch statTaskEO.ExecuteStatus {
+			case 3: // 任务组执行失败数量
+				appsResponse.TaskFailCount += statTaskEO.Count
+			case 2: // 任务组执行成功数量
+				appsResponse.TaskSuccessCount += statTaskEO.Count
+			}
+		})
 
 		// 容器资源占用统计
 		appsResponse.CpuUsagePercent = item.DockerInspect.Where(func(item apps.DockerInspectVO) bool {
@@ -233,6 +309,7 @@ func Info(appName string, appsRepository apps.Repository, clusterRepository clus
 		DockerImage:     clusterVerVO.DockerImage,
 		DeploySuccessAt: clusterVerVO.DeploySuccessAt,
 	}
+	appsResponse.FrameworkList = appsRepository.ToAppsFrameworkList(appName)
 	return appsResponse
 }
 
@@ -265,12 +342,20 @@ func doToAppsResponse(lstCluster collections.List[cluster.DomainObject], do apps
 	clusterVer = clusterVer.OrderBy(func(item response.ClusterVerVO) any {
 		return item.ClusterId
 	}).ToList()
+
+	// // 从新表读取 FrameworkGits
+	// frameworkGits := collections.NewList[int64]()
+	// appsFrameworkList := appsRepository.ToAppsFrameworkList(do.AppName)
+	// appsFrameworkList.Foreach(func(item *apps.AppsFrameworkEO) {
+	// 	frameworkGits.Add(item.FrameworkId)
+	// })
+
 	return response.AppsResponse{
-		AppName:           do.AppName,
-		AppGit:            do.AppGit,
-		DockerInstances:   do.DockerInstances,
-		ClusterVer:        clusterVer,
-		FrameworkGits:     do.FrameworkGits,
+		AppName:         do.AppName,
+		AppGit:          do.AppGit,
+		DockerInstances: do.DockerInstances,
+		ClusterVer:      clusterVer,
+		// FrameworkGits:     frameworkGits,
 		DockerNodeRole:    do.DockerNodeRole,
 		DockerReplicas:    do.DockerReplicas,
 		IsHealth:          do.DockerInstances >= do.DockerReplicas,

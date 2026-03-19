@@ -19,6 +19,9 @@ type GitEO struct {
 	UserPwd  string // 账户密码
 	Path     string // 存储目录
 	IsApp    bool   // 是否为应用
+	// 非数据库字段
+	EnableBackDefaultBranch bool   // 匹配失败时退回到默认分支
+	CommitId                string // 框架提交ID
 }
 
 func (receiver *GitEO) IsNil() bool {
@@ -75,3 +78,12 @@ func (receiver *GitEO) GetRawContent(filePath string) string {
 // func (receiver *GitEO) GetWorkflowsRoot() string {
 // 	return WorkflowsRoot + receiver.GetName() + "/"
 // }
+
+// 开启自动回退默认分支时,会返回当前的默认分支,否则返回空
+func (receiver *GitEO) GetDefaultBranch() string {
+	// 开启自动回退
+	if receiver.EnableBackDefaultBranch {
+		return receiver.Branch
+	}
+	return ""
+}

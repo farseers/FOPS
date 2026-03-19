@@ -51,7 +51,13 @@ export function fopsApi() {
 		},appsList: (param: object) => {
 			return request({
 				url: '/apps/list',
-				method: 'post',
+				method: 'get',
+				data:param,
+			});
+		},appsSysList: (param: object) => {
+			return request({
+				url: '/apps/syslist',
+				method: 'get',
 				data:param,
 			});
 		}
@@ -146,6 +152,18 @@ export function fopsApi() {
 		},restartDocker: (param: object) => {
 			return request({
 				url: '/apps/restartDocker',
+				method: 'post',
+				data:param,
+			});
+		},getConfig: (appName: string) => {
+			return requestGet({
+				url: '/apps/config/config/get?appName='+appName,
+				method: 'get',
+				data:{},
+			});
+		},saveConfig: (param: object) => {
+			return request({
+				url: '/apps/config/config/save',
 				method: 'post',
 				data:param,
 			});
@@ -573,9 +591,37 @@ export function fopsApi() {
 				data:param,
 			});
 		},
-		autobuildBranchList:(param: object) => { // 获取指定应用的分支列表
+		buildBranchList:(param: object) => { // 获取指定应用的分支列表
 			return request({
-				url: '/apps/autobuild/branchList',
+				url: '/apps/build/branchList',
+				method:'post',
+				data:param,
+			});
+		},
+		appFrameworkList:(param: object) => { // 获取指定应用的框架列表
+			return request({
+				url: '/apps/build/appFrameworkList',
+				method:'post',
+				data:param,
+			});
+		},
+		RemoteBranchList:(param: object) => { // 获取获取远程分支列表
+			return request({
+				url: '/apps/build/remoteBranchList',
+				method:'post',
+				data:param,
+			});
+		},
+		BuildManifestList:(param: object) => { // 获取应用最近的构建清单列表
+			return request({
+				url: '/apps/build/manifestList',
+				method:'post',
+				data:param,
+			});
+		},
+		BuildManifestDetail:(param: object) => { // 根据镜像获取构建清单详情（包含所有依赖）
+			return request({
+				url: '/apps/build/manifestDetail',
 				method:'post',
 				data:param,
 			});

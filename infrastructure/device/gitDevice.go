@@ -204,7 +204,7 @@ func (receiver *gitDevice) CreateTag(ctx context.Context, gitAuthHb, branchOrCom
 
 	// 4. 获取最新 SHA
 	shaURL := fmt.Sprintf("%s/repos/%s/commits/%s", apiBase, repoPath, branchOrCommitId)
-	respBody, statusCode, _, err := http.RequestProxyConfigure("GET", shaURL, headers, nil, "", 30)
+	respBody, statusCode, _, err := http.RequestProxyConfigure("GET", shaURL, headers, nil, "", 2000)
 	if err != nil {
 		return fmt.Errorf("获取 SHA 请求失败: %w", err)
 	}
@@ -227,7 +227,7 @@ func (receiver *gitDevice) CreateTag(ctx context.Context, gitAuthHb, branchOrCom
 	}
 
 	refURL := fmt.Sprintf("%s/repos/%s/git/refs", apiBase, repoPath)
-	respBody, statusCode, _, err = http.RequestProxyConfigure("POST", refURL, headers, payload, "application/json", 30)
+	respBody, statusCode, _, err = http.RequestProxyConfigure("POST", refURL, headers, payload, "application/json", 2000)
 	if err != nil {
 		return fmt.Errorf("创建标签请求失败: %w", err)
 	}

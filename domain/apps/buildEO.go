@@ -197,6 +197,7 @@ func (receiver *BuildEO) StartBuild() {
 			appCommitId := receiver.getCommitId(receiver.appGit.GetAbsolutePath())
 			if len(appCommitId) >= 16 {
 				receiver.Env.CommitId = appCommitId[:16]
+				receiver.appGit.CommitId = appCommitId[:16] // 这里更新后,如果后续需要开启自动打标签时,会用到
 				receiver.logQueue.progress <- fmt.Sprintf("应用的CommitId：%s", receiver.Env.CommitId)
 			}
 
@@ -635,7 +636,6 @@ func (receiver *BuildEO) recordBuildManifest(gits collections.List[GitEO]) {
 		gitName := git.GetName()
 		if git.IsApp {
 			gitName = receiver.AppName
-			receiver.appGit.CommitId = commitId // 这里更新后,如果后续需要开启自动打标签时,会用到
 		}
 
 		manifest := BuildManifestEO{

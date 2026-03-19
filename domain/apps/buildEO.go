@@ -194,9 +194,9 @@ func (receiver *BuildEO) StartBuild() {
 		switch step.ActionName {
 		case "checkout":
 			// 得到应用的CommitId
-			commitId := receiver.getCommitId(receiver.appGit.GetAbsolutePath())
-			if len(commitId) >= 16 {
-				receiver.Env.CommitId = commitId[:16]
+			appCommitId := receiver.getCommitId(receiver.appGit.GetAbsolutePath())
+			if len(appCommitId) >= 16 {
+				receiver.Env.CommitId = appCommitId[:16]
 				receiver.logQueue.progress <- fmt.Sprintf("应用的CommitId：%s", receiver.Env.CommitId)
 			}
 

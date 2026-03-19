@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"time"
 
@@ -203,31 +204,36 @@ func (receiver *gitDevice) CreateTag(ctx context.Context, gitAuthHb, branchOrCom
 	}
 
 	// 4. 获取最新 SHA
-	shaURL := fmt.Sprintf("%s/repos/%s/commits/%s", apiBase, repoPath, branchOrCommitId)
-	respBody, statusCode, _, err := http.RequestProxyConfigure("GET", shaURL, headers, nil, "", 2000)
-	if err != nil {
-		return fmt.Errorf("获取 SHA 请求失败: %w", err)
-	}
-	if statusCode != 200 {
-		return fmt.Errorf("获取 SHA 失败 (状态码 %d): %s", statusCode, respBody)
-	}
+	sha := branchOrCommitId
+	isCommitID := regexp.MustCompile(`^[0-9a-fA-F]{40}$`).MatchString(branchOrCommitId)
+	if !isCommitID {
+		shaURL := fmt.Sprintf("%s/repos/%s/commits/%s", apiBase, repoPath, branchOrCommitId)
+		respBody, statusCode, _, err := http.RequestProxyConfigure("GET", shaURL, headers, nil, "", 2000)
+		if err != nil {
+			return fmt.Errorf("获取 SHA 请求失败: %w", err)
+		}
+		if statusCode != 200 {
+			return fmt.Errorf("获取 SHA 失败 (状态码 %d): %s", statusCode, respBody)
+		}
 
-	// 解析 SHA
-	var result struct {
-		SHA string `json:"sha"`
-	}
-	if err := json.Unmarshal([]byte(respBody), &result); err != nil {
-		return fmt.Errorf("解析 SHA 响应失败: %w", err)
+		// 解析 SHA
+		var result struct {
+			SHA string `json:"sha"`
+		}
+		if err := json.Unmarshal([]byte(respBody), &result); err != nil {
+			return fmt.Errorf("解析 SHA 响应失败: %w", err)
+		}
+		sha = result.SHA
 	}
 
 	// 5. 创建 Tag
 	payload := map[string]string{
 		"ref": "refs/tags/" + tagName,
-		"sha": result.SHA,
+		"sha": sha,
 	}
 
 	refURL := fmt.Sprintf("%s/repos/%s/git/refs", apiBase, repoPath)
-	respBody, statusCode, _, err = http.RequestProxyConfigure("POST", refURL, headers, payload, "application/json", 2000)
+	respBody, statusCode, _, err := http.RequestProxyConfigure("POST", refURL, headers, payload, "application/json", 2000)
 	if err != nil {
 		return fmt.Errorf("创建标签请求失败: %w", err)
 	}

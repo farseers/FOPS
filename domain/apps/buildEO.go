@@ -197,7 +197,7 @@ func (receiver *BuildEO) StartBuild() {
 			appCommitId := receiver.getCommitId(receiver.appGit.GetAbsolutePath())
 			if len(appCommitId) >= 16 {
 				receiver.Env.CommitId = appCommitId[:16]
-				receiver.appGit.CommitId = appCommitId[:16] // 这里更新后,如果后续需要开启自动打标签时,会用到
+				receiver.appGit.CommitId = appCommitId // 这里更新后,如果后续需要开启自动打标签时,会用到
 				receiver.logQueue.progress <- fmt.Sprintf("应用的CommitId：%s", receiver.Env.CommitId)
 			}
 
@@ -621,7 +621,13 @@ func (receiver *BuildEO) recordBuildManifest(gits collections.List[GitEO]) {
 	// 遍历所有git（包含应用和依赖框架）
 	gits.Foreach(func(git *GitEO) {
 		// 得到最新的CommitId
-		commitId := receiver.getCommitId(git.GetAbsolutePath())
+		var commitId string
+		if git.IsApp {
+			commitId = receiver.appGit.CommitId
+		} else {
+			commitId = receiver.getCommitId(git.GetAbsolutePath())
+		}
+
 		if len(commitId) >= 16 {
 			commitId = commitId[:16]
 			// 如果上次传进来的不是commitID,则更新为分支名称

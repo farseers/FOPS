@@ -2,7 +2,7 @@ package apps
 
 import "regexp"
 
-var commitIdRegexp = regexp.MustCompile(`^[0-9a-fA-F]{7,40}$`)
+var commitIdRegexp = regexp.MustCompile(`^[0-9a-fA-F]{16,40}$`)
 
 // AppsFrameworkEO 应用与框架关系实体
 type AppsFrameworkEO struct {

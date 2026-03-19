@@ -20,7 +20,7 @@
           </div>
           <div class="section-body">
             <el-radio-group v-model="state.appBranchName" class="branch-radio-group">
-              <el-radio v-for="item in state.appBranchList" :key="item.value" :label="item.value" size="default" class="branch-radio-item" @click="appBranchNameChange">
+              <el-radio v-for="item in state.appBranchList" :key="item.value" :label="item.value" size="default" class="branch-radio-item" @change="appBranchNameChange">
                 {{ item.value }}
               </el-radio>
             </el-radio-group>
@@ -233,12 +233,13 @@ const frameworkSearch = (queryString, cb) => {
 
 // 应用分支选择事件
 const appBranchNameChange = () => {
-  console.log(state.manifestSelect)
+  console.log(state.manifestSelect,state.appBranchName ,state.appFrameworkList)
   if (state.enableBackDefaultBranch && !state.manifestSelect || JSON.stringify(state.manifestSelect) === '{}') {
       state.appFrameworkList.forEach(curItem => {
         curItem.Branch = state.appBranchName;
       });
   }
+   console.log(state.manifestSelect,state.appBranchName ,state.appFrameworkList)
 };
 
 // 构建清单选择事件

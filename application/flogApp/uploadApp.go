@@ -9,7 +9,7 @@ import (
 	"github.com/farseer-go/queue"
 )
 
-// Upload 上传链路记录
+// Upload 上传日志记录
 // @post upload
 func Upload(req request.UploadRequest, logDataRepository logData.Repository) {
 	if t := trace.CurTraceContext.Get(); t != nil {

@@ -24,3 +24,4 @@ go.work.sum
 /wwwroot/*
 *.DS_Store
 wwwsrc/.env.development
+wwwsrc/.env.development

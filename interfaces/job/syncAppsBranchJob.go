@@ -31,7 +31,7 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 		}
 		path := appDO.GetWorkflowsRoot()
 		if !file.IsExists(path) {
-			flog.Warningf("应用[%s]的工作流目录不存在，无法同步分支", appDO.AppName)
+			flog.Debugf("应用[%s]的工作流目录不存在，无法同步分支,跳过", appDO.AppName)
 			return
 		}
 		// 在工作流根目录，获取远程分支名称

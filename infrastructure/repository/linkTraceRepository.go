@@ -338,7 +338,11 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 			UseDesc:       item.UseDesc,
 			TraceType:     item.TraceType,
 			List:          collections.NewList(item.List...),
-			WebContextPO: model.WebContextPO{
+			CreateAt:      item.CreateAt,
+		}
+
+		if item.WebContext != nil {
+			po.WebContextPO = model.WebContextPO{
 				WebDomain:          item.WebContext.WebDomain,
 				WebPath:            item.WebContext.WebPath,
 				WebMethod:          item.WebContext.WebMethod,
@@ -349,23 +353,30 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 				WebResponseBody:    item.WebContext.WebResponseBody,
 				WebResponseHeaders: collections.NewDictionaryFromMap(item.WebContext.WebResponseHeaders),
 				WebRequestIp:       item.WebContext.WebRequestIp,
-			},
-			ConsumerContextPO: model.ConsumerContextPO{
+			}
+		}
+
+		if item.ConsumerContext != nil {
+			po.ConsumerContextPO = model.ConsumerContextPO{
 				ConsumerServer:     item.ConsumerContext.ConsumerServer,
 				ConsumerQueueName:  item.ConsumerContext.ConsumerQueueName,
 				ConsumerRoutingKey: item.ConsumerContext.ConsumerRoutingKey,
-			},
-			TaskContextPO: model.TaskContextPO{
+			}
+		}
+		if item.TaskContext != nil {
+			po.TaskContextPO = model.TaskContextPO{
 				TaskName:      item.TaskContext.TaskName,
 				TaskGroupName: item.TaskContext.TaskGroupName,
 				TaskId:        item.TaskContext.TaskId,
 				TaskData:      collections.NewDictionaryFromMap(item.TaskContext.TaskData),
-			},
-			WatchKeyContextPO: model.WatchKeyContextPO{
-				WatchKey: item.WatchKeyContext.WatchKey,
-			},
-			CreateAt: item.CreateAt,
+			}
 		}
+		if item.WatchKeyContext != nil {
+			po.WatchKeyContextPO = model.WatchKeyContextPO{
+				WatchKey: item.WatchKeyContext.WatchKey,
+			}
+		}
+
 		if item.Exception != nil {
 			po.Exception = &model.ExceptionStackPO{
 				Details:              item.Exception.ExceptionDetails,
@@ -377,7 +388,7 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 
 		// 转换明细
 		for _, traceDetail := range item.List {
-			lstDetail.Add(model.TraceDetailPO{
+			detailPO := model.TraceDetailPO{
 				TraceId:        item.TraceId,
 				AppId:          item.AppId,
 				AppName:        item.AppName,
@@ -395,28 +406,42 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 				EndTs:          traceDetail.EndTs,
 				Exception:      traceDetail.Exception,
 				CreateAt:       traceDetail.CreateAt,
-				TraceDetailHandPO: model.TraceDetailHandPO{
+				UseTs:          time.Duration(traceDetail.EndTs-traceDetail.StartTs) * time.Microsecond,
+				UseDesc:        (time.Duration(traceDetail.EndTs-traceDetail.StartTs) * time.Microsecond).String(),
+			}
+			if traceDetail.TraceDetailHand != nil {
+				detailPO.TraceDetailHandPO = model.TraceDetailHandPO{
 					HandName: traceDetail.HandName,
-				},
-				TraceDetailDatabasePO: model.TraceDetailDatabasePO{
+				}
+			}
+			if traceDetail.TraceDetailDatabase != nil {
+				detailPO.TraceDetailDatabasePO = model.TraceDetailDatabasePO{
 					DbName:             traceDetail.DbName,
 					DbTableName:        traceDetail.DbTableName,
 					DbSql:              traceDetail.DbSql,
 					DbConnectionString: traceDetail.DbConnectionString,
 					DbRowsAffected:     traceDetail.DbRowsAffected,
-				},
-				TraceDetailEsPO: model.TraceDetailEsPO{
+				}
+			}
+			if traceDetail.TraceDetailEs != nil {
+				detailPO.TraceDetailEsPO = model.TraceDetailEsPO{
 					EsIndexName:   traceDetail.EsIndexName,
 					EsAliasesName: traceDetail.EsAliasesName,
-				},
-				TraceDetailEtcdPO: model.TraceDetailEtcdPO{
+				}
+			}
+			if traceDetail.TraceDetailEtcd != nil {
+				detailPO.TraceDetailEtcdPO = model.TraceDetailEtcdPO{
 					EtcdKey:     traceDetail.EtcdKey,
 					EtcdLeaseID: traceDetail.EtcdLeaseID,
-				},
-				TraceDetailEventPO: model.TraceDetailEventPO{
+				}
+			}
+			if traceDetail.TraceDetailEvent != nil {
+				detailPO.TraceDetailEventPO = model.TraceDetailEventPO{
 					EventName: traceDetail.EventName,
-				},
-				TraceDetailGrpcPO: model.TraceDetailGrpcPO{
+				}
+			}
+			if traceDetail.TraceDetailGrpc != nil {
+				detailPO.TraceDetailGrpcPO = model.TraceDetailGrpcPO{
 					GrpcMethod:          traceDetail.GrpcMethod,
 					GrpcUrl:             traceDetail.GrpcUrl,
 					GrpcHeaders:         collections.NewDictionaryFromMap(traceDetail.GrpcHeaders),
@@ -424,8 +449,10 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 					GrpcRequestBody:     traceDetail.GrpcRequestBody,
 					GrpcResponseBody:    traceDetail.GrpcResponseBody,
 					GrpcStatusCode:      traceDetail.GrpcStatusCode,
-				},
-				TraceDetailHttpPO: model.TraceDetailHttpPO{
+				}
+			}
+			if traceDetail.TraceDetailHttp != nil {
+				detailPO.TraceDetailHttpPO = model.TraceDetailHttpPO{
 					HttpMethod:          traceDetail.HttpMethod,
 					HttpUrl:             traceDetail.HttpUrl,
 					HttpHeaders:         collections.NewDictionaryFromMap(traceDetail.HttpHeaders),
@@ -433,20 +460,23 @@ func (receiver *linkTraceRepository) Save(lstEO collections.List[trace.TraceCont
 					HttpRequestBody:     traceDetail.HttpRequestBody,
 					HttpResponseBody:    traceDetail.HttpResponseBody,
 					HttpStatusCode:      traceDetail.HttpStatusCode,
-				},
-				TraceDetailMqPO: model.TraceDetailMqPO{
+				}
+			}
+			if traceDetail.TraceDetailMq != nil {
+				detailPO.TraceDetailMqPO = model.TraceDetailMqPO{
 					MqServer:     traceDetail.MqServer,
 					MqExchange:   traceDetail.MqExchange,
 					MqRoutingKey: traceDetail.MqRoutingKey,
-				},
-				TraceDetailRedisPO: model.TraceDetailRedisPO{
+				}
+			}
+			if traceDetail.TraceDetailRedis != nil {
+				detailPO.TraceDetailRedisPO = model.TraceDetailRedisPO{
 					RedisKey:          traceDetail.RedisKey,
 					RedisField:        traceDetail.RedisField,
 					RedisRowsAffected: traceDetail.RedisRowsAffected,
-				},
-				UseTs:   time.Duration(traceDetail.EndTs-traceDetail.StartTs) * time.Microsecond,
-				UseDesc: (time.Duration(traceDetail.EndTs-traceDetail.StartTs) * time.Microsecond).String(),
-			})
+				}
+			}
+			lstDetail.Add(detailPO)
 		}
 	})
 

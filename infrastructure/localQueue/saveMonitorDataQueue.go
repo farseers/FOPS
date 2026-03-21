@@ -71,7 +71,7 @@ func SaveMonitorDataQueue(subscribeName string, lstMessage collections.ListAny, 
 				if rule.CompareResult(reqVal) {
 					comparisonMsg = rule.GetTipTemplate(dataEO.AppName, reqVal)
 				}
-				// 发送消息 whatsapp
+				// 发送消息
 				if len(comparisonMsg) > 0 && len(rule.NoticeIds) > 0 {
 					// 通知数据
 					noticeList := monitorRepository.ToListNoticeById(rule.NoticeIds)

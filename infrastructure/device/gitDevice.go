@@ -67,30 +67,46 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 
 	// 先切换到目标分支
 	// 尝试检出分支，如果不存在则创建并跟踪远程分支
-	wait = exec.RunShellContext(ctx, "git", []string{"checkout", "-B", branch, "origin/" + branch}, nil, gitPath, true)
-	if wait.WaitToChan(progress) != 0 {
-		progress <- "切换到分支 " + branch + " 失败"
+	progress <- "正在获取远程分支信息..."
+	fetchWait := exec.RunShellContext(ctx, "git", []string{"fetch", "origin", branch}, nil, gitPath, true)
+	if fetchWait.WaitToChan(progress) != 0 {
+		progress <- "无法从远程获取分支: " + branch
 		return false
 	}
 
+	// 4. 强制切换并同步到该分支状态
+	// 使用 reset --hard origin/branch 强制让本地目录与远程分支对齐
+	progress <- "正在同步工作流文件..."
+
+	// 先尝试创建并切换分支（如果分支已存在，此步骤可能会报错，但没关系，下一步 reset 是关键）
+	checkoutWait := exec.RunShellContext(ctx, "git", []string{"checkout", "-B", branch}, nil, gitPath, true)
+	checkoutWait.WaitToChan(progress)
+
+	// 核心同步：重置本地索引和工作区到远程分支状态
 	var exitCode int
 	for i := 0; i < 3; i++ {
 		select {
 		case <-ctx.Done():
-			progress <- "同步工作流文件失败，停止构建"
+			progress <- "操作被取消"
 			return false
 		default:
-			// 使用 context 控制超时，不依赖外部 timeout 命令
-			pullCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
-			defer cancel()
+			pullCtx, cancel := context.WithTimeout(ctx, 20*time.Second)
+			// 使用 reset --hard 确保 sparse-checkout 立即生效并下载文件
+			wait := exec.RunShellContext(pullCtx, "git", []string{"reset", "--hard", "origin/" + branch}, nil, gitPath, true)
+			exitCode = wait.WaitToChan(progress)
+			cancel()
 
-			wait := exec.RunShellContext(pullCtx, "git", []string{"pull", "origin", branch}, nil, gitPath, true)
-			if exitCode = wait.WaitToChan(progress); exitCode == 0 {
+			if exitCode == 0 {
+				progress <- "工作流同步成功"
 				return true
 			}
+			progress <- "同步重试中..."
+			time.Sleep(1 * time.Second)
 		}
 	}
-	return exitCode == 0
+
+	progress <- "同步工作流文件最终失败"
+	return false
 }
 
 func (receiver *gitDevice) GetLocalBranch(ctx context.Context, gitPath string) collections.List[apps.RemoteBranchVO] {

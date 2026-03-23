@@ -16,15 +16,15 @@ type appsBranchRepository struct {
 	data.IRepository[appsBranch.DomainObject]
 }
 
-// ToListByAppName 获取所有分支
-func (receiver *appsBranchRepository) ToListByAutoBuild() collections.List[appsBranch.DomainObject] {
+// ToListForAutoBuild 获取所有分支
+func (receiver *appsBranchRepository) ToListForAutoBuild() collections.List[appsBranch.DomainObject] {
 	lstPO := context.MysqlContext.AppsBranch.Where("app_name in (select app_name from apps where ut_workflows_name <>'')").ToList()
 	return mapper.ToList[appsBranch.DomainObject](lstPO)
 }
 
 // ToListByAppName 获取当前应用的所有分支
 func (receiver *appsBranchRepository) ToListByAppName(appName string) collections.List[appsBranch.DomainObject] {
-	lstPO := context.MysqlContext.AppsBranch.Where("app_name = ?", appName).Select("branch_name", "commit_at").Desc("commit_at").ToList()
+	lstPO := context.MysqlContext.AppsBranch.Where("app_name = ?", appName).Select("branch_name", "commit_at").Asc("branch_name").ToList()
 	return mapper.ToList[appsBranch.DomainObject](lstPO)
 }
 

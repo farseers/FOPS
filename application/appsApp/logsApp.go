@@ -74,5 +74,10 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 	rsp.RemoveAll(func(item response.DockerSwarmResponse) bool {
 		return item.Log == ""
 	})
+
+	// 重新排序
+	rsp = rsp.OrderBy(func(item response.DockerSwarmResponse) any {
+		return item.NodeName
+	}).ToList()
 	return rsp
 }

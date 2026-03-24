@@ -72,8 +72,8 @@
         <el-table-column width="200px" label="异常" show-overflow-tooltip>
           <template #default="scope">
             <el-tag size="small" v-if="scope.row.Exception != null"
-              type="danger">{{ scope.row.Exception.ExceptionDetails[0].ExceptionCallFile }}:{{ scope.row.Exception.ExceptionDetails[0].ExceptionCallLine }}
-              {{ scope.row.Exception.ExceptionDetails[0].ExceptionCallFuncName }}</el-tag><br
+              type="danger">{{ scope.row.Exception.Details[0].ExceptionCallFile }}:{{ scope.row.Exception.Details[0].ExceptionCallLine }}
+              {{ scope.row.Exception.Details[0].ExceptionCallFuncName }}</el-tag><br
               v-if="scope.row.Exception != null">
             <el-tag size="small" v-if="scope.row.Exception != null"
               type="danger">{{ scope.row.Exception.ExceptionMessage }}</el-tag>

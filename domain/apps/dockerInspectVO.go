@@ -4,7 +4,6 @@ import (
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/docker"
 	"github.com/farseer-go/fs/flog"
-	"github.com/farseer-go/fs/snc"
 )
 
 // key = nodeIP
@@ -23,7 +22,7 @@ type DockerInspectVO struct {
 }
 
 // GetDockerStats 根据集群节点IP，找到对应的容器ID
-func GetDockerStats(nodeIP, taskId string) docker.DockerStatsVO {
+func GetDockerStats(nodeIP, taskId, appName string) docker.DockerStatsVO {
 	lstDockerStats := NodeDockerStatsList.GetValue(nodeIP)
 	dockerStatsVO := lstDockerStats.Find(func(item *docker.DockerStatsVO) bool {
 		return item.TaskId == taskId
@@ -33,8 +32,8 @@ func GetDockerStats(nodeIP, taskId string) docker.DockerStatsVO {
 		return *dockerStatsVO
 	}
 
-	json, _ := snc.Marshal(lstDockerStats)
-	flog.Infof("未找到对应的容器资源信息: %s, %s, %s", nodeIP, taskId, json)
+	//json, _ := snc.Marshal(lstDockerStats)
+	flog.Infof("未找到对应的容器资源信息: %s, %s, %s", nodeIP, taskId, appName)
 
 	return docker.DockerStatsVO{TaskId: taskId}
 }

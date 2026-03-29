@@ -132,7 +132,7 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 
 			// 实例存在，则只更新资源信息
 			if curInstance != nil {
-				curInstance.DockerStatsVO = apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId)
+				curInstance.DockerStatsVO = apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId, appDO.AppName)
 				return
 			}
 
@@ -140,7 +140,7 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 			if node.IsHealth {
 				// 通过代理节点同步到的容器资源信息
 				dockerInspectVO := apps.DockerInspectVO{
-					DockerStatsVO: apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId),
+					DockerStatsVO: apps.GetDockerStats(node.Status.Addr, serviceVO.ServiceTaskId, appDO.AppName),
 					NodeID:        serviceVO.NodeID,
 					NodeName:      serviceVO.NodeName,
 					NodeIP:        serviceVO.NodeIP,

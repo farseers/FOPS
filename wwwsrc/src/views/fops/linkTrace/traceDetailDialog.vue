@@ -17,7 +17,7 @@
             </div>
             <!--webapi-->
             <div class="mt10">
-              <span v-if="state.TraceType == 0">
+              <span v-if="state.TraceType == 0 || state.TraceType == null">
                 <el-tag size="small">{{ state.WebStatusCode }}</el-tag> {{ state.WebRequestIp }} <el-tag type="success"
                   size="small">{{ state.WebMethod }}</el-tag>
                 <el-tag v-if="state.WebContentType != ''" type="info" size="small">{{ state.WebContentType }}</el-tag>{{
@@ -299,6 +299,9 @@ const openDialog = (row2: any) => {
       state.TraceId = res.Data.Entry.tid
       state.UseTs = res.Data.Entry.ut
       state.TraceType = res.Data.Entry.tt
+      if (res.Data.Entry.tt == null) {
+          state.TraceType = 0
+      }
       state.WebStatusCode = res.Data.Entry.wsc
       state.WebRequestIp = res.Data.Entry.wip
       state.WebMethod = res.Data.Entry.wm

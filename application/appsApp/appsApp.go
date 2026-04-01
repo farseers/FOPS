@@ -60,17 +60,16 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, clusterRe
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 	clusterDO := clusterRepository.GetLocalCluster()
 
-	client := docker.NewClient()
-	if exists := client.Service.Exists(req.AppName); exists {
+	if exists := docker.DefaultClient.Service.Exists(req.AppName); exists {
 		// 更新镜像
 		if (req.ClusterDockerImage != "" && req.ClusterDockerImage != do.ClusterVer.GetValue(clusterDO.Id).DockerImage) || do.DockerReplicas != req.DockerReplicas {
-			wait := client.Service.SetImagesAndReplicas(req.AppName, req.ClusterDockerImage, req.DockerReplicas)
+			wait := docker.DefaultClient.Service.SetImagesAndReplicas(req.AppName, req.ClusterDockerImage, req.DockerReplicas)
 			lst, code := wait.WaitToList()
 			exception.ThrowRefuseExceptionBool(code != 0, lst.ToString(","))
 
 		} else if do.DockerReplicas != req.DockerReplicas && do.DockerNodeRole == "worker" {
 			// 更新副本数量
-			wait := client.Service.SetReplicas(req.AppName, req.DockerReplicas)
+			wait := docker.DefaultClient.Service.SetReplicas(req.AppName, req.DockerReplicas)
 			lst, code := wait.WaitToList()
 			exception.ThrowRefuseExceptionBool(code != 0, lst.ToString(","))
 		}
@@ -114,10 +113,9 @@ func Update(req request.UpdateRequest, appsRepository apps.Repository, clusterRe
 func Delete(appName string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(strings.Trim(appName, "") == "", 403, "参数不完整")
 	// 删除服务
-	client := docker.NewClient()
-	exists := client.Service.Exists(appName)
+	exists := docker.DefaultClient.Service.Exists(appName)
 	if exists {
-		err := client.Service.Delete(appName)
+		err := docker.DefaultClient.Service.Delete(appName)
 		exception.ThrowRefuseExceptionBool(err != nil, "删除服务失败: "+err.Error())
 	}
 

@@ -28,12 +28,11 @@ func (module Module) DependsModule() []modules.FarseerModule {
 }
 
 func (module Module) PostInitialize() {
-	client := docker.NewClient()
-	if client.GetInfo().Swarm.ControlAvailable {
+	if docker.DefaultClient.GetInfo().Swarm.ControlAvailable {
 		tasks.Run("开启构建应用", time.Second*1, job.BuildAppJob, context.Background())
 		tasks.Run("开启自动构建", time.Second*1, job.AutoBuildAppJob, context.Background())
 		tasks.Run("同步Git分支", time.Second*30, job.SyncAppsBranchJob, context.Background())
-		flog.Info("Docker version: " + color.Blue(client.GetVersion()))
+		flog.Info("Docker version: " + color.Blue(docker.DefaultClient.GetVersion()))
 
 		// 3秒收集一次Docker集群信息
 		tasks.Run("收集Docker应用信息", time.Second*3, job.CollectsDockerSwarmJob, context.Background())
@@ -47,7 +46,7 @@ func (module Module) PostInitialize() {
 		buildEO := container.Resolve[apps.Repository]().GetLastBuilding(eumBuildType.Manual)
 
 		if strings.EqualFold(buildEO.AppName, "fops") && buildEO.Status == eumBuildStatus.Building {
-			fopsService := docker.NewClient().Service.List().Find(func(item *docker.ServiceListVO) bool {
+			fopsService := docker.DefaultClient.Service.List().Find(func(item *docker.ServiceListVO) bool {
 				return strings.EqualFold(item.Spec.Name, "fops")
 			})
 			if fopsService != nil && buildEO.DockerImage == fopsService.Spec.TaskTemplate.ContainerSpec.Image {

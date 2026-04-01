@@ -24,8 +24,7 @@ func GetConfig(appName string, appsRepository apps.Repository) ConfigResponse {
 	exception.ThrowWebExceptionBool(appName == "", 403, "应用名称不能为空")
 	exception.ThrowWebExceptionBool(!appsRepository.IsExists(appName), 403, "应用不存在")
 
-	client := docker.NewClient()
-	appVer, _ := client.Service.GetCurConfigVersion(appName)
+	appVer, _ := docker.DefaultClient.Service.GetCurConfigVersion(appName)
 	response := ConfigResponse{
 		AppConfigVer: parse.ToString(appVer),
 	}
@@ -34,7 +33,7 @@ func GetConfig(appName string, appsRepository apps.Repository) ConfigResponse {
 	}
 
 	// 尝试从 Docker Config 获取配置
-	configInfo, err := client.Config.InspectByService(appName)
+	configInfo, err := docker.DefaultClient.Config.InspectByService(appName)
 	if err == nil && configInfo.ID != "" {
 		// 返回配置内容
 		response.Content = configInfo.Spec.Data
@@ -63,10 +62,8 @@ func SaveConfig(appName string, content string, appsRepository apps.Repository) 
 	exception.ThrowWebExceptionBool(content == "", 403, "配置内容不能为空")
 	exception.ThrowWebExceptionBool(!appsRepository.IsExists(appName), 403, "应用不存在")
 
-	client := docker.NewClient()
-
 	// 新版本号
-	lastVersion, _ := client.Config.GetLastVersion(appName)
+	lastVersion, _ := docker.DefaultClient.Config.GetLastVersion(appName)
 	newVersion := lastVersion.Version + 1
 
 	// 创建新的 Docker Config
@@ -76,7 +73,7 @@ func SaveConfig(appName string, content string, appsRepository apps.Repository) 
 		"version":       fmt.Sprintf("%d", newVersion),
 	}
 
-	_, err := client.Config.Create(configName, []byte(content), labels)
+	_, err := docker.DefaultClient.Config.Create(configName, []byte(content), labels)
 	if err != nil {
 		exception.ThrowWebExceptionf(403, "创建 Docker Config 失败: %v", err)
 	}

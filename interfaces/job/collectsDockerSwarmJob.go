@@ -19,15 +19,12 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 	appsRepository := container.Resolve[apps.Repository]()
 	clusterRepository := container.Resolve[cluster.Repository]()
 
-	// 收集所有节点的信息
-	dockerClient := docker.NewClient()
-
 	// 获取本地集群信息
 	localCluster := clusterRepository.GetLocalCluster()
 	// 收集所有服务的运行情况
-	serviceList := dockerClient.Service.List()
+	serviceList := docker.DefaultClient.Service.List()
 	// 所有节点信息
-	lstNode := dockerClient.Node.List()
+	lstNode := docker.DefaultClient.Node.List()
 	// 没有读取到服务，退出
 	if serviceList.Count() == 0 {
 		flog.Infof("没有读取到服务，退出")
@@ -97,7 +94,7 @@ func CollectsDockerSwarmJob(*tasks.TaskContext) {
 		}
 
 		// 根据ServiceId获取所有实例
-		allInstanceList := dockerClient.Service.PS(lstNode, appDO.AppName)
+		allInstanceList := docker.DefaultClient.Service.PS(lstNode, appDO.AppName)
 		if allInstanceList.Count() == 0 {
 			return
 		}

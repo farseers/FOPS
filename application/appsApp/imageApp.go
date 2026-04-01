@@ -40,24 +40,23 @@ func UpdateDockerImage(appName string, dockerImage string, updateDelay int, buil
 	do := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 
-	client := docker.NewClient()
 	// 先登陆仓库
-	wait := client.Hub.Login(dockerHub, dockerUserName, dockerUserPwd)
+	wait := docker.DefaultClient.Hub.Login(dockerHub, dockerUserName, dockerUserPwd)
 	result, exitCode := wait.WaitToList()
 	exception.ThrowRefuseExceptionBool(exitCode != 0, "镜像登陆失败:"+result.ToString(","))
 
 	// 先拉取镜像
-	wait = client.Images.Pull(dockerImage)
+	wait = docker.DefaultClient.Images.Pull(dockerImage)
 	result, exitCode = wait.WaitToList()
 	exception.ThrowRefuseExceptionBool(exitCode != 0, result.ToString(","))
 
 	// 服务存在，才更新，否则自动创建
-	if !createService(client, appName, dockerImage, appsRepository, clusterRepository) {
+	if !createService(docker.DefaultClient, appName, dockerImage, appsRepository, clusterRepository) {
 		// 检查并更新配置版本（这里不需要返回值，因为后续的 SetImages 会触发服务更新）
-		_ = client.SyncConfig(appName, "/app/config.yaml")
+		_ = docker.DefaultClient.SyncConfig(appName, "/app/config.yaml")
 
 		// 更新镜像
-		wait = client.Service.SetImages(appName, dockerImage, updateDelay)
+		wait = docker.DefaultClient.Service.SetImages(appName, dockerImage, updateDelay)
 		result, exitCode = wait.WaitToList()
 		exception.ThrowRefuseExceptionBool(exitCode != 0, result.ToString(","))
 	}
@@ -73,25 +72,23 @@ func UpdateDockerImage(appName string, dockerImage string, updateDelay int, buil
 // @post build/clearDockerImage
 // @filter application.Jwt
 func ClearDockerImage() {
-	client := docker.NewClient()
-	client.Container.Kill("FOPS-Build")
-	client.Container.Kill("FOPS-AutoBuild")
-	client.Images.ClearImages()
+	docker.DefaultClient.Container.Kill("FOPS-Build")
+	docker.DefaultClient.Container.Kill("FOPS-AutoBuild")
+	docker.DefaultClient.Images.ClearImages()
 }
 
 // RestartDocker 重启容器
 // @post restartDocker
 // @filter application.Jwt
 func RestartDocker(appName string, clusterRepository cluster.Repository, appsRepository apps.Repository) {
-	client := docker.NewClient()
 	// 服务存在，才重启，否则自动创建
-	if !createService(client, appName, "", appsRepository, clusterRepository) {
+	if !createService(docker.DefaultClient, appName, "", appsRepository, clusterRepository) {
 		// 检查并更新配置版本（更新配置会自动触发服务滚动更新）
-		configUpdated := client.SyncConfig(appName, "/app/config.yaml")
+		configUpdated := docker.DefaultClient.SyncConfig(appName, "/app/config.yaml")
 
 		// 如果配置没有更新，才执行重启
 		if !configUpdated {
-			wait := client.Service.Restart(appName)
+			wait := docker.DefaultClient.Service.Restart(appName)
 			result, exitCode := wait.WaitToList()
 			exception.ThrowRefuseExceptionBool(exitCode != 0, result.ToString(","))
 		}
@@ -105,12 +102,11 @@ func SetReplicas(appName string, dockerReplicas int, appsRepository apps.Reposit
 	do := appsRepository.ToEntity(appName)
 	exception.ThrowWebExceptionBool(do.IsNil(), 403, "应用不存在")
 
-	client := docker.NewClient()
-	exists := client.Service.Exists(appName)
+	exists := docker.DefaultClient.Service.Exists(appName)
 
 	// 更新副本数量
 	if exists {
-		wait := client.Service.SetReplicas(appName, dockerReplicas)
+		wait := docker.DefaultClient.Service.SetReplicas(appName, dockerReplicas)
 		result, exitCode := wait.WaitToList()
 		exception.ThrowRefuseExceptionBool(exitCode != 0, result.ToString(","))
 	}
@@ -126,14 +122,13 @@ func SetReplicas(appName string, dockerReplicas int, appsRepository apps.Reposit
 func DeleteService(appName string, appsRepository apps.Repository) {
 	exception.ThrowWebExceptionBool(strings.Trim(appName, "") == "", 403, "参数不完整")
 	// 删除服务
-	client := docker.NewClient()
-	err := client.Service.Delete(appName)
+	err := docker.DefaultClient.Service.Delete(appName)
 	if err != nil {
 		exception.ThrowWebExceptionError(403, err)
 	}
 
 	// 验证
-	exists := client.Service.Exists(appName)
+	exists := docker.DefaultClient.Service.Exists(appName)
 	exception.ThrowWebExceptionBool(exists, 403, "服务删除失败")
 }
 

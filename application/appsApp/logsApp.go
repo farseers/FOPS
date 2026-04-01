@@ -16,14 +16,13 @@ import (
 func DockerSwarm(appName string, tailCount int) collections.List[response.DockerSwarmResponse] {
 	rsp := collections.NewList[response.DockerSwarmResponse]()
 
-	client := docker.NewClient()
-	lstNode := client.Node.List()
-	lst := client.Service.PS(lstNode, appName)
+	lstNode := docker.DefaultClient.Node.List()
+	lst := docker.DefaultClient.Service.PS(lstNode, appName)
 	lst.Foreach(func(item *docker.ServiceTaskVO) {
 		flog.Debugf("正在获取日志，服务：%s，任务ID：%s", item.Name, item.ServiceTaskId)
 
 		// 通过容器id获取日志
-		logs, _ := client.Service.Logs(item.ServiceTaskId, tailCount)
+		logs, _ := docker.DefaultClient.Service.Logs(item.ServiceTaskId, tailCount)
 		serviceLog := logs.First()
 		// 没有取到日志时
 		if serviceLog.Logs.Count() < 2 {
@@ -43,11 +42,11 @@ func DockerSwarm(appName string, tailCount int) collections.List[response.Docker
 		return item.Log == ""
 	}) {
 		var image string
-		inspect, _ := client.Service.Inspect(appName)
+		inspect, _ := docker.DefaultClient.Service.Inspect(appName)
 		image = inspect.Spec.TaskTemplate.ContainerSpec.Image
 
 		// 这里取到的是服务日志，即所有容器的日志。需要把他们区分开来
-		logs, _ := client.Service.Logs(appName, tailCount*2)
+		logs, _ := docker.DefaultClient.Service.Logs(appName, tailCount*2)
 		logs.Foreach(func(serviceLogVO *docker.ServiceLogVO) {
 			if curRsp := rsp.Find(func(item *response.DockerSwarmResponse) bool {
 				return serviceLogVO.ContainerId == item.ServiceTaskId

@@ -71,7 +71,7 @@ func (receiver *BuildEO) StartBuild() {
 	}
 
 	receiver.ctx, receiver.cancel = context.WithCancel(context.Background())
-	receiver.dockerClient = docker.NewClient()
+	receiver.dockerClient = docker.DefaultClient
 	receiver.dockerDevice = container.Resolve[IDockerDevice]()
 	receiver.gitDevice = container.Resolve[IGitDevice]()
 	receiver.logQueue = NewLogQueue(receiver.Id)

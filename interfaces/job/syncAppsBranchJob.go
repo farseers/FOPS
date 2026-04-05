@@ -74,14 +74,19 @@ func SyncAppsBranchJob(*tasks.TaskContext) {
 			}
 		})
 
-		// 通过遍历本地分支，判断远程分支是否存在
-		lstLocalUT.Foreach(func(utDO *appsBranch.DomainObject) {
-			// 远程分支不存在，说明已经被删了
-			if !lstRemoteBranch.Where(func(item apps.RemoteBranchVO) bool {
-				return item.BranchName == utDO.BranchName
-			}).Any() { //  && dateTime.Now().Sub(utDO.BuildAt).Hours() > 72
-				appsBranchRepository.DeleteBranch(utDO.AppName, utDO.BranchName)
-			}
-		})
+		// 不确定为什么有时候,分支只剩1个了,所以只要不存在主分支,都可以认为异常
+		if lstRemoteBranch.Where(func(item apps.RemoteBranchVO) bool {
+			return item.BranchName == "main" || item.BranchName == "master"
+		}).Any() {
+			// 通过遍历本地分支，判断远程分支是否存在
+			lstLocalUT.Foreach(func(utDO *appsBranch.DomainObject) {
+				// 远程分支不存在，说明已经被删了
+				if !lstRemoteBranch.Where(func(item apps.RemoteBranchVO) bool {
+					return item.BranchName == utDO.BranchName
+				}).Any() { //  && dateTime.Now().Sub(utDO.BuildAt).Hours() > 72
+					appsBranchRepository.DeleteBranch(utDO.AppName, utDO.BranchName)
+				}
+			})
+		}
 	})
 }

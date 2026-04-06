@@ -163,6 +163,9 @@ func (receiver *linkTraceWarp) addDetail(po trace.TraceContext) {
 		}
 		switch detail.CallType {
 		case eumCallType.Database:
+			if detail.TraceDetailDatabase == nil {
+				detail.TraceDetailDatabase = &trace.TraceDetailDatabase{}
+			}
 			if detail.DbTableName == "" && detail.DbSql == "" {
 				detailTrace.Caption = fmt.Sprintf("%s[打开数据库] => %s %s", detail.Comment, detail.DbName, detail.DbConnectionString)
 			} else {
@@ -176,6 +179,10 @@ func (receiver *linkTraceWarp) addDetail(po trace.TraceContext) {
 			detailTrace.Desc = detail.DbConnectionString
 			detailTrace.CopyContent = detail.DbSql
 		case eumCallType.Http:
+			if detail.TraceDetailHttp == nil {
+				detail.TraceDetailHttp = &trace.TraceDetailHttp{}
+			}
+
 			detailTrace.Caption = fmt.Sprintf("调用http <span class=\"el-tag el-tag--info el-tag--small el-tag--light\">%s</span> => %v %s <span style='background-color: #ead996;'>%s</span>", detail.Comment, detail.HttpStatusCode, detail.HttpMethod, detail.HttpUrl)
 			lstHeader := collections.NewList[string]()
 			for k, v := range detail.HttpHeaders {
@@ -184,7 +191,10 @@ func (receiver *linkTraceWarp) addDetail(po trace.TraceContext) {
 			detailTrace.Desc = fmt.Sprintf("头部：%s 入参：%s 出参：%s", lstHeader.ToString(","), detail.HttpRequestBody, detail.HttpResponseBody)
 			detailTrace.CopyContent = detail.HttpUrl
 		case eumCallType.Grpc:
-			detailTrace.Caption = fmt.Sprintf("调用http <span class=\"el-tag el-tag--info el-tag--small el-tag--light\">%s</span> => %v %s <span style='background-color: #ead996;'>%s</span>", detail.Comment, detail.GrpcStatusCode, detail.GrpcMethod, detail.GrpcUrl)
+			if detail.TraceDetailGrpc == nil {
+				detail.TraceDetailGrpc = &trace.TraceDetailGrpc{}
+			}
+			detailTrace.Caption = fmt.Sprintf("调用grpc <span class=\"el-tag el-tag--info el-tag--small el-tag--light\">%s</span> => %v %s <span style='background-color: #ead996;'>%s</span>", detail.Comment, detail.GrpcStatusCode, detail.GrpcMethod, detail.GrpcUrl)
 			lstHeader := collections.NewList[string]()
 			for k, v := range detail.GrpcHeaders {
 				lstHeader.Add(fmt.Sprintf("%s=%v", k, v))
@@ -192,9 +202,15 @@ func (receiver *linkTraceWarp) addDetail(po trace.TraceContext) {
 			detailTrace.Desc = fmt.Sprintf("头部：%s 入参：%s 出参：%s", lstHeader.ToString(","), detail.GrpcRequestBody, detail.GrpcResponseBody)
 			detailTrace.CopyContent = detail.GrpcUrl
 		case eumCallType.Redis:
+			if detail.TraceDetailRedis == nil {
+				detail.TraceDetailRedis = &trace.TraceDetailRedis{}
+			}
 			detailTrace.Caption = fmt.Sprintf("Redis <span class=\"el-tag el-tag--info el-tag--small el-tag--light\">%s</span> => <span style='background-color: #ead996;'>%s</span> %s %s 影响%v行", detail.Comment, detail.MethodName, detail.RedisKey, detail.RedisField, detail.RedisRowsAffected)
 			detailTrace.Desc = fmt.Sprintf("%s %s", detail.RedisKey, detail.RedisField)
 		case eumCallType.Mq:
+			if detail.TraceDetailMq == nil {
+				detail.TraceDetailMq = &trace.TraceDetailMq{}
+			}
 			if detail.MethodName == "Send" {
 				detailTrace.Caption = fmt.Sprintf("MQ发消息 <span class=\"el-tag el-tag--info el-tag--small el-tag--light\">%s</span> => %s <span style='background-color: #ead996;'>%s</span> %s", detail.Comment, detail.MqServer, detail.MqExchange, detail.MqRoutingKey)
 			} else {
@@ -202,15 +218,27 @@ func (receiver *linkTraceWarp) addDetail(po trace.TraceContext) {
 			}
 			detailTrace.Desc = fmt.Sprintf("%s %s %s", detail.MqServer, detail.MqExchange, detail.MqRoutingKey)
 		case eumCallType.Elasticsearch:
+			if detail.TraceDetailEs == nil {
+				detail.TraceDetailEs = &trace.TraceDetailEs{}
+			}
 			detailTrace.Caption = fmt.Sprintf("ES <span class=\"el-tag el-tag--info el-tag--small el-tag--light\">%s</span> => %s %s", detail.Comment, detail.EsIndexName, detail.EsAliasesName)
 			detailTrace.Desc = fmt.Sprintf("%s %s", detail.EsIndexName, detail.EsAliasesName)
 		case eumCallType.Etcd:
+			if detail.TraceDetailEtcd == nil {
+				detail.TraceDetailEtcd = &trace.TraceDetailEtcd{}
+			}
 			detailTrace.Caption = fmt.Sprintf("Etcd <span class=\"el-tag el-tag--info el-tag--small el-tag--light\">%s</span> => %s %v", detail.Comment, detail.EtcdKey, detail.EtcdLeaseID)
 			detailTrace.Desc = fmt.Sprintf("%s %v", detail.EtcdKey, detail.EtcdLeaseID)
 		case eumCallType.Hand:
+			if detail.TraceDetailHand == nil {
+				detail.TraceDetailHand = &trace.TraceDetailHand{}
+			}
 			detailTrace.Caption = fmt.Sprintf("<span class=\"el-tag el-tag--info el-tag--small el-tag--light\">%s %s</span>", detail.Comment, detail.HandName)
 			detailTrace.Desc = detail.HandName
 		case eumCallType.EventPublish:
+			if detail.TraceDetailEvent == nil {
+				detail.TraceDetailEvent = &trace.TraceDetailEvent{}
+			}
 			detailTrace.Caption = fmt.Sprintf("事件订阅 <span class=\"el-tag el-tag--info el-tag--small el-tag--light\">%s</span> => <span style='background-color: #ead996;'>%s</span>", detail.Comment, detail.EventName)
 			detailTrace.Desc = detail.EventName
 		}

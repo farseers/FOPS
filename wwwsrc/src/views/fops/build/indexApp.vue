@@ -131,7 +131,7 @@
                 <el-table-column label="应用名称" show-overflow-tooltip>
                   <template #default="scope">
                     <el-button v-if="scope.row.Status == 0 || scope.row.Status == 1" size="small" type="danger" @click="onStopBuild(scope.row.Id)">停止</el-button>
-                    <el-tag size="small" type="info">{{ scope.row.WorkflowsName }}</el-tag>
+                    <el-tag size="small" type="info" :class="typeInfos(scope.row)">{{ scope.row.WorkflowsName }}</el-tag>
                     <el-tag size="small" type="" :title="scope.row.BuildNumber">{{ scope.row.AppName }}</el-tag>
                     <el-tag @click="onBranchAgain(scope.row)" v-if="scope.row.Status == 0" size="small" type="info">{{ scope.row.BranchName.length>18? scope.row.BranchName.substring(0,18):scope.row.BranchName }}</el-tag>
                     <el-tag @click="onBranchAgain(scope.row)" v-else-if="scope.row.Status == 1" size="small" type="warning">{{ scope.row.BranchName.length>18? scope.row.BranchName.substring(0,18):scope.row.BranchName }}</el-tag>
@@ -193,6 +193,7 @@ import { defineAsyncComponent, reactive, onMounted, ref, nextTick, watch, onUnmo
 import { ElMessageBox, ElMessage } from 'element-plus';
 import { fopsApi } from "/@/api/fops";
 import Image from '/@/assets/loading.gif';
+import { fork } from 'child_process';
 // var idPre = document.getElementById('idPre');
 // idPre.scrollIntoView(false); // 滚动到底部
 
@@ -296,7 +297,13 @@ const getTableLogData = () => {
     }
   })
 };
-
+const typeInfos = (row:any)=>{
+  const WorkflowsName = row.WorkflowsName;
+  if(WorkflowsName.indexOf('生产')!=-1){
+    return 'typeInfos'
+  }
+  return ''
+}
 // 打开FS日志
 const showFsLogLevel = (level: any, appName: any) => {
   logDetailDialogRef.value.openDialogLogLevel(level, appName);
@@ -639,7 +646,11 @@ onUnmounted(() => {
     }
   }
 }
-
+.typeInfos{
+  border:1px dotted #67c23a;
+  color: #67c23a;
+  
+}
 .flex-warp {
   display: flex;
   flex-wrap: wrap;

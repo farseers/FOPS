@@ -323,7 +323,7 @@ const onOpenEdit = (type: string, row: any) => {
 };
 //重新构建
 const onBranchAgain = (row: any) => {
-  if (row.Status == 2) {
+  if (row.Status != 1) {
     buildConfirmDialogRef.value.openDialog(row, row.WorkflowsName, row.BranchName);
   }
 }

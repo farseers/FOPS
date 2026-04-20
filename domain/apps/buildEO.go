@@ -86,8 +86,8 @@ func (receiver *BuildEO) StartBuild() {
 	receiver.appGit.EnableBackDefaultBranch = receiver.EnableBackDefaultBranch
 
 	// 尝试获取应用构建锁 并发构建同1个应用时,产生错误的镜像版本问题
-	if !lockManager.TryLock(receiver.AppName) {
-		receiver.logQueue.progress <- fmt.Sprintf("应用 %s 正在构建中，请等待当前构建完成后再试", receiver.AppName)
+	if !lockManager.TryLock(receiver.AppName + receiver.WorkflowsName) {
+		receiver.logQueue.progress <- fmt.Sprintf("应用 %s %s 正在构建中，请等待当前构建完成后再试", receiver.AppName, receiver.WorkflowsName)
 		receiver.fail()
 		return
 	}

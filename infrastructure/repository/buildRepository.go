@@ -34,7 +34,7 @@ func (repository *buildRepository) ToBuildList(appName string, buildType eumBuil
 	if appName != "" {
 		ts.Where("LOWER(app_name) = ?", appName)
 	}
-	lstPO := ts.Select("id", "app_name", "build_number", "status", "is_success", "create_at", "finish_at", "workflows_name", "branch_name").ToPageList(pageSize, pageIndex)
+	lstPO := ts.Select("id", "app_name", "build_number", "status", "is_success", "create_at", "finish_at", "workflows_name", "branch_name", "cluster_id").ToPageList(pageSize, pageIndex)
 	return mapper.ToPageList[apps.BuildEO](lstPO)
 }
 

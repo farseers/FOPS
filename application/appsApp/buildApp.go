@@ -64,8 +64,11 @@ func BuildList(appName string, buildType eumBuildType.Enum, pageSize int, pageIn
 		pageIndex = 1
 	}
 	lst := appsRepository.ToBuildList(appName, buildType, pageSize, pageIndex)
+
+	curClusterIds := domain.GetLoginAccount().ClusterIds
+
 	lst.List.RemoveAll(func(item apps.BuildEO) bool {
-		return !domain.GetLoginAccount().ClusterIds.Contains(item.ClusterId)
+		return item.ClusterId != 0 && !curClusterIds.Contains(item.ClusterId)
 	})
 	return mapper.ToPageList(lst, func(r *response.BuildListResponse, a any) {
 		buildEO := a.(apps.BuildEO)

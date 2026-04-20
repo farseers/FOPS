@@ -14,6 +14,7 @@ import (
 
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/fs/container"
+	"github.com/farseer-go/fs/parse"
 	"github.com/farseer-go/utils/exec"
 	"github.com/farseer-go/utils/file"
 	"github.com/farseer-go/utils/http"
@@ -67,9 +68,20 @@ func (receiver *gitDevice) PullWorkflows(ctx context.Context, gitPath, branch st
 
 	// 先切换到目标分支
 	// 尝试检出分支，如果不存在则创建并跟踪远程分支
+	fetchSucess := false
 	progress <- "正在获取远程分支信息..."
-	fetchWait := exec.RunShellContext(ctx, "git", []string{"fetch", "origin", branch}, nil, gitPath, true)
-	if fetchWait.WaitToChan(progress) != 0 {
+	for i := 0; i < 5; i++ {
+		fetchWait := exec.RunShellContext(ctx, "git", []string{"fetch", "origin", branch}, nil, gitPath, true)
+		if fetchWait.WaitToChan(progress) == 0 {
+			fetchSucess = true
+			break
+		}
+
+		progress <- "第" + parse.ToString(i+1) + "次获取远程获取分支:" + branch + " ,失败"
+		time.Sleep(3 * time.Second)
+	}
+
+	if !fetchSucess {
 		progress <- "无法从远程获取分支: " + branch
 		return false
 	}

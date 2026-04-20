@@ -22,10 +22,17 @@ func (m *buildLockManager) TryLock(appName string) bool {
 	return lock.TryLock()
 }
 
-// Unlock 释放应用的构建锁
 func (m *buildLockManager) Unlock(appName string) {
-	if lockInterface, ok := m.locks.Load(appName); ok {
-		lock := lockInterface.(*sync.Mutex)
-		lock.Unlock()
+	lockInterface, ok := m.locks.Load(appName)
+	if !ok {
+		return
 	}
+
+	lock := lockInterface.(*sync.Mutex)
+	// 某些场景下，为了防止多次调用 Unlock 导致 panic，
+	// 可以在这里配合状态位，但通常建议由调用方保证 Lock/Unlock 成对出现
+	lock.Unlock()
+
+	// 如果确定该应用构建彻底结束且以后不再需要，可以考虑删除 Key
+	m.locks.Delete(appName)
 }

@@ -92,7 +92,7 @@ func (receiver *BuildEO) StartBuild() {
 		return
 	}
 	// 确保构建结束时释放锁
-	defer lockManager.Unlock(receiver.AppName)
+	defer lockManager.Unlock(receiver.AppName + receiver.WorkflowsName)
 
 	// 开启异步监控状态
 	go receiver.WatchStatus()

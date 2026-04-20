@@ -12,7 +12,7 @@ type BuildFinishedEvent struct {
 	// 本次构建ID
 	BuildId int64
 	// 构建的集群
-	ClusterId int64
+	ClusterId int
 	// 是否成功
 	IsSuccess bool
 	// Docker镜像版本

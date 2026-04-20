@@ -31,7 +31,7 @@ import (
 // BuildEO 聚合
 type BuildEO struct {
 	Id                      int64                             // 主键
-	ClusterId               int64                             // 集群信息
+	ClusterId               int                               // 集群信息
 	BuildNumber             int                               // 构建号
 	Status                  eumBuildStatus.Enum               // 状态
 	BuildType               eumBuildType.Enum                 // 构建类型

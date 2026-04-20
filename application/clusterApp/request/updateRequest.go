@@ -1,12 +1,13 @@
 package request
 
 import (
-	"github.com/farseer-go/fs/exception"
 	"strings"
+
+	"github.com/farseer-go/fs/exception"
 )
 
 type UpdateRequest struct {
-	Id             int64  // 集群Id
+	Id             int    // 集群Id
 	Name           string // 集群名称
 	FopsAddr       string // 集群地址
 	FScheduleAddr  string // 调度中心地址

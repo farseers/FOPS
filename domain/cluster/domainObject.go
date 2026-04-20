@@ -2,7 +2,7 @@ package cluster
 
 // DomainObject 集群
 type DomainObject struct {
-	Id             int64  // 集群Id
+	Id             int    // 集群Id
 	Name           string // 集群名称
 	FopsAddr       string // 集群地址
 	FScheduleAddr  string // 调度中心地址

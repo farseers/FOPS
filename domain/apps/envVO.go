@@ -40,7 +40,7 @@ func InitFopsDir() {
 // EnvVO 构建时的环境变量
 type EnvVO struct {
 	BuildId     int64  // 构建主键
-	ClusterId   int64  // 构建的集群ID
+	ClusterId   int    // 构建的集群ID
 	BuildNumber int    // 构建版本号
 	AppName     string // 项目名称
 	AppGitRoot  string // Git仓库源代码根目录 /var/lib/fops/git/{gitName}/

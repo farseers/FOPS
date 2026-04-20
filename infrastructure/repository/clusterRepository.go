@@ -3,6 +3,7 @@ package repository
 import (
 	"fops/domain/cluster"
 	"fops/infrastructure/repository/context"
+
 	"github.com/farseer-go/collections"
 	"github.com/farseer-go/data"
 	"github.com/farseer-go/mapper"
@@ -14,7 +15,7 @@ type clusterRepository struct {
 }
 
 // CancelLocal 设置其它集群为非本地
-func (repository *clusterRepository) CancelLocal(id int64) {
+func (repository *clusterRepository) CancelLocal(id int) {
 	_, _ = context.MysqlContext.Cluster.Where("id <> ?", id).UpdateValue("is_local", false)
 }
 

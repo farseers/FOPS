@@ -2,7 +2,7 @@ package model
 
 // ClusterPO 集群
 type ClusterPO struct {
-	Id             int64  `gorm:"primaryKey;comment:主键"`
+	Id             int    `gorm:"primaryKey;comment:主键"`
 	Name           string `gorm:"size:32;not null;comment:集群名称"`
 	FopsAddr       string `gorm:"size:64;not null;comment:集群地址"`
 	FScheduleAddr  string `gorm:"size:64;not null;comment:调度中心地址"`

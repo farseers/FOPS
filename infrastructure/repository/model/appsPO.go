@@ -10,7 +10,7 @@ import (
 // AppsPO 实体类
 type AppsPO struct {
 	AppName           string                                 `gorm:"primaryKey;size:32;not null;comment:应用名称（链路追踪）"`
-	ClusterVer        map[int64]apps.ClusterVerVO            `gorm:"size:2048;json;not null;comment:集群版本"`
+	ClusterVer        map[int]apps.ClusterVerVO              `gorm:"size:2048;json;not null;comment:集群版本"`
 	AppGit            int64                                  `gorm:"not null;default:0;comment:应用的源代码"`
 	DockerfilePath    string                                 `gorm:"size:256;not null;default:'';comment:Dockerfile路径"`
 	DockerInstances   int                                    `gorm:"type:int;not null;default:0;comment:运行的实例数量"`

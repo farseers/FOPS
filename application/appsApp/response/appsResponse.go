@@ -8,7 +8,7 @@ import (
 )
 
 type ClusterVerVO struct {
-	ClusterId       int64             // 集群ID
+	ClusterId       int               // 集群ID
 	ClusterName     string            // 集群名称
 	DockerImage     string            // 集群镜像名称
 	DeploySuccessAt dateTime.DateTime // 上次部署成功时间

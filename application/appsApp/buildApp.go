@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"fops/application/appsApp/request"
 	"fops/application/appsApp/response"
+	"fops/domain"
 	"fops/domain/apps"
 	"fops/domain/appsBranch"
 	"fops/domain/cluster"
@@ -63,6 +64,9 @@ func BuildList(appName string, buildType eumBuildType.Enum, pageSize int, pageIn
 		pageIndex = 1
 	}
 	lst := appsRepository.ToBuildList(appName, buildType, pageSize, pageIndex)
+	lst.List.RemoveAll(func(item apps.BuildEO) bool {
+		return !domain.GetLoginAccount().ClusterIds.Contains(item.ClusterId)
+	})
 	return mapper.ToPageList(lst, func(r *response.BuildListResponse, a any) {
 		buildEO := a.(apps.BuildEO)
 		r.CreateAt = buildEO.CreateAt.ToString("MM-dd HH:mm:ss")

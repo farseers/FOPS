@@ -14,7 +14,7 @@ import (
 type BuildPO struct {
 	Id                      int64                                  `gorm:"primaryKey;comment:主键"`
 	AppName                 string                                 `gorm:"size:32;not null;comment:应用名称"`
-	ClusterId               int64                                  `gorm:"not null;default:0;comment:集群信息"`
+	ClusterId               int                                    `gorm:"not null;default:0;comment:集群信息"`
 	BuildNumber             int                                    `gorm:"type:int;not null;default:0;comment:构建号"`
 	Status                  eumBuildStatus.Enum                    `gorm:"type:tinyint;not null;default:0;comment:状态：0=未开始，1=构建中，2=完成"`
 	BuildType               eumBuildType.Enum                      `gorm:"type:tinyint;not null;default:0;comment:构建类型：0=应用，1=UT"`

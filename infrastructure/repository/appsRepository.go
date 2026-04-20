@@ -53,7 +53,7 @@ func (receiver *appsRepository) UpdateApp(do apps.DomainObject) error {
 }
 
 // UpdateClusterVer 修改集群的镜像版本
-func (receiver *appsRepository) UpdateClusterVer(appName string, dicClusterVer collections.Dictionary[int64, apps.ClusterVerVO]) (int64, error) {
+func (receiver *appsRepository) UpdateClusterVer(appName string, dicClusterVer collections.Dictionary[int, apps.ClusterVerVO]) (int64, error) {
 	marshal, _ := dicClusterVer.MarshalJSON()
 	return context.MysqlContext.Apps.Where("LOWER(app_name) = ?", appName).UpdateValue("cluster_ver", string(marshal))
 }

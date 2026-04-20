@@ -26,7 +26,7 @@ func (receiver *stepVO) GetActionPath() string {
 
 type ActionVO struct {
 	Name      string            // 工作流名称
-	ClusterId int64             // 使用哪个集群的仓库配置
+	ClusterId int               // 使用哪个集群的仓库配置
 	RunsOn    string            // 基础镜像系统
 	Env       map[string]string // 环境参数
 	With      map[string]any    // 全局参数
@@ -63,7 +63,7 @@ func LoadWorkflows(workflowsYmlPath string, appName string, gitName string) (Act
 
 	act := ActionVO{
 		Name:      strings.TrimSpace(parse.ToString(name)),
-		ClusterId: parse.ToInt64(clusterId),
+		ClusterId: parse.ToInt(clusterId),
 		AutoTag:   parse.ToBool(autoTag),
 		//Proxy:  strings.TrimSpace(parse.ToString(proxy)),
 		RunsOn: strings.TrimSpace(parse.ToString(sysImage)),
